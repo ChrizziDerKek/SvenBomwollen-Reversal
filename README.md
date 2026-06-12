@@ -5,12 +5,18 @@ Reversing an old game from my childhood for fun
 ![Alt text](thumbnail.jpg?raw=true "Title")
 
 #  Content
-## sven2
-The actual game we reverse (Sven Zwø XS)
 
 ## dumper
 DLL file for dumping all loaded textures while the game is running. Just inject it with your favourite injector and play some levels!
 
+## levelpacks
+All available level packages for the game. They get loaded automatically when dropped into the game directory and have some sort of version validation (Sven XXX can't load a Sven Zwø pack, etc.).
+
+## strings
+String dumps of the game exe and engine dlls that can be useful.
+
+## sven2
+The actual game we reverse (Sven Zwø XS).
 
 
 # Research and notes
