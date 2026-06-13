@@ -44,6 +44,8 @@ Stores patched pack files that I used for testing the .lvl file format. I tested
 ![](tests/screenshots/meltdown.png?raw=true "Title")
 - XS_tutorial_10sheep: Adds 10 sheep\
 ![](tests/screenshots/more_sheep.png?raw=true "Title")
+- XS_tutorial_new_bush: Adds a new bush object with a somewhat accurate collision box\
+![](tests/screenshots/new_bush.png?raw=true "Title")
 
 
 # Research and notes
