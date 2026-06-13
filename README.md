@@ -42,6 +42,8 @@ Stores patched pack files that I used for testing the .lvl file format. I tested
 ![](tests/screenshots/extra_sheep.png?raw=true "Title")
 - XS_tutorial_field01v01: Copies level data from field01v01\
 ![](tests/screenshots/meltdown.png?raw=true "Title")
+- XS_tutorial_10sheep: Adds 10 sheep\
+![](tests/screenshots/more_sheep.png?raw=true "Title")
 
 
 # Research and notes
