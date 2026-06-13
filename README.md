@@ -2,7 +2,7 @@
 
 Reversing an old game from my childhood for fun
 
-![Alt text](thumbnail.jpg?raw=true "Title")
+![](thumbnail.jpg?raw=true "Title")
 
 #  Content
 
@@ -38,8 +38,10 @@ The actual game we reverse (Sven Zwø XS).
 
 ## tests
 Stores patched pack files that I used for testing the .lvl file format. I tested it with trial-and-error by modifying the first tutorial level:
-- XS_tutorial_4sheep: Adds a 4th sheep
-- XS_tutorial_field01v01: Copies level data from field01v01
+- XS_tutorial_4sheep: Adds a 4th sheep\
+![](tests/screenshots/extra_sheep.png?raw=true "Title")
+- XS_tutorial_field01v01: Copies level data from field01v01\
+![](tests/screenshots/meltdown.png?raw=true "Title")
 
 
 # Research and notes
