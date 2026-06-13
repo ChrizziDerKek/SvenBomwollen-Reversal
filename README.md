@@ -27,6 +27,9 @@ DLL file for dumping all loaded textures while the game is running. Just inject 
 ## levelpacks
 All available level packages for the game. They get loaded automatically when dropped into the game directory and have some sort of version validation (Sven XXX can't load a Sven Zwø pack, etc.).
 
+## patcher
+DLL file for patching packfile signature checks. This has to be loaded very early, so injecting the dll won't work. Instead, use CFF Explorer to add an import to the exported Dummy function.
+
 ## strings
 String dumps of the game exe and engine dlls that can be useful.
 
@@ -188,3 +191,8 @@ It's also really interesting that a simple encryption was used for the data. The
 - 0xFFAA5533: Used for decrypting the file node offset
 - 0x3355AAFF: Used for decrypting the file node size
 - 0x88: Used for decrypting every byte of the file node content
+
+
+## Signature checks
+The next logical step was to modify existing levels. Sadly this wasn't so easy, because turns out the pack files have an embedded signature that needs to be valid, otherwise the game will crash when trying to load it.
+Turns out, the game has a huge function at 0x425120 that verifies all kinds of stuff when loading a pack file. An interesting function was CryptVerifySignatureA which we can actually just hook and make always return true. However, this only works when loading the dll really early, because this is one of the first things that the game does. The easiest way to apply the patch is to use tools like CFF Explorer to add an import that loads my patcher.dll file.
