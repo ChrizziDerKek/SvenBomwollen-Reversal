@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sven2 version="1.0">
+	<stringtable>
+		<!--  INGAME TEXTS   -->
+		<string name="MorePacks" value="Infos zu neuen Levelpacks gibt's unter www.sven-kommt.de"/>
+		<string name="SelectPacks" value="WÄHLE LEVELPACK"/>
+		<string name="UploadHighscore" value="Punkte übertragen"/>
+		<string name="HighscoreLevel" value="Level"/>
+		<string name="LevelBonus" value="Level Bonus:"/>
+		<string name="LevelPack" value="Episode:"/>
+		<string name="BonusLevel" value="Level:"/>
+		<string name="BonusTotal" value="Gesamt:"/>
+		<string name="PressSpace" value="- Leertaste drücken -"/>
+		<string name="Congratulations" value="Glückwunsch!!!"/>
+		<string name="LevelPackMadeIt1" value="Episode "/>
+		<string name="LevelPackMadeIt2" value=" geschafft!"/>
+		<string name="Quit1" value=" "/>
+		<string name="Quit2" value=" "/>
+		<string name="Quit3" value="SPIEL VERLASSEN ?"/>
+		<string name="Yes" value="Ja"/>
+		<string name="No" value="Nein"/>
+		<string name="GameOver" value="GAME OVER"/>
+		<!--  card texts   -->
+		<string name="Card_01" value="Ritt auf dem goldenen Teppich"/>
+		<string name="Card01" value="Eine Stellung, die nicht ausschließlich Fortgeschrittenen vorbehalten bleibt. Auch Anfänger können hier schnell und ohne viel Übung ganz erstaunliche Erfolge erzielen. Daher ist diese Position besonders geeignet zur Stärkung des Selbstvertrauens."/>
+		<string name="Card_02" value="Der zweiarmige Bandit"/>
+		<string name="Card02" value="Hier ist schon ein wenig mehr Geschick und vor allem Gelenkigkeit gefragt. Zudem sind einige physischen Grundvorrausetzungen unumgänglich. Bei unzureichender Länge der Gliedmaßen hält sich der Spaß leider in Grenzen. Über die notwendige Armlänge und eventuelle Alternativen berät der Orthopäde des Vertrauens sicher gerne."/>
+		<string name="Card_03" value="Der ägyptische Tiefflieger"/>
+		<string name="Card03" value="Eine Stellung, die eher eingeschränkt zu empfehlen ist. Zunächst sollte die Partnerin recht robust und in guter körperlicher Verfassung sein. Für Brillenträgerinnen ist diese Stellung jedenfalls auf jeden Fall ungeeignet!"/>
+		<string name="Card_04" value="Der Frieden des Missionars"/>
+		<string name="Card04" value="Was soll man hier noch große Worte drum machen: Klassiker sterben halt nie aus! Eine Stellung, bei der man nicht mehr viel falsch machen kann. Dieser Umstand macht sie für Anfänger und Fortgeschrittene gleichermaßen empfehlenswert."/>
+		<string name="Card_05" value="Big Bopper"/>
+		<string name="Card05" value="Die Ursprünge dieser Stellung sind zweifelsfrei in der Rock 'n' Roll Bewegung der 50er Jahren des letzten Jahrhunderts zu suchen. Die Ähnlichkeiten etwa zum doppelgehupften Seitenlupfer, aber auch zur berühmte Tennessee Hupfdohle sind jedenfalls unverkennbar."/>
+		<string name="Card_06" value="Der heimkehrende Wanderer"/>
+		<string name="Card06" value="Mag der Name auch eher humoristisch anmuten, so erklärt er doch zu treffend den Ursprung dieser Stellung, zu der sich der erste Vermerk im so genannten Alpen-Tantra findet. Man stelle sich vor: Er kommt nach zehn Stunden Bergtour nach Hause zurück. Da bleibt einfach nicht mehr Energie übrig. Die Wirkung wird aber dennoch nicht verfehlt!"/>
+		<string name="Card_07" value="Die italienische Schubkarre"/>
+		<string name="Card07" value="Sportlich, technisch jedoch nicht zu ausgefeilt, um sie Anfängern unzugänglich zu machen. Eine Kombination, die diese Stellung zu einem wunderbaren Allrounder macht."/>
+		<string name="Card_08" value="Die überraschte Wäscherin"/>
+		<string name="Card08" value="OHNE WORTE!"/>
+		<string name="Card_09" value="Der eilige Marquis"/>
+		<string name="Card09" value="Ohne Zweifel nicht jedermanns Sache, wahre Genießer (und Reitsport-Fanatiker) wollen und können jedoch nicht mehr ohne! Die benötigten Accessoires gibt es im gut sortierten Fachhandel. Im Set, bestehend aus Brille (erhältlich schwarz, nachtblau oder rot) und Gerte (Glatt- und Naturleder), für nur 14,99 Euro in Beas Lädchen."/>
+		<string name="Card_10" value="Das wiehernde Kaninchen"/>
+		<string name="Card10" value="Ein weitverbreiterter Irrglaube besagt, dass Kaninchen nur dann einen fiepsenden Laut von sich geben, wenn sie sich in Gefahr befinden. Und trotzdem behauptet man in einer aufgeklärten Gesellschaft zu leben ... tztztz ...."/>
+		<string name="Card_11" value="Der betrunkene Cowboy"/>
+		<string name="Card11" value="Reichhaltiger Alkoholkonsum ist nicht wirklich notwendig. Ganz im Gegenteil: Mit Blick auf gesundheitliche Aspekte kann man eigentlich nur davon abraten. Unbeirrbare Puristen schießen solche Warnungen leider immer wieder in den Wind. Das geht dann so lange gut, bis einer umfällt."/>
+		<string name="Card_12" value="Die Pupsburger Augenkiste"/>
+		<string name="Card12" value="Leider eine weitere Stellung bei denen Brillenträger nur zusehen können, das allerdings dafür auch umso besser! Doch auch die Freunde zahlreicher Ohren-Piercings sollten ihren geliebten Schmuck lieber beiseite legen und das Ziehen auf das Nötigste reduzieren, da an der perforierten Stelle akute Reißgefahr besteht!"/>
+		<string name="Card_13" value="Die fliegende Hantel"/>
+		<string name="Card13" value="Bei dem Ersten, der diese Stellung nachweislich praktizierte, handelte es sich um einen österreichischen Bodybuilder, dem seine Gattin während einer Runde Bankdrücken ein Glas isotonischen Getränkes zur Erfrischung reichte. Leider dehydrierte der gute Mann wenig später trotzdem und wurde mit einer intravenös verabreichten Kochsalzlösung wieder aufgepeppelt."/>
+		<string name="Card_14" value="Der Tanz der Müllerin"/>
+		<string name="Card14" value="Im Takte, den traditionell der Herr durch rhythmisches Aneinanderschlagen der Hände vorgibt, schunkeln sich beide Partner zur Glückseligkeit. Die ultimative Party-Stellung!"/>
+		<string name="Card_15" value="Der ungestüme Akrobat"/>
+		<string name="Card15" value="Eine Stellung, die eine Menge Konzentration, Körperbeherrschung und viel, viel Übung voraussetzt. Beherrscht man sie dann allerdings erst einmal, ist sie nicht nur denkbar erfüllend, sondern hat noch einen großartigen Nebeneffekt: Eine rapider Gewichtsverlust schon nach wenigen Minuten."/>
+		<string name="Card_16" value="Secret Service"/>
+		<string name="Card16" value="Um im Geheimdienst der Glückseligkeit eine gute Figur zu machen, bedarf es bei dieser Variante des ganzen Körpereinsatzes. Auch eine gehörige Portion Abenteuer- und  Entdeckerlust sollte mitgebracht werden."/>
+		<string name="Card_17" value="Bread and Butter"/>
+		<string name="Card17" value="Eine Position für Diätverweigerer (ein klinischer Versuch hat ergeben: Halbfettmargarine ist leider ungeeignet) und Fans von Kunstfilmen aus den siebziger Jahren."/>
+		<string name="Card_18" value="Der klammernde Löffler"/>
+		<string name="Card18" value="Bei Herren, die diese Position aus Überzeugung praktizieren, kann man mit einer Wahrscheinlichkeit von 95 Prozent einen Hang zum emotionalen Klammern beobachten. Einer der ersten bekannten Anhänger dieser Stellung war ein gewisser Herr Ö. aus Griechenland ..."/>
+		<string name="Card_19" value="Der freihändige Pilot"/>
+		<string name="Card19" value="Nicht nur, dass diese Stellung eine gute Bauch- und Rückenmuskulatur voraussetzt (und für einen weiteren Aufbau eben dieser sorgt), sie verlangt auch nach einem gut ausgeprägten Augenmaß."/>
+		<string name="Card_20" value="Halb geschlagenes Rad"/>
+		<string name="Card20" value="Diese Stellung setzt einen gut entwickelten Gleichgewichtssinn voraus. Ständig umzufallen ist ja schließlich nicht der Sinn der Sache."/>
+		<string name="Card_21" value="Down Under"/>
+		<string name="Card21" value="Verkehrte Welt? Mitnichten! Diese Stellung wird in Feinschmecker-Kreisen nur in den höchsten Tönen gelobt."/>
+		<string name="Card_22" value="Rocksteady Crew"/>
+		<string name="Card22" value="Hierbei handelt es sich um eine Abwandlung der 'Tanzenden Müllerin', die während der Hip-Hop und Breakdance- Bewegung der 80er Jahre entstanden ist. Hier wurde das artistische Moment dieses modernen Tanzes mit der steigenden Emanzipation der Frau gepaart, die nun den Takt vorgibt. Eine nicht ganz einfache Position, aber jede Mühe wert."/>
+		<string name="Card_23" value="Die stürmische Ballonfahrt"/>
+		<string name="Card23" value="Für diese Position muss der Herr sich mächtig ins Zeug legen und all seine körperliche Biegsamkeit unter Beweis stellen. Aus Sicherheitsgründen sollten Herren mit gelegentlichen rheumatischen Schmerzen im Rücken Abstand von dieser Position halten."/>
+		<string name="Card_24" value="Das schwedische Karussell"/>
+		<string name="Card24" value="Eine Stellung, die man getrost als abenteuerlich bezeichnen kann, die bei fachgerechter Ausübung allerdings auch größte Freuden verspricht. Der Chiropraktiker des Vertrauens informiert sicher gerne über Behandlungs- möglichkeiten bei Verspannungen als möglicher Folgeerscheinung."/>
+		<string name="Card_25" value="Der Widerspenstigen Zähmung"/>
+		<string name="Card25" value="Eine Stellung, die besonders oft in frischen Beziehungen (und bei alteingesessenen Rodeoreitern) zu beobachten ist. Wichtig dabei ist vor allem, den Stärkegrad des Bisses zu kontrollieren, sonst könnte es zu bösen Verstimmungen kommen."/>
+		<string name="Card_26" value="Lazy Bastard"/>
+		<string name="Card26" value="Welchem Geschlecht der Ursprung dieser Stellung zuzuschreiben ist, ist offensichtlich. In Zeiten der Emanzipation ist sie allerdings immer seltener zu beobachten. Ein man(n)cher wird wohl sagen: 'Schade!' und tief seufzen. Tja..."/>
+		<string name="Card_27" value="Der eitle Seemann"/>
+		<string name="Card27" value="Ein Sicherheits-Hinweis für die Damenwelt: Vor der Ausübung dieser Stellung bitte gut und vor allem AUSGIEBIG dehnen!"/>
+		<string name="Card_28" value="Der entschlossene Steuermann"/>
+		<string name="Card28" value="Eine Position für alle Herren, die sich dazu entschlossen haben, ihre eigenen Bedürfnisse hinten anzustellen und ihre Energie beim Liebesspiel ganz in den Dienst des Wohlgefallens der Partnerin zu stellen. Und nichts, aber auch gar nichts wird sie von ihrem Weg abbringen!"/>
+		<string name="Card_29" value="Der schüchterne Kavalier"/>
+		<string name="Card29" value="Der Ursprung des Namens dieser Stellung lässt sich leider nicht mehr wissenschaftlich zuverlässig nachvollziehen. Eine weit verbreitete Vermutung legt allerdings nahe, dass diese Stellung und ihr Name auf eine Familie chinesischer Zirkus-Artisten aus der Zeit der Ming Dynastie zurückzuführen ist."/>
+		<string name="Card_30" value="Die französische Bootsfahrt"/>
+		<string name="Card30" value="Paris, die Stadt der Liebe. Nur in einer Stadt wie dieser kann eine Stellung ihre Wurzeln haben, bei der das Musizieren und Rezitieren französischer Liebeslyrik aus dem 17. Jahrhundert fester Bestandteil sind."/>
+		<string name="Card_31" value="Der erfreute Voyeur"/>
+		<string name="Card31" value="Diese Stellung ist eindeutig nur für SEHR tolerante Paare geeignet. Sie erfreut sich jedoch größter Beliebtheit bei Paparazzi, Internetsüchtigen und Besitzern von Feldstechern."/>
+		<string name="Card_32" value="Jumpy-Bungee"/>
+		<string name="Card32" value="Ein Stellung für Abenteurer, Extremsportler und andere Adrenalin-Junkies. Bei Paaren, die sich noch nicht das Ja-Wort gegeben haben, ist eine gute Personenschaden- versicherung dringendst zu empfehlen!"/>
+		<string name="Card_33" value="Tour de France"/>
+		<string name="Card33" value="DIE Stellung in Radsportkreisen. Wer ein echter Radler ist, für den kommt kaum noch was anderes in Frage. (Für die Puristen unter den Tour-Fans ist diese Stellung übrigens nur dann stilecht vollführt, wenn dazu das gepunktete Trikot getragen wird. Das grüne Trikot hingegen ist dann doch eher verpönt!)"/>
+		<!--   gegner texts   -->
+		<string name="Dog00" value="Wøtan"/>
+		<string name="Dog01" value="Der Anblick täuscht. Was auf den ersten Blick aussieht wie ein gemütlicher Troll, der durch einen herabhängenden Pony kaum einen Meter weit gucken kann, entpuppt sich als unerbittlicher Wächter der Herde. Mit Argusaugen hat er alles im Blick und nimmt sofort die Verfolgung auf, sobald Sven aktiv wird."/>
+		<string name="Dog02" value="Zum Wohle von Svens Gesundheit (und deinem Spielspaß) solltest du Wøtan lieber aus dem Weg gehen. Sobald er Sven zwischen die Pfoten kriegt, gibt es Dresche. Es gibt jedoch ein Ding, bei dem Wøtan nicht widerstehen kann: Ein saftiger Knochen. Er ist ja schließlich auch nur ein Hund!"/>
+		<string name="Guy00" value="Lars Einnicken"/>
+		<string name="Guy01" value="Der Ober-Boss der Herde. Da er den verständlichen Wunsch hegt, seine Herde zu behalten, sieht er es gar nicht gerne, wenn Sven ein Schaf nach dem anderen zum Platzen bringt. Zum Glück ist er jedoch nicht der Schnellste. Außerdem passiert es ihm immer wieder, dass er spontan einschläft. Vor allem, wenn er sich mal wieder einen Schluck aus der Flasche genehmigt hat ..."/>
+		<string name="Guy02" value="Trotz seines hohen Alters kann er allerdings noch immer ordentlich zuschlagen. Das ist eine Erfahrung, die Sven bei Zeiten macht, wenn er ihm über den Weg läuft. Es ist also ratsam, auch Lars weiträumig zu meiden."/>
+		<string name="Broemse00" value="Brømse"/>
+		<string name="Broemse01" value="Svens rothaarige Heimsuchung, die er mehr fürchtet als Wøtan und Lars zusammen. Ein paar Prügel zu kassieren kann man ja noch verkraften, aber Brømses Knuddelattacken sind mehr, als ein Schaf alleine ertragen kann. Denn ihre Vorstellungen von Streicheleinheiten sind etwas rabiater."/>
+		<string name="Broemse02" value="Gott sei Dank gibt es noch Brømses Lieblings-Teddy, der ihre ganze Aufmerksamkeit auf sich zieht, wenn sie ihn findet. So ein Teddy hat schließlich den Vorteil, nicht dauernd wieder wegzulaufen und er macht ganz famose Geräusche, wenn man ihn auf den Boden schlägt."/>
+		<string name="Alien00" value="Die Aliens"/>
+		<string name="Alien01" value="Kommen sie in Frieden? Wenn ja: Was machen sie nur mit all den Schafen, die sie in ihr Raumschiff beamen? Und wozu ist dieser merkwürdige Stab gut, mit dem sie ständig herumfuchteln? Fragen über Fragen, die es zu klären gilt. Jemand sollte das FBI verständigen ..."/>
+		<string name="Alien02" value="Doch eines hat man bereits in Erfahrung gebracht: An Sven haben sie ein besonders reges Interesse. Kriegen sie ihn in die Finger, muss er einige denkbar gründliche Untersuchungen über sich ergehen lassen, die nicht so aussehen, als würden sie besonders viel Spaß machen. Vielleicht ist es dann doch das Beste, ihnen aus dem Weg zu gehen ..."/>
+		<!--   extra texts   -->
+		<string name="extra01" value="Dem aufmerksamen Spieler werden die Gegenstände auffallen, die ab und zu eingesammelt werden können. Einige davon können für Sven sehr nützlich sein..."/>
+		<string name="extra02" value="Die Rakete:"/>
+		<string name="extra_02" value="Eine wahre Hochgeschwindigkeitsapparatur!"/>
+		<string name="extra03" value="Der Hänge-Pilz:"/>
+		<string name="extra_03" value="Macht Sven gaaaanz laaaangsaaaaam..."/>
+		<string name="extra04" value="Der Mief-Pilz:"/>
+		<string name="extra_04" value="Hat Sven den Geruch erst an sich, vermiest er allen die Laune."/>
+		<string name="extra05" value="Power-Flower:"/>
+		<string name="extra_05" value="Welche Dame lässt sich nicht mit roten Rosen beeindrucken?"/>
+		<string name="extra06" value="Das Geschenk:"/>
+		<string name="extra_06" value="Ein bisschen Zeit, nett verpackt, kann man immer gut gebrauchen."/>
+		<string name="extra07" value="Das Alien-Artefakt:"/>
+		<string name="extra_07" value="Seltsames geschieht ALLEN, die ihm zu nahe kommen."/>
+		<!--   credits texts   -->
+		<string name="credits01" value="Konzept + Regie:"/>
+		<string name="credits02" value="Alex Brüggemann, Ralf Marczinczik"/>
+		<string name="credits03" value="Programmierung:"/>
+		<string name="credits04" value="Jendrik Pösche"/>
+		<string name="credits05" value="zusätzliche Programmierung:"/>
+		<string name="credits06" value="Wytze B. Westra"/>
+		<string name="credits07" value="Sound + Musik:"/>
+		<string name="credits08" value="Nils Fritze"/>
+		<string name="credits09" value="Animationen:"/>
+		<string name="credits10" value="Nazan Marczinczik, Cüneyt Sürme"/>
+		<string name="credits11" value="Produktions-Assistenz:"/>
+		<string name="credits12" value="Stefan Wurzer"/>
+		<string name="credits13" value="Coloration:"/>
+		<string name="credits14" value="Ilka Janssen, Stefan Funke, Kay Korn, Thorsten Lehmann, Michaela Kroell"/>
+		<string name="credits15" value="Level-Design:"/>
+		<string name="credits16" value="Micha Kraziewicz"/>
+		<string name="credits17" value="Backgrounds:"/>
+		<string name="credits18" value="Marc"/>
+		<string name="credits19" value="Webdesign + Online-Highscores:"/>
+		<string name="credits20" value="Thomas Schüer, Dirk Schiemann"/>
+		<string name="credits21" value="QA:"/>
+		<string name="credits22" value="Thorsten Stranegger, Andreas Steinicke, Philip Scholl"/>
+		<string name="credits23" value="Texte:"/>
+		<string name="credits24" value="Götz Neuhaus"/>
+		<string name="credits25" value="Vielen Dank an..."/>
+		<string name="credits26" value="ak tronic, Bild.T-Online.de, Stephan Pelster,          Ernst Weber für das UFO, alle bei Phenomedia AG    und alle, die hier vergessen wurden!"/>
+		<!--   spiele texte   -->
+		<string name="spiel01" value="Er ist wieder da: Sven, das potenteste Zuchtschaf der Welt. Und wieder ist es seine Aufgabe, Liebe und Glückseligkeit in der Herde zu verbreiten."/>
+		<string name="spiel02" value="Bewege Sven mit den Pfeiltasten deiner Tastatur durch die Landschaft und beglücke so viele Schafe wie möglich. Drücke dazu wiederholt die Leertaste, bis sich das Schaf glücklich und zufrieden auflöst."/>
+		<string name="spiel03" value="Um in die richtige Ausgangsposition zu gelangen, muss Sven sich den Schafen, die es zu beglücken gilt, von hinten nähern. Sollte ein Schaf einmal so stehen, dass es nicht von hinten erreichbar ist, stößt Sven beim Drücken der Leertaste seinen schönsten Lock-Pfiff aus. Wie sollte da noch ein Schaf widerstehen können?"/>
+		<string name="spiel04" value="Die Wetter-Symbole über den Köpfen der Schafe zeigen dir die Stimmung der einzelnen Tiere an. Je dunkler die Wolke, desto schlechter die Stimmung. Die Begegnung mit einem Gewitter-Wolken-Schaf hält für Sven eine leicht schmerzhafte Erfahrung bereit, bevor das Schaf glücklich gemacht werden kann."/>
+		<string name="spiel05" value="In jedem Level hält sich Frigida versteckt und gibt sich erst zu erkennen, sobald Sven seine amouröse Annäherung startet. Wenn Sven ausgerechnet an Frigida    gerät, muss er sich mächtig ins Zeug legen, um sie zum Kochen zu bringen."/>
+	</stringtable>
+</sven2>
