@@ -6,8 +6,23 @@ Reversing an old game from my childhood for fun
 
 #  Content
 
+## assets
+Decoder output for all Sven Zwø .pak and .dat files. Includes:
+- Character spritesheets
+- Items
+- Menus, GUI elements and icons
+- Sound effects
+- Localized strings in xml format
+- Game parameters like character movement speed, item usage durations, animation framerates and more
+- Level elements and backgrounds
+- Level layout files (not decoded yet)
+
+## decoder
+Simple C# application that can decode the .pak and .dat format that Sven Zwø uses. Not tested on XXX and 004 yet, but because the engine is effectively identical, it probably works for the other games too.\
+``Usage: decoder <file.dat|file.pak> <output-folder>``
+
 ## dumper
-DLL file for dumping all loaded textures while the game is running. Just inject it with your favourite injector and play some levels!
+DLL file for dumping all loaded textures while the game is running. Just inject it with your favourite injector and play some levels! Includes 3 pre-compiled versions for Sven Zwø, XXX and 004.
 
 ## levelpacks
 All available level packages for the game. They get loaded automatically when dropped into the game directory and have some sort of version validation (Sven XXX can't load a Sven Zwø pack, etc.).
@@ -128,3 +143,48 @@ public:
 ```
 Bytestream helper that's used for file i/o operations. I use this to read the texture data from the DecodeBmpFile hook. For some strange reason the attributes of that class didn't behave as expected so I had to use the virtual functions to read any data.
 
+
+## Pack File Format
+Here's a quick summary of the file format that Sven Zwø uses for basically everything. It is basically a simple archive format with minimal xor encryption. It starts with a simple header layout:
+```cpp
+struct ArchiveHeader
+{
+    char header[8]; //MUDGE4.0
+    char pad_0008[48]; //Unknown data, doesn't interest me rn
+    unsigned data_end; //End offset of header data
+};
+```
+After we add a padding of 17 bytes to data_end, we get to the root of the archive. For directories and files inside the archive, a simple node structure is used which starts with a special node header:
+```cpp
+struct NodeHeader
+{
+    byte node_type; //1 for directory, 2 for file
+    unsigned name_hash; //Hash of the node name
+    unsigned name_length; //Length of the node name
+    char name[name_length]; //Node name/path
+    union {
+        DirectoryNode directory_node; //Used for node_type 1
+        FileNode file_node; //Used for node_type 2
+    };
+};
+```
+Depending on the node type, there is extra data after the header:
+```
+struct DirectoryNode
+{
+    unsigned child_count; //Number of children (Files in the directory)
+    NodeHeader children[child_count]; //Child nodes
+};
+
+struct FileNode
+{
+    uint flags; //Unknown flags
+    uint offset; //Offset to the file's content
+    uint size; //Size of the file
+    uint unknown; //Unknown data, possible padding
+};
+```
+It's also really interesting that a simple encryption was used for the data. There are 3 different xor keys:
+- 0xFFAA5533: Used for decrypting the file node offset
+- 0x3355AAFF: Used for decrypting the file node size
+- 0x88: Used for decrypting every byte of the file node content
