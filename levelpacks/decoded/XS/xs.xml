@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<sven2 version="1.0">
+
+	<package name="XS">
+
+		<dependencies>
+			<requires file="sven2.dat" key="key" value="value"/>
+		</dependencies>
+
+		<levelsets>
+			<levelset name="Einleitung">
+				<level name="01" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="XS/levels/Tutorial01v01.lvl"/>
+				<level name="02" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="XS/levels/Tutorial01v02.lvl"/>
+				<level name="03" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="XS/levels/Tutorial01v03.lvl"/>
+				<level name="04" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="XS/levels/Tutorial01v04.lvl"/>
+				<level name="05" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="XS/levels/Tutorial01v05.lvl"/>
+			</levelset>
+			<levelset name="Wiese 01">
+				<level name="01" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="XS/levels/download01v01.lvl"/>
+				<level name="02" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="XS/levels/download01v02.lvl"/>
+				<level name="03" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="XS/levels/download02v01.lvl"/>
+				<level name="04" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="XS/levels/download02v02.lvl"/>
+				<level name="05" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="XS/levels/download03v01.lvl"/>
+				<level name="06" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="XS/levels/download03v02.lvl"/>
+				<level name="07" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="XS/levels/download04v01.lvl"/>
+				<level name="08" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="XS/levels/download04v02.lvl"/>
+				<level name="09" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="XS/levels/download05v01.lvl"/>
+				<level name="10" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="XS/levels/download05v02.lvl"/>
+			</levelset>
+			<levelset name="Wiese 02">
+				<level name="01" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="XS/levels/download06v01.lvl"/>
+				<level name="02" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="XS/levels/download06v02.lvl"/>
+				<level name="03" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="XS/levels/download07v01.lvl"/>
+				<level name="04" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="XS/levels/download07v02.lvl"/>
+				<level name="05" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="XS/levels/download08v01.lvl"/>
+				<level name="06" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="XS/levels/download08v02.lvl"/>
+				<level name="07" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="XS/levels/download09v01.lvl"/>
+				<level name="08" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="XS/levels/download09v02.lvl"/>
+				<level name="09" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="XS/levels/download10v01.lvl"/>
+				<level name="10" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="XS/levels/download10v02.lvl"/>
+			</levelset>
+		</levelsets>
+
+		<tilesets>
+			<tileset name="Download" background="XS/gfx_download/BG_DL.jpg">
+				<tile file="XS/gfx_download/BG_DL_bench01.bmp"			frames="1"/>
+				<tile file="XS/gfx_download/BG_DL_boat01.bmp"			frames="1"/>
+				<tile file="XS/gfx_download/BG_DL_bridge01.bmp"			frames="1"/>
+				<tile file="XS/gfx_download/BG_DL_bridge_02.bmp"			frames="1"/>
+				<tile file="XS/gfx_download/BG_DL_bridge_03.bmp"			frames="1"/>
+				<tile file="XS/gfx_download/BG_DL_bush01.bmp"			frames="1"/>
+				<tile file="XS/gfx_download/BG_DL_bush02.bmp"			frames="1"/>
+				<tile file="XS/gfx_download/BG_DL_bush03.bmp"			frames="1"/>
+				<tile file="XS/gfx_download/BG_DL_field01.bmp"			frames="1"/>
+				<tile file="XS/gfx_download/BG_DL_fireplace01.bmp"			frames="1"/>
+				<tile file="XS/gfx_download/BG_DL_grass01.bmp"			frames="1"/>
+				<tile file="XS/gfx_download/BG_DL_grass02.bmp"			frames="1"/>
+				<tile file="XS/gfx_download/BG_DL_grass03.bmp"			frames="1"/>
+				<tile file="XS/gfx_download/BG_DL_grass04.bmp"			frames="1"/>
+				<tile file="XS/gfx_download/BG_DL_grass05water.bmp"		frames="1"/>
+				<tile file="XS/gfx_download/BG_DL_grass06water.bmp"		frames="1"/>
+				<tile file="XS/gfx_download/BG_DL_puddle01.bmp"			frames="1"/>
+				<tile file="XS/gfx_download/BG_DL_puddle02.bmp"			frames="1"/>
+				<tile file="XS/gfx_download/BG_DL_rake01.bmp"			frames="1"/>
+				<tile file="XS/gfx_download/BG_DL_river01.bmp"			frames="1"/>
+				<tile file="XS/gfx_download/BG_DL_river02.bmp"			frames="1"/>
+				<tile file="XS/gfx_download/BG_DL_river03.bmp"			frames="1"/>
+				<tile file="XS/gfx_download/BG_DL_river04.bmp"			frames="1"/>
+				<tile file="XS/gfx_download/BG_DL_tomatoes01.bmp"			frames="1"/>
+				<tile file="XS/gfx_download/BG_DL_tomatoes02.bmp"			frames="1"/>
+				<tile file="XS/gfx_download/BG_DL_tree01.bmp"			frames="1"/>
+				<tile file="XS/gfx_download/BG_DL_bridge01_top.bmp"		frames="1"/>
+				<tile file="XS/gfx_download/BG_riverdelta_bridge_09.bmp"		frames="1"/>
+				<tile file="XS/gfx_download/BG_riverdelta_bridge_12.bmp"		frames="1"/>
+				<tile file="XS/gfx_download/BG_riverdelta_bridge_14.bmp"		frames="1"/>
+				<tile file="XS/gfx_download/BG_riverdelta_bridge_17.bmp"		frames="1"/>
+			</tileset>
+		</tilesets>
+	</package>
+</sven2>

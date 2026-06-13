@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<sven2 version="1.0">
+
+	<package name="02">
+
+		<dependencies>
+			<requires file="sven2.dat" key="key" value="value"/>
+		</dependencies>
+
+		<levelsets>
+			<levelset name="Tulpenfeld">
+				<level name="01" tileset="Field" music="02/sfx/atmo_field.ogg" map="02/levels/tulpen01v01.lvl"/>
+				<level name="02" tileset="Field" music="02/sfx/atmo_field.ogg" map="02/levels/tulpen01v02.lvl"/>
+				<level name="03" tileset="Field" music="02/sfx/atmo_field.ogg" map="02/levels/tulpen02v01.lvl"/>
+				<level name="04" tileset="Field" music="02/sfx/atmo_field.ogg" map="02/levels/tulpen02v02.lvl"/>
+				<level name="05" tileset="Field" music="02/sfx/atmo_field.ogg" map="02/levels/tulpen03v01.lvl"/>
+				<level name="06" tileset="Field" music="02/sfx/atmo_field.ogg" map="02/levels/tulpen03v02.lvl"/>
+				<level name="07" tileset="Ufo" music="02/sfx/atmo_UFO.ogg" map="02/levels/Ufo01v01.lvl"/>
+				<level name="08" tileset="Ufo" music="02/sfx/atmo_UFO.ogg" map="02/levels/Ufo01v02.lvl"/>
+				<level name="09" tileset="Ufo" music="02/sfx/atmo_UFO.ogg" map="02/levels/Ufo02v01.lvl"/>
+				<level name="10" tileset="Ufo" music="02/sfx/atmo_UFO.ogg" map="02/levels/Ufo02v02.lvl"/>
+			</levelset>
+			<levelset name="Inseln">
+				<level name="01" tileset="Delta" music="02/sfx/atmo_river.ogg" map="02/levels/delta01v01.lvl"/>
+				<level name="02" tileset="Delta" music="02/sfx/atmo_river.ogg" map="02/levels/delta01v02.lvl"/>
+				<level name="03" tileset="Delta" music="02/sfx/atmo_river.ogg" map="02/levels/delta02v01.lvl"/>
+				<level name="04" tileset="Delta" music="02/sfx/atmo_river.ogg" map="02/levels/delta02v02.lvl"/>
+				<level name="05" tileset="Delta" music="02/sfx/atmo_river.ogg" map="02/levels/delta03v01.lvl"/>
+				<level name="06" tileset="Delta" music="02/sfx/atmo_river.ogg" map="02/levels/delta03v02.lvl"/>
+				<level name="07" tileset="Delta" music="02/sfx/atmo_river.ogg" map="02/levels/delta04v01.lvl"/>
+				<level name="08" tileset="Delta" music="02/sfx/atmo_river.ogg" map="02/levels/delta04v02.lvl"/>
+				<level name="09" tileset="Delta" music="02/sfx/atmo_river.ogg" map="02/levels/delta05v01.lvl"/>
+				<level name="10" tileset="Delta" music="02/sfx/atmo_river.ogg" map="02/levels/delta05v02.lvl"/>
+			</levelset>
+		</levelsets>
+
+		<tilesets>
+			<tileset name="Field" background="02/gfx_field/BG_field.jpg">
+				<tile file="02/gfx_field/BG_Field_corncycle_01.bmp"		frames="1"/>
+				<tile file="02/gfx_field/BG_Field_corncycle_02.bmp"		frames="1"/>
+				<tile file="02/gfx_field/BG_Field_corncycle_03.bmp"		frames="1"/>
+				<tile file="02/gfx_field/BG_Field_corncycle_05.bmp"		frames="1"/>
+				<tile file="02/gfx_field/BG_Field_corncycle_06.bmp"		frames="1"/>
+				<tile file="02/gfx_field/BG_Field_corncycle_07.bmp"		frames="1"/>
+				<tile file="02/gfx_field/BG_Field_puddle01.bmp"			frames="1"/>
+				<tile file="02/gfx_field/BG_Field_puddle02.bmp"			frames="1"/>
+				<tile file="02/gfx_field/BG_Field_scarecrow.bmp"		frames="1"/>
+				<tile file="02/gfx_field/BG_Field_strawball_01.bmp"		frames="1"/>
+				<tile file="02/gfx_field/BG_Field_strawball_02.bmp"		frames="1"/>
+				<tile file="02/gfx_field/BG_Field_strawball_03.bmp"		frames="1"/>
+				<tile file="02/gfx_field/BG_Field_strawball_04.bmp"		frames="1"/>
+				<tile file="02/gfx_field/BG_Field_strawbundle_01.bmp"		frames="1"/>
+				<tile file="02/gfx_field/BG_Field_strawbundle_02.bmp"		frames="1"/>
+				<tile file="02/gfx_field/BG_Field_strawbundle_03.bmp"		frames="1"/>
+				<tile file="02/gfx_field/BG_Field_strawbundle_04.bmp"		frames="1"/>
+			</tileset>
+			<tileset name="Ufo" background="02/gfx_ufo/BG_ufo.jpg">
+				<tile file="02/gfx_ufo/BG_ufo_box_01.bmp"		frames="1"/>
+				<tile file="02/gfx_ufo/BG_ufo_chair_01.bmp"		frames="1"/>
+				<tile file="02/gfx_ufo/BG_ufo_computer_01.bmp"		frames="1"/>
+				<tile file="02/gfx_ufo/BG_ufo_computer_02.bmp"		frames="1"/>
+				<tile file="02/gfx_ufo/BG_ufo_computer_03.bmp"		frames="1"/>
+				<tile file="02/gfx_ufo/BG_ufo_computer_04.bmp"		frames="1"/>
+				<tile file="02/gfx_ufo/BG_ufo_computer_05.bmp"		frames="1"/>
+				<tile file="02/gfx_ufo/BG_ufo_lamb_01.bmp"		frames="1"/>
+				<tile file="02/gfx_ufo/BG_ufo_lamb_02_anim_only_brain_zero.bmp"		frames="1"/>
+				<tile file="02/gfx_ufo/BG_ufo_puddle_01.bmp"		frames="1"/>
+				<tile file="02/gfx_ufo/BG_ufo_table_01.bmp"		frames="1"/>
+			</tileset>
+			<tileset name="Delta" background="02/gfx_river/BG_riverdelta_water.jpg">
+				<tile file="02/gfx_river/BG_riverdelta_bridge_01.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverdelta_bridge_02.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverdelta_bridge_03.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverdelta_bridge_04.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverdelta_bridge_05.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverdelta_bridge_06.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverdelta_bridge_07.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverdelta_bridge_08.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverdelta_bridge_09.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverdelta_bridge_10.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverdelta_bridge_11.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverdelta_bridge_12.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverdelta_bridge_13.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverdelta_bridge_14.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverdelta_bridge_17.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverdelta_cloud_01.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverdelta_cloud_02.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverdelta_cloud_03.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverdelta_cloud_04.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverdelta_cloud_05.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverdelta_stone_01.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverdelta_stone_02.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverdelta_stone_03.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverdelta_stone_04.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverdelta_stone_05.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverelta_bush_01.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverelta_bush_02.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverelta_island_01.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverelta_island_02.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverelta_island_03.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverelta_island_04.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverelta_island_05.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverelta_island_06.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverelta_island_07.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverelta_island_08.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverelta-_puddle_01.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverelta-_puddle_02.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverelta-land_01.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverelta-land_02.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverelta-land_03.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverelta-land_04.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverdelta_stone_06.bmp"		frames="1"/>
+				<tile file="02/gfx_river/BG_riverdelta_stone_07.bmp"		frames="1"/>
+			</tileset>
+		</tilesets>
+	</package>
+</sven2>

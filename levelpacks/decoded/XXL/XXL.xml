@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<sven2 version="1.0">
+
+	<package name="XXL">
+
+		<dependencies>
+			<requires file="sven2.dat" key="key" value="value"/>
+		</dependencies>
+
+		<levelsets>
+			<levelset name="Wald">
+				<level name="01" tileset="Forest" music="XXL/sfx/atmo_forrest.ogg" map="XXL/levels/forest01v01.lvl"/>
+				<level name="02" tileset="Forest" music="XXL/sfx/atmo_forrest.ogg" map="XXL/levels/forest01v02.lvl"/>
+				<level name="03" tileset="Forest" music="XXL/sfx/atmo_forrest.ogg" map="XXL/levels/forest02v01.lvl"/>
+				<level name="04" tileset="Forest" music="XXL/sfx/atmo_forrest.ogg" map="XXL/levels/forest02v02.lvl"/>
+				<level name="05" tileset="Forest" music="XXL/sfx/atmo_forrest.ogg" map="XXL/levels/forest03v01.lvl"/>
+				<level name="06" tileset="Forest" music="XXL/sfx/atmo_forrest.ogg" map="XXL/levels/forest03v02.lvl"/>
+				<level name="07" tileset="Forest" music="XXL/sfx/atmo_forrest.ogg" map="XXL/levels/forest04v01.lvl"/>
+				<level name="08" tileset="Forest" music="XXL/sfx/atmo_forrest.ogg" map="XXL/levels/forest04v02.lvl"/>
+				<level name="09" tileset="Forest" music="XXL/sfx/atmo_forrest.ogg" map="XXL/levels/forest05v01.lvl"/>
+				<level name="10" tileset="Forest" music="XXL/sfx/atmo_forrest.ogg" map="XXL/levels/forest05v02.lvl"/>
+			</levelset>
+			<levelset name="Kornfeld">
+				<level name="01" tileset="Field" music="XXL/sfx/atmo_field.ogg" map="XXL/levels/field01v01.lvl"/>
+				<level name="02" tileset="Field" music="XXL/sfx/atmo_field.ogg" map="XXL/levels/field01v02.lvl"/>
+				<level name="03" tileset="Field" music="XXL/sfx/atmo_field.ogg" map="XXL/levels/field02v01.lvl"/>
+				<level name="04" tileset="Field" music="XXL/sfx/atmo_field.ogg" map="XXL/levels/field02v02.lvl"/>
+				<level name="05" tileset="Field" music="XXL/sfx/atmo_field.ogg" map="XXL/levels/field03v01.lvl"/>
+				<level name="06" tileset="Field" music="XXL/sfx/atmo_field.ogg" map="XXL/levels/field03v02.lvl"/>
+				<level name="07" tileset="Field" music="XXL/sfx/atmo_field.ogg" map="XXL/levels/field04v01.lvl"/>
+				<level name="08" tileset="Field" music="XXL/sfx/atmo_field.ogg" map="XXL/levels/field04v02.lvl"/>
+				<level name="09" tileset="Ufo" music="XXL/sfx/atmo_UFO.ogg" map="XXL/levels/Ufo01v01.lvl"/>
+				<level name="10" tileset="Ufo" music="XXL/sfx/atmo_UFO.ogg" map="XXL/levels/Ufo02v01.lvl"/>
+			</levelset>
+		</levelsets>
+
+		<tilesets>
+			<tileset name="Field" background="XXL/gfx_field/BG_field.jpg">
+				<tile file="XXL/gfx_field/BG_Field_corncycle_01.bmp"		frames="1"/>
+				<tile file="XXL/gfx_field/BG_Field_corncycle_02.bmp"		frames="1"/>
+				<tile file="XXL/gfx_field/BG_Field_corncycle_03.bmp"		frames="1"/>
+				<tile file="XXL/gfx_field/BG_Field_corncycle_05.bmp"		frames="1"/>
+				<tile file="XXL/gfx_field/BG_Field_corncycle_06.bmp"		frames="1"/>
+				<tile file="XXL/gfx_field/BG_Field_corncycle_07.bmp"		frames="1"/>
+				<tile file="XXL/gfx_field/BG_Field_puddle01.bmp"			frames="1"/>
+				<tile file="XXL/gfx_field/BG_Field_puddle02.bmp"			frames="1"/>
+				<tile file="XXL/gfx_field/BG_Field_scarecrow.bmp"		frames="1"/>
+				<tile file="XXL/gfx_field/BG_Field_strawball_01.bmp"		frames="1"/>
+				<tile file="XXL/gfx_field/BG_Field_strawball_02.bmp"		frames="1"/>
+				<tile file="XXL/gfx_field/BG_Field_strawball_03.bmp"		frames="1"/>
+				<tile file="XXL/gfx_field/BG_Field_strawball_04.bmp"		frames="1"/>
+				<tile file="XXL/gfx_field/BG_Field_strawbundle_01.bmp"		frames="1"/>
+				<tile file="XXL/gfx_field/BG_Field_strawbundle_02.bmp"		frames="1"/>
+				<tile file="XXL/gfx_field/BG_Field_strawbundle_03.bmp"		frames="1"/>
+				<tile file="XXL/gfx_field/BG_Field_strawbundle_04.bmp"		frames="1"/>
+			</tileset>
+			<tileset name="Ufo" background="XXL/gfx_ufo/BG_ufo.jpg">
+				<tile file="XXL/gfx_ufo/BG_ufo_box_01.bmp"		frames="1"/>
+				<tile file="XXL/gfx_ufo/BG_ufo_chair_01.bmp"		frames="1"/>
+				<tile file="XXL/gfx_ufo/BG_ufo_computer_01.bmp"		frames="1"/>
+				<tile file="XXL/gfx_ufo/BG_ufo_computer_02.bmp"		frames="1"/>
+				<tile file="XXL/gfx_ufo/BG_ufo_computer_03.bmp"		frames="1"/>
+				<tile file="XXL/gfx_ufo/BG_ufo_computer_04.bmp"		frames="1"/>
+				<tile file="XXL/gfx_ufo/BG_ufo_computer_05.bmp"		frames="1"/>
+				<tile file="XXL/gfx_ufo/BG_ufo_lamb_01.bmp"		frames="1"/>
+				<tile file="XXL/gfx_ufo/BG_ufo_lamb_02_anim_only_brain_zero.bmp"		frames="1"/>
+				<tile file="XXL/gfx_ufo/BG_ufo_puddle_01.bmp"		frames="1"/>
+				<tile file="XXL/gfx_ufo/BG_ufo_table_01.bmp"		frames="1"/>
+			</tileset>
+			<tileset name="Forest" background="XXL/gfx_forest/BG_forest.jpg">
+				<tile file="XXL/gfx_forest/BG_Forest-bush01.bmp"			frames="1"/>
+				<tile file="XXL/gfx_forest/BG_Forest-bush02.bmp"			frames="1"/>
+				<tile file="XXL/gfx_forest/BG_Forest-molehill.bmp"		frames="1"/>
+				<tile file="XXL/gfx_forest/BG_Forest-stone01.bmp"			frames="1"/>
+				<tile file="XXL/gfx_forest/BG_Forest-stump01.bmp"			frames="1"/>
+				<tile file="XXL/gfx_forest/BG_Forest-stump02.bmp"			frames="1"/>
+				<tile file="XXL/gfx_forest/BG_Forest-tree01.bmp"			frames="1"/>
+				<tile file="XXL/gfx_forest/BG_Forest-tree02.bmp"			frames="1"/>
+				<tile file="XXL/gfx_forest/BG_Forest-tree03.bmp"			frames="1"/>
+				<tile file="XXL/gfx_forest/BG_Forest-tree04.bmp"			frames="1"/>
+				<tile file="XXL/gfx_forest/BG_Forest-tree05.bmp"			frames="1"/>
+				<tile file="XXL/gfx_forest/BG_Forest-tree06.bmp"			frames="1"/>
+				<tile file="XXL/gfx_forest/BG_Forest-tree07.bmp"			frames="1"/>
+				<tile file="XXL/gfx_forest/BG_Forrest_puddle_01.bmp"		frames="1"/>
+				<tile file="XXL/gfx_forest/BG_Forrest_puddle_02.bmp"		frames="1"/>
+			</tileset>
+		</tilesets>
+	</package>
+</sven2>

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<sven2 version="1.0">
+
+	<package name="01">
+
+		<dependencies>
+			<requires file="sven2.dat" key="key" value="value"/>
+		</dependencies>
+
+		<levelsets>
+			<levelset name="Bauernhof 01">
+				<level name="01" tileset="Barn" music="01/sfx/atmo_barn.ogg" map="01/levels/Bauernhof01v01.lvl"/>
+				<level name="02" tileset="Barn" music="01/sfx/atmo_barn.ogg" map="01/levels/Bauernhof01v02.lvl"/>
+				<level name="03" tileset="Barn" music="01/sfx/atmo_barn.ogg" map="01/levels/Bauernhof02v01.lvl"/>
+				<level name="04" tileset="Barn" music="01/sfx/atmo_barn.ogg" map="01/levels/Bauernhof02v02.lvl"/>
+				<level name="05" tileset="Barn" music="01/sfx/atmo_barn.ogg" map="01/levels/Bauernhof03v01.lvl"/> 
+				<level name="06" tileset="Barn" music="01/sfx/atmo_barn.ogg" map="01/levels/Bauernhof03v02.lvl"/>
+				<level name="07" tileset="Farm" music="01/sfx/atmo_grass.ogg" map="01/levels/Bauernhof04v01.lvl"/>
+				<level name="08" tileset="Farm" music="01/sfx/atmo_grass.ogg" map="01/levels/Bauernhof04v02.lvl"/>
+				<level name="09" tileset="Farm" music="01/sfx/atmo_grass.ogg" map="01/levels/Bauernhof05v01.lvl"/>
+				<level name="10" tileset="Farm" music="01/sfx/atmo_grass.ogg" map="01/levels/Bauernhof05v02.lvl"/> 
+			</levelset>
+			<levelset name="Schrottplatz 01">
+				<level name="01" tileset="Grass" music="01/sfx/atmo_grass.ogg" map="01/levels/trash01v01.lvl"/>
+				<level name="02" tileset="Grass" music="01/sfx/atmo_grass.ogg" map="01/levels/trash01v02.lvl"/>
+				<level name="03" tileset="Grass" music="01/sfx/atmo_grass.ogg" map="01/levels/trash02v01.lvl"/>
+				<level name="04" tileset="Grass" music="01/sfx/atmo_grass.ogg" map="01/levels/trash02v02.lvl"/>
+				<level name="05" tileset="Grass" music="01/sfx/atmo_grass.ogg" map="01/levels/trash03v01.lvl"/>
+				<level name="06" tileset="Grass" music="01/sfx/atmo_grass.ogg" map="01/levels/trash03v02.lvl"/>
+				<level name="07" tileset="Grass" music="01/sfx/atmo_grass.ogg" map="01/levels/trash04v01.lvl"/>
+				<level name="08" tileset="Grass" music="01/sfx/atmo_grass.ogg" map="01/levels/trash04v02.lvl"/>
+				<level name="09" tileset="Grass" music="01/sfx/atmo_grass.ogg" map="01/levels/trash05v01.lvl"/>
+				<level name="10" tileset="Grass" music="01/sfx/atmo_grass.ogg" map="01/levels/trash05v02.lvl"/>
+			</levelset>
+		</levelsets>
+
+		<tilesets>
+			<tileset name="Barn" background="01/gfx_barn/BG_barn.jpg">
+				<tile file="01/gfx_barn/BG_barn_left.bmp"		frames="1"/>
+				<tile file="01/gfx_barn/BG_barn_right.bmp"		frames="1"/>
+				<tile file="01/gfx_barn/BG_barn_puddle_01.bmp"		frames="1"/>
+				<tile file="01/gfx_barn/BG_barn_puddle_02.bmp"		frames="1"/>
+				<tile file="01/gfx_barn/BG_barn_stanchion.bmp"		frames="1"/>
+				<tile file="01/gfx_barn/BG_barn_straw_01.bmp"		frames="1"/>
+				<tile file="01/gfx_barn/BG_barn_straw_02.bmp"		frames="1"/>
+				<tile file="01/gfx_barn/BG_barn_troth.bmp"		frames="1"/>
+				<tile file="01/gfx_barn/BG_barn_wall_01.bmp"		frames="1"/>
+				<tile file="01/gfx_barn/BG_barn_wall_02.bmp"		frames="1"/>
+				<tile file="01/gfx_barn/BG_barn_wall_03.bmp"		frames="1"/>
+				<tile file="01/gfx_barn/BG_barn_wall_04.bmp"		frames="1"/>
+				<tile file="01/gfx_barn/BG_barn_wall_05.bmp"		frames="1"/>
+				<tile file="01/gfx_barn/BG_barn_wall_06.bmp"		frames="1"/>
+				<tile file="01/gfx_barn/BG_barn_wall_07.bmp"		frames="1"/>
+				<tile file="01/gfx_barn/BG_barn_barrel.bmp"		frames="1"/>
+				<tile file="01/gfx_barn/BG_barn_ropehanger.bmp"	frames="1"/>
+			</tileset>
+			<tileset name="Farm" background="01/gfx_farm/BG_farm.jpg">
+				<tile file="01/gfx_farm/BG_Farm_barn.bmp"		frames="1"/>
+				<tile file="01/gfx_farm/BG_Farm_barndoor.bmp"		frames="1"/>
+				<tile file="01/gfx_farm/BG_Farm_birdhouse.bmp"		frames="1"/>
+				<tile file="01/gfx_farm/BG_Farm_bush_01.bmp"		frames="1"/>
+				<tile file="01/gfx_farm/BG_Farm_bush_02.bmp"		frames="1"/>
+				<tile file="01/gfx_farm/BG_Farm_bush_03.bmp"		frames="1"/>
+				<tile file="01/gfx_farm/BG_Farm_ceramic_01.bmp"		frames="1"/>
+				<tile file="01/gfx_farm/BG_Farm_ceramic_02.bmp"		frames="1"/>
+				<tile file="01/gfx_farm/BG_Farm_entrancestone.bmp"		frames="1"/>
+				<tile file="01/gfx_farm/BG_Farm_fence_01.bmp"		frames="1"/>
+				<tile file="01/gfx_farm/BG_Farm_fence_02.bmp"		frames="1"/>
+				<tile file="01/gfx_farm/BG_Farm_fence_03.bmp"		frames="1"/>
+				<tile file="01/gfx_farm/BG_Farm_fence_04.bmp"		frames="1"/>
+				<tile file="01/gfx_farm/BG_Farm_fence_05.bmp"		frames="1"/>
+				<tile file="01/gfx_farm/BG_Farm_house.bmp"		frames="1"/>
+				<tile file="01/gfx_farm/BG_Farm_manurepile.bmp"		frames="1"/>
+				<tile file="01/gfx_farm/BG_Farm_millstonedisks.bmp"		frames="1"/>
+				<tile file="01/gfx_farm/BG_Farm_puddle01.bmp"		frames="1"/>
+				<tile file="01/gfx_farm/BG_Farm_puddle02.bmp"		frames="1"/>
+				<tile file="01/gfx_farm/BG_Farm_tractor.bmp"		frames="1"/>
+				<tile file="01/gfx_farm/BG_Farm_tree_01.bmp"		frames="1"/>
+				<tile file="01/gfx_farm/BG_Farm_tree_02.bmp"		frames="1"/>
+			</tileset>
+			<tileset name="Grass" background="01/gfx_grass/BG_grass.jpg">
+				<tile file="01/gfx_grass/BG_grass_barrel_01.bmp"		frames="1"/>
+				<tile file="01/gfx_grass/BG_grass_barrel_02.bmp"		frames="1"/>
+				<tile file="01/gfx_grass/BG_grass_barrel_03.bmp"		frames="1"/>
+				<tile file="01/gfx_grass/BG_grass_bumper_01.bmp"		frames="1"/>
+				<tile file="01/gfx_grass/BG_grass_bush_01.bmp"			frames="1"/>
+				<tile file="01/gfx_grass/BG_grass_bush_02.bmp"			frames="1"/>
+				<tile file="01/gfx_grass/BG_grass_carwreck_01.bmp"		frames="1"/>
+				<tile file="01/gfx_grass/BG_grass_carwreck_02.bmp"		frames="1"/>
+				<tile file="01/gfx_grass/BG_grass_freezer.bmp"			frames="1"/>
+				<tile file="01/gfx_grass/BG_grass_motorbike_01.bmp"		frames="1"/>
+				<tile file="01/gfx_grass/BG_grass_puddle_01.bmp"		frames="1"/>
+				<tile file="01/gfx_grass/BG_grass_puddle_02.bmp"		frames="1"/>
+				<tile file="01/gfx_grass/BG_grass_repairshop.bmp"		frames="1"/>
+				<tile file="01/gfx_grass/BG_grass_stone_01.bmp"			frames="1"/>
+				<tile file="01/gfx_grass/BG_grass_stone_02.bmp"			frames="1"/>
+				<tile file="01/gfx_grass/BG_grass_stone_03.bmp"			frames="1"/>
+				<tile file="01/gfx_grass/BG_grass_stone_04.bmp"			frames="1"/>
+				<tile file="01/gfx_grass/BG_grass_stone_05.bmp"			frames="1"/>
+				<tile file="01/gfx_grass/BG_grass_tires_01.bmp"			frames="1"/>
+				<tile file="01/gfx_grass/BG_grass_tires_02.bmp"			frames="1"/>
+				<tile file="01/gfx_grass/BG_grass_tires_03.bmp"			frames="1"/>
+				<tile file="01/gfx_grass/BG_grass_tirewing_01.bmp"		frames="1"/>
+				<tile file="01/gfx_grass/BG_grass_washingmachine.bmp"		frames="1"/>
+				<tile file="01/gfx_grass/BG_grass_workhorse.bmp"		frames="1"/>
+			</tileset>
+		</tilesets>
+	</package>
+</sven2>
