@@ -178,10 +178,10 @@ struct DirectoryNode
 
 struct FileNode
 {
-    uint flags; //Unknown flags
-    uint offset; //Offset to the file's content
-    uint size; //Size of the file
-    uint unknown; //Unknown data, possible padding
+    unsigned flags; //Unknown flags
+    unsigned offset; //Offset to the file's content
+    unsigned size; //Size of the file
+    unsigned unknown; //Unknown data, possible padding
 };
 ```
 It's also really interesting that a simple encryption was used for the data. There are 3 different xor keys:
