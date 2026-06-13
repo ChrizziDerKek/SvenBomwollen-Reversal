@@ -169,7 +169,7 @@ struct NodeHeader
 };
 ```
 Depending on the node type, there is extra data after the header:
-```
+```cpp
 struct DirectoryNode
 {
     unsigned child_count; //Number of children (Files in the directory)
