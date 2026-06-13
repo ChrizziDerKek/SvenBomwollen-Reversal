@@ -100,6 +100,7 @@ class Program
         }
         /*
         NODE TYPE 2 (FILE)
+		- NODE HEADER
         - flags (4 bytes)
         - encrypted offset (4 bytes, xored with OffsetKey)
         - encrypted size (4 bytes, xored with SizeKey)
