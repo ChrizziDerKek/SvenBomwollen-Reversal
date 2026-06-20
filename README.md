@@ -40,7 +40,7 @@ DLL file for patching packfile signature checks. This has to be loaded very earl
 The actual game we reverse (Sven Zwø XS).
 
 ## tests
-Stores patched pack files that I used for testing the .lvl file format. I tested it with trial-and-error by modifying the first tutorial level:
+Stores patched pack files, notes and C# scripts that I used for testing the .lvl file format. I tested it with trial-and-error by modifying the first tutorial level:
 - XS_tutorial_4sheep: Adds a 4th sheep\
 ![](screenshots/extra_sheep.png?raw=true "Title")
 - XS_tutorial_field01v01: Copies level data from field01v01\
