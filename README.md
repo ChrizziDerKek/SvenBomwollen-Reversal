@@ -36,6 +36,9 @@ String dumps of the game exe and engine dlls that can be useful and logged level
 ## patcher
 DLL file for patching packfile signature checks. This has to be loaded very early, so injecting the dll won't work. Instead, use CFF Explorer to add an import to the exported Dummy function.
 
+## screenshots
+Screenshots that were used for testing, as a note or inside this readme.
+
 ## sven2
 The actual game we reverse (Sven Zwø XS).
 
