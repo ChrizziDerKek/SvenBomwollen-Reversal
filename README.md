@@ -24,6 +24,9 @@ Simple C# application that can decode the .pak and .dat format that Sven Zwø us
 ## dumper
 DLL file for dumping all loaded textures while the game is running. Just inject it with your favourite injector and play some levels! Includes 3 pre-compiled versions for Sven Zwø, XXX and 004.
 
+## levellogger
+Old project which simply dumps all texture data from a running level. Just inject it with your favourite injector and play some levels! Includes 3 pre-compiled versions for Sven Zwø, XXX and 004. You can also see example logs in the logfiles folder.
+
 ## levelpacks
 All available level packages for the game. They get loaded automatically when dropped into the game directory and have some sort of version validation (Sven XXX can't load a Sven Zwø pack, etc.).
 
