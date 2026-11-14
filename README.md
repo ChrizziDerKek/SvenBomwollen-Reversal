@@ -30,17 +30,8 @@ The actual games we reverse (Sven Zwø, XXX and 004).
 ## editor
 Current Sven Zwo level editor development. Supports direct pack editing, new packages/levelsets, linked actors and items, corrected teleporter data, depth ordering, and improved controls. Start with [editor/Start-Editor.cmd](editor/Start-Editor.cmd) and read the [editor guide](editor/README.md).
 
-## leveleditor
-Leveleditor that I created based on this research. There's still a lot of stuff to do though.
-
 ## levellogger
 Old project which simply dumps all texture data from a running level. Just inject it with your favourite injector and play some levels! Includes 3 pre-compiled versions for Sven Zwø, XXX and 004. You can also see example logs in the logfiles folder.
-
-## levelpacks
-All available level packages for the game. They get loaded automatically when dropped into the game directory and have some sort of version validation (Sven XXX can't load a Sven Zwø pack, etc.).
-
-## logfiles
-String dumps of the game exe and engine dlls that can be useful and logged level texture data.
 
 ## patcher
 DLL file for patching packfile signature checks. This has to be loaded very early, so injecting the dll won't work. Instead, use CFF Explorer to add an import to the exported Dummy function.
