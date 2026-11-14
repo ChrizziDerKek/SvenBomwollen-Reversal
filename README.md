@@ -36,6 +36,9 @@ Old project which simply dumps all texture data from a running level. Just injec
 ## patcher
 DLL file for patching packfile signature checks. This has to be loaded very early, so injecting the dll won't work. Instead, use CFF Explorer to add an import to the exported Dummy function.
 
+## rebuild
+Rebuilt sourcecode of Sven Zwø using the original game engine.
+
 ## screenshots
 Screenshots that were used for testing, as a note or inside this readme.
 

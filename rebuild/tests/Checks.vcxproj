@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32"><Configuration>Debug</Configuration><Platform>Win32</Platform></ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32"><Configuration>Release</Configuration><Platform>Win32</Platform></ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals"><ProjectGuid>{8D73100C-5367-40D2-A1A0-02B001570002}</ProjectGuid><Keyword>Win32Proj</Keyword><RootNamespace>Sven2Checks</RootNamespace><WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion></PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props"/>
+  <PropertyGroup Label="Configuration"><ConfigurationType>Application</ConfigurationType><PlatformToolset>v143</PlatformToolset><CharacterSet>Unicode</CharacterSet><UseDebugLibraries>false</UseDebugLibraries></PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props"/>
+  <PropertyGroup><OutDir>$(MSBuildProjectDirectory)\..\bin\$(Platform)\$(Configuration)\</OutDir><IntDir>$(MSBuildProjectDirectory)\..\obj\Checks\$(Configuration)\</IntDir><TargetName>Sven2Checks</TargetName><LocalDebuggerWorkingDirectory>$(MSBuildProjectDirectory)\..\runtime\sven2</LocalDebuggerWorkingDirectory></PropertyGroup>
+  <ItemDefinitionGroup><ClCompile><WarningLevel>Level4</WarningLevel><AdditionalIncludeDirectories>$(MSBuildProjectDirectory)/../Sven2Bootstrap;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories><AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions><LanguageStandard>stdcpp17</LanguageStandard><ExceptionHandling>Sync</ExceptionHandling><RuntimeLibrary>MultiThreaded</RuntimeLibrary><PreprocessorDefinitions>WIN32;_CONSOLE;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions><DebugInformationFormat>ProgramDatabase</DebugInformationFormat></ClCompile><Link><SubSystem>Console</SubSystem><GenerateDebugInformation>true</GenerateDebugInformation><AdditionalDependencies>user32.lib;ole32.lib;advapi32.lib;xmllite.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies></Link></ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="Checks.cpp"/>
+    <ClCompile Include="../Sven2Bootstrap/EngineAbi.cpp"/>
+    <ClCompile Include="../Sven2Bootstrap/LevelScene.cpp"/><ClCompile Include="../Sven2Bootstrap/InteractionAnimations.cpp"/>
+    <ClCompile Include="../Sven2Bootstrap/GameData.cpp"/>
+    <ClCompile Include="../Sven2Bootstrap/BitmapFont.cpp"/>
+    <ClCompile Include="../Sven2Bootstrap/Highscores.cpp"/>
+    <ClCompile Include="../Sven2Bootstrap/GameUi.cpp"/>
+    <ClCompile Include="../Sven2Bootstrap/GameSession.cpp"/>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="../Sven2Bootstrap/level/LevelFile.cpp"/>
+    <ClInclude Include="../Sven2Bootstrap/level/LevelFile.h"/>
+    <ClCompile Include="../Sven2Bootstrap/scene/SceneConstants.cpp"/>
+    <ClCompile Include="../Sven2Bootstrap/level/LevelGrid.cpp"/>
+    <ClCompile Include="../Sven2Bootstrap/scene/SceneResources.cpp"/>
+    <ClCompile Include="../Sven2Bootstrap/characters/PlayerCharacter.cpp"/>
+    <ClCompile Include="../Sven2Bootstrap/characters/EnemyCharacters.cpp"/>
+    <ClCompile Include="../Sven2Bootstrap/characters/AnimalCharacters.cpp"/>
+    <ClCompile Include="../Sven2Bootstrap/level/LevelItems.cpp"/>
+    <ClCompile Include="../Sven2Bootstrap/level/UfoController.cpp"/>
+    <ClCompile Include="../Sven2Bootstrap/level/LevelEffects.cpp"/>
+    <ClCompile Include="../Sven2Bootstrap/scene/SceneRenderer.cpp"/>
+    <ClInclude Include="../Sven2Bootstrap/scene/SceneTypes.h"/>
+    <ClInclude Include="../Sven2Bootstrap/scene/SceneConstants.h"/>
+    <ClInclude Include="../Sven2Bootstrap/level/LevelGrid.h"/>
+    <ClInclude Include="../Sven2Bootstrap/scene/SceneResources.h"/>
+    <ClInclude Include="../Sven2Bootstrap/characters/PlayerCharacter.h"/>
+    <ClInclude Include="../Sven2Bootstrap/characters/EnemyCharacters.h"/>
+    <ClInclude Include="../Sven2Bootstrap/characters/AnimalCharacters.h"/>
+    <ClInclude Include="../Sven2Bootstrap/level/LevelItems.h"/>
+    <ClInclude Include="../Sven2Bootstrap/level/UfoController.h"/>
+    <ClInclude Include="../Sven2Bootstrap/level/LevelEffects.h"/>
+    <ClInclude Include="../Sven2Bootstrap/scene/SceneRenderer.h"/>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/>
+</Project>
+

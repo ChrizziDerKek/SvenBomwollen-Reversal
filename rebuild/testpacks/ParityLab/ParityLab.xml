@@ -1,0 +1,170 @@
+<?xml version='1.0' encoding='utf-8'?>
+<sven2 version="1.0">
+  <package name="ParityLab">
+    <dependencies>
+      <requires file="sven2.dat" key="key" value="value" />
+    </dependencies>
+    <levelsets>
+      <levelset name="Corner Alien">
+        <level name="01" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="ParityLab/levels/corner-3.lvl" />
+      </levelset>
+      <levelset name="Corner Dog">
+        <level name="01" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="ParityLab/levels/corner-4.lvl" />
+      </levelset>
+      <levelset name="Corner Farmer">
+        <level name="01" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="ParityLab/levels/corner-5.lvl" />
+      </levelset>
+      <levelset name="Corner Broemse">
+        <level name="01" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="ParityLab/levels/corner-6.lvl" />
+      </levelset>
+      <levelset name="Attack Alien">
+        <level name="01" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="ParityLab/levels/attack-3.lvl" />
+      </levelset>
+      <levelset name="Attack Dog">
+        <level name="01" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="ParityLab/levels/attack-4.lvl" />
+      </levelset>
+      <levelset name="Attack Farmer">
+        <level name="01" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="ParityLab/levels/attack-5.lvl" />
+      </levelset>
+      <levelset name="Animals">
+        <level name="01" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="ParityLab/levels/animals.lvl" />
+      </levelset>
+      <levelset name="Items and teleports">
+        <level name="01" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="ParityLab/levels/items-teleports.lvl" />
+      </levelset>
+      <levelset name="Gift and life">
+        <level name="01" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="ParityLab/levels/gift-life.lvl" />
+      </levelset>
+      <levelset name="Lives">
+        <level name="01" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="ParityLab/levels/lives-score.lvl" />
+        <level name="02" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="ParityLab/levels/lives-arena.lvl" />
+      </levelset>
+      <levelset name="Dog Bone">
+        <level name="01" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="ParityLab/levels/dog-bone.lvl" />
+      </levelset>
+      <levelset name="Farmer Beer">
+        <level name="01" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="ParityLab/levels/farmer-beer.lvl" />
+      </levelset>
+      <levelset name="Girl Teddy">
+        <level name="01" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="ParityLab/levels/girl-teddy.lvl" />
+      </levelset>
+      <levelset name="Girl Dog">
+        <level name="01" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="ParityLab/levels/girl-dog.lvl" />
+      </levelset>
+      <levelset name="Girl Sven attack">
+        <level name="01" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="ParityLab/levels/girl-sven.lvl" />
+      </levelset>
+      <levelset name="Artifact Sven">
+        <level name="01" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="ParityLab/levels/artifact-sven.lvl" />
+      </levelset>
+      <levelset name="Artifact Alien">
+        <level name="01" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="ParityLab/levels/artifact-enemy-3.lvl" />
+      </levelset>
+      <levelset name="Artifact Dog">
+        <level name="01" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="ParityLab/levels/artifact-enemy-4.lvl" />
+      </levelset>
+      <levelset name="Artifact Farmer">
+        <level name="01" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="ParityLab/levels/artifact-enemy-5.lvl" />
+      </levelset>
+      <levelset name="Artifact Girl">
+        <level name="01" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="ParityLab/levels/artifact-enemy-6.lvl" />
+      </levelset>
+      <levelset name="Pickup Firework">
+        <level name="01" tileset="Lab" music="XS/sfx/atmo_grass.ogg" map="ParityLab/levels/pickup-132.lvl" />
+      </levelset>
+      <levelset name="Pickup Gift">
+        <level name="01" tileset="Lab" music="XS/sfx/atmo_grass.ogg" map="ParityLab/levels/pickup-133.lvl" />
+      </levelset>
+      <levelset name="Pickup Impotent">
+        <level name="01" tileset="Lab" music="XS/sfx/atmo_grass.ogg" map="ParityLab/levels/pickup-134.lvl" />
+      </levelset>
+      <levelset name="Pickup Stink">
+        <level name="01" tileset="Lab" music="XS/sfx/atmo_grass.ogg" map="ParityLab/levels/pickup-135.lvl" />
+      </levelset>
+      <levelset name="Pickup Rose">
+        <level name="01" tileset="Lab" music="XS/sfx/atmo_grass.ogg" map="ParityLab/levels/pickup-136.lvl" />
+      </levelset>
+      <levelset name="Frigida Sole Sheep">
+        <level name="01" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="ParityLab/levels/frigida.lvl" />
+      </levelset>
+      <levelset name="Angry rear kick and animals">
+        <level name="01" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="ParityLab/levels/angry-animals.lvl" />
+      </levelset>
+      <levelset name="Dog Sleep">
+        <level name="01" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="ParityLab/levels/dog-sleep.lvl" />
+      </levelset>
+      <levelset name="Demon Sheep">
+        <level name="01" tileset="Download" music="XS/sfx/atmo_grass.ogg" map="ParityLab/levels/demon-sheep.lvl" />
+      </levelset>
+    </levelsets>
+    <tilesets>
+      <tileset name="Download" background="XS/gfx_download/BG_DL.jpg">
+        <tile file="XS/gfx_download/BG_DL_bench01.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_boat01.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_bridge01.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_bridge_02.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_bridge_03.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_bush01.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_bush02.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_bush03.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_field01.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_fireplace01.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_grass01.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_grass02.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_grass03.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_grass04.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_grass05water.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_grass06water.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_puddle01.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_puddle02.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_rake01.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_river01.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_river02.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_river03.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_river04.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_tomatoes01.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_tomatoes02.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_tree01.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_bridge01_top.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_riverdelta_bridge_09.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_riverdelta_bridge_12.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_riverdelta_bridge_14.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_riverdelta_bridge_17.bmp" frames="1" />
+      </tileset>
+      <tileset name="Lab" background="XS/gfx_download/BG_DL.jpg">
+        <tile file="XS/gfx_download/BG_DL_bench01.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_boat01.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_bridge01.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_bridge_02.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_bridge_03.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_bush01.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_bush02.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_bush03.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_field01.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_fireplace01.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_grass01.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_grass02.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_grass03.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_grass04.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_grass05water.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_grass06water.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_puddle01.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_puddle02.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_rake01.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_river01.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_river02.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_river03.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_river04.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_tomatoes01.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_tomatoes02.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_tree01.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_DL_bridge01_top.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_riverdelta_bridge_09.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_riverdelta_bridge_12.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_riverdelta_bridge_14.bmp" frames="1" />
+        <tile file="XS/gfx_download/BG_riverdelta_bridge_17.bmp" frames="1" />
+        <tile file="Sven2/gfx/icons.bmp" frames="5" />
+      </tileset>
+    </tilesets>
+  </package>
+</sven2>
