@@ -1,0 +1,152 @@
+Benutzungsbedingungen Computerspiel "Sven 004 XXL"
+
+Diese Computer-Software, einschließlich der Verpackung, Handbücher u.ä. ist
+urheber- und markenrechtlich geschützt. 
+
+Sie darf nur durch den autorisierten Handel verkauft, vermietet bzw. verteilt und
+ausschließlich privat genutzt werden.
+
+Das nicht ausschließliche Recht zur Benutzung des Computerspiels "Sven 004 XXL"
+wird Ihnen, nachfolgend "Anwender" genannt, von der AK TRONIC SOFTWARE &
+SERVICES GMBH eingeräumt. Es gelten die nachfolgend aufgeführten Nutzungsbe-
+dingungen.
+Die Nutzungsbedingungen  gelten außerdem für alle Softwareupdates, Add-On-Kompo-
+nenten, Webdienste und/oder Ergänzungen, die der Lizenzgeber Ihnen möglicherweise
+zur Verfügung stellt oder verfügbar macht, nachdem Sie Ihre ursprüngliche Kopie der
+Software erhalten haben, soweit solchen Elementen keine gesonderten Nutzungsbe-
+dingungen beigefügt sind.
+Durch die Verwendung dieser Software erklären Sie sich mit den Nutzungsbedingungen
+einverstanden.
+
+
+§ 1 Vertragsgegenstand
+
+	Gegenstand des Vertrages ist das Computerprogramm "Sven 004 XXL", 
+	nachfolgend als "Software" bezeichnet.
+
+
+§ 2 Vervielfältigungsrechte
+
+	Der Anwender darf die gelieferte Software ausschließlich zu privaten
+	Zwecken vervielfältigen, soweit die jeweilige Vervielfältigung für die
+	Benutzung der Software notwendig ist. Zu den notwendigen Verviel-
+	fältigungen zählen das Herunterladen, die Installation der Software auf
+	dem Massenspeicher der eingesetzten Hardware sowie das Laden der
+	Software in den Arbeitsspeicher.
+
+
+§ 3 Mehrfachnutzungen und Netzwerkeinsatz
+
+	(1) Der Anwender darf die Software auf jeder ihm zur Verfügung stehenden
+	Hardware einsetzen, jedoch ausschließlich zu privaten Zwecken.
+	Wechselt der Anwender die Hardware, muss er die Software vom Massen-
+	speicher der bisher verwendeten Hardware löschen. Ein zeitgleiches Ein-
+	speichern, Vorrätighalten oder Benutzen auf mehr als einer Hardware ist
+	unzulässig.
+
+	(2) Jede andere Nutzung, insbesondere die unautorisierte Vermietung,
+	öffentliche Vorführung oder sonstige Darbietung, z.B. auch aber nicht
+	ausschließlich in Schulen, Universitäten, die Vervielfältigung, Mehrfach-
+	installation oder Überspielung und jeder Vorgang, durch den diese
+	Software oder Teile davon der Öffentlichkeit zugänglich gemacht wird
+	(auch über das Internet oder andere Online-Systeme), ist ohne vorherige
+	schriftliche Zustimmung des Urheberrechtsinhabers untersagt.
+
+	(3) Der Einsatz der überlassenen Software innerhalb eines Netzwerkes
+	oder eines sonstigen Mehrstations-Rechnersystems ist unzulässig, sofern
+	damit die Möglichkeit zeitgleicher Mehrfachnutzung geschaffen wird.
+
+	(4) Jegliche gewerbliche Nutzung ist verboten und führt bei Verstoß zur
+	Einleitung rechtlicher Maßnahmen.
+
+	(5) Eine Dekompilierung der Software ist ausdrücklich untersagt.
+
+
+§ 4 Programmänderungen
+
+	Urhebervermerke, Seriennummern sowie sonstige der Programmidenti-
+	fikation dienende Merkmale dürfen auf keinen Fall entfernt oder verändert
+	werden.
+
+
+§ 5 Virenprüfung und Datensicherung
+
+	(1) Die AK TRONIC SOFTWARE & SERVICES GMBH hat die Software
+	sorgfältig auf Fehler und Viren hin überprüft. Da es aber technisch nicht
+	möglich ist, völlig fehler- und virenfreie Software zu erstellen, hat der An-
+	wender alle vorsorglichen Maßnahmen zu ergreifen, um Schäden zu ver-
+	meiden, die dadurch entstehen, dass die Software fehler- und/oder viren-
+	behaftet ist.
+
+	(2) Der Nutzer ist verpflichtet, die Virenfreiheit und sonstige Fehlerhaftigkeit
+	der Software mittels der aktuellen marktüblichen Programme oder sonstiger
+	gängiger Hilfsmittel zu überprüfen.
+
+	(3) Der Nutzer hat eine regelmäßige Datensicherung zu betreiben, um
+	Schäden durch fehlerhafte oder virenbehaftete Software auf ein Mindest-
+	mass zu begrenzen.
+
+
+§ 6 Haftung
+
+	(1) Falls der Datenträger fehlerhaft sein sollte, räumt der Hersteller ein zwei-
+	jähriges Umtauschrecht ein. Der Original-Kaufbeleg ist beizufügen, die Ver-
+	sandkosten werden vom Hersteller erstattet. Der Umtausch ist ausge-
+	schlossen, wenn der Fehler des Datenträgers offensichtlich auf unsach-
+	gemäße Behandlung des Datenträgers durch den Benutzer oder Dritte
+	zurückzuführen ist.
+
+	(2) Die AK TRONIC SOFTWARE & SERVICES GMBH haftet nur, soweit
+	der AK TRONIC SOFTWARE & SERVICES GMBH ihren Erfüllungsgehilfen
+	und/oder gesetzlichen Vertretern ein vorsätzliches oder grob fahrlässiges
+	Verhalten zur Last fällt.
+
+	(3) Im Falle von Fahrlässigkeit ist im gesetzlich zulässigen Rahmen eine
+	Haftung der AK TRONIC SOFTWARE & SERVICES GMBH und/oder ihren
+	Erfüllungsgehilfen und gesetzlichen Vertretern bei Vermögensschäden
+	auch hinsichtlich mittelbarer Schäden, insbesondere Mangelfolgeschäden,
+	unvorhersehbarer Schäden oder untypischer Schäden, sowie entgangenen
+	Gewinns ausgeschlossen.
+	
+	(4) Eine gesetzlich vorgeschriebene verschuldensunabhängige Haftung der
+	AK TRONIC SOFTWARE & SERVICES GMBH insbesondere eine Haftung
+	nach Produkthaftungsgesetz sowie eine gesetzliche Garantiehaftung - bleibt
+	von den vorstehenden Haftungseinschränkungen unberührt. Gleiches gilt für
+	die Haftung bei zurechenbarere Verletzung von Leben, Körper oder Gesund-
+	heit eines Anwenders, sowie für Fälle grober Fahrlässigkeit und Vorsatzes.
+
+	(5) Die Haftung für Datenverlust jeder Art wird auf den typischen Wiederher-
+	stellungsaufwand beschränkt, der bei regelmäßiger und ordnungsgemäßer
+	Anfertigung von Sicherungskopien eingetreten wäre.
+
+	(6) Die Ziffern 1 bis 5 von § 6 umfassen sämtliche vertraglichen und
+	gesetzlichen Ansprüche, die aus dieser Vereinbarung bzw. der Nutzung
+	der Software resultieren.
+
+
+§ 7 Sonstige Rechte
+
+	Jede Beschädigung, Veränderung oder Nachdruck des Titels oder auch
+	von Teilen davon ist als Urkundenfälschung strafbar. Diese Lizenz ge-
+	währt Ihnen keinerlei Rechte in Verbindung mit Marken.
+	Zuwiderhandlungen werden zivil- und strafrechtlich verfolgt.
+
+
+§ 8 Salvatorische Klausel
+
+	(1) Dieser Vertrag unterliegt deutschem Recht.
+
+	(2) Sollten Bestimmungen dieses Vertrages ungültig oder undurchsetzbar sein
+	oder werden, so bleibt die Gültigkeit der restlichen Bestimmungen dieses
+	Vertrages unberührt.
+
+
+§ 9 Warenzeichen und Copyright
+
+	Microsoft, Windows, Windows 98, Windows Me, Windows 2000, 
+	Windows XP und DirectX sind eingetragene Marken der Microsoft Inc. 
+	Alle anderen Firmen- und/oder Produktnamen sind Marken und/oder
+	eingetragene Marken ihrer jeweiligen Eigentümer.
+
+
+© 2004 phenomedia publishing gmbh

@@ -427,3 +427,13 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Others
+*.id0
+*.id1
+*.id2
+*.nam
+*.til
+codexhandoff/
+docs/
+rebuild_working_copy/

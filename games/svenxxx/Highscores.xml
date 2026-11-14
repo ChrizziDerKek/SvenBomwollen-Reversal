@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SvenXXX version="1.0">
+    <Signature>
+        <SignatureValue>A82129F445E970D6052805A35BF105E71433D50AD2B19BCD7D6154A7F4C369E0BEA43E798A86B634</SignatureValue>
+    </Signature>
+    <parameters>
+        <parameter value="0211" />
+        <parameter value="0000" />
+        <parameter value="0000" />
+        <parameter value="0000" />
+        <parameter value="0007" />
+        <parameter value="0001" />
+        <parameter value="0003" />
+        <parameter value="0000" />
+        <parameter value="0000" />
+        <parameter value="0000" />
+        <parameter value="0000" />
+        <parameter value="0000" />
+    </parameters>
+    <keyboard>
+        <parameter name="Player1KeyUp" value="256" />
+        <parameter name="Player1KeyDown" value="257" />
+        <parameter name="Player1KeyLeft" value="258" />
+        <parameter name="Player1KeyRight" value="259" />
+        <parameter name="Player1KeyAction" value="339" />
+        <parameter name="Player2KeyUp" value="119" />
+        <parameter name="Player2KeyDown" value="115" />
+        <parameter name="Player2KeyLeft" value="97" />
+        <parameter name="Player2KeyRight" value="100" />
+        <parameter name="Player2KeyAction" value="32" />
+    </keyboard>
+    <package name="01_XS">
+        <levelset name="Training" count="1">
+            <highscoresSinglePlayer>
+                <highscore name="Jendrik" score="5000" level="0" shags="0" />
+                <highscore name="Ralf" score="4500" level="0" shags="0" />
+                <highscore name="Alex" score="4000" level="0" shags="0" />
+                <highscore name="Nazan" score="3500" level="0" shags="0" />
+                <highscore name="Chrizzi" score="3392" level="8" shags="50" />
+                <highscore name="C&#xFC;neyt" score="3000" level="0" shags="0" />
+                <highscore name="Wytze" score="2500" level="0" shags="0" />
+                <highscore name="Nils" score="2000" level="0" shags="0" />
+                <highscore name="Stefan" score="1500" level="0" shags="0" />
+                <highscore name="Micha" score="1000" level="0" shags="0" />
+            </highscoresSinglePlayer>
+            <highscoresMultiPlayer>
+                <highscore name="Team Jendrik" score="5000" level="0" shags="0" />
+                <highscore name="Team Ralf" score="4500" level="0" shags="0" />
+                <highscore name="Team Alex" score="4000" level="0" shags="0" />
+                <highscore name="Team Nazan" score="3500" level="0" shags="0" />
+                <highscore name="Team C&#xFC;neyt" score="3000" level="0" shags="0" />
+                <highscore name="Team Wytze" score="2500" level="0" shags="0" />
+                <highscore name="Team Nils" score="2000" level="0" shags="0" />
+                <highscore name="Team Stefan" score="1500" level="0" shags="0" />
+                <highscore name="Team Micha" score="1000" level="0" shags="0" />
+                <highscore name="Team Thomas" score="500" level="0" shags="0" />
+            </highscoresMultiPlayer>
+        </levelset>
+        <levelset name="Garten 01" count="1">
+            <highscoresSinglePlayer>
+                <highscore name="Jendrik" score="5000" level="0" shags="0" />
+                <highscore name="Ralf" score="4500" level="0" shags="0" />
+                <highscore name="Alex" score="4000" level="0" shags="0" />
+                <highscore name="Nazan" score="3500" level="0" shags="0" />
+                <highscore name="C&#xFC;neyt" score="3000" level="0" shags="0" />
+                <highscore name="Wytze" score="2500" level="0" shags="0" />
+                <highscore name="Nils" score="2000" level="0" shags="0" />
+                <highscore name="Stefan" score="1500" level="0" shags="0" />
+                <highscore name="Micha" score="1000" level="0" shags="0" />
+                <highscore name="Thomas" score="500" level="0" shags="0" />
+            </highscoresSinglePlayer>
+            <highscoresMultiPlayer>
+                <highscore name="Team Jendrik" score="5000" level="0" shags="0" />
+                <highscore name="Team Ralf" score="4500" level="0" shags="0" />
+                <highscore name="Team Alex" score="4000" level="0" shags="0" />
+                <highscore name="Team Nazan" score="3500" level="0" shags="0" />
+                <highscore name="Team C&#xFC;neyt" score="3000" level="0" shags="0" />
+                <highscore name="Team Wytze" score="2500" level="0" shags="0" />
+                <highscore name="Team Nils" score="2000" level="0" shags="0" />
+                <highscore name="Team Stefan" score="1500" level="0" shags="0" />
+                <highscore name="Team Micha" score="1000" level="0" shags="0" />
+                <highscore name="Team Thomas" score="500" level="0" shags="0" />
+            </highscoresMultiPlayer>
+        </levelset>
+        <levelset name="Garten 02" count="0">
+            <highscoresSinglePlayer>
+                <highscore name="Jendrik" score="5000" level="0" shags="0" />
+                <highscore name="Ralf" score="4500" level="0" shags="0" />
+                <highscore name="Alex" score="4000" level="0" shags="0" />
+                <highscore name="Nazan" score="3500" level="0" shags="0" />
+                <highscore name="C&#xFC;neyt" score="3000" level="0" shags="0" />
+                <highscore name="Wytze" score="2500" level="0" shags="0" />
+                <highscore name="Nils" score="2000" level="0" shags="0" />
+                <highscore name="Stefan" score="1500" level="0" shags="0" />
+                <highscore name="Micha" score="1000" level="0" shags="0" />
+                <highscore name="Thomas" score="500" level="0" shags="0" />
+            </highscoresSinglePlayer>
+            <highscoresMultiPlayer>
+                <highscore name="Team Jendrik" score="5000" level="0" shags="0" />
+                <highscore name="Team Ralf" score="4500" level="0" shags="0" />
+                <highscore name="Team Alex" score="4000" level="0" shags="0" />
+                <highscore name="Team Nazan" score="3500" level="0" shags="0" />
+                <highscore name="Team C&#xFC;neyt" score="3000" level="0" shags="0" />
+                <highscore name="Team Wytze" score="2500" level="0" shags="0" />
+                <highscore name="Team Nils" score="2000" level="0" shags="0" />
+                <highscore name="Team Stefan" score="1500" level="0" shags="0" />
+                <highscore name="Team Micha" score="1000" level="0" shags="0" />
+                <highscore name="Team Thomas" score="500" level="0" shags="0" />
+            </highscoresMultiPlayer>
+        </levelset>
+    </package>
+    <package name="02_XL">
+        <levelset name="Furni" count="1">
+            <highscoresSinglePlayer>
+                <highscore name="Jendrik" score="5000" level="0" shags="0" />
+                <highscore name="Ralf" score="4500" level="0" shags="0" />
+                <highscore name="Alex" score="4000" level="0" shags="0" />
+                <highscore name="Nazan" score="3500" level="0" shags="0" />
+                <highscore name="C&#xFC;neyt" score="3000" level="0" shags="0" />
+                <highscore name="Wytze" score="2500" level="0" shags="0" />
+                <highscore name="Nils" score="2000" level="0" shags="0" />
+                <highscore name="Stefan" score="1500" level="0" shags="0" />
+                <highscore name="Micha" score="1000" level="0" shags="0" />
+                <highscore name="Thomas" score="500" level="0" shags="0" />
+            </highscoresSinglePlayer>
+            <highscoresMultiPlayer>
+                <highscore name="Team Jendrik" score="5000" level="0" shags="0" />
+                <highscore name="Team Ralf" score="4500" level="0" shags="0" />
+                <highscore name="Team Alex" score="4000" level="0" shags="0" />
+                <highscore name="Team Nazan" score="3500" level="0" shags="0" />
+                <highscore name="Team C&#xFC;neyt" score="3000" level="0" shags="0" />
+                <highscore name="Team Wytze" score="2500" level="0" shags="0" />
+                <highscore name="Team Nils" score="2000" level="0" shags="0" />
+                <highscore name="Team Stefan" score="1500" level="0" shags="0" />
+                <highscore name="Team Micha" score="1000" level="0" shags="0" />
+                <highscore name="Team Thomas" score="500" level="0" shags="0" />
+            </highscoresMultiPlayer>
+        </levelset>
+        <levelset name="H&#xFC;hnerfarm" count="1">
+            <highscoresSinglePlayer>
+                <highscore name="Jendrik" score="5000" level="0" shags="0" />
+                <highscore name="Ralf" score="4500" level="0" shags="0" />
+                <highscore name="Alex" score="4000" level="0" shags="0" />
+                <highscore name="Chrizzi" score="3846" level="9" shags="42" />
+                <highscore name="Nazan" score="3500" level="0" shags="0" />
+                <highscore name="C&#xFC;neyt" score="3000" level="0" shags="0" />
+                <highscore name="Wytze" score="2500" level="0" shags="0" />
+                <highscore name="Nils" score="2000" level="0" shags="0" />
+                <highscore name="Stefan" score="1500" level="0" shags="0" />
+                <highscore name="Micha" score="1000" level="0" shags="0" />
+            </highscoresSinglePlayer>
+            <highscoresMultiPlayer>
+                <highscore name="Team Jendrik" score="5000" level="0" shags="0" />
+                <highscore name="Team Ralf" score="4500" level="0" shags="0" />
+                <highscore name="Team Alex" score="4000" level="0" shags="0" />
+                <highscore name="Team Nazan" score="3500" level="0" shags="0" />
+                <highscore name="Team C&#xFC;neyt" score="3000" level="0" shags="0" />
+                <highscore name="Team Wytze" score="2500" level="0" shags="0" />
+                <highscore name="Team Nils" score="2000" level="0" shags="0" />
+                <highscore name="Team Stefan" score="1500" level="0" shags="0" />
+                <highscore name="Team Micha" score="1000" level="0" shags="0" />
+                <highscore name="Team Thomas" score="500" level="0" shags="0" />
+            </highscoresMultiPlayer>
+        </levelset>
+    </package>
+    <package name="03_XXL">
+        <levelset name="Schnee" count="1">
+            <highscoresSinglePlayer>
+                <highscore name="Jendrik" score="5000" level="0" shags="0" />
+                <highscore name="Ralf" score="4500" level="0" shags="0" />
+                <highscore name="Alex" score="4000" level="0" shags="0" />
+                <highscore name="Nazan" score="3500" level="0" shags="0" />
+                <highscore name="C&#xFC;neyt" score="3000" level="0" shags="0" />
+                <highscore name="Wytze" score="2500" level="0" shags="0" />
+                <highscore name="Nils" score="2000" level="0" shags="0" />
+                <highscore name="Stefan" score="1500" level="0" shags="0" />
+                <highscore name="Micha" score="1000" level="0" shags="0" />
+                <highscore name="Thomas" score="500" level="0" shags="0" />
+            </highscoresSinglePlayer>
+            <highscoresMultiPlayer>
+                <highscore name="Team Jendrik" score="5000" level="0" shags="0" />
+                <highscore name="Team Ralf" score="4500" level="0" shags="0" />
+                <highscore name="Team Alex" score="4000" level="0" shags="0" />
+                <highscore name="Team Nazan" score="3500" level="0" shags="0" />
+                <highscore name="Team C&#xFC;neyt" score="3000" level="0" shags="0" />
+                <highscore name="Team Wytze" score="2500" level="0" shags="0" />
+                <highscore name="Team Nils" score="2000" level="0" shags="0" />
+                <highscore name="Team Stefan" score="1500" level="0" shags="0" />
+                <highscore name="Team Micha" score="1000" level="0" shags="0" />
+                <highscore name="Team Thomas" score="500" level="0" shags="0" />
+            </highscoresMultiPlayer>
+        </levelset>
+        <levelset name="H&#xF6;hle" count="1">
+            <highscoresSinglePlayer>
+                <highscore name="Jendrik" score="5000" level="0" shags="0" />
+                <highscore name="Ralf" score="4500" level="0" shags="0" />
+                <highscore name="Alex" score="4000" level="0" shags="0" />
+                <highscore name="Nazan" score="3500" level="0" shags="0" />
+                <highscore name="C&#xFC;neyt" score="3000" level="0" shags="0" />
+                <highscore name="Wytze" score="2500" level="0" shags="0" />
+                <highscore name="Nils" score="2000" level="0" shags="0" />
+                <highscore name="Stefan" score="1500" level="0" shags="0" />
+                <highscore name="Micha" score="1000" level="0" shags="0" />
+                <highscore name="Chrizzi" score="645" level="2" shags="10" />
+            </highscoresSinglePlayer>
+            <highscoresMultiPlayer>
+                <highscore name="Team Jendrik" score="5000" level="0" shags="0" />
+                <highscore name="Team Ralf" score="4500" level="0" shags="0" />
+                <highscore name="Team Alex" score="4000" level="0" shags="0" />
+                <highscore name="Team Nazan" score="3500" level="0" shags="0" />
+                <highscore name="Team C&#xFC;neyt" score="3000" level="0" shags="0" />
+                <highscore name="Team Wytze" score="2500" level="0" shags="0" />
+                <highscore name="Team Nils" score="2000" level="0" shags="0" />
+                <highscore name="Team Stefan" score="1500" level="0" shags="0" />
+                <highscore name="Team Micha" score="1000" level="0" shags="0" />
+                <highscore name="Team Thomas" score="500" level="0" shags="0" />
+            </highscoresMultiPlayer>
+        </levelset>
+        <levelset name="Planet" count="1">
+            <highscoresSinglePlayer>
+                <highscore name="Jendrik" score="5000" level="0" shags="0" />
+                <highscore name="Ralf" score="4500" level="0" shags="0" />
+                <highscore name="Alex" score="4000" level="0" shags="0" />
+                <highscore name="Nazan" score="3500" level="0" shags="0" />
+                <highscore name="C&#xFC;neyt" score="3000" level="0" shags="0" />
+                <highscore name="Wytze" score="2500" level="0" shags="0" />
+                <highscore name="Nils" score="2000" level="0" shags="0" />
+                <highscore name="Stefan" score="1500" level="0" shags="0" />
+                <highscore name="Micha" score="1000" level="0" shags="0" />
+                <highscore name="Thomas" score="500" level="0" shags="0" />
+            </highscoresSinglePlayer>
+            <highscoresMultiPlayer>
+                <highscore name="Team Jendrik" score="5000" level="0" shags="0" />
+                <highscore name="Team Ralf" score="4500" level="0" shags="0" />
+                <highscore name="Team Alex" score="4000" level="0" shags="0" />
+                <highscore name="Team Nazan" score="3500" level="0" shags="0" />
+                <highscore name="Team C&#xFC;neyt" score="3000" level="0" shags="0" />
+                <highscore name="Team Wytze" score="2500" level="0" shags="0" />
+                <highscore name="Team Nils" score="2000" level="0" shags="0" />
+                <highscore name="Team Stefan" score="1500" level="0" shags="0" />
+                <highscore name="Team Micha" score="1000" level="0" shags="0" />
+                <highscore name="Team Thomas" score="500" level="0" shags="0" />
+            </highscoresMultiPlayer>
+        </levelset>
+    </package>
+    <package name="04_Xmas2003">
+        <levelset name="Xmas 2003 01" count="1">
+            <highscoresSinglePlayer>
+                <highscore name="Jendrik" score="5000" level="0" shags="0" />
+                <highscore name="Ralf" score="4500" level="0" shags="0" />
+                <highscore name="Alex" score="4000" level="0" shags="0" />
+                <highscore name="Nazan" score="3500" level="0" shags="0" />
+                <highscore name="C&#xFC;neyt" score="3000" level="0" shags="0" />
+                <highscore name="Wytze" score="2500" level="0" shags="0" />
+                <highscore name="Nils" score="2000" level="0" shags="0" />
+                <highscore name="Stefan" score="1500" level="0" shags="0" />
+                <highscore name="Micha" score="1000" level="0" shags="0" />
+                <highscore name="Thomas" score="500" level="0" shags="0" />
+            </highscoresSinglePlayer>
+            <highscoresMultiPlayer>
+                <highscore name="Team Jendrik" score="5000" level="0" shags="0" />
+                <highscore name="Team Ralf" score="4500" level="0" shags="0" />
+                <highscore name="Team Alex" score="4000" level="0" shags="0" />
+                <highscore name="Team Nazan" score="3500" level="0" shags="0" />
+                <highscore name="Team C&#xFC;neyt" score="3000" level="0" shags="0" />
+                <highscore name="Team Wytze" score="2500" level="0" shags="0" />
+                <highscore name="Team Nils" score="2000" level="0" shags="0" />
+                <highscore name="Team Stefan" score="1500" level="0" shags="0" />
+                <highscore name="Team Micha" score="1000" level="0" shags="0" />
+                <highscore name="Team Thomas" score="500" level="0" shags="0" />
+            </highscoresMultiPlayer>
+        </levelset>
+        <levelset name="Xmas 2003 02" count="0">
+            <highscoresSinglePlayer>
+                <highscore name="Jendrik" score="5000" level="0" shags="0" />
+                <highscore name="Ralf" score="4500" level="0" shags="0" />
+                <highscore name="Alex" score="4000" level="0" shags="0" />
+                <highscore name="Nazan" score="3500" level="0" shags="0" />
+                <highscore name="C&#xFC;neyt" score="3000" level="0" shags="0" />
+                <highscore name="Wytze" score="2500" level="0" shags="0" />
+                <highscore name="Nils" score="2000" level="0" shags="0" />
+                <highscore name="Stefan" score="1500" level="0" shags="0" />
+                <highscore name="Micha" score="1000" level="0" shags="0" />
+                <highscore name="Thomas" score="500" level="0" shags="0" />
+            </highscoresSinglePlayer>
+            <highscoresMultiPlayer>
+                <highscore name="Team Jendrik" score="5000" level="0" shags="0" />
+                <highscore name="Team Ralf" score="4500" level="0" shags="0" />
+                <highscore name="Team Alex" score="4000" level="0" shags="0" />
+                <highscore name="Team Nazan" score="3500" level="0" shags="0" />
+                <highscore name="Team C&#xFC;neyt" score="3000" level="0" shags="0" />
+                <highscore name="Team Wytze" score="2500" level="0" shags="0" />
+                <highscore name="Team Nils" score="2000" level="0" shags="0" />
+                <highscore name="Team Stefan" score="1500" level="0" shags="0" />
+                <highscore name="Team Micha" score="1000" level="0" shags="0" />
+                <highscore name="Team Thomas" score="500" level="0" shags="0" />
+            </highscoresMultiPlayer>
+        </levelset>
+    </package>
+    <package name="05_Easter2004">
+        <levelset name="Ostern 2004 01" count="1">
+            <highscoresSinglePlayer>
+                <highscore name="Jendrik" score="5000" level="0" shags="0" />
+                <highscore name="Ralf" score="4500" level="0" shags="0" />
+                <highscore name="Alex" score="4000" level="0" shags="0" />
+                <highscore name="Nazan" score="3500" level="0" shags="0" />
+                <highscore name="C&#xFC;neyt" score="3000" level="0" shags="0" />
+                <highscore name="Wytze" score="2500" level="0" shags="0" />
+                <highscore name="Nils" score="2000" level="0" shags="0" />
+                <highscore name="Stefan" score="1500" level="0" shags="0" />
+                <highscore name="Micha" score="1000" level="0" shags="0" />
+                <highscore name="Thomas" score="500" level="0" shags="0" />
+            </highscoresSinglePlayer>
+            <highscoresMultiPlayer>
+                <highscore name="Team Jendrik" score="5000" level="0" shags="0" />
+                <highscore name="Team Ralf" score="4500" level="0" shags="0" />
+                <highscore name="Team Alex" score="4000" level="0" shags="0" />
+                <highscore name="Team Nazan" score="3500" level="0" shags="0" />
+                <highscore name="Team C&#xFC;neyt" score="3000" level="0" shags="0" />
+                <highscore name="Team Wytze" score="2500" level="0" shags="0" />
+                <highscore name="Team Nils" score="2000" level="0" shags="0" />
+                <highscore name="Team Stefan" score="1500" level="0" shags="0" />
+                <highscore name="Team Micha" score="1000" level="0" shags="0" />
+                <highscore name="Team Thomas" score="500" level="0" shags="0" />
+            </highscoresMultiPlayer>
+        </levelset>
+        <levelset name="Ostern 2004 02" count="0">
+            <highscoresSinglePlayer>
+                <highscore name="Jendrik" score="5000" level="0" shags="0" />
+                <highscore name="Ralf" score="4500" level="0" shags="0" />
+                <highscore name="Alex" score="4000" level="0" shags="0" />
+                <highscore name="Nazan" score="3500" level="0" shags="0" />
+                <highscore name="C&#xFC;neyt" score="3000" level="0" shags="0" />
+                <highscore name="Wytze" score="2500" level="0" shags="0" />
+                <highscore name="Nils" score="2000" level="0" shags="0" />
+                <highscore name="Stefan" score="1500" level="0" shags="0" />
+                <highscore name="Micha" score="1000" level="0" shags="0" />
+                <highscore name="Thomas" score="500" level="0" shags="0" />
+            </highscoresSinglePlayer>
+            <highscoresMultiPlayer>
+                <highscore name="Team Jendrik" score="5000" level="0" shags="0" />
+                <highscore name="Team Ralf" score="4500" level="0" shags="0" />
+                <highscore name="Team Alex" score="4000" level="0" shags="0" />
+                <highscore name="Team Nazan" score="3500" level="0" shags="0" />
+                <highscore name="Team C&#xFC;neyt" score="3000" level="0" shags="0" />
+                <highscore name="Team Wytze" score="2500" level="0" shags="0" />
+                <highscore name="Team Nils" score="2000" level="0" shags="0" />
+                <highscore name="Team Stefan" score="1500" level="0" shags="0" />
+                <highscore name="Team Micha" score="1000" level="0" shags="0" />
+                <highscore name="Team Thomas" score="500" level="0" shags="0" />
+            </highscoresMultiPlayer>
+        </levelset>
+    </package>
+</SvenXXX>

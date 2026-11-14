@@ -24,6 +24,12 @@ Simple C# application that can decode the .pak and .dat format that Sven Zwø us
 ## dumper
 DLL file for dumping all loaded textures while the game is running. Just inject it with your favourite injector and play some levels! Includes 3 pre-compiled versions for Sven Zwø, XXX and 004.
 
+## games
+The actual games we reverse (Sven Zwø, XXX and 004).
+
+## editor
+Current Sven Zwo level editor development. Supports direct pack editing, new packages/levelsets, linked actors and items, corrected teleporter data, depth ordering, and improved controls. Start with [editor/Start-Editor.cmd](editor/Start-Editor.cmd) and read the [editor guide](editor/README.md).
+
 ## leveleditor
 Leveleditor that I created based on this research. There's still a lot of stuff to do though.
 
@@ -41,9 +47,6 @@ DLL file for patching packfile signature checks. This has to be loaded very earl
 
 ## screenshots
 Screenshots that were used for testing, as a note or inside this readme.
-
-## sven2
-The actual game we reverse (Sven Zwø XS).
 
 ## tests
 Stores patched pack files, notes and C# scripts that I used for testing the .lvl file format. I tested it with trial-and-error by modifying the first tutorial level:
