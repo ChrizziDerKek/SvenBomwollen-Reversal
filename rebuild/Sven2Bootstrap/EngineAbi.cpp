@@ -171,7 +171,27 @@ bool Engine::playSample(const std::string& path) {
         if(!sample->second) log("Sound sample unavailable: "+path);
     }
     if(!sample->second) return false;
-    return method<void*(__thiscall*)(void*)>(sample->second,0x54)(sample->second)!=nullptr;
+    const bool ufo=_stricmp(path.c_str(),data_.soundPath("SfxUFO").c_str())==0;
+    if(ufo) {
+        // Original 0x422D23..0x422D2E: sample slot +0x40 ORs flag 2,
+        // which DX_SoundSystemPlugin maps to DSBPLAY_LOOPING.
+        stopUfoSound();
+        method<void(__thiscall*)(void*,int)>(sample->second,0x40)(sample->second,2);
+    }
+    void* channel=method<void*(__thiscall*)(void*)>(sample->second,0x54)(sample->second);
+    if(ufo) ufoChannel_=channel;
+    if(ufo && channel) log("Started looping UFO sound.");
+    return channel!=nullptr;
+}
+void Engine::stopUfoSound() {
+    if(!ufoChannel_) return;
+    // Original Sven2_Audio_StopUfoSound, 0x424070: channel slot +0x10.
+    method<void(__thiscall*)(void*)>(ufoChannel_,0x10)(ufoChannel_);
+    ufoChannel_=nullptr;
+    log("Stopped UFO sound.");
+}
+bool Engine::ufoSoundPlaying() const {
+    return ufoChannel_ && method<bool(__thiscall*)(void*)>(ufoChannel_,0x0c)(ufoChannel_);
 }
 bool Engine::playMusic(const std::string& path) {
     if(!soundSystem_) return false;
@@ -277,6 +297,7 @@ void Engine::drawFrame(const std::vector<SpriteDraw>& scene,const char* captureO
     ++frames;
 }
 void Engine::shutdown() {
+    stopUfoSound();
     stopMusic();
     if (videoStarted_) symbol<void(__thiscall*)(void*)>(engine_,"?Exit@cApplicationEx@@UAEXXZ")(application_);
     if (prepared_) {

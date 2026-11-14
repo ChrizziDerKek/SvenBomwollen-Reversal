@@ -1,9 +1,10 @@
 #pragma once
 #include "scene/SceneTypes.h"
+#include "characters/CharacterController.h"
 
 namespace sven2 {
 class LevelScene;
-class PlayerCharacter {
+class PlayerCharacter final:public CharacterController {
     using Object=WorldObject;
     using Interaction=InteractionAnimation;
 public:
@@ -17,6 +18,8 @@ public:
     void act(bool continuation=false);
     void finishInteraction();
     void advancePlayer(float dt,int dx,int dy);
+    void setMovement(int dx,int dy) { movementX_=dx;movementY_=dy; }
+    void update(float seconds) override { advancePlayer(seconds,movementX_,movementY_); }
 private:
     friend class AnimalCharacters;
     friend class EnemyCharacters;
@@ -27,7 +30,7 @@ private:
     friend class SceneRenderer;
     friend class SceneResources;
     friend class UfoController;
-    LevelScene& scene_;
+    int movementX_=0,movementY_=0;
     int playerBeamState_=0;
     float playerLift_=0, playerBeamClock_=0;
     float playerShockAge_=-1;

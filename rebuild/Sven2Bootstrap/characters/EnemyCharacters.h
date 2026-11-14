@@ -1,9 +1,10 @@
 #pragma once
 #include "scene/SceneTypes.h"
+#include "characters/CharacterController.h"
 
 namespace sven2 {
 class LevelScene;
-class EnemyCharacters {
+class EnemyCharacters final:public CharacterController {
     using Object=WorldObject;
     using Interaction=InteractionAnimation;
 public:
@@ -18,6 +19,7 @@ public:
     void drawEnemy(Object& actor);
     void enemyArrived(size_t index);
     void updateEnemies(float seconds);
+    void update(float seconds) override { updateEnemies(seconds); }
     void beginBattle(size_t index);
     void finishBattle(Object& actor);
 private:
@@ -26,7 +28,6 @@ private:
     friend class PlayerCharacter;
     friend class SceneRenderer;
     friend class UfoController;
-    LevelScene& scene_;
     int battleEnemy_=-1;
     float battleRemaining_=0;
 };

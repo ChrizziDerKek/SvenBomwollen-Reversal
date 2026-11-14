@@ -13,6 +13,7 @@ public:
     void requestUfo(int target);
     void beginBeam();
     void updateUfo(float seconds);
+    bool active() const { return ufo_.state>=0; }
 private:
     friend class LevelEffects;
     friend class LevelItems;

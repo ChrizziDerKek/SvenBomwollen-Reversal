@@ -20,6 +20,7 @@ public:
     bool gameOver() const { return lives_==0; }
     int score() const { return score_; }
     int lives() const { return lives_; }
+    bool ufoActive() const { return scene_->ufoActive(); }
     int levelNumber() const { return static_cast<int>(levelIndex_)+1; }
     int timeBonus() const { return timeBonus_; }
     int remainingTargets() const { return scene_->remainingTargets(); }

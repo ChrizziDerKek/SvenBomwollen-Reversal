@@ -8,7 +8,7 @@
 
 namespace sven2 {
 using namespace scene_data;
-AnimalCharacters::AnimalCharacters(LevelScene& scene):scene_(scene) {}
+AnimalCharacters::AnimalCharacters(LevelScene& scene):CharacterController(scene) {}
 
 void AnimalCharacters::updateOtherAnimals(float seconds) {
     for(size_t i=0;i<scene_.world_.size();++i) {

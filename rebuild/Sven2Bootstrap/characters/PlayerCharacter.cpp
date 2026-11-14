@@ -8,7 +8,7 @@
 
 namespace sven2 {
 using namespace scene_data;
-PlayerCharacter::PlayerCharacter(LevelScene& scene):scene_(scene) {}
+PlayerCharacter::PlayerCharacter(LevelScene& scene):CharacterController(scene) {}
 
 void PlayerCharacter::markPlayerCell() {
     // 0x42C3F0 marks the committed base cell, not the interpolated center.

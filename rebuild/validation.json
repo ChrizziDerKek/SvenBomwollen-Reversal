@@ -1,5 +1,5 @@
 {
-  "recorded_at_utc": "2026-11-13T10:43:16.196030+00:00",
+  "recorded_at_utc": "2026-11-14T14:31:13.978607+00:00",
   "checks": {
     "Debug": {
       "log": "runtime\\checks-Debug.log",
@@ -26,7 +26,7 @@
         "105 folder levels load and simulate with valid sprite frames and sound references.",
         "all remake checks."
       ],
-      "binary_sha256": "474f03b53f867c3ba4ed983a6f809cae80fb33a645267a7caca093b68f745306"
+      "binary_sha256": "43e426091e729167a5764abd8e0f18eeb0873af1f494751dddfd5c2d3200d175"
     },
     "Release": {
       "log": "runtime\\checks-Release.log",
@@ -53,7 +53,7 @@
         "105 folder levels load and simulate with valid sprite frames and sound references.",
         "all remake checks."
       ],
-      "binary_sha256": "d4610b901ddaa12398a57b8b55975c46e0abe6eed95d8aa3e5f66a7250607df3"
+      "binary_sha256": "13fb4f86154f74cf1488e47c8c17d133b1962ba65795f10b22842c72042d818a"
     }
   },
   "parity_lab": {
@@ -65,11 +65,11 @@
     "manifest_sha256": "52984dc4d05b511fa66636dfee2b6c8bae370eb83bae8403a5484ea27159cf5e"
   },
   "native_smoke": {
-    "frames": 195,
+    "frames": 191,
     "audio_requests_succeeded": true,
     "log": "runtime/sven2/game.log"
   },
-  "capture_directory": "runtime\\checks\\2760-13062796",
+  "capture_directory": "runtime\\checks\\2032-5364437",
   "captures_sha256": {
     "animal-meters.bmp": "07fc8f27af7ee83db28a2e82ae5af3fb429f8935376e1f6f544fa8983cf4e9f0",
     "artifact-landed.bmp": "35444f2246ab40c347e5413845c46fdf7f9626a15d602718cb30c056b493db64",
@@ -99,9 +99,9 @@
     "help-3.bmp": "b435c598f08253ebb67c6dcde029121ae346cb71025b095d11a6b1a136f88834",
     "highscores.bmp": "e513ecd95d5f1d6f8e7ebcacd3fb4d02ca3111a5df4e1792ecd5c0533d2c6bb4",
     "level.bmp": "f17d01115830647cb33f57450ca83058b8a88f4607a7876919cb3e9e3e9586c6",
-    "life-gain.bmp": "39bcda738bdbee132342ae004e4a81de8af377f384c8e6608b9ff06af98c158b",
-    "life-loss.bmp": "22e886e501e326dd0784a6f42a37ded4b16e8e3d4f5d56b4dd928170aecfd9cc",
-    "life-refund.bmp": "54182cc04eaeea7048a1293a0e30a42da5aa45b675f41e5ccd39692acdabaff8",
+    "life-gain.bmp": "3dfed3921d4cffef755294ea626c341ae6b494e17e1088d5f5a159758e805402",
+    "life-loss.bmp": "36ae339bbd83a908f16cc4b1b5409736b45ef0b22a19361b3b707e10e170a3ad",
+    "life-refund.bmp": "cc33bf9dffc0244c8b38babec55a6962be4e4aff7b6a61c11103b54f4368b425",
     "menu-exit.bmp": "cf91dd4fe54f11a28696daaacf7ea5338be6b2e1df7a1288837e0c3edbb85070",
     "menu.bmp": "6a06d5d6222d06a614ba9fcf6938ff1f4aaecd452a78793361d7a0cc08d4a52d",
     "name-entry.bmp": "1797d082ac497c96a8d3214d90f270c801b5dce667d2b053bdb2065ff5676a09",
@@ -114,8 +114,8 @@
     "slow-motion.bmp": "d5c930a5213319717287bea4f8d4a011e26f675067adda8d302b0f1b81ea3412"
   },
   "binaries_sha256": {
-    "Debug": "67b3f79f4a667af39a8d521e991182e36f637215ac7507564d55da6208d238a1",
-    "Release": "8161acbf98d5c103947c73959dfb31b742b88f99735fad4cedf9a103bf78e3b0"
+    "Debug": "b934ecc5e0e5fc482afe2fe842592e33a100748e905812f2a7924e42df048cbd",
+    "Release": "f7a1cfdf1536d36e87c4a34a14a44456ceda4209af15f26276af86f8b8fca0f2"
   },
   "limitations": [
     "Catalog simulation does not establish exhaustive behavioral equivalence.",

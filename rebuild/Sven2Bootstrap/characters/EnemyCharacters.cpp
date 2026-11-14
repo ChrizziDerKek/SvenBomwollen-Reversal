@@ -8,7 +8,7 @@
 
 namespace sven2 {
 using namespace scene_data;
-EnemyCharacters::EnemyCharacters(LevelScene& scene):scene_(scene) {}
+EnemyCharacters::EnemyCharacters(LevelScene& scene):CharacterController(scene) {}
 
 bool EnemyCharacters::playerInRange(const Object& actor,float distance) const {
     if(battleEnemy_>=0 || scene_.player_.playerBeamState_ || scene_.player_.playerShockAge_>=0 || scene_.effects_.splashPlayerAge_*scene_.player_.defaultRate_<16) return false;

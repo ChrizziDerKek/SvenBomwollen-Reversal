@@ -46,6 +46,8 @@ public:
     void startVideo(bool input=true);
     bool startAudio();
     bool playSample(const std::string& path);
+    void stopUfoSound();
+    bool ufoSoundPlaying() const;
     bool playMusic(const std::string& path);
     void stopMusic();
     void tick();
@@ -62,6 +64,7 @@ private:
     std::deque<Sprite> sprites_;
     std::map<std::tuple<std::string,short,short,bool>, const Sprite*> spriteCache_;
     void* soundSystem_=nullptr;
+    void* ufoChannel_=nullptr;
     void* musicStream_=nullptr;
     std::map<std::string,void*> samples_;
     std::map<std::string,void*> streams_;

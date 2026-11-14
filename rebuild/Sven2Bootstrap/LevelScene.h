@@ -26,6 +26,7 @@ public:
     int remainingTargets() const { return remainingTargets_; }
     int completedSheep() const { return completedSheep_; }
     float initialTime() const { return initialTime_; }
+    bool ufoActive() const { return ufoController_.active(); }
     int takeScoreDelta();
     float takeTimeDelta();
     std::vector<std::string> takeSounds();

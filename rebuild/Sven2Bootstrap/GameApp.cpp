@@ -24,6 +24,7 @@ void runGame(Engine& engine,const std::filesystem::path& saves,bool audio,unsign
     };
     auto start=[&] {
         auto next=std::make_unique<GameSession>(engine,ui.pack(),ui.levelset());
+        engine.stopUfoSound();
         session=std::move(next);
         playing=true;
         music(session->level().music);
@@ -74,6 +75,7 @@ void runGame(Engine& engine,const std::filesystem::path& saves,bool audio,unsign
                         music("sven2/sfx/Sven2_music.ogg");
                         break;
                     case UiAction::nextLevel:
+                        engine.stopUfoSound();
                         session->advance();
                         playing=!session->results();
                         if(playing) music(session->level().music);
@@ -96,6 +98,7 @@ void runGame(Engine& engine,const std::filesystem::path& saves,bool audio,unsign
         if(session) {
             for(const auto& sound:session->takeSounds()) play(sound);
         }
+        if(!session || !session->ufoActive() || session->results()) engine.stopUfoSound();
         if(playing) {
             const auto& scene=session->draws();
             engine.drawFrame(scene);
@@ -108,5 +111,6 @@ void runGame(Engine& engine,const std::filesystem::path& saves,bool audio,unsign
     }
     log("Presented frames: "+std::to_string(engine.frames));
     engine.stopMusic();
+    engine.stopUfoSound();
 }
 }

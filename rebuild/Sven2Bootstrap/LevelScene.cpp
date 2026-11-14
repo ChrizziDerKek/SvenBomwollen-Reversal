@@ -217,6 +217,9 @@ void LevelScene::update(float seconds,int dx,int dy,bool actionPressed) {
     if(actionPressed && !player_.actionDown_ && (player_.playerAction_==0 || player_.playerAction_==1 || player_.playerAction_==4)) player_.actionQueued_=true;
     player_.actionDown_=actionPressed;
     dx=std::clamp(dx,-1,1); dy=std::clamp(dy,-1,1);
+    player_.setMovement(dx,dy);
+    const std::array<CharacterController*,2> autonomousCharacters={&enemies_,&animals_};
+    CharacterController& controlledPlayer=player_;
     // Substeps preserve occupancy and sequence boundaries across slow frames.
     float left=seconds;
     do {
@@ -225,11 +228,9 @@ void LevelScene::update(float seconds,int dx,int dy,bool actionPressed) {
         effects_.updateEffects(dt);
         player_.markPlayerCell();
         items_.updateItems(dt);
-        enemies_.updateEnemies(dt);
-        animals_.updateOtherAnimals(dt);
-        animals_.updateSheep(dt);
+        for(auto* characters:autonomousCharacters) characters->update(dt);
         ufoController_.updateUfo(dt);
-        player_.advancePlayer(dt,dx,dy);
+        controlledPlayer.update(dt);
     } while(left>0);
 }
 

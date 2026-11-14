@@ -1,9 +1,10 @@
 #pragma once
 #include "scene/SceneTypes.h"
+#include "characters/CharacterController.h"
 
 namespace sven2 {
 class LevelScene;
-class AnimalCharacters {
+class AnimalCharacters final:public CharacterController {
     using Object=WorldObject;
     using Interaction=InteractionAnimation;
 public:
@@ -16,10 +17,10 @@ public:
     bool moveDemonSheep(size_t index);
     bool shockPlayer(Object& animal,int timeChange);
     void updateSheep(float seconds);
+    void update(float seconds) override { updateOtherAnimals(seconds);updateSheep(seconds); }
 private:
     friend class LevelScene;
     friend class SceneResources;
-    LevelScene& scene_;
     float sheepSpeed_=50;
 };
 }

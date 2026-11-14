@@ -814,10 +814,12 @@ void checkEffectAndAnimationStates(sven2::Engine& engine,bool capture=false) {
 
     const auto artifact=fixtureLevel(engine,"artifact-transform",{{0,240,200,0},{2,640,400,0}},128);
     sven2::LevelScene alienPower(engine,*xs,artifact,1);
+    require(!alienPower.ufoActive(),"Artifact UFO was active before pickup.");
     const auto* alienIcon=engine.loadSprite("Sven2/gfx/icon_alien.bmp",13,1);
     bool ascended=false,hidden=false,landed=false;
     for(int frame=0;frame<60*60 && !landed;++frame) {
         alienPower.update(1.0f/60,0,0,false);
+        if(frame==0) require(alienPower.ufoActive(),"Artifact pickup did not begin the UFO audio lifecycle.");
         const auto hero=alienPower.player();
         ascended=ascended || (hero.sprite && hero.y<200);
         hidden=hidden || !hero.sprite;
@@ -834,7 +836,9 @@ void checkEffectAndAnimationStates(sven2::Engine& engine,bool capture=false) {
         }
     }
     require(ascended && hidden && landed && alienPower.takeLifeHits()==0,"Artifact ascent/wait/landing sequence was incomplete.");
+    require(alienPower.ufoActive(),"UFO lifecycle ended before departure.");
     alienPower.update(16.0f,0,0,false);
+    require(!alienPower.ufoActive(),"UFO lifecycle stayed active after departure.");
     require(!contains(alienPower.draws(),alienIcon),"Alien powerup did not expire.");
     const auto movingArtifact=fixtureLevel(engine,"artifact-walking",{{0,240,240,0},{2,640,400,0}});
     {
@@ -1319,9 +1323,10 @@ void checkCatalog(sven2::Engine& engine,size_t minimum=105) {
 
 int main(int argc,char** argv) {
     try {
+        const bool preview=argc==3 && std::string(argv[1])=="--catalog-preview";
         const auto trace=argc==3 && std::string(argv[1])=="--trace"?
             std::filesystem::absolute(std::filesystem::u8path(argv[2])):std::filesystem::path{};
-        const auto catalog=argc==3 && std::string(argv[1])=="--catalog"?
+        const auto catalog=argc==3 && (std::string(argv[1])=="--catalog" || preview)?
             std::filesystem::absolute(std::filesystem::u8path(argv[2])):std::filesystem::path{};
         wchar_t executable[32768]{};
         GetModuleFileNameW(nullptr,executable,32768);
@@ -1346,6 +1351,15 @@ int main(int argc,char** argv) {
         if(!catalog.empty()) {
             checkLabFixtures(engine);
             checkCatalog(engine,1);
+            if(preview) {
+                engine.startVideo(false);
+                size_t index=0;
+                for(const auto& pack:engine.data().packs()) for(const auto& set:pack.levelsets) for(const auto& level:set.levels) {
+                    sven2::LevelScene scene(engine,pack,level,1);
+                    engine.drawFrame(scene.draws(),("pack-level-"+std::to_string(++index)+".bmp").c_str());
+                }
+                sven2::log("PASS: package previews in "+saves.string());
+            }
             engine.shutdown();
             sven2::log("PASS: package catalog checks.");
             return 0;
@@ -1454,6 +1468,15 @@ int main(int argc,char** argv) {
             for(const char* name:{"SfxDogFoundSven","SfxGuyFoundBeer","SfxLarsDrink","SfxLarsSleep"})
                 require(engine.playSample(engine.data().soundPath(name)),"Native enemy sample playback request failed.");
             sven2::log("PASS: native enemy notice, drink and sleep sample playback requests.");
+            require(engine.playSample(engine.data().soundPath("SfxUFO")),"Native UFO loop failed to start.");
+            const auto loopStarted=GetTickCount64();
+            while(GetTickCount64()-loopStarted<6200) { engine.tick();Sleep(10); }
+            require(engine.ufoSoundPlaying(),"UFO sound stopped after the original five-second recording instead of looping.");
+            engine.stopUfoSound();
+            require(!engine.ufoSoundPlaying(),"UFO channel did not stop on lifecycle cleanup.");
+            require(engine.playSample(engine.data().soundPath("SfxUFO")),"Stopped UFO loop failed to restart.");
+            engine.stopUfoSound();
+            sven2::log("PASS: native UFO sample loops beyond 6 seconds, stops and restarts.");
             sven2::log("PASS: native UI captures in "+saves.string());
         }
         engine.shutdown();

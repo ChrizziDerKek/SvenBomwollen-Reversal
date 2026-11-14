@@ -1,0 +1,29 @@
+{
+  "recorded_at_utc": "2026-11-14T14:32:38.976664+00:00",
+  "package": "WeekendAdventure",
+  "levels": 5,
+  "generator_checks": [
+    "deterministic regeneration",
+    "new full map and correctly aligned grid payloads",
+    "v6 size and links",
+    "original sprite centers",
+    "initial BFS approaches and pickups",
+    "object and teleport limits"
+  ],
+  "catalog_checks": {
+    "Debug": "runtime/weekend-catalog.log",
+    "Release": "runtime/weekend-catalog-Release.log"
+  },
+  "native_previews": {
+    "pack-level-1.bmp": "32da2cb9e2b88d3334fb7755f9a222d35503c0d97b0dd325b10516e428879e20",
+    "pack-level-2.bmp": "ad0f881c2d509af8b888c9acc99ef79f2a3bf846680b8a2bbba7a7ada91951eb",
+    "pack-level-3.bmp": "0e22893d8376584b4068fb2725e03b18d4f404aac0a8a5ce3836b0ceb63b81c2",
+    "pack-level-4.bmp": "c7b85a0ba2aed21a98f5053cdd7a5fadd4cc8068b34af4fe857d9056c75b1cd3",
+    "pack-level-5.bmp": "0b9ab3aa6321de6afbaef25840844fedd64ce4486072310d2e7b26973474e47a"
+  },
+  "pack_manifest_sha256": "0fb914304bf0372cc3036774ce521bcea19ff352b8270e627926b36da836d3e6",
+  "limitations": [
+    "Not all five levels have been manually completed or balance-tested.",
+    "Initial BFS accessibility does not prove every dynamic enemy interaction or random sequence."
+  ]
+}

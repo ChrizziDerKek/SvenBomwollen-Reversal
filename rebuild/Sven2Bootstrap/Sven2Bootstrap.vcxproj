@@ -28,6 +28,7 @@
     <ClInclude Include="scene/SceneConstants.h"/>
     <ClInclude Include="level/LevelGrid.h"/>
     <ClInclude Include="scene/SceneResources.h"/>
+    <ClInclude Include="characters/CharacterController.h"/>
     <ClInclude Include="characters/PlayerCharacter.h"/>
     <ClInclude Include="characters/EnemyCharacters.h"/>
     <ClInclude Include="characters/AnimalCharacters.h"/>

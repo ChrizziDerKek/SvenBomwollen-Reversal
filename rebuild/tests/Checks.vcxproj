@@ -37,6 +37,7 @@
     <ClInclude Include="../Sven2Bootstrap/scene/SceneConstants.h"/>
     <ClInclude Include="../Sven2Bootstrap/level/LevelGrid.h"/>
     <ClInclude Include="../Sven2Bootstrap/scene/SceneResources.h"/>
+    <ClInclude Include="../Sven2Bootstrap/characters/CharacterController.h"/>
     <ClInclude Include="../Sven2Bootstrap/characters/PlayerCharacter.h"/>
     <ClInclude Include="../Sven2Bootstrap/characters/EnemyCharacters.h"/>
     <ClInclude Include="../Sven2Bootstrap/characters/AnimalCharacters.h"/>
