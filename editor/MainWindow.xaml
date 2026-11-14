@@ -1,0 +1,208 @@
+<Window x:Class="Editor.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Height="880" Width="1540" WindowStartupLocation="CenterScreen"
+        Title="Sven Zwo Level Editor" PreviewKeyDown="Window_PreviewKeyDown" Closing="Window_Closing">
+    <Window.Resources>
+        <ItemsPanelTemplate x:Key="ipWrapPanel">
+            <WrapPanel/>
+        </ItemsPanelTemplate>
+
+        <DataTemplate x:Key="dtStaticPaletteItem">
+            <Border Width="145" Margin="4" Padding="5" Background="#303030" BorderBrush="#666" BorderThickness="1" CornerRadius="4">
+                <StackPanel>
+                    <Border Width="131" Height="84" Background="#1C1C1C" BorderBrush="#555" BorderThickness="1" CornerRadius="3">
+                        <Grid>
+                            <Image Source="{Binding PreviewImage}" Stretch="Uniform" Margin="2"/>
+                            <TextBlock Text="No Asset" Foreground="#CCC" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasPreview}" Value="True">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                    </Border>
+                    <TextBlock Text="{Binding Header}" Foreground="White" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,5,0,0"/>
+                    <TextBlock Text="{Binding SizeText}" Foreground="#AAA" FontSize="11"/>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="dtCharacterPaletteItem">
+            <Border Margin="3" Padding="6" Background="#303030" BorderBrush="#666" BorderThickness="1" CornerRadius="4">
+                <StackPanel>
+                    <TextBlock Text="{Binding Name}" Foreground="White" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Description}" Foreground="#AAA" FontSize="11" TextWrapping="Wrap"/>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="dtTilePaletteItem">
+            <Border Margin="3" Padding="6" Background="#303030" BorderBrush="#666" BorderThickness="1" CornerRadius="4">
+                <StackPanel>
+                    <TextBlock Text="{Binding Header}" Foreground="White" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding Fields}" Foreground="#AAA" FontSize="11"/>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+    </Window.Resources>
+
+    <DockPanel Background="#1E1E1E">
+        <ToolBarTray DockPanel.Dock="Top">
+            <ToolBar Band="1">
+                <TextBlock Text="Export version:" VerticalAlignment="Center" Margin="4"/>
+                <ComboBox Name="cbExportVersion" SelectedIndex="0" Width="175" ToolTip="Applies to saved levels, or every level in an exported pack. Changes header/layout only; does not convert actors, resources or multiplayer behavior.">
+                    <ComboBoxItem Content="Preserve source"/>
+                    <ComboBoxItem Content="Sven Zwo — v6"/>
+                    <ComboBoxItem Content="Sven XXX — v7"/>
+                    <ComboBoxItem Content="Sven 004 — v12 (unsupported)" IsEnabled="False" ToolTip="004 needs a 62×47 tile grid and 112-byte object records; changing the version alone cannot convert a level."/>
+                </ComboBox>
+                <Button Name="bVerifySignature" Content="Verify Pack Signature" Click="ExtendedButton_Click" Margin="6,2"/>
+                <TextBlock Name="tbSignatureStatus" Text="Standalone levels have no publisher signature." VerticalAlignment="Center" Margin="4" ToolTip="Verification uses the publisher public key. Creating a new publisher signature requires the matching private key. Archive structural verification is separate."/>
+            </ToolBar>
+            <ToolBar>
+                <Button Name="bOpenArchive" Content="Open Pack" Click="ExtendedButton_Click" Margin="2"/>
+                <Button Name="bSaveArchive" Content="Save Pack As" Click="ExtendedButton_Click" Margin="2"/>
+                <Button Name="bCreateArchive" Content="New Pack from Template" Click="ExtendedButton_Click" Margin="2"/>
+                <Button Name="bOpenLevel" Content="Open Level" Click="Button_Click" Margin="2"/>
+                <Button Name="bOpenAssets" Content="Open Assets Folder" Click="Button_Click" Margin="2"/>
+                <Button Name="bOpenPackFolder" Content="Open Extracted Pack Folder" Click="Button_Click" Margin="2"/>
+                <Separator/>
+                <Button Name="bSaveStandalone" Content="Save Standalone" Click="Button_Click" Margin="2"/>
+                <Button Name="bSaveReplace" Content="Save Replace In Folder" Click="Button_Click" Margin="2"/>
+                <Button Name="bNewBlank" Content="New Blank" Click="Button_Click" Margin="2"/>
+                <Button Name="bUndo" Content="Undo" Click="Button_Click" Margin="2"/>
+                <Button Name="bRedo" Content="Redo" Click="ExtendedButton_Click" Margin="2"/>
+                <Button Name="bRebuildT3" Content="Rebuild Teleporters" Click="Button_Click" Margin="2"/>
+                <Separator/>
+                <TextBlock Text="Tileset:" VerticalAlignment="Center" Margin="6,0,2,0"/>
+                <ComboBox Name="cbTileset" Width="130" SelectionChanged="ComboBox_SelectionChanged"/>
+                <Separator/>
+                <TextBlock Name="tbActiveTool" Text="Tool: Select" VerticalAlignment="Center" FontWeight="SemiBold" Margin="6,0"/>
+            </ToolBar>
+        </ToolBarTray>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="335"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="345"/>
+            </Grid.ColumnDefinitions>
+
+            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="8">
+                    <TextBlock Text="Project / Levels" Foreground="White" FontSize="15" FontWeight="Bold"/>
+                    <TextBlock Name="tbProjectInfo" Text="Standalone mode" Foreground="#AAA" TextWrapping="Wrap" Margin="0,4,0,6"/>
+                    <ListBox Name="lbProjectLevels" Height="120" MouseDoubleClick="ListBox_MouseDoubleClick"/>
+                    <TextBlock Text="Add current level to pack" Foreground="White" Margin="0,6,0,2"/>
+                    <TextBox Name="tbLevelSetName" Text="Custom Levels" ToolTip="Existing or new levelset name" Margin="0,2"/>
+                    <TextBox Name="tbPackLevelName" Text="01" ToolTip="Level display name" Margin="0,2"/>
+                    <TextBox Name="tbMusicPath" ToolTip="Music resource path (leave blank to use selected level music)" Margin="0,2"/>
+                    <Button Name="bImportProjectLevel" Content="Import Level into Project" Click="ExtendedButton_Click" Margin="0,2"/>
+                    <Button Name="bAddPackLevel" Content="Add to Levelset" Click="ExtendedButton_Click" Margin="0,2"/>
+
+                    <TextBlock Text="Tools" Foreground="White" FontSize="15" FontWeight="Bold" Margin="0,12,0,4"/>
+                    <Button Name="bSelectTool" Content="Select / Move Tool" Click="Button_Click" Margin="0,0,0,6"/>
+                    <CheckBox Name="cbSnapStatics" Content="Snap scenery to grid" IsChecked="True" Foreground="White" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" Margin="0,0,0,6"/>
+
+                    <TextBlock Text="New animals: facing" Foreground="White" Margin="0,4,0,2"/>
+                    <ComboBox Name="cbAnimalFacing" SelectedIndex="0"><ComboBoxItem Content="0 - North-east (up/right)"/><ComboBoxItem Content="1 - South-east (down/right)"/><ComboBoxItem Content="2 - South-west (down/left)"/><ComboBoxItem Content="3 - North-west (up/left)"/></ComboBox>
+                    <TextBlock Text="New sheep: initial impatience" Foreground="White" Margin="0,4,0,2"/>
+                    <ComboBox Name="cbSheepAnger" SelectedIndex="3"><ComboBoxItem Content="0 / 5 (least impatient)"/><ComboBoxItem Content="1 / 5"/><ComboBoxItem Content="2 / 5"/><ComboBoxItem Content="3 / 5"/><ComboBoxItem Content="4 / 5"/><ComboBoxItem Content="5 / 5 (most impatient)"/></ComboBox>
+                    <TabControl Name="tcPalette" SelectionChanged="TabControl_SelectionChanged">
+                        <TabItem Header="Statics">
+                            <ListBox Name="lbStaticPalette" Height="360" ItemTemplate="{StaticResource dtStaticPaletteItem}" ItemsPanel="{StaticResource ipWrapPanel}" SelectionChanged="ListBox_SelectionChanged" ScrollViewer.HorizontalScrollBarVisibility="Disabled"/>
+                        </TabItem>
+                        <TabItem Header="Characters">
+                            <ListBox Name="lbCharacterPalette" Height="360" ItemTemplate="{StaticResource dtCharacterPaletteItem}" SelectionChanged="ListBox_SelectionChanged"/>
+                        </TabItem>
+                        <TabItem Header="Tiles">
+                            <ListBox Name="lbTilePalette" Height="360" ItemTemplate="{StaticResource dtTilePaletteItem}" SelectionChanged="ListBox_SelectionChanged"/>
+                        </TabItem>
+                    </TabControl>
+                </StackPanel>
+            </ScrollViewer>
+
+            <Border Grid.Column="1" Background="#202020" BorderBrush="#555" BorderThickness="1" Margin="6">
+                <ScrollViewer Name="svLevel" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" PreviewMouseWheel="Level_MouseWheel" PreviewMouseDown="Level_PanDown" PreviewMouseMove="Level_PanMove" PreviewMouseUp="Level_PanUp">
+                    <Canvas Name="cLevel" Width="800" Height="600" Background="#252525" HorizontalAlignment="Left" VerticalAlignment="Top" ClipToBounds="True"
+                            MouseLeftButtonDown="Canvas_MouseLeftButtonDown"
+                            MouseRightButtonDown="Canvas_MouseRightButtonDown"
+                            MouseMove="Canvas_MouseMove"
+                            MouseLeftButtonUp="Canvas_MouseLeftButtonUp" Focusable="True">
+                        <Canvas.LayoutTransform><ScaleTransform x:Name="stZoom" ScaleX="1" ScaleY="1"/></Canvas.LayoutTransform>
+                    </Canvas>
+                </ScrollViewer>
+            </Border>
+
+            <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="8">
+                    <TextBlock Text="Level" Foreground="White" FontSize="15" FontWeight="Bold"/>
+                    <TextBlock Name="tbLevelInfo" Text="No level loaded" Foreground="#AAA" TextWrapping="Wrap" Margin="0,4,0,8"/>
+
+                    <TextBlock Text="Time limit (seconds)" Foreground="White"/>
+                    <TextBox Name="tbTimeLimit" Text="150"/>
+                    <Button Name="bSetTimeLimit" Content="Apply Time Limit" Click="ExtendedButton_Click" Margin="0,2"/>
+                    <TextBlock Text="Teleporter destinations (raw indices, ordered)" Foreground="White" TextWrapping="Wrap" Margin="0,6,0,2"/>
+                    <TextBox Name="tbTeleporters"/>
+                    <Button Name="bSetTeleporters" Content="Apply Teleporter List" Click="ExtendedButton_Click" Margin="0,2"/>
+                    <TextBlock Text="Layers" Foreground="White" FontSize="15" FontWeight="Bold"/>
+                    <WrapPanel Margin="0,4,0,8">
+                        <CheckBox Name="cbLayerBackground" Content="Background" IsChecked="True" Foreground="White" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" Margin="0,2,8,2"/>
+                        <CheckBox Name="cbLayerTiles" Content="Tiles" IsChecked="False" Foreground="White" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" Margin="0,2,8,2"/>
+                        <CheckBox Name="cbLayerGrid" Content="Grid" IsChecked="False" Foreground="White" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" Margin="0,2,8,2"/>
+                        <CheckBox Name="cbLayerStatics" Content="Statics" IsChecked="True" Foreground="White" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" Margin="0,2,8,2"/>
+                        <CheckBox Name="cbLayerSven" Content="Sven" IsChecked="True" Foreground="White" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" Margin="0,2,8,2"/>
+                        <CheckBox Name="cbLayerSheep" Content="Sheep" IsChecked="True" Foreground="White" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" Margin="0,2,8,2"/>
+                        <CheckBox Name="cbLayerEnemies" Content="Enemies" IsChecked="True" Foreground="White" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" Margin="0,2,8,2"/>
+                        <CheckBox Name="cbLayerLabels" Content="Labels / Links" IsChecked="False" Foreground="White" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" Margin="0,2,8,2"/>
+                        <CheckBox Name="cbLayerUnknown" Content="Unknown" IsChecked="True" Foreground="White" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" Margin="0,2,8,2"/>
+                    </WrapPanel>
+
+                    <TextBlock Text="Objects" Foreground="White" FontSize="15" FontWeight="Bold"/>
+                    <TextBlock Text="Ctrl/Alt-click on the level to pick among overlapping objects." Foreground="#AAA" TextWrapping="Wrap" Margin="0,4,0,4"/>
+                    <TextBox Name="tbObjectSearch" ToolTip="Filter objects by name, kind, or slot" TextChanged="ObjectSearch_Changed" Margin="0,2,0,4"/>
+                    <ListBox Name="lbObjects" Height="240" SelectionChanged="ListBox_SelectionChanged"/>
+
+                    <TextBlock Text="Selected" Foreground="White" FontSize="15" FontWeight="Bold" Margin="0,12,0,0"/>
+                    <TextBlock Name="tbSelectedInfo" Text="Nothing selected" Foreground="#DDD" FontFamily="Consolas" TextWrapping="Wrap" Margin="0,4,0,8"/>
+
+                    <WrapPanel>
+                        <TextBlock Text="X " Foreground="White"/><TextBox Name="tbObjectX" Width="62" Margin="0,0,8,4"/>
+                        <TextBlock Text="Y " Foreground="White"/><TextBox Name="tbObjectY" Width="62" Margin="0,0,8,4"/>
+                        <TextBlock Text="Depth offset " Foreground="White"/><TextBox Name="tbObjectDepth" Width="62" Margin="0,0,8,4"/>
+                    </WrapPanel>
+                    <Button Name="bApplyTransform" Content="Apply Position / Depth" Click="ExtendedButton_Click" Margin="0,2"/>
+                    <TextBlock Text="Selected animal: facing" Foreground="White" Margin="0,6,0,2"/>
+                    <ComboBox Name="cbSelectedFacing" SelectedIndex="0"><ComboBoxItem Content="0 - North-east (up/right)"/><ComboBoxItem Content="1 - South-east (down/right)"/><ComboBoxItem Content="2 - South-west (down/left)"/><ComboBoxItem Content="3 - North-west (up/left)"/></ComboBox>
+                    <TextBlock Text="Selected sheep: initial impatience" Foreground="White" Margin="0,4,0,2"/>
+                    <ComboBox Name="cbSelectedAnger" SelectedIndex="3"><ComboBoxItem Content="0 / 5 (least impatient)"/><ComboBoxItem Content="1 / 5"/><ComboBoxItem Content="2 / 5"/><ComboBoxItem Content="3 / 5"/><ComboBoxItem Content="4 / 5"/><ComboBoxItem Content="5 / 5 (most impatient)"/></ComboBox>
+                    <Button Name="bApplyAnimal" Content="Apply Animal Settings" Click="ExtendedButton_Click" Margin="0,2" IsEnabled="False"/>
+                    <TextBlock Text="Object fields 1?25 (raw signed integers)" Foreground="White" TextWrapping="Wrap"/>
+                    <TextBox Name="tbObjectFields" AcceptsReturn="True" TextWrapping="Wrap" Height="85" VerticalScrollBarVisibility="Auto"/>
+                    <Button Name="bApplyObject" Content="Apply Object Fields" Click="ExtendedButton_Click" Margin="0,2"/>
+                    <WrapPanel>
+                        <Button Name="bEarlier" Content="Draw Earlier" Click="ExtendedButton_Click" Margin="2"/>
+                        <Button Name="bLater" Content="Draw Later" Click="ExtendedButton_Click" Margin="2"/>
+                        <Button Name="bDeleteObject" Content="Delete" Click="ExtendedButton_Click" Margin="2"/>
+                    </WrapPanel>
+                    <TextBlock Text="Tile inspector (all 374 raw records)" Foreground="White" Margin="0,8,0,2"/>
+                    <TextBox Name="tbRawTileIndex" Text="23" ToolTip="Raw tile index: 0?373"/>
+                    <Button Name="bReadTile" Content="Read Tile" Click="ExtendedButton_Click" Margin="0,2"/>
+                    <TextBox Name="tbRawTileFields" Text="0,0,0,0,0,0" ToolTip="Six raw signed integers"/>
+                    <Button Name="bApplyTile" Content="Apply Tile Fields" Click="ExtendedButton_Click" Margin="0,2"/>
+                    <Button Name="bTileInventory" Content="Export Tile Inventory" Click="ExtendedButton_Click" Margin="0,2"/>
+                    <TextBlock Name="tbStatus" Foreground="#DDD" TextWrapping="Wrap" Margin="0,8"/>
+                    <TextBlock Text="Controls" Foreground="White" FontSize="15" FontWeight="Bold" Margin="0,12,0,0"/>
+                    <TextBlock Foreground="#AAA" TextWrapping="Wrap"><Run Text="V/Esc: select. Delete: delete selection. Arrows: nudge (Shift: 10px). Ctrl+Z/Y: undo/redo. Ctrl+S: save. Ctrl+wheel: zoom. Right-click: overlap menu; in tile mode: erase. Ctrl/Alt-click: overlap picker."/></TextBlock>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </DockPanel>
+</Window>
