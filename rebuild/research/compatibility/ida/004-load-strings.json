@@ -1,0 +1,37 @@
+{
+  "jsonrpc": "2.0",
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"n\":4,\"matches\":[{\"addr\":\"0x482c18\",\"string\":\"xmlPackageLevelSetGetLevels(\"},{\"addr\":\"0x482c80\",\"string\":\"xmlPackageLevelLoadLevel(\"},{\"addr\":\"0x482ca0\",\"string\":\"xmlPackageLoadLevel(\"},{\"addr\":\"0x482cb8\",\"string\":\"xmlPackageLoadInfoLevel(\"}],\"cursor\":{\"done\":true}}"
+      }
+    ],
+    "structuredContent": {
+      "n": 4,
+      "matches": [
+        {
+          "addr": "0x482c18",
+          "string": "xmlPackageLevelSetGetLevels("
+        },
+        {
+          "addr": "0x482c80",
+          "string": "xmlPackageLevelLoadLevel("
+        },
+        {
+          "addr": "0x482ca0",
+          "string": "xmlPackageLoadLevel("
+        },
+        {
+          "addr": "0x482cb8",
+          "string": "xmlPackageLoadInfoLevel("
+        }
+      ],
+      "cursor": {
+        "done": true
+      }
+    },
+    "isError": false
+  },
+  "id": 1
+}

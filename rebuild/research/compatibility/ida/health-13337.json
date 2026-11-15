@@ -1,0 +1,25 @@
+{
+  "jsonrpc": "2.0",
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"status\":\"ok\",\"uptime_sec\":4406.241,\"idb_path\":\"E:\\\\SvenBomwollen-Reversal\\\\games\\\\sven2\\\\Sven2.exe.idb\",\"module\":\"Sven2.exe\",\"input_path\":\"E:\\\\SvenBomwollen-Reversal\\\\sven2\\\\Sven2.exe\",\"imagebase\":\"0x400000\",\"auto_analysis_ready\":true,\"hexrays_ready\":true,\"strings_cache_ready\":false,\"strings_cache_size\":0}"
+      }
+    ],
+    "structuredContent": {
+      "status": "ok",
+      "uptime_sec": 4406.241,
+      "idb_path": "E:\\SvenBomwollen-Reversal\\games\\sven2\\Sven2.exe.idb",
+      "module": "Sven2.exe",
+      "input_path": "E:\\SvenBomwollen-Reversal\\sven2\\Sven2.exe",
+      "imagebase": "0x400000",
+      "auto_analysis_ready": true,
+      "hexrays_ready": true,
+      "strings_cache_ready": false,
+      "strings_cache_size": 0
+    },
+    "isError": false
+  },
+  "id": 1
+}

@@ -1,0 +1,34 @@
+{
+  "jsonrpc": "2.0",
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"addr\":\"0x44F8F0\",\"code\":\"_DWORD *__thiscall sub_44F8F0(_DWORD *this)\\n{\\n  char v2; // dl\\n  _DWORD *result; // eax\\n  int v4; // edi\\n  int v5; // ecx\\n\\n  v2 = 0; /*0x44f8f4*/\\n  result = this + 9628; /*0x44f8f6*/\\n  v4 = 2048; /*0x44f8fc*/\\n  do /*0x44f926*/\\n  {\\n    if ( *(result - 7) == 36 && !*result ) /*0x44f907*/\\n    {\\n      v5 = result[2]; /*0x44f90c*/\\n      *result = 1; /*0x44f90f*/\\n      v2 = 1; /*0x44f915*/\\n      LOBYTE(this[6 * v5 + 84703]) = -93; /*0x44f91a*/\\n    }\\n    result += 28; /*0x44f922*/\\n    --v4; /*0x44f925*/\\n  }\\n  while ( v4 ); /*0x44f926*/\\n  if ( v2 ) /*0x44f92a*/\\n  {\\n    result = (_DWORD *)sub_4698A0(aSfxopenexit); /*0x44f933*/\\n    this[84597] = 1; /*0x44f938*/\\n  }\\n  return result; /*0x44f942*/\\n}\",\"line_count\":30,\"total_lines\":30,\"truncated\":false,\"cursor\":{\"done\":true},\"refs\":[{\"addr\":\"0x4698a0\",\"name\":\"sub_4698A0\"},{\"addr\":\"0x480b18\",\"name\":\"aSfxopenexit\",\"string\":\"SfxOpenExit\"}]}"
+      }
+    ],
+    "structuredContent": {
+      "addr": "0x44F8F0",
+      "code": "_DWORD *__thiscall sub_44F8F0(_DWORD *this)\n{\n  char v2; // dl\n  _DWORD *result; // eax\n  int v4; // edi\n  int v5; // ecx\n\n  v2 = 0; /*0x44f8f4*/\n  result = this + 9628; /*0x44f8f6*/\n  v4 = 2048; /*0x44f8fc*/\n  do /*0x44f926*/\n  {\n    if ( *(result - 7) == 36 && !*result ) /*0x44f907*/\n    {\n      v5 = result[2]; /*0x44f90c*/\n      *result = 1; /*0x44f90f*/\n      v2 = 1; /*0x44f915*/\n      LOBYTE(this[6 * v5 + 84703]) = -93; /*0x44f91a*/\n    }\n    result += 28; /*0x44f922*/\n    --v4; /*0x44f925*/\n  }\n  while ( v4 ); /*0x44f926*/\n  if ( v2 ) /*0x44f92a*/\n  {\n    result = (_DWORD *)sub_4698A0(aSfxopenexit); /*0x44f933*/\n    this[84597] = 1; /*0x44f938*/\n  }\n  return result; /*0x44f942*/\n}",
+      "line_count": 30,
+      "total_lines": 30,
+      "truncated": false,
+      "cursor": {
+        "done": true
+      },
+      "refs": [
+        {
+          "addr": "0x4698a0",
+          "name": "sub_4698A0"
+        },
+        {
+          "addr": "0x480b18",
+          "name": "aSfxopenexit",
+          "string": "SfxOpenExit"
+        }
+      ]
+    },
+    "isError": false
+  },
+  "id": 1
+}

@@ -1,0 +1,14 @@
+[
+  {
+    "kind": 43,
+    "resource_member": 96236,
+    "string_address": "0x45078c",
+    "path": "SvenXXX\\gfx\\pfx_bubbles.bmp"
+  },
+  {
+    "kind": 44,
+    "resource_member": 96240,
+    "string_address": "0x450770",
+    "path": "SvenXXX\\gfx\\pfx_yellow.bmp"
+  }
+]

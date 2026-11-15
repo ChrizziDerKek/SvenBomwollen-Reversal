@@ -1,0 +1,76 @@
+void __thiscall sub_44F1F0(int this)
+{
+  int v2; // ecx
+  double v3; // st7
+  _DWORD *v4; // edx
+  int v5; // edi
+  double v6; // st7
+  double v7; // st7
+  double v8; // st6
+  double v9; // st7
+  int v10; // ecx
+  int v11; // edi
+  int v12; // edi
+  double v13; // st7
+  double v14; // st7
+  int v15; // [esp+8h] [ebp-8h]
+  float v16; // [esp+8h] [ebp-8h]
+  float v17; // [esp+8h] [ebp-8h]
+  float v18; // [esp+Ch] [ebp-4h]
+  float v19; // [esp+Ch] [ebp-4h]
+
+  if ( *(_DWORD *)(this + 38224) == 1 ) /*0x44f1fe*/
+  {
+    v15 = *(_WORD *)(this + 38464) >> 1; /*0x44f231*/
+    v2 = *(_DWORD *)(this + 1224); /*0x44f235*/
+    v3 = (double)(*(_WORD *)(this + 38462) >> 1) + *(float *)(this + 38476) + *(float *)(this + 38448); /*0x44f23b*/
+    *(float *)(this + 1216) = v3; /*0x44f247*/
+    v4 = (_DWORD *)(this + 164 * v2 + 2828); /*0x44f251*/
+    v5 = 41 * v2; /*0x44f261*/
+    v18 = (double)v15 + *(float *)(this + 38480) + *(float *)(this + 38452); /*0x44f26a*/
+    *(float *)(this + 1220) = v18; /*0x44f26e*/
+    v16 = (float)*(int *)(this + 4 * (41 * v2 + *v4) + 2668); /*0x44f27f*/
+    if ( v3 < v16 ) /*0x44f28c*/
+      *(float *)(this + 1216) = v16; /*0x44f292*/
+    v6 = (double)*(int *)(this + 4 * (v5 + *v4) + 2708); /*0x44f29c*/
+    if ( v6 < *(float *)(this + 1216) ) /*0x44f2ae*/
+      *(float *)(this + 1216) = v6; /*0x44f2b0*/
+    v7 = (double)*(int *)(this + 4 * (v5 + *v4) + 2748); /*0x44f2be*/
+    v8 = v18; /*0x44f2c5*/
+  }
+  else
+  {
+    v9 = (double)((int)((__int64)((double)(*(_WORD *)(this + 38574) >> 1) /*0x44f346*/
+                                + *(float *)(this + 38588)
+                                + *(float *)(this + 38560))
+                      + (__int64)((double)(*(_WORD *)(this + 38462) >> 1)
+                                + *(float *)(this + 38476)
+                                + *(float *)(this + 38448)))
+                / 2);
+    v10 = *(_WORD *)(this + 38576) >> 1; /*0x44f34d*/
+    *(float *)(this + 1216) = v9; /*0x44f353*/
+    v11 = (__int64)((double)v10 + *(float *)(this + 38592) + *(float *)(this + 38564)); /*0x44f379*/
+    v2 = *(_DWORD *)(this + 1224); /*0x44f39d*/
+    v19 = (float)((int)(v11 /*0x44f3bb*/
+                      + (__int64)((double)(*(_WORD *)(this + 38464) >> 1)
+                                + *(float *)(this + 38480)
+                                + *(float *)(this + 38452)))
+                / 2);
+    *(float *)(this + 1220) = v19; /*0x44f3bf*/
+    v4 = (_DWORD *)(this + 164 * v2 + 2828); /*0x44f3c5*/
+    v12 = 41 * v2; /*0x44f3cc*/
+    v17 = (float)*(int *)(this + 4 * (41 * v2 + *v4) + 2668); /*0x44f3da*/
+    if ( v9 < v17 ) /*0x44f3e7*/
+      *(float *)(this + 1216) = v17; /*0x44f3ed*/
+    v13 = (double)*(int *)(this + 4 * (v12 + *v4) + 2708); /*0x44f3f7*/
+    if ( v13 < *(float *)(this + 1216) ) /*0x44f409*/
+      *(float *)(this + 1216) = v13; /*0x44f40b*/
+    v7 = (double)*(int *)(this + 4 * (v12 + *v4) + 2748); /*0x44f415*/
+    v8 = v19; /*0x44f41c*/
+  }
+  if ( v8 < v7 ) /*0x44f2d0*/
+    *(float *)(this + 1220) = v7; /*0x44f2d6*/
+  v14 = (double)*(int *)(this + 4 * (*v4 + v2 + 8 * (5 * v2 + 85) + 17)); /*0x44f449*/
+  if ( v14 < *(float *)(this + 1220) ) /*0x44f457*/
+    *(float *)(this + 1220) = v14; /*0x44f459*/
+}

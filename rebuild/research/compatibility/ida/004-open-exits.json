@@ -1,0 +1,23 @@
+{
+  "jsonrpc": "2.0",
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"addr\":\"0x44F950\",\"code\":\"bool __thiscall sub_44F950(_DWORD *this, int a2)\\n{\\n  float *v3; // edi\\n  int v4; // ecx\\n  int v5; // ebp\\n  int v6; // edx\\n  int v7; // ebx\\n  int v9; // eax\\n\\n  v3 = (float *)&this[28 * a2]; /*0x44f974*/\\n  v4 = this[306]; /*0x44f98f*/\\n  v5 = this[41 * v4 + 707]; /*0x44f9a2*/\\n  v6 = v4 + v5 + 40 * v4; /*0x44f9ac*/\\n  v7 = (*((unsigned __int16 *)v3 + 19231) >> 1) + (__int64)(v3[9619] + v3[9612]); /*0x44f9ba*/\\n  if ( v7 < this[v6 + 667] - 400 ) /*0x44f9ca*/\\n    return 0; /*0x44f9cf*/\\n  if ( v7 > this[v6 + 677] + 400 ) /*0x44f9e3*/\\n    return 0; /*0x44f9e8*/\\n  v9 = (__int64)(v3[9620] + v3[9613]) + (*((unsigned __int16 *)v3 + 19232) >> 1); /*0x44fa04*/\\n  return v9 >= this[v6 + 687] - 300 && v9 <= this[40 * v4 + 697 + v4 + v5] + 300; /*0x44f9cc*/\\n}\",\"line_count\":21,\"total_lines\":21,\"truncated\":false,\"cursor\":{\"done\":true}}"
+      }
+    ],
+    "structuredContent": {
+      "addr": "0x44F950",
+      "code": "bool __thiscall sub_44F950(_DWORD *this, int a2)\n{\n  float *v3; // edi\n  int v4; // ecx\n  int v5; // ebp\n  int v6; // edx\n  int v7; // ebx\n  int v9; // eax\n\n  v3 = (float *)&this[28 * a2]; /*0x44f974*/\n  v4 = this[306]; /*0x44f98f*/\n  v5 = this[41 * v4 + 707]; /*0x44f9a2*/\n  v6 = v4 + v5 + 40 * v4; /*0x44f9ac*/\n  v7 = (*((unsigned __int16 *)v3 + 19231) >> 1) + (__int64)(v3[9619] + v3[9612]); /*0x44f9ba*/\n  if ( v7 < this[v6 + 667] - 400 ) /*0x44f9ca*/\n    return 0; /*0x44f9cf*/\n  if ( v7 > this[v6 + 677] + 400 ) /*0x44f9e3*/\n    return 0; /*0x44f9e8*/\n  v9 = (__int64)(v3[9620] + v3[9613]) + (*((unsigned __int16 *)v3 + 19232) >> 1); /*0x44fa04*/\n  return v9 >= this[v6 + 687] - 300 && v9 <= this[40 * v4 + 697 + v4 + v5] + 300; /*0x44f9cc*/\n}",
+      "line_count": 21,
+      "total_lines": 21,
+      "truncated": false,
+      "cursor": {
+        "done": true
+      }
+    },
+    "isError": false
+  },
+  "id": 1
+}

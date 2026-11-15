@@ -1,0 +1,30 @@
+_DWORD *__thiscall sub_44F8F0(_DWORD *this)
+{
+  char v2; // dl
+  _DWORD *result; // eax
+  int v4; // edi
+  int v5; // ecx
+
+  v2 = 0; /*0x44f8f4*/
+  result = this + 9628; /*0x44f8f6*/
+  v4 = 2048; /*0x44f8fc*/
+  do /*0x44f926*/
+  {
+    if ( *(result - 7) == 36 && !*result ) /*0x44f907*/
+    {
+      v5 = result[2]; /*0x44f90c*/
+      *result = 1; /*0x44f90f*/
+      v2 = 1; /*0x44f915*/
+      LOBYTE(this[6 * v5 + 84703]) = -93; /*0x44f91a*/
+    }
+    result += 28; /*0x44f922*/
+    --v4; /*0x44f925*/
+  }
+  while ( v4 ); /*0x44f926*/
+  if ( v2 ) /*0x44f92a*/
+  {
+    result = (_DWORD *)sub_4698A0(aSfxopenexit); /*0x44f933*/
+    this[84597] = 1; /*0x44f938*/
+  }
+  return result; /*0x44f942*/
+}

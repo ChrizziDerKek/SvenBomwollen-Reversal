@@ -1,0 +1,230 @@
+                        *(_DWORD *)(this + 415116),
+                        *(_DWORD *)(this + 4156),
+                        *(_DWORD *)(v4 + 38440),
+                        *(_DWORD *)(v4 + 38444),
+                        *(_DWORD *)(v4 + 38516));
+                    v107 = *(_DWORD *)sub_41E6C0(39); /*0x41af82*/
+                    (*(void (__thiscall **)(int, _DWORD, _DWORD, _DWORD, int))(*(_DWORD *)v107 + 40))( /*0x41af8c*/
+                      v107,
+                      *(_DWORD *)(this + 4156),
+                      *(_DWORD *)(v4 + 38440),
+                      *(_DWORD *)(v4 + 38444),
+                      1);
+                    goto LABEL_165; /*0x41af8c*/
+                  case 0x1E: /*0x41ad07*/
+                  case 0x1F: /*0x41ad07*/
+                    v108 = *(_DWORD *)sub_41E6C0(*(_DWORD *)(v4 + 38516) / 2 + 35); /*0x41afdb*/
+                    (*(void (__thiscall **)(int, _DWORD, _DWORD, _DWORD, _DWORD))(*(_DWORD *)v108 + 40))( /*0x41afeb*/
+                      v108,
+                      *(_DWORD *)(this + 4156),
+                      *(_DWORD *)(v4 + 38440),
+                      *(_DWORD *)(v4 + 38444),
+                      *(_DWORD *)(v4 + 38488));
+                    goto LABEL_165; /*0x41afeb*/
+                  case 0x34: /*0x41ad07*/
+                    v110 = *(float *)(v4 + 38480); /*0x41afed*/
+                    v111 = v110 < -27.0; /*0x41aff3*/
+                    v112 = 0; /*0x41aff3*/
+                    v113 = v110 == -27.0; /*0x41aff3*/
+                    if ( (v109 & 0x4100) == 0 ) /*0x41b000*/
+                    {
+                      v114 = *(_DWORD *)sub_41E6C0(25); /*0x41b00f*/
+                      (*(void (__thiscall **)(int, _DWORD, _DWORD, _DWORD, _DWORD))(*(_DWORD *)v114 + 40))( /*0x41b01f*/
+                        v114,
+                        *(_DWORD *)(this + 4156),
+                        *(_DWORD *)(v4 + 38440),
+                        *(_DWORD *)(v4 + 38444),
+                        *(_DWORD *)(v4 + 38488));
+                    }
+                    goto LABEL_165; /*0x41b01f*/
+                  case 0x3C: /*0x41ad07*/
+                    v115 = *(_DWORD *)sub_41E6C0(0); /*0x41b02e*/
+                    v308 = *(float *)(v4 + 38444) - 20.0; /*0x41b044*/
+                    (*(void (__thiscall **)(int, _DWORD, _DWORD, _DWORD, _DWORD))(*(_DWORD *)v115 + 40))( /*0x41b057*/
+                      v115,
+                      *(_DWORD *)(this + 4156),
+                      *(_DWORD *)(v4 + 38440),
+                      LODWORD(v308),
+                      *(_DWORD *)(v4 + 38516));
+                    goto LABEL_165; /*0x41b057*/
+                  default:
+                    goto LABEL_165;
+                }
+                goto LABEL_165; /*0x41ad65*/
+              default:
+                goto LABEL_481;
+            }
+          }
+          else
+          {
+            switch ( *(_DWORD *)(v4 + 38512) ) /*0x4198d5*/
+            {
+              case 0: /*0x4198d5*/
+                if ( *(int *)(this + 92 * v3 + 337064) <= 0 ) /*0x4198f0*/
+                {
+                  v8 = *(_DWORD *)(v4 + 38508); /*0x419953*/
+                  v9 = *(_DWORD *)(this + 414052); /*0x419959*/
+                  if ( v8 == 8 ) /*0x419962*/
+                  {
+                    v10 = *(_DWORD *)(v9 + 32); /*0x41996a*/
+                    v341 = *(_DWORD *)(v4 + 38516); /*0x41996d*/
+                  }
+                  else
+                  {
+                    v10 = *(_DWORD *)(v9 + 4 * v8); /*0x41997a*/
+                    v341 = *(_DWORD *)(v4 + 38488); /*0x419983*/
+                  }
+                  (*(void (__thiscall **)(int, _DWORD, _DWORD, _DWORD, int))(*(_DWORD *)v10 + 40))( /*0x419975*/
+                    v10,
+                    *(_DWORD *)(this + 4156),
+                    *(_DWORD *)(v4 + 38440),
+                    *(_DWORD *)(v4 + 38444),
+                    v341);
+                }
+                else if ( *(float *)(v4 + 38548) == 0.0 || *(_BYTE *)(this + 92 * v3 + 337072) == 1 ) /*0x41990c*/
+                {
+                  (*(void (__thiscall **)(_DWORD, _DWORD, _DWORD, _DWORD, _DWORD))(**(_DWORD **)(*(_DWORD *)(this + 414052) /*0x41994e*/
+                                                                                               + 180)
+                                                                                 + 40))(
+                    *(_DWORD *)(*(_DWORD *)(this + 414052) + 180),
+                    *(_DWORD *)(this + 4156),
+                    *(_DWORD *)(v4 + 38440),
+                    *(_DWORD *)(v4 + 38444),
+                    *(_DWORD *)(v4 + 38516));
+                }
+                else
+                {
+                  v7 = *(_DWORD *)(*(_DWORD *)(this + 414052) + 4 * *(_DWORD *)(v4 + 38516) + 148); /*0x41991a*/
+                  (*(void (__thiscall **)(int, _DWORD, _DWORD, _DWORD, _DWORD))(*(_DWORD *)v7 + 40))( /*0x41992f*/
+                    v7,
+                    *(_DWORD *)(this + 4156),
+                    *(_DWORD *)(v4 + 38440),
+                    *(_DWORD *)(v4 + 38444),
+                    *(_DWORD *)(v4 + 38488));
+                }
+                goto LABEL_165; /*0x41992f*/
+              case 1: /*0x4198d5*/
+              case 2: /*0x4198d5*/
+                v11 = *(_DWORD *)(*(_DWORD *)(this + 414160) + 4 * *(unsigned __int8 *)(v4 + 38505)); /*0x4199ab*/
+                (*(void (__thiscall **)(int, _DWORD, _DWORD, _DWORD, _DWORD, float, float, int))(*(_DWORD *)v11 + 40))( /*0x4199d5*/
+                  v11,
+                  *(_DWORD *)(this + 4156),
+                  *(_DWORD *)(112 * *(_DWORD *)(v4 + 38524) + this + 38440),
+                  *(_DWORD *)(112 * *(_DWORD *)(v4 + 38524) + this + 38444),
+                  *(_DWORD *)(v4 + 38488),
+                  COERCE_FLOAT(LODWORD(v347)),
+                  COERCE_FLOAT(LODWORD(v348)),
+                  v349);
+                v12 = **(_DWORD **)(this + 414148); /*0x4199eb*/
+                v13 = 112 * *(_DWORD *)(v4 + 38524) + this; /*0x4199fb*/
+                v14 = *(_DWORD *)(v13 + 38516); /*0x419a0b*/
+                v349 = *(_DWORD *)(v13 + 38524) + *(unsigned __int8 *)(v13 + 38505); /*0x419a0e*/
+                v348 = (double)dword_47BEB8[v14] + *(float *)(v13 + 38444); /*0x419a1e*/
+                v15 = (double)dword_47BE98[v14]; /*0x419a22*/
+LABEL_28:
+                v347 = v15 + *(float *)(v13 + 38440); /*0x419bc6*/
+                (*(void (__thiscall **)(int, _DWORD))(*(_DWORD *)v12 + 40))(v12, *(_DWORD *)(this + 4156)); /*0x419bdb*/
+                sub_41E5A0(v3); /*0x419be1*/
+                goto LABEL_481; /*0x419be6*/
+              case 3: /*0x4198d5*/
+                if ( *(int *)(this + 92 * v3 + 337064) <= 0 ) /*0x419a3e*/
+                {
+                  (*(void (__thiscall **)(_DWORD, _DWORD, _DWORD, _DWORD, _DWORD))(**(_DWORD **)(*(_DWORD *)(this + 414052) /*0x419a98*/
+                                                                                               + 32)
+                                                                                 + 40))(
+                    *(_DWORD *)(*(_DWORD *)(this + 414052) + 32),
+                    *(_DWORD *)(this + 4156),
+                    *(_DWORD *)(v4 + 38440),
+                    *(_DWORD *)(v4 + 38444),
+                    *(_DWORD *)(v4 + 38516));
+                  goto LABEL_165; /*0x419a98*/
+                }
+                v16 = *(_DWORD *)(*(_DWORD *)(this + 414052) + 4 * *(_DWORD *)(v4 + 38516) + 148); /*0x419a4c*/
+LABEL_19:
+                (*(void (__thiscall **)(int, _DWORD, _DWORD, _DWORD, _DWORD))(*(_DWORD *)v16 + 40))( /*0x419a53*/
+                  v16,
+                  *(_DWORD *)(this + 4156),
+                  *(_DWORD *)(v4 + 38440),
+                  *(_DWORD *)(v4 + 38444),
+                  *(_DWORD *)(v4 + 38488));
+                sub_41E5A0(v3); /*0x419a77*/
+                break; /*0x419a7c*/
+              case 4: /*0x4198d5*/
+                if ( *(int *)(this + 92 * v3 + 337064) > 0 ) /*0x419aae*/
+                  (*(void (__thiscall **)(_DWORD, _DWORD, _DWORD, _DWORD, _DWORD))(**(_DWORD **)(this + 414956) + 40))( /*0x419ad4*/
+                    *(_DWORD *)(this + 414956),
+                    *(_DWORD *)(this + 4156),
+                    *(_DWORD *)(v4 + 38440),
+                    *(_DWORD *)(v4 + 38444),
+                    *(_DWORD *)(v4 + 38516));
+                v16 = *(_DWORD *)(*(_DWORD *)(this + 414052) + 4 * *(_DWORD *)(v4 + 38516) + 68); /*0x419ae3*/
+                goto LABEL_19; /*0x419ae7*/
+              case 5: /*0x4198d5*/
+                v17 = *(_DWORD *)(this + 92 * v3 + 337064) <= 0; /*0x419afb*/
+                goto LABEL_45; /*0x419afd*/
+              case 6: /*0x4198d5*/
+              case 7: /*0x4198d5*/
+                v16 = *(_DWORD *)(*(_DWORD *)(this + 414052) + 4 * *(_DWORD *)(v4 + 38516) + 100); /*0x419b0e*/
+                goto LABEL_19; /*0x419b12*/
+              case 8: /*0x4198d5*/
+              case 9: /*0x4198d5*/
+                v18 = (_DWORD *)(112 * *(_DWORD *)(v4 + 38524) + this); /*0x419b29*/
+                switch ( v18[9621] ) /*0x419b3f*/
+                {
+                  case 4: /*0x419b3f*/
+                    v19 = *(_DWORD *)(*(_DWORD *)(this + 414172) + 4 * v18[9629]); /*0x419b65*/
+                    (*(void (__thiscall **)(int, _DWORD, _DWORD, _DWORD, _DWORD, float, float, int))(*(_DWORD *)v19 + 40))( /*0x419b73*/
+                      v19,
+                      *(_DWORD *)(this + 4156),
+                      v18[9610],
+                      v18[9611],
+                      *(_DWORD *)(v4 + 38488),
+                      COERCE_FLOAT(LODWORD(v347)),
+                      COERCE_FLOAT(LODWORD(v348)),
+                      v349);
+                    v12 = **(_DWORD **)(this + 414148); /*0x419b89*/
+                    v13 = 112 * *(_DWORD *)(v4 + 38524) + this; /*0x419b99*/
+                    v20 = *(_DWORD *)(v13 + 38516); /*0x419ba9*/
+                    v349 = *(_DWORD *)(v13 + 38524) + *(unsigned __int8 *)(v13 + 38505); /*0x419bac*/
+                    v348 = (double)dword_4B69E8[v20] + *(float *)(v13 + 38444); /*0x419bbc*/
+                    v15 = (double)dword_47BED8[v20]; /*0x419bc0*/
+                    goto LABEL_28; /*0x419bc0*/
+                  case 5: /*0x419b3f*/
+                    v21 = *(_DWORD *)(*(_DWORD *)(this + 414184) + 4 * v18[9629]); /*0x419c0a*/
+                    (*(void (__thiscall **)(int, _DWORD, _DWORD, _DWORD, _DWORD, float, float, int))(*(_DWORD *)v21 + 40))( /*0x419c18*/
+                      v21,
+                      *(_DWORD *)(this + 4156),
+                      v18[9610],
+                      v18[9611],
+                      *(_DWORD *)(v4 + 38488),
+                      COERCE_FLOAT(LODWORD(v347)),
+                      COERCE_FLOAT(LODWORD(v348)),
+                      v349);
+                    v12 = **(_DWORD **)(this + 414148); /*0x419c2e*/
+                    v13 = 112 * *(_DWORD *)(v4 + 38524) + this; /*0x419c3e*/
+                    v22 = *(_DWORD *)(v13 + 38516); /*0x419c4e*/
+                    v349 = *(_DWORD *)(v13 + 38524) + *(unsigned __int8 *)(v13 + 38505); /*0x419c51*/
+                    v348 = (double)dword_47BEF8[v22] + *(float *)(v13 + 38444); /*0x419c61*/
+                    v15 = (double)dword_47BEE8[v22]; /*0x419c65*/
+                    goto LABEL_28; /*0x419c6b*/
+                  case 6: /*0x419b3f*/
+                    v23 = *(_DWORD *)(*(_DWORD *)(this + 414196) + 4 * v18[9629]); /*0x419c8f*/
+                    (*(void (__thiscall **)(int, _DWORD, _DWORD, _DWORD, _DWORD, float, float, int))(*(_DWORD *)v23 + 40))( /*0x419c9d*/
+                      v23,
+                      *(_DWORD *)(this + 4156),
+                      v18[9610],
+                      v18[9611],
+                      *(_DWORD *)(v4 + 38488),
+                      COERCE_FLOAT(LODWORD(v347)),
+                      COERCE_FLOAT(LODWORD(v348)),
+                      v349);
+                    v12 = **(_DWORD **)(this + 414148); /*0x419cb3*/
+                    v13 = 112 * *(_DWORD *)(v4 + 38524) + this; /*0x419cc3*/
+                    v24 = *(_DWORD *)(v13 + 38516); /*0x419cd3*/
+                    v349 = *(_DWORD *)(v13 + 38524) + *(unsigned __int8 *)(v13 + 38505); /*0x419cd6*/
+                    v348 = (double)dword_47BF18[v24] + *(float *)(v13 + 38444); /*0x419ce6*/
+                    v15 = (double)dword_47BF08[v24]; /*0x419cea*/
+                    goto LABEL_28; /*0x419cf0*/
+                  case 7: /*0x419b3f*/
+                    v25 = *(_DWORD *)(*(_DWORD *)(this + 414208) + 4 * v18[9629]); /*0x419d14*/
+                    (*(void (__thiscall **)(int, _DWORD, _DWORD, _DWORD, _DWORD, float, float, int))(*(_DWORD *)v25 + 40))( /*0x419d22*/

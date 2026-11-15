@@ -1,0 +1,491 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Sven004 version="1.0">
+
+	<stringtable>
+
+		<!--  BRAUCHEN WIR DAS NOCH ???   -->
+		<!--  Überschrift der Level-Spalte in der Highscore-Liste   -->
+		<string name="HighscoreLevel" value="Level"/>
+		<!--  BONUS LEVEL BOX vor jedem Bonus-Level   -->
+		<string name="BonusScreen" value="BONUS LEVEL"/>
+		<string name="AlienBonus" value="Untersuche alle Schafe!"/>
+		<string name="BroemseBonus" value="Spiel mit den Schäfchen!"/>
+		<string name="LarsBonus" value="Rasiere die Schafe!"/>
+
+
+		<!--  Episode Wählen: 1 oder 2 Spieler   -->
+		<string name="Player1_HeadLine" value="1 Spieler"/>
+		<string name="Player2_HeadLine" value="2 Spieler"/>
+		<!--  Episode Wählen Überschrift   -->
+		<string name="SelectPacks" value="Wähle eine Episode:"/>
+		<!--  Info-Zeile unter der Episode Wählen Box   -->
+		<string name="MorePacks" value="Infos zu neuen Levelpacks gibts unter www.sven-kommt.de"/>
+
+		<!--  Überschrift Highscore, Sammelkarten und Detail-Highscore-Screen  -->
+		<string name="Highscore" value="Highscores"/>
+		<string name="Sammelkarten" value="Sammelkarten"/>
+		<string name="Statistics" value="Spiel-Statistik"/>
+
+		<!--  Datum des Highscores im Detail-Highscore-Screen  -->
+		<string name="Date" value="Datum: "/>
+		<!--  Button Text für Highscore-Upload im Detail-Highscore-Screen   -->
+		<string name="UploadHighscore" value="Punkte übertragen"/>
+
+		<!--  LEVEL BONUS SCREEN nach jedem Level   -->
+		<string name="LevelBonus" value="Level Bonus:"/>
+		<string name="LevelPack" value="Episode: "/>
+		<string name="BonusLevel" value="Level: "/>
+		<string name="BonusTotal" value="Gesamt: "/>
+		<string name="PressSpace" value="- Leertaste drücken -"/>
+
+		<!--  EPISODEN BONUS SCREEN nach komplett gespielter Episode   -->
+		<string name="Congratulations" value="Glückwunsch!!!"/>
+		<string name="LevelPackMadeIt1" value="Episode "/>
+		<string name="LevelPackMadeIt2" value=" geschafft!"/>
+
+		<!--  SPIEL VERLASSEN BOX   -->
+		<string name="Quit3" value="SPIEL VERLASSEN ?"/>
+		<string name="Yes" value="Ja"/>
+		<string name="No" value="Nein"/>
+
+		<!--  GAME OVER BOX   -->
+		<string name="GameOver" value="GAME OVER"/>
+
+		<!--  STEUERUNG MENU Buttons   -->
+		<string name="Sound1" value="Sound an"/>
+		<string name="Sound2" value="Sound aus"/>
+		<string name="Default" value="Standard Tastaturbelegung"/>
+
+
+
+		<!--   Ingame Hilfe Texte  Steuerung-->
+		<string name="Help01" value="Sven wird mit den 'PFEIL-TASTEN' der Tastatur gesteuert.#Im Menü HILFE - STEUERUNG können auch andere Tasten eingestellt werden."/>
+
+		<!--   Zeitlimit -->
+		<string name="Help02" value="Links oben im Bild wird das Zeitlimit angezeigt.#Nach jedem Level bekommt man Bonuspunkte#für die übriggebliebene Zeit."/>
+
+		<string name="Help03" value="GESCHENKE geben einen Zeitbonus.#Sammelt man mehrere hintereinander,#bekommt man mehr Zeit pro Geschenk."/>
+
+		<!--   Coins -->
+		<string name="Help04" value="Für diese Münzen bekommt man Bonuspunkte.#Es lohnt sich also, danach zu suchen!"/>
+
+		<!--   Level-Exit -->
+		<string name="Help05" value="Das Kreuz markiert den Level-Ausgang.#Wenn es grün ist, ist der Ausgang offen.#Einfach drauf laufen, und der Level ist geschafft!"/>
+
+
+
+		<!--   größere Level -->
+		<string name="Help06" value="Die Level in Sven 004 können größer sein, als ein Bildschirm."/>
+
+		<!--   Fahrzeuge -->
+		<string name="Help07" value="Mit einem Fahrzeug kommt man schneller voran.#Gesteuert wird mit den selben Tasten, mit denen man läuft.#Absteigen kann man mit der Aktions-Taste."/>
+
+		<!--   Level-Exit -->
+		<string name="Help08" value="Ist das Kreuz rot, dann ist der Level-Ausgang geschlossen.#Der 'Schaf-Zähler' zwischen der#Zeit- und Punkteanzeige zeigt an,#wie viele Schafe beglückt werden müssen, damit der Ausgang sich öffnet."/>
+
+		<!--   Schafe Poppen -->
+		<string name="Help09" value="Um Schafe zu beglücken, drückt man schnell hintereinander die Aktions-Taste (rechte Strg-Taste), bis sich das Schaf auflöst."/>
+
+		<!--   Frigida -->
+		<string name="Help10" value="Frigida ist das anspruchsvollste Schaf der Herde. Wenn Sven sie ohne Pause zum Kochen bringt, zeigt sie ihm so manche neue Stellung."/>
+
+
+
+
+		<!--   Teleport-Pfützen-->
+		<string name="Help11" value="Die Pfützen dienen als Abkürzung#und als Fluchtweg vor Verfolgern.#Fahrzeuge gehen darin verloren."/>
+
+		<!--   Keys -->
+		<string name="Help12" value="Wenn man einen Schlüssel aufsammelt, geht die passende Tür auf."/>
+
+		<!--   Lever -->
+		<string name="Help13" value="Die Hebel kann man durch drüberlaufen betätigen, so oft man möchte."/>
+
+		<!--   Pressure-Plate -->
+		<string name="Help14" value="Druckplatten sind nur solange aktiv, wie etwas schweres darauf steht."/>
+
+		<string name="Help15" value="Fährt man mit einem Fahrzeug über EXTRAS, dann gehen diese kaputt.#Wenn man etwas aufheben möchte,#muss man vorher absteigen."/>
+
+		<!--   zerstörbare Kiste -->
+		<string name="Help16" value="Diese Kisten kann man öffnen,#wenn man mit Anlauf dagegen fährt.#Oft findet man etwas Nützliches darin."/>
+
+
+
+
+		<!--   Laune der Schafe -->
+		<string name="Help17" value="Die Wetter-Symbole über den Schafen zeigen ihre Laune an.#Je länger sie auf Sven warten müssen, desto schlechter wird ihre Laune."/>
+
+		<string name="Help18" value="Sven muss sich den Schafen von hinten nähern um sie zu beglücken. Bei jeder anderen Richtung benutzt Sven beim Drücken der Aktions-Taste seinen schönsten Lock-Pfiff.#Dadurch bekommt das Schaf bessere Laune und dreht sich um."/>
+
+
+		<string name="Help19" value="Bei Gewitter-Laune sollte Sven unbedingt mit einem Lock-Pfiff für bessere Stimmung sorgen, statt sich dem Schaf von hinten zu nähern.#Tut er das nicht, hat das schmerzhafte Konsequenzen und sorgt für einen Zeit-Abzug."/>
+
+		<!--   Extras -->
+		<string name="Help20" value="Extras wie die RAKETE oder die POWER-FLOWER geben den nötigen Kick, um besser bei den Schafen zu landen.#Bei manchen Extras wird die Wirkung sogar noch gesteigert, wenn man ein zweites aufhebt."/>
+
+		<string name="Help21" value="MIEF-PILZE sind mit Vorsicht zu genießen.#Wenn man unangenehm riecht, vermiest man#den Schäfchen die Laune."/>
+
+		<!--   Hupe -->
+		<string name="Help22" value="Die Hupe erschreckt die Schafe, wenn jemand drauftritt.#Sie rennen dann stur geradeaus und haben sofort Gewitter-Laune!"/>
+
+		<string name="Help23" value="Schafe mit Gewitter-Laune verwandeln sich in Teufelchen, wenn man sie erschreckt oder zu lange warten lässt.#Wird man von einem Teufelchen erwischt, gib es einen saftigen Zeitabzug!"/>
+
+
+
+
+
+		<!--   GEGNER  -->
+		<!--   Ablenkungs-Extras-->
+		<string name="Help24" value="Manche Extras lenken Gegner ab, wenn man sie in die Nähe lockt.#Ein Teddybär für Brømse, ein Knochen für Wøtan und eine Buddel voll Rum für Lars beschäftigen sie für eine Weile."/>
+
+		<!--   Alien-Artefakt-->
+		<string name="Help25" value="Gegner, die auf ein ALIEN-ARTEFAKT laufen, bleiben wie angewurzelt stehen und das UFO erscheint, um sie hochzubeamen.#Sven ist der Einzige, bei dem das Beamen einen positiven Effekt hat.#Sammel ein Artefakt ein und halte dich an dieser Stelle bereit, sobald das UFO kommt."/>
+
+		<!--   Fahrzeuge 2 -->
+		<string name="Help26" value="Wenn man schnell genug fährt, kann man Gegner wegschubsen und schwindelig machen.#Damit ist man sie für kurze Zeit los."/>
+
+		<!--   Hunter -->
+		<string name="Help27" value="Die Jäger sind sehr kurzsichtig und schießen auf alles, was sich bewegt.#Man sollte ihnen nicht vor die Flinte laufen."/>
+
+		<!--   Guard-Mode -->
+		<string name="Help28" value="Figuren mit dem Fragezeichen-Symbol bleiben auf ihrer Position stehen, wenn man ihnen nicht zu nahe kommt."/>
+
+		<string name="Help29" value="Ist das Zeitlimit abgelaufen, erscheint das UFO und beginnt damit, die restlichen Schafe zu entführen."/>
+
+
+		<!--   Groundhogs -->
+		<string name="Help30" value="Erdmännchen buddeln überall ihre Hügel. Man kann sie einfangen, wenn man die Aktions-Taste drückt.#Steht man zu nah an einem Hügel, dann traut sich dort kein Erdmännchen heraus."/>
+
+
+		<!--   Collision-Objects -->
+		<string name="Help31" value="Beim Überqueren von Strassen und Schienen muss man sehr vorsichtig sein. Autos und Züge bremsen scheinbar für Niemanden!"/>
+
+		<!--   Transporter -->
+		<string name="Help32" value="Auf Anhängern kann man ein Stück mitfahren,#wenn man dagegen läuft. Zum Absteigen einfach die Aktions-Taste drücken."/>
+
+		<!--   schwimmende Fässer -->
+		<string name="Help33" value="Diese Fässer kann man als Brücke benutzen. Man muss aber weiterlaufen, bevor sie wieder untertauchen."/>
+
+		<!--   Episoden-Ende-->
+		<string name="Help34" value="Nach diesem Level ist die Episode 'TRAINING' geschafft!#Hat man genügend Punkte erreicht, kann man sich dann#in die Highscore-Liste eintragen.#Viel Spaß mit den neuen Episoden von SVEN 004!"/>
+
+
+
+		<!--   2 SPIELER MODUS -->
+		<string name="Help35" value="Svens Klon wird mit den Tasten 'W, A, S, D' gesteuert."/>
+
+		<string name="Help36" value="Im 2-Spieler Modus beglücken Sven und sein Klon zusammen die Schäfchen.#Wie sich das für ein echtes Team gehört, hat man dabei eine gemeinsame Punkte- und Lebens-Anzeige."/>
+
+		<string name="Help37" value="Manche Gebäude kann man betreten, wenn man zum Eingang läuft.#Um einen Eingang zu benutzen, müssen beide Spieler dort hinlaufen."/>
+
+		<string name="Help38" value=""/>
+
+		<string name="Help39" value="Manche Gebäude kann man betreten, wenn man zum Eingang läuft."/>
+
+
+		<!--   WOTAN GAMEPLAY -->
+		<string name="Help40" value="Hirtenhund Wøtan muß die Schafe sicher durch den Level bringen.#Wenn er neben ihnen stehenbleibt, gehen sie in die Richtung, in die Wøtan gerade sieht.#Mit etwas Übung kann man die störrischen Schafe so zum Zielpunkt treiben."/>
+
+		<string name="Help41" value="Wenn Wøtan bellt (Aktions-Taste), dann rennen die Schafe.#Das geht schneller, kann für die Schafe aber auch gefährlich sein."/>
+
+		<string name="Help42" value="Je mehr Schafe Wøtan an einem Zielpunkt abliefert, desto mehr Punkte bekommt man."/>
+
+
+		<string name="Help43" value="Schafe, die beim Rennen ins Wasser fallen, oder überfahren werden, sind verloren."/>
+
+		<!--   2-Spieler Popp-Tasten -->
+		<string name="Help44" value="Um Schafe zu beglücken, drückt man die Aktions-Taste#- Spieler 1 -> rechte Strg-Taste#- Spieler 2 -> Leertaste,#bis sich das Schaf auflöst."/>
+
+
+		<!--   Thin Ice -->
+		<string name="Help45" value="Dünnes Eis erkennt man an den Rissen.#Wenn jemand zu lange darauf stehenbleibt, bricht er ein!"/>
+
+
+
+
+
+		<!--   HILFE: SPIEL Texte   -->
+		<string name="spiel01" value="#Sein Name ist Bømwøllen - Sven Bømwøllen. Seine Mission: Liebe und Glückseligkeit in der Herde zu verbreiten. Ob in einem Kino, im Bauernhaus oder einer Villa im Park, überall warten Abenteuer auf Sven ØØ4, den Schafbock mit der Lizenz zum Beglücken.##Svens Mission wird durch den Verein kurzsichtiger Waidmänner (VkW) e.V. gefährdet.#Die Jäger sind auf Trophäenjagd und werden zur Gefahr für alles, das sich bewegt. Ausserdem sind viele Schäfchen  spurlos verschwunden! Da heißt es erst mal suchen, bevor Sven sich wieder seinem Liebesleben widmen kann.##Doch auch Nützliches lässt sich finden. Schlüssel und Hebel öffnen Türen und mit dem passenden Fahrzeug kann man viele Gegner mühelos abhängen!##Wer wissen möchte, womit Svens Gegner sich den Tag vertreiben, der kann Lars dabei helfen, seine Schafe zu scheren, oder als Hirtenhund Wøtan die Herde zusammentreiben. Und wem das zu sehr nach Arbeit klingt, der kann als Alien die Schafe untersuchen oder als Brømse mit ihnen spielen.##Viel Spaß mit Sven ØØ4!"/>
+
+		<!--   HILFE: GEGNER Texte   -->
+		<string name="Sven00" value="Sven"/>
+		<string name="Sven01" value="Sein Name: Bømwøllen  -  Sven Bømwøllen.#Seine Mission: Liebe und Glückseligkeit in der Herde zu verbreiten.#Sven ist der Star bei den Schafen in der Herde von Lars Einnicken - zumindest solange er sich nicht zuviel Zeit dabei lässt, die woll-lüstigen Tierchen glücklich zu machen! Aber meistens macht er seine Aufgabe so gut, dass die Schäfchen gar nicht genug bekommen können."/>
+		<string name="Sven02" value="Dem Schäfer Lars Einnicken und seinem Hund Wøtan sind Svens amouröse Eskapaden ein Dorn im Auge. Wenn die beiden Sven erwischen, dann setzt es ordentlich Prügel. Aber fast noch schlimmer sind Brømses Knuddelattacken. Was dieses unsensible rothaarige Monster mit Sven anstellt, ist mehr als ein Schaf alleine ertragen kann. Auch die Aliens gehen nicht gerade zimperlich mit Sven um, wenn sie ihn erwischen."/>
+
+		<string name="Frigida00" value="Schäfchen"/>
+		<string name="Frigida01" value="Die Schafe in der Herde von Lars Einnicken langweilen sich. Gras fressen, schauen was die anderen Schafe machen oder sich etwas die Beine vertreten... viel mehr gibt es nicht zu tun.#Deshalb warten sie ungeduldig auf Sven, der unterwegs ist um Liebe und Glückseligkeit in der Herde zu verbreiten. Frigida, das anspruchvollste Schaf der Herde, kann ihm dabei sogar noch so manches beibringen."/>
+		<string name="Frigida02" value="Wenn Lars die Schafe scheren will oder Brømse sie knuddelt, macht ihnen das überhaupt keinen Spaß! Hirtenhund Wøtan macht sich wichtig und scheucht immer alle herum und die Aliens beamen sogar Schafe in ihr UFO ohne vorher zu fragen!#Kein Wunder, daß alle Schafe nur auf einen sehnsüchtig warten - auf SVÄÄÄÄÄÄN!!!!"/>
+
+		<string name="Dog00" value="Wøtan"/>
+		<string name="Dog01" value="Der Hirtenhund Wøtan beschützt die Schäfchen vor allen Gefahren. Nicht daß diese störrischen Geschöpfe es ihm danken, wenn er den dreisten Schafbock Sven verprügelt, oder die Schafe sicher in den Stall treibt, aber das ist nun mal sein Job und den macht er ordentlich.#Das Einzige, was Wøtan von seinen Aufgaben ablenken kann, ist ein leckerer Knochen. Er ist ja schließlich auch nur ein Hund."/>
+		<string name="Dog02" value="Selbst auf einen kräftigen Kerl wie Wøtan lauern Gefahren. Die neugierigen Aliens machen ihm wirklich Angst und auch der kleinen, rothaarigen Brømse geht er lieber aus dem Weg. Es passt ihm zwar nicht, wie Brømse die Schafe knuddelt, aber das ist immer noch besser, als ihr selbst in die Hände zu fallen!"/>
+
+		<string name="Guy00" value="Lars Einnicken"/>
+		<string name="Guy01" value="Der Besitzer der Herde ist längst im Rentenalter, doch das Scheren seiner Schafe lässt er sich nicht nehmen. Lars kann auch noch ordentlich zuschlagen, wenn er diese merkwürdigen grünen Männchen, oder den dreisten Schafbock in der Nähe seiner Schafe erwischt!#Manchmal schläft er zwar spontan ein, nachdem er sich einen Schluck aus der Flasche genehmigt hat, aber solange sein Hund Wøtan auf die Herde aufpasst, ist das nicht so schlimm."/>
+		<string name="Guy02" value="Es gibt nicht viel, das einem zähen Naturburschen wie Lars gefährlich werden kann. Natürlich sollte er sich vor den Alien-Artefakten in acht nehmen, damit er nicht weggebeamt wird und das Überqueren einer Straße kann zum Problem werden, wenn man wie Lars mit dem Tempo einer betäubten Schnecke unterwegs ist. Doch abgesehen davon, lebt Lars ein recht ungefährliches Leben."/>
+
+		<string name="Broemse00" value="Brømse"/>
+		<string name="Broemse01" value="Die Nichte von Lars hat großen Spaß mit den Schafen. Leider beruht dieses Vergnügen nicht auf Gegenseitigkeit. Brømse knuddelt alles, was sich nicht schnell genug in Sicherheit bringt. Selbst Wøtan und die Aliens sind nicht vor ihren Kuschel-Attacken sicher.#Teddies ziehen ihre ganze Aufmerksamkeit auf sich. So ein Teddy läuft nicht weg und macht ganz famose Geräusche, wenn man ihn auf den Boden schlägt."/>
+		<string name="Broemse02" value="#Brømse sollte keine Alien Artefakte aufheben und immer nach links und rechts sehen, bevor sie eine Straße überquert, aber das ist ja selbstverständlich. Das einzige, was ihr wirklich gefährlich werden kann, ist ihre Abenteuerlust!"/>
+
+		<string name="Alien00" value="Alien"/>
+		<string name="Alien01" value="Diese grünen Kerle sind Wissenschaftler mit recht ausschweifender Phantasie. Und einer Ethik-Kommission müssen sie anscheinend auch nicht Rede und Antwort stehen, sonst würden sie nicht jeden untersuchen oder entführen, der ihnen interessant erscheint.#Am liebsten mögen sie die weissen wolligen Wesen, denn die rennen nicht weg, wenn man sie untersuchen will. Das haarige, braune Wesen ist schwer zu fangen, aber auch sehr interessant."/>
+		<string name="Alien02" value="Aliens werden ins UFO gebeamt und ihre Forschungs-Mission ist beendet, wenn sie ein Artefakt aufheben. Zu den Gefahren auf der Erde haben sie bisher folgende Informationen gesammelt:#Der dreibeinige Riese reagiert feindlich bei Kontaktaufnahme.#Er ist aber sehr langsam und stellt keine große Gefahr dar.#Die kleine Kreatur mit den roten Haaren ist extrem schnell und gewalttätig. Unbedingt jeden Kontakt vermeiden!"/>
+
+		<string name="Hunter00" value="Jäger"/>
+		<string name="Hunter01" value="Der Verein kurzsichtiger Waidmänner (VkW) e.V. ist unterwegs in den heimischen Jagdrevieren. Die Waidmänner pirschen durch Unterholz, den Finger am Abzug, immer auf der Suche nach einem fairen Wettstreit, Mann gegen Bestie, in freier Natur. Es gibt eben nichts schöneres, als sich nach einem erfolgreichen Jagdausflug eine neue Trophäe über den Kamin hängen zu können!"/>
+		<string name="Hunter02" value="#Die Jäger sind extrem motiviert, aber leider mindestens genau so kurzsichtig. Sie schießen deshalb auf alles, was sich bewegt. Menschen, Tiere, Ausserirdische, nichts ist vor ihnen sicher!#Die beste Möglichkeit ihrem Kreuzfeuer zu entgehen, ist es den Jägern nicht direkt vor die Flinte zu laufen. Und wenn sich das mal partout nicht vermeiden lässt, dann sollte man dabei wenigstens sehr viel Abstand halten!"/>
+
+		<!--   HILFE: EXTRA Texte   -->
+		<string name="extra01" value=""/>
+		<string name="extra02" value="Rakete:"/>
+		<string name="extra_02" value="Eine wahre Hochgeschwindigkeitsapparatur!"/>
+		<string name="extra03" value="Hänge-Pilz:"/>
+		<string name="extra_03" value="Macht gaaaanz laaaangsaaaaam..."/>
+		<string name="extra04" value="Mief-Pilz:"/>
+		<string name="extra_04" value="Hat man den Geruch erst an sich, vermiest er allen die Laune."/>
+		<string name="extra05" value="Power-Flower:"/>
+		<string name="extra_05" value="Welche Dame lässt sich nicht mit roten Rosen beeindrucken?"/>
+		<string name="extra06" value="Geschenk:"/>
+		<string name="extra_06" value="Ein bisschen Zeit, nett verpackt, kann man immer gut gebrauchen."/>
+		<string name="extra07" value="Alien-Artefakt:"/>
+		<string name="extra_07" value="Scott me up, Beamie!"/>
+		<string name="extra08" value="Hupe:"/>
+		<string name="extra_08" value="Ziemlich laut, wenn man drauftritt."/>
+		<string name="extra09" value="Münze:"/>
+		<string name="extra_09" value="Gut fürs Punktekonto, wenn man sie findet."/>
+
+		<!--   HILFE: CREDITS Texte   -->
+		<string name="credits01" value="Konzept + Regie:"/>
+		<string name="credits02" value="Alex Brüggemann, Ralf Marczinczik"/>
+		<string name="credits03" value="Programmierung:"/>
+		<string name="credits04" value="Jendrik Pösche"/>
+		<string name="credits05" value="Zusätzliche Programmierung:"/>
+		<string name="credits06" value="Wytze B. Westra"/>
+		<string name="credits07" value=""/>
+		<string name="credits08" value=""/>
+		<string name="credits09" value="Sound + Musik:"/>
+		<string name="credits10" value="Nils Fritze"/>
+		<string name="credits11" value="Level-Design:"/>
+		<string name="credits12" value="Micha Kraziewicz, Nadine Maifeld"/>
+		<string name="credits13" value="Zusätzliches Leveldesign & QA:"/>
+		<string name="credits14" value="Thorsten Stranegger, Yuro Kataoka, Till Boos,      Dominik Porten, Benjamin Körner, David Hopmann"/>
+
+		<string name="credits15" value="Animationen:"/>
+		<string name="credits16" value="Cüneyt Sürme, Nazan Özkan-Marczinczik"/>
+		<string name="credits17" value="Line-Producer:"/>
+		<string name="credits18" value="Stefan Wurzer"/>
+		<string name="credits19" value="Coloration & Assistenz:"/>
+		<string name="credits20" value="Philip Scholl, Thorsten Siepler, Tim Berger"/>
+
+		<string name="credits21" value="Webdesign + Online-Highscores:"/>
+		<string name="credits22" value="Thomas Schüer, Dirk Schiemann"/>
+		<string name="credits23" value="Redaktion:"/>
+		<string name="credits24" value="Götz Neuhaus"/>
+		<string name="credits25" value="#Vielen Dank an..."/>
+		<string name="credits26" value="#...alle, die Sven 004 XXL kaufen, statt zu kopieren!"/>
+
+		<!--  SAMMELKARTEN Texte   -->
+		<string name="Card_01" value="Ritt auf dem goldenen Teppich"/>
+		<string name="Card01" value="Eine Stellung, die nicht ausschließlich Fortgeschrittenen vorbehalten bleibt. Auch Anfänger können hier schnell und ohne viel Übung ganz erstaunliche Erfolge erzielen. Daher ist diese Position besonders geeignet zur Stärkung des Selbstvertrauens."/>
+
+		<string name="Card_02" value="Der zweiarmige Bandit"/>
+		<string name="Card02" value="Hier ist schon ein wenig mehr Geschick und vor allem Gelenkigkeit gefragt. Zudem sind einige physischen Grundvorrausetzungen unumgänglich. Bei unzureichender Länge der Gliedmaßen hält sich der Spaß leider in Grenzen. Über die notwendige Armlänge und eventuelle Alternativen berät der Orthopäde des Vertrauens sicher gerne."/>
+
+		<string name="Card_03" value="Der ägyptische Tiefflieger"/>
+		<string name="Card03" value="Eine Stellung, die eher eingeschränkt zu empfehlen ist. Zunächst sollte die Partnerin recht robust und in guter körperlicher Verfassung sein. Für Brillenträgerinnen ist diese Stellung jedenfalls auf jeden Fall ungeeignet!"/>
+
+		<string name="Card_04" value="Der Frieden des Missionars"/>
+		<string name="Card04" value="Was soll man hier noch große Worte drum machen: Klassiker sterben halt nie aus! Eine Stellung, bei der man nicht mehr viel falsch machen kann. Dieser Umstand macht sie für Anfänger und Fortgeschrittene gleichermaßen empfehlenswert."/>
+
+		<string name="Card_05" value="Big Bopper"/>
+		<string name="Card05" value="Die Ursprünge dieser Stellung sind zweifelsfrei in der Rock 'n' Roll Bewegung der 50er Jahren des letzten Jahrhunderts zu suchen. Die Ähnlichkeiten etwa zum doppelgehupften Seitenlupfer, aber auch zur berühmte Tennessee Hupfdohle sind jedenfalls unverkennbar."/>
+
+		<string name="Card_06" value="Der heimkehrende Wanderer"/>
+		<string name="Card06" value="Mag der Name auch eher humoristisch anmuten, so erklärt er doch zu treffend den Ursprung dieser Stellung, zu der sich der erste Vermerk im so genannten Alpen-Tantra findet. Man stelle sich vor: Er kommt nach zehn Stunden Bergtour nach Hause zurück. Da bleibt einfach nicht mehr Energie übrig. Die Wirkung wird aber dennoch nicht verfehlt!"/>
+
+		<string name="Card_07" value="Die italienische Schubkarre"/>
+		<string name="Card07" value="Sportlich, technisch jedoch nicht zu ausgefeilt, um sie Anfängern unzugänglich zu machen. Eine Kombination, die diese Stellung zu einem wunderbaren Allrounder macht."/>
+
+		<string name="Card_08" value="Die überraschte Wäscherin"/>
+		<string name="Card08" value="OHNE WORTE!"/>
+
+		<string name="Card_09" value="Der eilige Marquis"/>
+		<string name="Card09" value="Ohne Zweifel nicht jedermanns Sache, wahre Genießer (und Reitsport-Fanatiker) wollen und können jedoch nicht mehr ohne! Die benötigten Accessoires gibt es im gut sortierten Fachhandel. Im Set, bestehend aus Brille (erhältlich schwarz, nachtblau oder rot) und Gerte (Glatt- und Naturleder), für nur 14,99 Euro in Beas Lädchen."/>
+
+		<string name="Card_10" value="Das wiehernde Kaninchen"/>
+		<string name="Card10" value="Ein weitverbreiterter Irrglaube besagt, dass Kaninchen nur dann einen fiepsenden Laut von sich geben, wenn sie sich in Gefahr befinden. Und trotzdem behauptet man in einer aufgeklärten Gesellschaft zu leben ... tztztz ...."/>
+
+		<string name="Card_11" value="Der betrunkene Cowboy"/>
+		<string name="Card11" value="Reichhaltiger Alkoholkonsum ist nicht wirklich notwendig. Ganz im Gegenteil: Mit Blick auf gesundheitliche Aspekte kann man eigentlich nur davon abraten. Unbeirrbare Puristen schießen solche Warnungen leider immer wieder in den Wind. Das geht dann so lange gut, bis einer umfällt."/>
+
+		<string name="Card_12" value="Die Pupsburger Augenkiste"/>
+		<string name="Card12" value="Leider eine weitere Stellung bei denen Brillenträger nur zusehen können, das allerdings dafür auch umso besser! Doch auch die Freunde zahlreicher Ohren-Piercings sollten ihren geliebten Schmuck lieber beiseite legen und das Ziehen auf das Nötigste reduzieren, da an der perforierten Stelle akute Reißgefahr besteht!"/>
+
+		<string name="Card_13" value="Die fliegende Hantel"/>
+		<string name="Card13" value="Bei dem Ersten, der diese Stellung nachweislich praktizierte, handelte es sich um einen österreichischen Bodybuilder, dem seine Gattin während einer Runde Bankdrücken ein Glas isotonischen Getränkes zur Erfrischung reichte. Leider dehydrierte der gute Mann wenig später trotzdem und wurde mit einer intravenös verabreichten Kochsalzlösung wieder aufgepeppelt."/>
+
+		<string name="Card_14" value="Der Tanz der Müllerin"/>
+		<string name="Card14" value="Im Takte, den traditionell der Herr durch rhythmisches Aneinanderschlagen der Hände vorgibt, schunkeln sich beide Partner zur Glückseligkeit. Die ultimative Party-Stellung!"/>
+
+		<string name="Card_15" value="Der ungestüme Akrobat"/>
+		<string name="Card15" value="Eine Stellung, die eine Menge Konzentration, Körperbeherrschung und viel, viel Übung voraussetzt. Beherrscht man sie dann allerdings erst einmal, ist sie nicht nur denkbar erfüllend, sondern hat noch einen großartigen Nebeneffekt: Eine rapider Gewichtsverlust schon nach wenigen Minuten."/>
+
+		<string name="Card_16" value="Secret Service"/>
+		<string name="Card16" value="Um im Geheimdienst der Glückseligkeit eine gute Figur zu machen, bedarf es bei dieser Variante des ganzen Körpereinsatzes. Auch eine gehörige Portion Abenteuer- und Entdeckerlust sollte mitgebracht werden."/>
+
+		<string name="Card_17" value="Bread and Butter"/>
+		<string name="Card17" value="Eine Position für Diätverweigerer (ein klinischer Versuch hat ergeben: Halbfettmargarine ist leider ungeeignet) und Fans von Kunstfilmen aus den siebziger Jahren."/>
+
+		<string name="Card_18" value="Der klammernde Löffler"/>
+		<string name="Card18" value="Bei Herren, die diese Position aus Überzeugung praktizieren, kann man mit einer Wahrscheinlichkeit von 95 Prozent einen Hang zum emotionalen Klammern beobachten. Einer der ersten bekannten Anhänger dieser Stellung war ein gewisser Herr Ö. aus Griechenland ..."/>
+
+		<string name="Card_19" value="Der freihändige Pilot"/>
+		<string name="Card19" value="Nicht nur, dass diese Stellung eine gute Bauch- und Rückenmuskulatur voraussetzt (und für einen weiteren Aufbau eben dieser sorgt), sie verlangt auch nach einem gut ausgeprägten Augenmaß."/>
+
+		<string name="Card_20" value="Halb geschlagenes Rad"/>
+		<string name="Card20" value="Diese Stellung setzt einen gut entwickelten Gleichgewichtssinn voraus. Ständig umzufallen ist ja schließlich nicht der Sinn der Sache."/>
+
+		<string name="Card_21" value="Down Under"/>
+		<string name="Card21" value="Verkehrte Welt? Mitnichten! Diese Stellung wird in Feinschmecker-Kreisen nur in den höchsten Tönen gelobt."/>
+
+		<string name="Card_22" value="Rocksteady Crew"/>
+		<string name="Card22" value="Hierbei handelt es sich um eine Abwandlung der 'Tanzenden Müllerin', die während der Hip-Hop und Breakdance- Bewegung der 80er Jahre entstanden ist. Hier wurde das artistische Moment dieses modernen Tanzes mit der steigenden Emanzipation der Frau gepaart, die nun den Takt vorgibt. Eine nicht ganz einfache Position, aber jede Mühe wert."/>
+
+		<string name="Card_23" value="Die stürmische Ballonfahrt"/>
+		<string name="Card23" value="Für diese Position muss der Herr sich mächtig ins Zeug legen und all seine körperliche Biegsamkeit unter Beweis stellen. Aus Sicherheitsgründen sollten Herren mit gelegentlichen rheumatischen Schmerzen im Rücken Abstand von dieser Position halten."/>
+
+		<string name="Card_24" value="Das schwedische Karussell"/>
+		<string name="Card24" value="Eine Stellung, die man getrost als abenteuerlich bezeichnen kann, die bei fachgerechter Ausübung allerdings auch größte Freuden verspricht. Der Chiropraktiker des Vertrauens informiert sicher gerne über Behandlungs- möglichkeiten bei Verspannungen als möglicher Folgeerscheinung."/>
+
+		<string name="Card_25" value="Der Widerspenstigen Zähmung"/>
+		<string name="Card25" value="Eine Stellung, die besonders oft in frischen Beziehungen (und bei alteingesessenen Rodeoreitern) zu beobachten ist. Wichtig dabei ist vor allem, den Stärkegrad des Bisses zu kontrollieren, sonst könnte es zu bösen Verstimmungen kommen."/>
+
+		<string name="Card_26" value="Lazy Bastard"/>
+		<string name="Card26" value="Welchem Geschlecht der Ursprung dieser Stellung zuzuschreiben ist, ist offensichtlich. In Zeiten der Emanzipation ist sie allerdings immer seltener zu beobachten. Ein man(n)cher wird wohl sagen: 'Schade!' und tief seufzen. Tja..."/>
+
+		<string name="Card_27" value="Der eitle Seemann"/>
+		<string name="Card27" value="Ein Sicherheits-Hinweis für die Damenwelt: Vor der Ausübung dieser Stellung bitte gut und vor allem AUSGIEBIG dehnen!"/>
+
+		<string name="Card_28" value="Der entschlossene Steuermann"/>
+		<string name="Card28" value="Eine Position für alle Herren, die sich dazu entschlossen haben, ihre eigenen Bedürfnisse hinten anzustellen und ihre Energie beim Liebesspiel ganz in den Dienst des Wohlgefallens der Partnerin zu stellen. Und nichts, aber auch gar nichts wird sie von ihrem Weg abbringen!"/>
+
+		<string name="Card_29" value="Der schüchterne Kavalier"/>
+		<string name="Card29" value="Der Ursprung des Namens dieser Stellung lässt sich leider nicht mehr wissenschaftlich zuverlässig nachvollziehen. Eine weit verbreitete Vermutung legt allerdings nahe, dass diese Stellung und ihr Name auf eine Familie chinesischer Zirkus-Artisten aus der Zeit der Ming Dynastie zurückzuführen ist."/>
+
+		<string name="Card_30" value="Die französische Bootsfahrt"/>
+		<string name="Card30" value="Paris, die Stadt der Liebe. Nur in einer Stadt wie dieser kann eine Stellung ihre Wurzeln haben, bei der das Musizieren und Rezitieren französischer Liebeslyrik aus dem 17. Jahrhundert fester Bestandteil sind."/>
+
+		<string name="Card_31" value="Der erfreute Voyeur"/>
+		<string name="Card31" value="Diese Stellung ist eindeutig nur für SEHR tolerante Paare geeignet. Sie erfreut sich jedoch größter Beliebtheit bei Paparazzi, Internetsüchtigen und Besitzern von Feldstechern."/>
+
+		<string name="Card_32" value="Jumpy-Bungee"/>
+		<string name="Card32" value="Ein Stellung für Abenteurer, Extremsportler und andere Adrenalin-Junkies. Bei Paaren, die sich noch nicht das Ja-Wort gegeben haben, ist eine gute Personenschaden- versicherung dringendst zu empfehlen!"/>
+
+		<string name="Card_33" value="Tour de France"/>
+		<string name="Card33" value="DIE Stellung in Radsportkreisen. Wer ein echter Radler ist, für den kommt kaum noch was anderes in Frage. (Für die Puristen unter den Tour-Fans ist diese Stellung übrigens nur dann stilecht vollführt, wenn dazu das gepunktete Trikot getragen wird. Das grüne Trikot hingegen ist dann doch eher verpönt!)"/>
+
+		<string name="Card_34" value="Die pirouettierende Ballerina"/>
+		<string name="Card34" value="Diese Stellung, im 18. Jahrhundert von der russischen Prima Ballerina Olga Pomeransky in ihren Memoiren erstmals beschrieben, verlangt dem geneigten Liebenden alles ab. Hier ist nicht nur ein unheimliches Maß an Grazie und Zielsicherheit gefragt, auch das Timing ist von enormer Wichtigkeit! Schon die kleinste Abweichung kann zu schweren Verletzungen führen."/>
+
+		<string name="Card_35" value="Der gerissene Rückradbieger"/>
+		<string name="Card35" value="Diese Stellung wurde gezielt von einem Chiropraktiker entwickelt, der das Angenehme mit dem Nützlichen zu verbinden gedachte. Leider entdeckte man später, dass diese Stellung zwar ungemein befriedigend ist, Rückenschäden aber leider eher verursachte, als sie zu lindern."/>
+
+		<string name="Card_36" value="Der verschüttete Wandersmann"/>
+		<string name="Card36" value="Eine Stellung, die sicherlich nicht jedermanns Sache ist. Während sie bei einigen Herren für Beklemmung sorgen dürfte, wissen Genießer die Behaglichkeit der beinahe schon embryonalen Haltung durchaus zu schätzen. Beengt, aber kuschelig!"/>
+
+		<string name="Card_37" value="Die Wiege der Wonne"/>
+		<string name="Card37" value="DIE Stellung für Frischverliebte. Kaum ein Akt, der zärtlicher und doch verspielter wäre als die Wiege. Für den Herren zugegebenermaßen recht anstrengend in den Oberarmen, verspricht diese Stellung trotzdem vor allem eines: nahezu perfekte Harmonie!"/>
+
+		<string name="Card_38" value="Die Artisten nach Feierabend"/>
+		<string name="Card38" value="In China, dem Land des Lächelns und der grenzenlosen über die Jahrhunderte hinweg gesammelten Weisheit, leben ohne jeden Zweifel obendrein ein paar der tollsten Artisten der Welt. Aber was machen diese Artisten eigentlich, um sich zu entspannen. Oder wie tun sie's? Das! Und so!"/>
+
+		<string name="Card_39" value="Die unterdrückte Arbeiterklasse"/>
+		<string name="Card39" value="Zusammengekauert, geduckt und verschüchtert, ganz so wie die Bonzen es gerne haben, präsentiert sich die Damenwelt in dieser Stellung. Für Suffragetten und Anhänger der bolschewistischen Arbeiterbewegung ist sie daher wohl eher ungeeignet."/>
+
+		<!-- new shag CARDS -->
+		<string name="Card_40" value="Der Maskierte Fremde"/>
+		<string name="Card40" value="Eine Stellung mit ausgeprägtem Rollenspiel-Charakter. Sie ist vor allem in Swinger-Clubs sehr beliebt, da das überraschende Moment dort besonders ausgeprägt ist."/>
+
+		<string name="Card_41" value="Der Rote Rächer"/>
+		<string name="Card41" value="Eine Stellung, die nur bei der Verwendung eines Anzugs aus 100% Polyamid wirklich authentisch ist. Bei sommerlichen Wetterbedingungen ist sie daher nur bedingt zu empfehlen."/>
+
+		<string name="Card_42" value="Die garstige Erzieherin"/>
+		<string name="Card42" value="DIE Stellung für alle Unartigen, die ihre Reue gerne ausleben möchten."/>
+
+		<string name="Card_43" value="Die fürsorgliche Schwester"/>
+		<string name="Card43" value="Diese Stellung setzt ein besonderes Maß an Zuneigung des Partners voraus. Doch ist dies gegeben, kann sie selbst im Krankheitsfall noch hingebungsvoll praktiziert werden."/>
+
+		<string name="Card_44" value="Petri Dank"/>
+		<string name="Card44" value="Und wer wäre bei einem solch kapitalen Fang nicht dankbar?"/>
+
+		<string name="Card_45" value="Die Vitaminbombe"/>
+		<string name="Card45" value="Die Idee dieser Stellung ist es, die durch das Obst zugeführten Vitamine direkt an den Partner weiter zu geben. An Stelle des Apfels kann auch gerne eine Ananas (Tipp für Genießer) oder auch eine Zitrone (Tipp für Vitamin-C-Junkies) verwendet werden."/>
+
+		<!-- new CARDS -->
+		<string name="Card_46" value="Erfreute Chicken"/>
+		<string name="Card46" value="Chicken McNuggets waren gestern. Man kann mit Hühnern so viel mehr machen, als sie in kleinen Häppchen mit süß-saurer Sauce zu servieren. Das ist nicht nur unterhaltsamer, sondern auch wesentlich tierfreundlicher! Nur satt wird man leider nicht."/>
+
+		<string name="Card_47" value="Ich hab Bock..."/>
+		<string name="Card47" value="So ein Bock ist eine prima Sache: kuschelig und mit äußerst praktischen Haltegriffen."/>
+
+		<string name="Card_48" value="Schwein gehabt"/>
+		<string name="Card48" value="Wenn mal wieder alle Tiere des Hofs auf einmal unter schwersten Migräne-Attacken leiden, kann man wirklich von Glück sprechen, wenn die Sau noch nicht von Kopfschmerzen geplagt ist."/>
+
+		<string name="Card_49" value="Eiskalte Leidenschaft"/>
+		<string name="Card49" value="Man muss schon ein Freund des besonders Außergewöhnlichen sein, um Freude an seinem Pinguin zu haben. Ein jeder kann sich vorstellen, wie 'hoch' die Körpertemperatur eines Pinguins ist, der grad frisch aus dem Wasser kommt."/>
+
+		<string name="Card_50" value="Das Überraschungspaket"/>
+		<string name="Card50" value="Man weiß nie so recht, was sich unter dem dicken Panzer denn nun verbirgt. Und kommen wohl alle Gliedmaßen wieder unbeschadet raus, die man reinsteckt? Aber genau diese Unwissenheit macht den eigentlichen Reiz einer Schildkröte aus."/>
+
+		<string name="Card_51" value="Playbunny"/>
+		<string name="Card51" value="Was ein Hugh Heffner kann, das kann ein Sven Bømwøllen doch schon lange. Immer her mit den Bunnies!"/>
+
+		<string name="Card_52" value="Kuschelige Begegnung #der dritten Art"/>
+		<string name="Card52" value="##Auch Aliens haben ihre Kuscheltiere. Und auch irdische Schafe können damit kuscheln (oder mehr)."/>
+
+		<string name="Card_53" value="Sanft Maskulin"/>
+		<string name="Card53" value="Was viele noch nicht wussten: Igel sind außergewöhnlich kuschelbedürftige Tiere. Und mit ein paar kleinen Sicherheitsmaßnahmen steht einem netten Abend in trauter Zweisamkeit nichts im Wege."/>
+
+		<string name="Card_54" value="Und alles ward bunt..."/>
+		<string name="Card54" value="Leider ist es ein wenig umständlich, sein Glück in der Zweisamkeit mit einem Pfau zu suchen. Bis man sich da durch all die Federn gewühlt hat... Aber man merkt sofort, wenn er ein Auge auf einen geworfen hat."/>
+
+		<string name="Card_55" value="ABC-Alarm"/>
+		<string name="Card55" value="Wie gut, dass sich irgendwann ein Mensch einmal überlegt hat, die Gasmaske zu erfinden. Das ist mal ein wirklich nützliches Gerät in vielen Lebenslagen."/>
+
+		<string name="Card_56" value="Riecht's hier nach Fisch?"/>
+		<string name="Card56" value="Man weiß ja eigentlich nicht so recht, was man davon halten soll. Kein Fleisch, kein Fisch: komisch!"/>
+
+		<string name="Card_57" value="Hunde die bellen..."/>
+		<string name="Card57" value="... beißen nicht. So sagt es schon der Volksmund, und der muss es ja wissen! Und wenn man so einen grimmig dreinschauenden Hund durch Streicheleinheiten noch ein wenig milde stimmt, ist die Gefahr bestimmt gebannt. Aber man sollte sich ihm zur Sicherheit vielleicht doch nicht direkt von vorne nähern."/>
+
+		<string name="Card_58" value="Mach dich nackich!"/>
+		<string name="Card58" value="Die erotische Seite steht hierbei wahrlich nicht im Vordergrund. Ein Schelm, der Böses dabei denkt!"/>
+
+		<string name="Card_59" value="Kuscheln ist ungesund I"/>
+		<string name="Card59" value="Wir möchten an dieser Stelle mal das Gerücht vom Kuscheln als Möglichkeit des Safe Sex' aus der Welt räumen: Das stimmt nicht! Z.B. können schlimme Augenschäden eine direkte Folge sein..."/>
+
+		<string name="Card_60" value="Kuscheln ist ungesund II"/>
+		<string name="Card60" value="... und fürchterliche Kopfschmerzen macht's auch noch!"/>
+
+		<string name="Card_61" value="Kuschelige Begegnung #der dritten Art II"/>
+		<string name="Card61" value="##Wenn Sven schon mit den außerirdischen Kuscheltieren spielt, dann ist's doch nur fair, wenn die Außerirdischen auch mal mit Svens Kuschelpartnern spielen."/>
+
+		<string name="Card_62" value="Kuschelige Begegnung #der dritten Art III"/>
+		<string name="Card62" value="##Die beliebtesten Spiele außerirdischer Besucher sind in der Regel und eigentlich immer und ausnahmslos Doktorspiele. Natürlich nur die harmlose und völlig unschuldige Variante!"/>
+
+		<string name="Card_63" value="Süße Schnucken, heiße Öfen I"/>
+		<string name="Card63" value="Der WOOL-2004XXL ist eindeutig der Merzedes unter den Schafschermaschinen. Da stört es auch gar nicht, dass es eigentlich ein Rasenmäher ist. Und nicht nur Schafe werden damit sauber geschoren, auch alles andere kann mit diesem Traumgerät einfach, schnell und zuverlässig blank gemacht werden."/>
+
+		<string name="Card_64" value="Süße Schnucken, heiße Öfen II"/>
+		<string name="Card64" value="Das traumgefährt für Freunde von Höchstgeschwindigkeiten und Adrenalinkicks. Mit einer Spitzengeschwindigkeit von bis zu 120 km/h (abhängig von Steigung/Gefälle der Straße sowie Windstärke und -richtung) kann man seiner Fahrleidenschaft ungehemmt fröhnen und zeitgleich seine Arme tainieren."/>
+
+		<string name="Card_65" value="Süße Schnucken, heiße Öfen III"/>
+		<string name="Card65" value="Das Gefährt für alle, die auf der Suche nach dem authentischen Gefühl der Straße sind. ACHTUNG: Helmpflicht!"/>
+
+		<string name="Card_66" value="Süße Schnucken, heiße Öfen IV"/>
+		<string name="Card66" value="Dieses exorbitant schöne Fluggerät beschleunigt auf Lichtgeschwindigkeit in weniger als 2,6 Sekunden. Und per einfachem Knopfdruck lässt sich das Verdeck jederzeit öffnen (ab 150.000 km/h nicht zu empfehlen)."/>
+
+	</stringtable>
+</Sven004>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       

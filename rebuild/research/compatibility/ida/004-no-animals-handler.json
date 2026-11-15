@@ -1,0 +1,26 @@
+{
+  "jsonrpc": "2.0",
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "[{\"query\":\"0x44F8F0\",\"fn\":{\"addr\":\"0x44f8f0\",\"name\":\"sub_44F8F0\",\"size\":\"0x55\"},\"error\":null}]"
+      }
+    ],
+    "structuredContent": {
+      "result": [
+        {
+          "query": "0x44F8F0",
+          "fn": {
+            "addr": "0x44f8f0",
+            "name": "sub_44F8F0",
+            "size": "0x55"
+          },
+          "error": null
+        }
+      ]
+    },
+    "isError": false
+  },
+  "id": 1
+}

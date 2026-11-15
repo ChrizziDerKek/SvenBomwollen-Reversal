@@ -1,0 +1,230 @@
+  v163 = v14[1]; /*0x440eef*/
+  v129 = (_DWORD *)(v16 + 16 * v163); /*0x440ef8*/
+  if ( v129 ) /*0x440f01*/
+  {
+    cString::cString((cString *)(v16 + 16 * v163), (const struct cString *)v164); /*0x440f08*/
+    v14 = (int *)(a1 + 414488); /*0x440f12*/
+    *v129 = &off_47458C; /*0x440f16*/
+  }
+  ++v14[1]; /*0x440f28*/
+  cString::~cString(v164); /*0x440f2f*/
+  cString::cString((cString *)v164, aSfxtrigger01); /*0x440f3a*/
+  v17 = (int *)(a1 + 414488); /*0x440f3c*/
+  v18 = *(_DWORD *)(a1 + 414492) + 1; /*0x440f50*/
+  if ( *(_DWORD *)(a1 + 414496) < v18 ) /*0x440f57*/
+  {
+    sub_45F550(v18 / 8 + *(_DWORD *)(a1 + 414492) + 1 + 5); /*0x440f6b*/
+    v17 = (int *)(a1 + 414488); /*0x440f70*/
+  }
+  v19 = *v17; /*0x440f75*/
+  v163 = v17[1]; /*0x440f77*/
+  v130 = (_DWORD *)(v19 + 16 * v163); /*0x440f80*/
+  if ( v130 ) /*0x440f89*/
+  {
+    cString::cString((cString *)(v19 + 16 * v163), (const struct cString *)v164); /*0x440f92*/
+    v17 = (int *)(a1 + 414488); /*0x440f9c*/
+    *v130 = &off_47458C; /*0x440fa0*/
+  }
+  ++v17[1]; /*0x440fb2*/
+  cString::~cString(v164); /*0x440fb9*/
+  cString::cString((cString *)v164, aSfxtrigger02); /*0x440fc4*/
+  v20 = (int *)(a1 + 414488); /*0x440fc6*/
+  v21 = *(_DWORD *)(a1 + 414492) + 1; /*0x440fda*/
+  if ( *(_DWORD *)(a1 + 414496) < v21 ) /*0x440fe1*/
+  {
+    sub_45F550(v21 / 8 + *(_DWORD *)(a1 + 414492) + 1 + 5); /*0x440ff5*/
+    v20 = (int *)(a1 + 414488); /*0x440ffa*/
+  }
+  v22 = *v20; /*0x440fff*/
+  v163 = v20[1]; /*0x441001*/
+  v131 = (_DWORD *)(v22 + 16 * v163); /*0x44100a*/
+  if ( v131 ) /*0x441013*/
+  {
+    cString::cString((cString *)(v22 + 16 * v163), (const struct cString *)v164); /*0x44101c*/
+    v20 = (int *)(a1 + 414488); /*0x441026*/
+    *v131 = &off_47458C; /*0x44102a*/
+  }
+  ++v20[1]; /*0x44103c*/
+  cString::~cString(v164); /*0x441043*/
+  cString::cString((cString *)v164, aSfxtrigger03); /*0x44104e*/
+  v23 = (int *)(a1 + 414488); /*0x441050*/
+  v24 = *(_DWORD *)(a1 + 414492) + 1; /*0x441064*/
+  if ( *(_DWORD *)(a1 + 414496) < v24 ) /*0x44106b*/
+  {
+    sub_45F550(v24 / 8 + *(_DWORD *)(a1 + 414492) + 1 + 5); /*0x44107f*/
+    v23 = (int *)(a1 + 414488); /*0x441084*/
+  }
+  v25 = *v23; /*0x441089*/
+  v163 = v23[1]; /*0x44108b*/
+  v132 = (_DWORD *)(v25 + 16 * v163); /*0x441094*/
+  if ( v132 ) /*0x44109d*/
+  {
+    cString::cString((cString *)(v25 + 16 * v163), (const struct cString *)v164); /*0x4410a6*/
+    v23 = (int *)(a1 + 414488); /*0x4410b0*/
+    *v132 = &off_47458C; /*0x4410b4*/
+  }
+  ++v23[1]; /*0x4410c6*/
+  cString::~cString(v164); /*0x4410cd*/
+  cString::cString((cString *)v164, aSfxtrigger04); /*0x4410d8*/
+  v26 = (int *)(a1 + 414488); /*0x4410da*/
+  v27 = *(_DWORD *)(a1 + 414492) + 1; /*0x4410ee*/
+  if ( *(_DWORD *)(a1 + 414496) < v27 ) /*0x4410f5*/
+  {
+    sub_45F550(v27 / 8 + *(_DWORD *)(a1 + 414492) + 1 + 5); /*0x441109*/
+    v26 = (int *)(a1 + 414488); /*0x44110e*/
+  }
+  v28 = *v26; /*0x441113*/
+  v163 = v26[1]; /*0x441115*/
+  v133 = (_DWORD *)(v28 + 16 * v163); /*0x44111e*/
+  if ( v133 ) /*0x441127*/
+  {
+    cString::cString((cString *)(v28 + 16 * v163), (const struct cString *)v164); /*0x441130*/
+    v26 = (int *)(a1 + 414488); /*0x44113a*/
+    *v133 = &off_47458C; /*0x44113e*/
+  }
+  ++v26[1]; /*0x441150*/
+  cString::~cString(v164); /*0x441157*/
+  cString::cString((cString *)v164, aSfxtrigger05); /*0x441162*/
+  v29 = (int *)(a1 + 414488); /*0x441164*/
+  v30 = *(_DWORD *)(a1 + 414492) + 1; /*0x441178*/
+  if ( *(_DWORD *)(a1 + 414496) < v30 ) /*0x44117f*/
+  {
+    sub_45F550(v30 / 8 + *(_DWORD *)(a1 + 414492) + 1 + 5); /*0x441193*/
+    v29 = (int *)(a1 + 414488); /*0x441198*/
+  }
+  v31 = *v29; /*0x44119d*/
+  v163 = v29[1]; /*0x44119f*/
+  v134 = (_DWORD *)(v31 + 16 * v163); /*0x4411a8*/
+  if ( v134 ) /*0x4411b1*/
+  {
+    cString::cString((cString *)(v31 + 16 * v163), (const struct cString *)v164); /*0x4411ba*/
+    v29 = (int *)(a1 + 414488); /*0x4411c4*/
+    *v134 = &off_47458C; /*0x4411c8*/
+  }
+  ++v29[1]; /*0x4411da*/
+  cString::~cString(v164); /*0x4411e1*/
+  cString::cString((cString *)v164, aSfxtrigger06); /*0x4411ec*/
+  v32 = (int *)(a1 + 414488); /*0x4411ee*/
+  v33 = *(_DWORD *)(a1 + 414492) + 1; /*0x441202*/
+  if ( *(_DWORD *)(a1 + 414496) < v33 ) /*0x441209*/
+  {
+    sub_45F550(v33 / 8 + *(_DWORD *)(a1 + 414492) + 1 + 5); /*0x44121d*/
+    v32 = (int *)(a1 + 414488); /*0x441222*/
+  }
+  v34 = *v32; /*0x441227*/
+  v163 = v32[1]; /*0x441229*/
+  v135 = (_DWORD *)(v34 + 16 * v163); /*0x441232*/
+  if ( v135 ) /*0x44123b*/
+  {
+    cString::cString((cString *)(v34 + 16 * v163), (const struct cString *)v164); /*0x441244*/
+    v32 = (int *)(a1 + 414488); /*0x44124e*/
+    *v135 = &off_47458C; /*0x441252*/
+  }
+  ++v32[1]; /*0x441264*/
+  cString::~cString(v164); /*0x44126b*/
+  cString::cString((cString *)v164, aSfxtrigger07); /*0x441276*/
+  v35 = (int *)(a1 + 414488); /*0x441278*/
+  v36 = *(_DWORD *)(a1 + 414492) + 1; /*0x44128c*/
+  if ( *(_DWORD *)(a1 + 414496) < v36 ) /*0x441293*/
+  {
+    sub_45F550(v36 / 8 + *(_DWORD *)(a1 + 414492) + 1 + 5); /*0x4412a7*/
+    v35 = (int *)(a1 + 414488); /*0x4412ac*/
+  }
+  v37 = *v35; /*0x4412b1*/
+  v163 = v35[1]; /*0x4412b3*/
+  v136 = (_DWORD *)(v37 + 16 * v163); /*0x4412bc*/
+  if ( v136 ) /*0x4412c5*/
+  {
+    cString::cString((cString *)(v37 + 16 * v163), (const struct cString *)v164); /*0x4412ce*/
+    v35 = (int *)(a1 + 414488); /*0x4412d8*/
+    *v136 = &off_47458C; /*0x4412dc*/
+  }
+  ++v35[1]; /*0x4412ee*/
+  cString::~cString(v164); /*0x4412f5*/
+  cString::cString((cString *)v164, aSfxtrigger08); /*0x441300*/
+  v38 = (int *)(a1 + 414488); /*0x441302*/
+  v39 = *(_DWORD *)(a1 + 414492) + 1; /*0x441316*/
+  if ( *(_DWORD *)(a1 + 414496) < v39 ) /*0x44131d*/
+  {
+    sub_45F550(v39 / 8 + *(_DWORD *)(a1 + 414492) + 1 + 5); /*0x441331*/
+    v38 = (int *)(a1 + 414488); /*0x441336*/
+  }
+  v40 = *v38; /*0x44133b*/
+  v163 = v38[1]; /*0x44133d*/
+  v137 = (_DWORD *)(v40 + 16 * v163); /*0x441346*/
+  if ( v137 ) /*0x44134f*/
+  {
+    cString::cString((cString *)(v40 + 16 * v163), (const struct cString *)v164); /*0x441358*/
+    v38 = (int *)(a1 + 414488); /*0x441362*/
+    *v137 = &off_47458C; /*0x441366*/
+  }
+  ++v38[1]; /*0x441378*/
+  cString::~cString(v164); /*0x44137f*/
+  cString::cString((cString *)v164, aSfxtrigger09); /*0x44138a*/
+  v41 = (int *)(a1 + 414488); /*0x44138c*/
+  v42 = *(_DWORD *)(a1 + 414492) + 1; /*0x4413a0*/
+  if ( *(_DWORD *)(a1 + 414496) < v42 ) /*0x4413a7*/
+  {
+    sub_45F550(v42 / 8 + *(_DWORD *)(a1 + 414492) + 1 + 5); /*0x4413bb*/
+    v41 = (int *)(a1 + 414488); /*0x4413c0*/
+  }
+  v43 = *v41; /*0x4413c5*/
+  v163 = v41[1]; /*0x4413c7*/
+  v138 = (_DWORD *)(v43 + 16 * v163); /*0x4413d0*/
+  if ( v138 ) /*0x4413d9*/
+  {
+    cString::cString((cString *)(v43 + 16 * v163), (const struct cString *)v164); /*0x4413e2*/
+    v41 = (int *)(a1 + 414488); /*0x4413ec*/
+    *v138 = &off_47458C; /*0x4413f0*/
+  }
+  ++v41[1]; /*0x441402*/
+  cString::~cString(v164); /*0x441409*/
+  cString::cString((cString *)v164, aSfxtrigger10); /*0x441414*/
+  v44 = (int *)(a1 + 414488); /*0x441416*/
+  v45 = *(_DWORD *)(a1 + 414492) + 1; /*0x44142a*/
+  if ( *(_DWORD *)(a1 + 414496) < v45 ) /*0x441431*/
+  {
+    sub_45F550(v45 / 8 + *(_DWORD *)(a1 + 414492) + 1 + 5); /*0x441445*/
+    v44 = (int *)(a1 + 414488); /*0x44144a*/
+  }
+  v46 = *v44; /*0x44144f*/
+  v163 = v44[1]; /*0x441451*/
+  v139 = (_DWORD *)(v46 + 16 * v163); /*0x44145a*/
+  if ( v139 ) /*0x441463*/
+  {
+    cString::cString((cString *)(v46 + 16 * v163), (const struct cString *)v164); /*0x44146c*/
+    v44 = (int *)(a1 + 414488); /*0x441476*/
+    *v139 = &off_47458C; /*0x44147a*/
+  }
+  ++v44[1]; /*0x44148c*/
+  cString::~cString(v164); /*0x441493*/
+  cString::cString((cString *)v164, aSfxtrigger11); /*0x44149e*/
+  v47 = (int *)(a1 + 414488); /*0x4414a0*/
+  v48 = *(_DWORD *)(a1 + 414492) + 1; /*0x4414b4*/
+  if ( *(_DWORD *)(a1 + 414496) < v48 ) /*0x4414bb*/
+  {
+    sub_45F550(v48 / 8 + *(_DWORD *)(a1 + 414492) + 1 + 5); /*0x4414cf*/
+    v47 = (int *)(a1 + 414488); /*0x4414d4*/
+  }
+  v49 = *v47; /*0x4414d9*/
+  v163 = v47[1]; /*0x4414db*/
+  v140 = (_DWORD *)(v49 + 16 * v163); /*0x4414e4*/
+  if ( v140 ) /*0x4414ed*/
+  {
+    cString::cString((cString *)(v49 + 16 * v163), (const struct cString *)v164); /*0x4414f6*/
+    v47 = (int *)(a1 + 414488); /*0x441500*/
+    *v140 = &off_47458C; /*0x441504*/
+  }
+  ++v47[1]; /*0x441516*/
+  cString::~cString(v164); /*0x44151d*/
+  cString::cString((cString *)v164, aSfxtrigger12); /*0x441528*/
+  v50 = (int *)(a1 + 414488); /*0x44152a*/
+  v51 = *(_DWORD *)(a1 + 414492) + 1; /*0x44153e*/
+  if ( *(_DWORD *)(a1 + 414496) < v51 ) /*0x441545*/
+  {
+    sub_45F550(v51 / 8 + *(_DWORD *)(a1 + 414492) + 1 + 5); /*0x441559*/
+    v50 = (int *)(a1 + 414488); /*0x44155e*/
+  }
+  v52 = *v50; /*0x441563*/
+  v163 = v50[1]; /*0x441565*/
+  v141 = (_DWORD *)(v52 + 16 * v163); /*0x44156e*/

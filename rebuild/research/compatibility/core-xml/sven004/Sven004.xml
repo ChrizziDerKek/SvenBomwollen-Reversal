@@ -1,0 +1,1466 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Sven004 version="1.0">
+		<sounds>
+			<sound name="SfxPopcorn" 				file="Sven004/sfx/pop1.ogg"/>
+			<!--   Groundhog -->
+			<sound name="SfxSvenCatchGroundhog" 	file="Sven004/sfx/sven_catch_groundhog.ogg"/>
+			<sound name="SfxBroemseCatchGroundhog" 	file="Sven004/sfx/broemse_catch_groundhog.ogg"/>
+			<sound name="SfxAlienCatchGroundhog" 	file="Sven004/sfx/alien_catch_groundhog.ogg"/>
+			<sound name="SfxLarsCatchGroundhog" 	file="Sven004/sfx/lars_catch_groundhog.ogg"/>
+			<sound name="SfxCatchedAllGroundhogs" 	file="Sven004/sfx/shag_bonus.ogg"/>
+
+			<sound name="SfxDriveOverBox"	file="Sven004/sfx/ice_2.ogg"/>
+			<sound name="SfxDriveOverExtra"	file="Sven004/sfx/ice_3.ogg"/>
+			<!--   sven driving -->
+			<sound name="SfxVehicle1" 		file="Sven004/sfx/Vehicle_Sven.ogg"/>
+			<sound name="SfxVehicle1Crash" 	file="Sven004/sfx/Vehicle_Crash.ogg"/>
+			<sound name="SfxVehicle1Brake" 	file="Sven004/sfx/brake.ogg"/>
+			<sound name="SfxVehicle1Hit" 	file="Sven004/sfx/Vehicle_Hit.ogg"/>
+			<!--   alien driving -->
+			<sound name="SfxVehicle2" 		file="Sven004/sfx/Vehicle_Alien.ogg"/>
+			<sound name="SfxVehicle2Crash" 	file="Sven004/sfx/Vehicle_Crash.ogg"/>
+			<sound name="SfxVehicle2Brake" 	file="Sven004/sfx/brake.ogg"/>
+			<sound name="SfxVehicle2Hit" 	file="Sven004/sfx/Vehicle_Hit.ogg"/>
+			<!--   lars driving -->
+			<sound name="SfxVehicle3" 		file="Sven004/sfx/Vehicle_Lars.ogg"/>
+			<sound name="SfxVehicle3Crash" 	file="Sven004/sfx/Vehicle_Crash.ogg"/>
+			<sound name="SfxVehicle3Brake" 	file="Sven004/sfx/brake.ogg"/>
+			<sound name="SfxVehicle3Hit" 	file="Sven004/sfx/Vehicle_Hit.ogg"/>
+			<!--   broemse driving -->
+			<sound name="SfxVehicle4" 		file="Sven004/sfx/Vehicle_Broemse.ogg"/>
+			<sound name="SfxVehicle4Crash" 	file="Sven004/sfx/Vehicle_Crash.ogg"/>
+			<sound name="SfxVehicle4Brake" 	file="Sven004/sfx/brake.ogg"/>
+			<sound name="SfxVehicle4Hit" 	file="Sven004/sfx/Vehicle_Hit.ogg"/>
+
+			<!--   transporter -->
+			<sound name="SfxTransporterUp" 		file="Sven004/sfx/Transporter_Up.ogg"/>
+			<sound name="SfxTransporterDown" 	file="Sven004/sfx/Transporter_Down.ogg"/>
+			<sound name="SfxTransporterForced" 	file="Sven004/sfx/Transporter_Forced.ogg"/>
+			<!--   Collision Object (car / train) hits a Character  -->
+			<sound name="SfxCrash" 			file="Sven004/sfx/crash.ogg"/>
+			<!--   thin ice breaking  -->
+			<sound name="SfxIceBreak1" 		file="Sven004/sfx/ice_1.ogg"/>
+			<sound name="SfxIceBreak2" 		file="Sven004/sfx/ice_2.ogg"/>
+			<sound name="SfxIceBreak3" 		file="Sven004/sfx/ice_3.ogg"/>
+
+			<!--   trigger sfx (lever, pressure-plate, doors, gates, elevator,...) -->
+			<sound name="SfxTrigger01" 		file="Sven004/sfx/Trigger_Door.ogg"/>
+			<sound name="SfxTrigger02" 		file="Sven004/sfx/Trigger_Gatter.ogg"/>
+			<sound name="SfxTrigger03" 		file="Sven004/sfx/Trigger_Lift.ogg"/>
+			<sound name="SfxTrigger04" 		file="Sven004/sfx/nf04.ogg"/>
+			<sound name="SfxTrigger05" 		file="Sven004/sfx/nf05.ogg"/>
+			<sound name="SfxTrigger06" 		file="Sven004/sfx/nf06.ogg"/>
+			<sound name="SfxTrigger07" 		file="Sven004/sfx/nf07.ogg"/>
+			<sound name="SfxTrigger08" 		file="Sven004/sfx/nf08.ogg"/>
+			<sound name="SfxTrigger09" 		file="Sven004/sfx/nf09.ogg"/>
+			<sound name="SfxTrigger10" 		file="Sven004/sfx/nf10.ogg"/>
+			<sound name="SfxTrigger11" 		file="Sven004/sfx/nf11.ogg"/>
+			<sound name="SfxTrigger12" 		file="Sven004/sfx/nf12.ogg"/>
+			<sound name="SfxTrigger13" 		file="Sven004/sfx/nf13.ogg"/>
+			<sound name="SfxTrigger14" 		file="Sven004/sfx/nf14.ogg"/>
+			<sound name="SfxTrigger15" 		file="Sven004/sfx/nf15.ogg"/>
+			<sound name="SfxTrigger16" 		file="Sven004/sfx/nf16.ogg"/>
+
+			<!--   levelstart  -->
+			<sound name="SfxStart" 			file="Sven004/sfx/_silence.ogg"/>
+			<sound name="SfxTurnPoints" 	file="Sven004/sfx/points.ogg"/>
+			<sound name="SfxLoseLife" 		file="Sven004/sfx/item_negativ.ogg"/>
+			<sound name="SfxNewLife" 		file="Sven004/sfx/new_life.ogg"/>
+			<sound name="SfxWecker" 		file="Sven004/sfx/wecker1.ogg"/>
+			<sound name="SfxWeckerAlarm" 	file="Sven004/sfx/weckeralarm1.ogg"/>
+			<sound name="SfxGameOver" 		file="Sven004/sfx/gameover.ogg"/>
+			<sound name="SfxFinishPack" 	file="Sven004/sfx/pack_finished.ogg"/>
+			<!--   open / walk on Exit-Tile -->
+			<sound name="SfxOpenExit" 		file="Sven004/sfx/Exit_Tile_open.ogg"/>
+			<sound name="SfxEndLevelTile" 	file="Sven004/sfx/Exit_Tile_use.ogg"/>
+
+			<!--   shag 3 or more sheep in x sec. -->
+			<sound name="SfxMultipleShag" 	file="Sven004/sfx/shag_bonus.ogg"/>
+			<!--   Frigida unlocks new shag-ani / bonus level  -->
+			<sound name="SfxShowCard" 		file="Sven004/sfx/gong44.ogg"/>
+			<sound name="SfxUnlockBonus" 	file="Sven004/sfx/_silence.ogg"/>
+
+			<!--   collect extra  -->
+			<sound name="SfxPositive" 		file="Sven004/sfx/item_gift.ogg"/>
+			<sound name="SfxFirework" 		file="Sven004/sfx/item_firework.ogg"/>
+			<sound name="SfxImpotence" 		file="Sven004/sfx/item_impotenz.ogg"/>
+			<sound name="SfxRose" 			file="Sven004/sfx/item_rose.ogg"/>
+			<sound name="SfxSmell" 			file="Sven004/sfx/item_stinky.ogg"/>
+			<sound name="SfxHupe" 			file="Sven004/sfx/item_hupe.ogg"/>
+			<sound name="SfxCoin" 			file="Sven004/sfx/item_coin.ogg"/>
+
+			<!--   UFO  -->
+			<sound name="SfxUFO" 			file="Sven004/sfx/ufo2.ogg"/>
+			<sound name="SfxBeam" 			file="Sven004/sfx/beam.ogg"/>
+
+			<!--   Dog  -->
+			<sound name="SfxDogBeamUp" 		file="Sven004/sfx/wotan_beamup.ogg"/>
+			<sound name="SfxDogDig" 		file="Sven004/sfx/wotan_diggin.ogg"/>
+			<sound name="SfxDogFoundBone" 	file="Sven004/sfx/Wotan_foundbone.ogg"/>
+			<sound name="SfxDogFoundSven" 	file="Sven004/sfx/Wotan_foundSven.ogg"/>
+			<sound name="SfxShagDog" 		file="Sven004/sfx/shag_wotan.ogg"/>
+
+			<!--   Lars  -->
+			<sound name="SfxLarsDrink" 		file="Sven004/sfx/Lars_drink.ogg"/>
+			<sound name="SfxLarsDrinkAI" 	file="Sven004/sfx/Lars_drink_bonus.ogg"/>
+			<sound name="SfxLarsFall" 		file="Sven004/sfx/lars_fall.ogg"/>
+			<sound name="SfxLarsGroan" 		file="Sven004/sfx/Lars_angry.ogg"/>
+			<sound name="SfxLarsSleep" 		file="Sven004/sfx/Lars_sleep.ogg"/>
+			<sound name="SfxGuyFoundBeer" 	file="Sven004/sfx/Lars_FoundBeer.ogg"/>
+			<sound name="SfxGuyFoundSven" 	file="Sven004/sfx/_silence.ogg"/>
+			<sound name="SfxLarsBeamUp" 	file="Sven004/sfx/Lars_angry.ogg"/>
+			<sound name="SfxLarsShaveBack" 	file="Sven004/sfx/Lars_shave.ogg"/>
+			<sound name="SfxLarsShaveFront" file="Sven004/sfx/Lars_shave.ogg"/>
+			<sound name="SfxLarsTurnSheep" 	file="Sven004/sfx/Lars_FoundBeer.ogg"/>
+
+			<!--   Broemse  -->
+			<sound name="SfxBroemseFoundTeddy" 	file="Sven004/sfx/Broemse_FoundTeddy.ogg"/>
+			<sound name="SfxBroemseFoundSven" 	file="Sven004/sfx/Broemse_FoundSven.ogg"/>
+			<sound name="SfxBroemseBeamUp" 		file="Sven004/sfx/Broemse_FoundTeddy.ogg"/>
+			<sound name="SfxBroemsePlaysTeddy" 	file="Sven004/sfx/broemse_plays_teddy.ogg"/>
+			<sound name="SfxBroemsePlaysTeddyAI" file="Sven004/sfx/broemse_plays_teddy_bonus.ogg"/>
+			<sound name="SfxBroemsePlaysWotan" 	file="Sven004/sfx/broemse_plays_dog.ogg"/>
+			<sound name="SfxBroemsePlaysSven" 	file="Sven004/sfx/broemse_plays_sven.ogg"/>
+			<sound name="SfxBroemsePlayAliens" 	file="Sven004/sfx/Broemse_in_UFO3.ogg"/>
+			<sound name="SfxBroemseShaveBack" 	file="Sven004/sfx/bromse_shave2.ogg"/>
+			<sound name="SfxBroemseShaveFront" 	file="Sven004/sfx/bromse_shave1.ogg"/>
+			<sound name="SfxBroemseTurnSheep" 	file="Sven004/sfx/Broemse_FoundTeddy.ogg"/>
+
+			<!--   Alien  -->
+			<sound name="SfxAlienFoundSven" 	file="Sven004/sfx/alien_foundsven.ogg"/>
+			<sound name="SfxAlienFoundArtifact" file="Sven004/sfx/alien_foundsven.ogg"/>
+			<sound name="SfxAlienProbeSven" 	file="Sven004/sfx/alien_analprobe_mix3.ogg"/>
+			<sound name="SfxAlienShaveBack" 	file="Sven004/sfx/alien_shave-ear.ogg"/>
+			<sound name="SfxAlienShaveFront" 	file="Sven004/sfx/alien_shave-turn.ogg"/>
+			<sound name="SfxAlienTurnSheep" 	file="Sven004/sfx/alien_foundsven.ogg"/>
+
+			<!--   Fight  -->
+			<sound name="SfxFightDog" 		file="Sven004/sfx/fight.ogg"/>
+			<sound name="SfxFightGuy" 		file="Sven004/sfx/fight.ogg"/>
+
+			<!--   Hunter  -->
+			<sound name="SfxFightHunter" 		file="Sven004/sfx/hunter_shoot.ogg"/>
+			<sound name="SfxHunterFoundSven" 	file="Sven004/sfx/hunter_load.ogg"/>
+			<sound name="SfxHunterHit" 			file="Sven004/sfx/hunter_laugh.ogg"/>
+			<sound name="SfxHunterBeamUp" 		file="Sven004/sfx/hunter_oops.ogg"/>
+
+			<!--   Sven  -->
+			<sound name="SfxSvenWhistle" 	file="Sven004/sfx/sven_whistle.ogg"/>
+			<sound name="SfxWaterSplash" 	file="Sven004/sfx/water_splash22.ogg"/>
+			<sound name="SfxSvenFall" 		file="Sven004/sfx/sven_hits_ground.ogg"/>
+
+			<!--   sheep   -->
+			<sound name="SfxExplode" 		file="Sven004/sfx/sheep_explode3.ogg"/>
+			<sound name="SfxExplodeFlash" 	file="Sven004/sfx/sheep_explode_angry.ogg"/>
+			<sound name="SfxFrigida" 		file="Sven004/sfx/frigida_kettle.ogg"/>
+			<sound name="SfxFrigidaWhistle" file="Sven004/sfx/frigida.ogg"/>
+			<!--   Devil-Sheep  -->
+			<sound name="SfxDevil" 			file="Sven004/sfx/devil2.ogg"/>
+			<sound name="SfxDevilElectro" 	file="Sven004/sfx/devil_voltage.ogg"/>
+			<!--   angry sheep kicks sven  -->
+			<sound name="SfxHitBalls" 		file="Sven004/sfx/Sheep_kickSven.ogg"/>
+			<!--   sheep bleating happy -->
+			<sound name="SfxBlaat20" 		file="Sven004/sfx/Sheep_happy1.ogg"/>
+			<sound name="SfxBlaat21" 		file="Sven004/sfx/Sheep_happy2.ogg"/>
+			<!--   sheep bleating beamup -->
+			<sound name="SfxBlaat22" 		file="Sven004/sfx/Sheep_beamup.ogg"/>
+			<!--   sheep bleating angry -->
+			<sound name="SfxBlaat23" 		file="Sven004/sfx/Sheep_angry1.ogg"/>
+			<sound name="SfxBlaat24" 		file="Sven004/sfx/Sheep_angry2.ogg"/>
+			<!--   sheep moaning when completely shagged -->
+			<sound name="SfxMoan1" 			file="Sven004/sfx/sheep_moan1.ogg"/>
+			<sound name="SfxMoan2" 			file="Sven004/sfx/sheep_moan2.ogg"/>
+			<sound name="SfxMoan3" 			file="Sven004/sfx/sheep_moan3.ogg"/>
+
+			<!--   Shag Sounds  -->
+			<sound name="SfxShag02" 		file="Sven004/sfx/rammel2.ogg"/>
+			<sound name="SfxShag03" 		file="Sven004/sfx/rammel10.ogg"/>
+			<sound name="SfxShag04" 		file="Sven004/sfx/rammel4.ogg"/>
+			<sound name="SfxShag05" 		file="Sven004/sfx/rammel5.ogg"/>
+			<sound name="SfxShag06" 		file="Sven004/sfx/rammel12.ogg"/>
+			<sound name="SfxShag07" 		file="Sven004/sfx/rammel2.ogg"/>
+			<sound name="SfxShag08" 		file="Sven004/sfx/rammel8.ogg"/>
+			<sound name="SfxShag09" 		file="Sven004/sfx/rammel9.ogg"/>
+			<sound name="SfxShag10" 		file="Sven004/sfx/shag_whip.ogg"/>
+			<sound name="SfxShag11" 		file="Sven004/sfx/rammel11.ogg"/>
+			<sound name="SfxShag12" 		file="Sven004/sfx/rammel12.ogg"/>
+			<sound name="SfxShag13" 		file="Sven004/sfx/rammel13.ogg"/>
+			<sound name="SfxShag14" 		file="Sven004/sfx/rammel14.ogg"/>
+			<sound name="SfxNewShag01" 		file="Sven004/sfx/nf01.ogg"/>
+			<sound name="SfxNewShag02" 		file="Sven004/sfx/nf02.ogg"/>
+			<sound name="SfxNewShag03" 		file="Sven004/sfx/nf03.ogg"/>
+			<sound name="SfxNewShag04" 		file="Sven004/sfx/nf04.ogg"/>
+			<sound name="SfxNewShag05" 		file="Sven004/sfx/nf05.ogg"/>
+			<sound name="SfxNewShag06" 		file="Sven004/sfx/nf06.ogg"/>
+			<sound name="SfxNewShag07" 		file="Sven004/sfx/nf07.ogg"/>
+			<sound name="SfxNewShag08" 		file="Sven004/sfx/nf08.ogg"/>
+			<sound name="SfxNewShag09" 		file="Sven004/sfx/nf09.ogg"/>
+			<sound name="SfxNewShag10" 		file="Sven004/sfx/nf10.ogg"/>
+			<sound name="SfxNewShag11" 		file="Sven004/sfx/nf11.ogg"/>
+			<sound name="SfxNewShag12" 		file="Sven004/sfx/nf12.ogg"/>
+			<sound name="SfxNewShag13" 		file="Sven004/sfx/nf13.ogg"/>
+			<sound name="SfxNewShag14" 		file="Sven004/sfx/nf14.ogg"/>
+			<sound name="SfxNewShag15" 		file="Sven004/sfx/nf15.ogg"/>
+			<sound name="SfxNewShag16" 		file="Sven004/sfx/nf16.ogg"/>
+			<sound name="SfxNewShag17" 		file="Sven004/sfx/nf17.ogg"/>
+			<sound name="SfxNewShag18" 		file="Sven004/sfx/nf18.ogg"/>
+			<sound name="SfxNewShag19" 		file="Sven004/sfx/nf19.ogg"/>
+			<sound name="SfxNewShag20" 		file="Sven004/sfx/nf20.ogg"/>
+			<sound name="SfxNewShag21" 		file="Sven004/sfx/nf15.ogg"/>
+			<sound name="SfxNewShag22" 		file="Sven004/sfx/nf11.ogg"/>
+			<sound name="SfxNewShag23" 		file="Sven004/sfx/nf19.ogg"/>
+			<sound name="SfxNewShag24" 		file="Sven004/sfx/nf16.ogg"/>
+			<sound name="SfxNewShag25" 		file="Sven004/sfx/nf06.ogg"/>
+			<sound name="SfxNewShag26" 		file="Sven004/sfx/nf13.ogg"/>
+			<sound name="SfxNewShag27" 		file="Sven004/sfx/nf21.ogg"/>
+			<sound name="SfxNewShag28" 		file="Sven004/sfx/nf22.ogg"/>
+			<sound name="SfxNewShag29" 		file="Sven004/sfx/nf23.ogg"/>
+			<sound name="SfxNewShag30" 		file="Sven004/sfx/nf24.ogg"/>
+			<sound name="SfxNewShag31" 		file="Sven004/sfx/nf25.ogg"/>
+			<sound name="SfxNewShag32" 		file="Sven004/sfx/nf26.ogg"/>
+			<sound name="SfxShagMermaid" 	file="Sven004/sfx/shag_pinguin_a.ogg"/>
+
+			<!--   Animals  -->
+			<sound name="SfxShagChicken" 	file="Sven004/sfx/shag_chick.ogg"/>
+			<sound name="SfxChickenBeamUp" 	file="Sven004/sfx/shag_chick.ogg"/>
+			<sound name="SfxShagGoat" 		file="Sven004/sfx/shag_goat.ogg"/>
+			<sound name="SfxGoatBeamUp" 	file="Sven004/sfx/shag_goat.ogg"/>
+			<sound name="SfxShagPig" 		file="Sven004/sfx/shag_pig.ogg"/>
+			<sound name="SfxPigBeamUp" 		file="Sven004/sfx/shag_pig.ogg"/>
+			<sound name="SfxShagPenguin" 	file="Sven004/sfx/shag_pinguin_a.ogg"/>
+			<sound name="SfxPenguinBeamUp" 	file="Sven004/sfx/shag_pinguin_a.ogg"/>
+			<sound name="SfxShagTurtle" 	file="Sven004/sfx/shag_turtle.ogg"/>
+			<sound name="SfxTurtleBeamUp" 	file="Sven004/sfx/shag_turtle.ogg"/>
+			<sound name="SfxShagRabbit" 	file="Sven004/sfx/shag_rabbit.ogg"/>
+			<sound name="SfxRabbitBeamUp" 	file="Sven004/sfx/shag_rabbit.ogg"/>
+			<sound name="SfxShagAlienPet" 	file="Sven004/sfx/shag_alienpet.ogg"/>
+			<sound name="SfxAlienPetBeamUp" file="Sven004/sfx/shag_alienpet.ogg"/>
+			<sound name="SfxShagHedgehog" 	file="Sven004/sfx/shag_hedgehog.ogg"/>
+			<sound name="SfxHedgehogBeamUp" file="Sven004/sfx/shag_hedgehog.ogg"/>
+			<sound name="SfxShagPeacock" 	file="Sven004/sfx/shag_peacock.ogg"/>
+			<sound name="SfxPeacockBeamUp" 	file="Sven004/sfx/shag_peacock.ogg"/>
+			<sound name="SfxShagSkunk" 		file="Sven004/sfx/shag_skunk.ogg"/>
+			<sound name="SfxSkunkBeamUp" 	file="Sven004/sfx/shag_skunk.ogg"/>
+
+			<!--   Music  -->
+			<sound name="Tune01" 			file="Sven004/sfx/Sven4Music.ogg"			/>
+			<sound name="Tune02" 			file="Sven004/sfx/Sven4MusicHighscore.ogg"	/>
+			<sound name="Tune01Atmo" 		file="Sven004/sfx/Mainmenu_atmo.ogg"		/>
+		</sounds>
+
+	<parameters>
+
+		<parameter name="Object01"	value="0,14,19,30,40,50,60,70,80,90"/>
+
+		<parameter name="Tileset01"	value="21,42,74,93,123,135,173,200,214,231"/>
+		<parameter name="Tileset02"	value="0,10,20,30,40,50,60,70,80,90"/>
+		<parameter name="Tileset03"	value="0,10,20,30,40,50,60,70,80,90"/>
+		<parameter name="Tileset04"	value="0,10,20,30,40,50,60,70,80,90"/>
+		<parameter name="Tileset05"	value="0,10,20,30,40,50,60,70,80,90"/>
+		<parameter name="Tileset06"	value="0,10,20,30,40,50,60,70,80,90"/>
+		<parameter name="Tileset07"	value="0,10,20,30,40,50,60,70,80,90"/>
+		<parameter name="Tileset08"	value="0,10,20,30,40,50,60,70,80,90"/>
+		<parameter name="Tileset09"	value="0,10,20,30,40,50,60,70,80,90"/>
+		<parameter name="Tileset10"	value="0,10,20,30,40,50,60,70,80,90"/>
+		<parameter name="Tileset11"	value="0,10,20,30,40,50,60,70,80,90"/>
+		<parameter name="Tileset12"	value="0,10,20,30,40,50,60,70,80,90"/>
+		<parameter name="Tileset13"	value="0,10,20,30,40,50,60,70,80,90"/>
+		<parameter name="Tileset14"	value="0,10,20,30,40,50,60,70,80,90"/>
+		<parameter name="Tileset15"	value="0,10,20,30,40,50,60,70,80,90"/>
+		<parameter name="Tileset16"	value="0,10,20,30,40,50,60,70,80,90"/>
+
+		<!--   Character Parameters   -->
+
+		<!--   Speed                = walking speed
+			   Run Multiplier       = multiplier for running-speed
+			   HuntPlayerDistance   = amount of tiles that enemies detect the player and start hunting him
+			   HuntTileLength       = amount of tiles that the player is hunted when detected
+			   TileLength           = amount of tiles a character walks until IdleTime when not hunting
+			   TileLengtRandom      = random multiplier for TileLength
+			   IdleTime			    = time (sec.) a character stands still between walking
+			   IdleTimeRandom 		= random multiplier for IdleTime
+			   SleepTime            = default sleeping-time for Lars and Wotan at the beginning of a level (can be adjusted per level in the editor)
+	     -->
+
+		<parameter name="NrOfAiCharacters" 		value="5"/>
+
+		<!--   Broemse Character Parameters   -->
+		<parameter name="AI_1" 					value="6.0"/>
+		<parameter name="HuntPlayerDistance_1" 	value="4.0"/>
+		<parameter name="HuntTileLength_1" 		value="20"/>
+		<parameter name="TileLength_1" 			value="6"/>
+		<parameter name="TileLengthRandom_1" 	value="2"/>
+		<parameter name="IdleTime_1" 			value="3.0"/>
+		<parameter name="IdleTimeRandom_1" 		value="2"/>
+		<parameter name="RunMultiplier_1" 		value="2.00"/>
+
+		<parameter name="RunFrameRate_1" 		value="50.0"/>
+		<parameter name="WalkFrameRate_1" 		value="25.0"/>
+		<parameter name="DefaultFrameRate_1" 	value="10.0"/>
+		<parameter name="FoundExtraFrameRate_1"	value="9.0"/>
+		<parameter name="PlayFrameRate_1" 		value="10.0"/>
+		<parameter name="BeamUpFrameRate_1" 	value="5.0"/>
+		<parameter name="ShaveFrameRate_1" 		value="20.0"/>
+		<parameter name="HitPlayerFrameRate_1" 	value="20.0"/>
+		<parameter name="DriveFrameRate_1" 		value="12.0"/>
+		<parameter name="CatchGroundhogFrameRate_1"	value="18.0"/>
+
+		<parameter name="CollisionType_1" 		value="93.0"/>
+		<parameter name="Speed_1" 				value="50.0"/>
+		<parameter name="DriveSpeed_1" 			value="210.0"/>
+		<parameter name="WakeUpDistance_1" 		value="0.0"/>
+		<parameter name="SleepTime_1"	 		value="0.0"/>
+		<parameter name="DiggingTime_1" 		value="0.0"/>
+
+		<parameter name="DoExtra_1" 			value="true"/>
+		<parameter name="HuntExtra_1" 			value="true"/>
+		<parameter name="DoHitPlayerSven_1" 	value="true"/>
+		<parameter name="DoHitPlayerGuy_1"	 	value="false"/>
+		<parameter name="DoHitPlayerBroemse_1"	value="false"/>
+		<parameter name="DoHitPlayerAlien_1" 	value="true"/>
+		<parameter name="DoHitPlayerWotan_1" 	value="true"/>
+		<parameter name="DoHitSheep_1" 			value="true"/>
+		<parameter name="DoHitDog_1" 			value="true"/>
+		<parameter name="LoseLife_1" 			value="false"/>
+		<parameter name="SleepSound_1" 			value="false"/>
+		<parameter name="StandUp_1" 			value="false"/>
+		<parameter name="FallDown_1" 			value="false"/>
+		<parameter name="DoShout_1" 			value="false"/>
+		<parameter name="FindPlayerActive_1" 	value="false"/>
+		<parameter name="FindPlayerClose_1" 	value="true"/>
+		<parameter name="BeamUp_1" 				value="true"/>
+		<parameter name="DoIdle_1" 				value="true"/>
+		<parameter name="DoIdleShoot_1" 		value="false"/>
+		<parameter name="StepOnTile_1" 			value="0"/>
+
+		<parameter name="aWalk_1"				value="aBroemseWalk"/>
+		<parameter name="aDrive_1"				value="aBroemseDrive"/>
+		<parameter name="aExtraBack_1"			value="aBroemseTeddyBack"/>
+		<parameter name="aExtraFront_1"			value="aBroemseTeddyFront"/>
+		<parameter name="aBeamUp_1"				value="aBroemseBeamUp"/>
+		<parameter name="aHitPlayerBack_1"		value="aBroemseCuddleSvenBack"/>
+		<parameter name="aHitPlayerFront_1"		value="aBroemseCuddleSvenFront"/>
+		<parameter name="aHitDogBack_1"			value="aBroemseCuddleDogBack"/>
+		<parameter name="aHitDogFront_1"		value="aBroemseCuddleDogFront"/>
+		<parameter name="aShaveBack_1"			value="aBroemseShaveBackBonus"/>
+		<parameter name="aShaveFront_1"			value="aBroemseShaveFrontBonus"/>
+		<parameter name="aSleep_1"				value="empty"/>
+		<parameter name="aStandUp_1"			value="empty"/>
+		<parameter name="aFallDown_1"			value="empty"/>
+		<parameter name="aShoutBack_1"			value="empty"/>
+		<parameter name="aShoutFront_1"			value="empty"/>
+		<parameter name="aIdle_1"				value="aBroemseIdle"/>
+
+		<parameter name="sFoundExtra_1"			value="SfxBroemseFoundTeddy"/>
+		<parameter name="sFoundPlayer_1"		value="SfxBroemseFoundSven"/>
+		<parameter name="sBeamedUp_1"			value="SfxBroemsePlayAliens"/>
+		<parameter name="sFallUfo_1"			value="SfxSvenFall"/>
+		<parameter name="sShaveBack_1"			value="SfxBroemseShaveBack"/>
+		<parameter name="sShaveFront_1"			value="SfxBroemseShaveFront"/>
+		<parameter name="sPlayExtra_1"			value="SfxBroemsePlaysTeddy"/>
+		<parameter name="sPlayDog_1"			value="SfxBroemsePlaysWotan"/>
+		<parameter name="sHitPlayer_1"			value="SfxBroemsePlaysSven"/>
+		<parameter name="sSleep_1"				value="empty"/>
+		<parameter name="sFallDown_1"			value="empty"/>
+		<parameter name="sShout_1"				value="SfxFightGuy"/>
+		<parameter name="sWhistle_1"			value="SfxBroemseTurnSheep"/>
+		<parameter name="sGroundhog_1"			value="SfxBroemseCatchGroundhog"/>
+
+
+		<!--   Wotan Character Parameters   -->
+		<parameter name="AI_2" 					value="4.0"/>
+		<parameter name="HuntPlayerDistance_2" 	value="3.0"/>
+		<parameter name="HuntTileLength_2" 		value="20"/>
+		<parameter name="TileLength_2" 			value="5"/>
+		<parameter name="TileLengthRandom_2" 	value="3"/>
+		<parameter name="IdleTime_2" 			value="4.0"/>
+		<parameter name="IdleTimeRandom_2" 		value="2.0"/>
+		<parameter name="RunMultiplier_2" 		value="2.00"/>
+
+		<parameter name="RunFrameRate_2" 		value="30.0"/>
+		<parameter name="WalkFrameRate_2" 		value="15.0"/>
+		<parameter name="DefaultFrameRate_2" 	value="10.0"/>
+		<parameter name="FoundExtraFrameRate_2"	value="10.0"/>
+		<parameter name="PlayFrameRate_2" 		value="0.0"/>
+		<parameter name="BeamUpFrameRate_2" 	value="5.0"/>
+		<parameter name="ShaveFrameRate_2" 		value="0.0"/>
+		<parameter name="HitPlayerFrameRate_2" 	value="10.0"/>
+		<parameter name="DriveFrameRate_2" 		value="0.0"/>
+		<parameter name="CatchGroundhogFrameRate_2"	value="8.0"/>
+
+		<parameter name="CollisionType_2" 		value="91.0"/>
+		<parameter name="Speed_2" 				value="55.0"/>
+		<parameter name="DriveSpeed_2" 			value="0.0"/>
+		<parameter name="WakeUpDistance_2" 		value="2.0"/>
+		<parameter name="SleepTime_2" 			value="15.0"/>
+		<parameter name="DiggingTime_2" 		value="15.0"/>
+
+		<parameter name="DoExtra_2" 			value="true"/>
+		<parameter name="HuntExtra_2" 			value="true"/>
+		<parameter name="DoHitDog_2" 			value="false"/>
+		<parameter name="DoHitPlayerSven_2" 	value="true"/>
+		<parameter name="DoHitPlayerGuy_2"	 	value="false"/>
+		<parameter name="DoHitPlayerBroemse_2"	value="false"/>
+		<parameter name="DoHitPlayerAlien_2" 	value="true"/>
+		<parameter name="DoHitPlayerWotan_2" 	value="false"/>
+
+		<parameter name="DoHitSheep_2" 			value="false"/>
+		<parameter name="LoseLife_2" 			value="true"/>
+		<parameter name="SleepSound_2" 			value="false"/>
+		<parameter name="StandUp_2" 			value="false"/>
+		<parameter name="FallDown_2" 			value="false"/>
+		<parameter name="DoShout_2" 			value="false"/>
+		<parameter name="FindPlayerActive_2" 	value="true"/>
+		<parameter name="FindPlayerClose_2" 	value="true"/>
+		<parameter name="BeamUp_2" 				value="true"/>
+		<parameter name="DoIdle_2" 				value="false"/>
+		<parameter name="DoIdleShoot_2" 		value="false"/>
+		<parameter name="StepOnTile_2" 			value="0"/>
+
+		<parameter name="aWalk_2"				value="aWotanWalk"/>
+		<parameter name="aDrive_2"				value="empty"/>
+		<parameter name="aExtraBack_2"			value="aWotanBoneBack"/>
+		<parameter name="aExtraFront_2"			value="aWotanBoneFront"/>
+		<parameter name="aBeamUp_2"				value="aWotanBeamUp"/>
+		<parameter name="aHitPlayerBack_2"		value="aWotanHitPlayerBack"/>
+		<parameter name="aHitPlayerFront_2"		value="aWotanHitPlayerFront"/>
+		<parameter name="aHitDogBack_2"			value="empty"/>
+		<parameter name="aHitDogFront_2"		value="empry"/>
+		<parameter name="aShaveBack_2"			value="empty"/>
+		<parameter name="aShaveFront_2"			value="empty"/>
+		<parameter name="aSleep_2"				value="aWotanSleep"/>
+		<parameter name="aStandUp_2"			value="empty"/>
+		<parameter name="aFallDown_2"			value="empty"/>
+		<parameter name="aShoutBack_2"			value="aWotanBarkBack"/>
+		<parameter name="aShoutFront_2"			value="aWotanBarkFront"/>
+		<parameter name="aIdle_2"				value="empty"/>
+
+		<parameter name="sFoundExtra_2"			value="SfxDogFoundBone"/>
+		<parameter name="sFoundPlayer_2"		value="SfxDogFoundSven"/>
+		<parameter name="sBeamedUp_2"			value="SfxDogPlayAliens"/>
+		<parameter name="sFallUfo_2"			value="SfxSvenFall"/>
+		<parameter name="sShaveBack_2"			value="empty"/>
+		<parameter name="sShaveFront_2"			value="empty"/>
+		<parameter name="sPlayExtra_2"			value="SfxDogDig"/>
+		<parameter name="sPlayDog_2"			value="empty"/>
+		<parameter name="sHitPlayer_2"			value="SfxFightDog"/>
+		<parameter name="sSleep_2"				value="empty"/>
+		<parameter name="sFallDown_2"			value="empty"/>
+		<parameter name="sShout_2"				value="empty"/>
+		<parameter name="sWhistle_2"			value="SfxDogFoundBone"/>
+		<parameter name="sGroundhog_2"			value="SfxDogDig"/>
+
+
+		<!--   Guy Character Parameters   -->
+		<parameter name="AI_3" 					value="5.0"/>
+		<parameter name="HuntPlayerDistance_3" 	value="2.0"/>
+		<parameter name="HuntTileLength_3" 		value="10"/>
+		<parameter name="TileLength_3" 			value="5"/>
+		<parameter name="TileLengthRandom_3" 	value="2"/>
+		<parameter name="IdleTime_3" 			value="4.0"/>
+		<parameter name="IdleTimeRandom_3" 		value="1.5"/>
+		<parameter name="RunMultiplier_3" 		value="2.00"/>
+
+		<parameter name="RunFrameRate_3" 		value="30.0"/>
+		<parameter name="WalkFrameRate_3" 		value="15.0"/>
+		<parameter name="DefaultFrameRate_3" 	value="10.0"/>
+		<parameter name="FoundExtraFrameRate_3"	value="10.0"/>
+		<parameter name="PlayFrameRate_3" 		value="0.0"/>
+		<parameter name="BeamUpFrameRate_3" 	value="5.0"/>
+		<parameter name="ShaveFrameRate_3" 		value="20.0"/>
+		<parameter name="HitPlayerFrameRate_3" 	value="10.0"/>
+		<parameter name="DriveFrameRate_3" 		value="5.0"/>
+		<parameter name="CatchGroundhogFrameRate_3"	value="15.0"/>
+
+		<parameter name="CollisionType_3" 		value="92.0"/>
+		<parameter name="Speed_3" 				value="40.0"/>
+		<parameter name="DriveSpeed_3" 			value="160.0"/>
+		<parameter name="WakeUpDistance_3" 		value="2.0"/>
+		<parameter name="SleepTime_3" 			value="15.0"/>
+		<parameter name="DiggingTime_3" 		value="0.0"/>
+
+		<parameter name="DoExtra_3" 			value="true"/>
+		<parameter name="HuntExtra_3" 			value="true"/>
+		<parameter name="DoHitDog_3" 			value="false"/>
+		<parameter name="DoHitPlayerSven_3" 	value="true"/>
+		<parameter name="DoHitPlayerGuy_3"	 	value="false"/>
+		<parameter name="DoHitPlayerBroemse_3"	value="true"/>
+		<parameter name="DoHitPlayerAlien_3" 	value="true"/>
+		<parameter name="DoHitPlayerWotan_3" 	value="false"/>
+
+		<parameter name="DoHitSheep_3" 			value="true"/>
+		<parameter name="LoseLife_3" 			value="true"/>
+		<parameter name="SleepSound_3" 			value="true"/>
+		<parameter name="StandUp_3" 			value="true"/>
+		<parameter name="FallDown_3" 			value="true"/>
+		<parameter name="DoShout_3" 			value="true"/>
+		<parameter name="FindPlayerActive_3" 	value="true"/>
+		<parameter name="FindPlayerClose_3" 	value="false"/>
+		<parameter name="BeamUp_3" 				value="false"/>
+		<parameter name="DoIdle_3" 				value="true"/>
+		<parameter name="DoIdleShoot_3" 		value="false"/>
+		<parameter name="StepOnTile_3" 			value="0"/>
+
+		<parameter name="aWalk_3"				value="aGuyWalk"/>
+		<parameter name="aDrive_3"				value="aGuyDrive"/>
+		<parameter name="aExtraBack_3"			value="aGuyDrink"/>
+		<parameter name="aExtraFront_3"			value="aGuyDrink"/>
+		<parameter name="aBeamUp_3"				value="aGuyBeamUp"/>
+		<parameter name="aHitPlayerBack_3"		value="aGuyHitPlayerBack"/>
+		<parameter name="aHitPlayerFront_3"		value="aGuyHitPlayerFront"/>
+		<parameter name="aHitDogBack_3"			value="empty"/>
+		<parameter name="aHitDogFront_3"		value="empry"/>
+		<parameter name="aShaveBack_3"			value="aGuyShaveBackBonus"/>
+		<parameter name="aShaveFront_3"			value="aGuyShaveFrontBonus"/>
+		<parameter name="aSleep_3"				value="aGuySleep"/>
+		<parameter name="aStandUp_3"			value="aGuyStandUp"/>
+		<parameter name="aFallDown_3"			value="aGuyLayDown"/>
+		<parameter name="aShoutBack_3"			value="aGuyGrumbleBack"/>
+		<parameter name="aShoutFront_3"			value="aGuyGrumbleFront"/>
+		<parameter name="aIdle_3"				value="aGuyIdle"/>
+
+		<parameter name="sFoundExtra_3"			value="SfxGuyFoundBeer"/>
+		<parameter name="sFoundPlayer_3"		value="SfxGuyFoundSven"/>
+		<parameter name="sBeamedUp_3"			value="SfxDogPlayAliens"/>
+		<parameter name="sFallUfo_3"			value="SfxSvenFall"/>
+		<parameter name="sShaveBack_3"			value="SfxLarsShaveBack"/>
+		<parameter name="sShaveFront_3"			value="SfxLarsShaveFront"/>
+		<parameter name="sPlayExtra_3"			value="SfxLarsDrink"/>
+		<parameter name="sPlayDog_3"			value="empty"/>
+		<parameter name="sHitPlayer_3"			value="SfxFightGuy"/>
+		<parameter name="sSleep_3"				value="SfxLarsSleep"/>
+		<parameter name="sFallDown_3"			value="SfxLarsFall"/>
+		<parameter name="sShout_3"				value="SfxLarsGroan"/>
+		<parameter name="sWhistle_3"			value="SfxLarsTurnSheep"/>
+		<parameter name="sGroundhog_3"			value="SfxLarsCatchGroundhog"/>
+
+
+		<!--   ALIEN Character Parameters   -->
+		<parameter name="AI_4" 					value="3.0"/>
+		<parameter name="HuntPlayerDistance_4" 	value="4.0"/>
+		<parameter name="HuntTileLength_4" 		value="20"/>
+		<parameter name="TileLength_4" 			value="3"/>
+		<parameter name="TileLengthRandom_4" 	value="3"/>
+		<parameter name="IdleTime_4" 			value="1.0"/>
+		<parameter name="IdleTimeRandom_4" 		value="1.5"/>
+		<parameter name="RunMultiplier_4" 		value="2.00"/>
+
+		<parameter name="RunFrameRate_4" 		value="30.0"/>
+		<parameter name="WalkFrameRate_4" 		value="15.0"/>
+		<parameter name="DefaultFrameRate_4" 	value="10.0"/>
+		<parameter name="FoundExtraFrameRate_4"	value="10.0"/>
+		<parameter name="PlayFrameRate_4" 		value="10.0"/>
+		<parameter name="BeamUpFrameRate_4" 	value="5.0"/>
+		<parameter name="ShaveFrameRate_4" 		value="20.0"/>
+		<parameter name="HitPlayerFrameRate_4" 	value="13.0"/>
+		<parameter name="DriveFrameRate_4" 		value="3.0"/>
+		<parameter name="CatchGroundhogFrameRate_4"	value="15.0"/>
+
+		<parameter name="CollisionType_4" 		value="94.0"/>
+		<parameter name="Speed_4" 				value="60.0"/>
+		<parameter name="DriveSpeed_4" 			value="240.0"/>
+		<parameter name="WakeUpDistance_4" 		value="0.0"/>
+		<parameter name="SleepTime_4" 			value="0.0"/>
+		<parameter name="DiggingTime_4" 		value="0.0"/>
+
+		<parameter name="DoExtra_4" 			value="true"/>
+		<parameter name="HuntExtra_4" 			value="false"/>
+		<parameter name="DoHitDog_4" 			value="true"/>
+		<parameter name="DoHitPlayerSven_4" 	value="true"/>
+		<parameter name="DoHitPlayerGuy_4" 		value="true"/>
+		<parameter name="DoHitPlayerBroemse_4"	value="false"/>
+		<parameter name="DoHitPlayerAlien_4" 	value="false"/>
+		<parameter name="DoHitPlayerWotan_4" 	value="true"/>
+
+		<parameter name="DoHitSheep_4" 			value="true"/>
+		<parameter name="LoseLife_4" 			value="true"/>
+		<parameter name="SleepSound_4" 			value="false"/>
+		<parameter name="StandUp_4" 			value="false"/>
+		<parameter name="FallDown_4" 			value="false"/>
+		<parameter name="DoShout_4" 			value="false"/>
+		<parameter name="FindPlayerActive_4" 	value="false"/>
+		<parameter name="FindPlayerClose_4" 	value="true"/>
+		<parameter name="BeamUp_4" 				value="true"/>
+		<parameter name="DoIdle_4" 				value="true"/>
+		<parameter name="DoIdleShoot_4" 		value="false"/>
+		<parameter name="StepOnTile_4" 			value="1"/>
+
+		<parameter name="aWalk_4"				value="aAlienWalk"/>
+		<parameter name="aDrive_4"				value="aAlienDrive"/>
+		<parameter name="aExtraBack_4"			value="empty"/>
+		<parameter name="aExtraFront_4"			value="empty"/>
+		<parameter name="aBeamUp_4"				value="aAlienBeamUp"/>
+		<parameter name="aHitPlayerBack_4"		value="aAlienProbeSven"/>
+		<parameter name="aHitPlayerFront_4"		value="aAlienProbeSven"/>
+		<parameter name="aHitDogBack_4"			value="aAlienIdle"/>
+		<parameter name="aHitDogFront_4"		value="aAlienIdle"/>
+		<parameter name="aShaveBack_4"			value="aAlienShaveBackBonus"/>
+		<parameter name="aShaveFront_4"			value="aAlienShaveFrontBonus"/>
+		<parameter name="aSleep_4"				value="empty"/>
+		<parameter name="aStandUp_4"			value="empty"/>
+		<parameter name="aFallDown_4"			value="empty"/>
+		<parameter name="aShoutBack_4"			value="empty"/>
+		<parameter name="aShoutFront_4"			value="empty"/>
+		<parameter name="aIdle_4"				value="aAlienIdle"/>
+
+		<parameter name="sFoundExtra_4"			value="SfxAlienFoundArtifact"/>
+		<parameter name="sFoundPlayer_4"		value="SfxAlienFoundSven"/>
+		<parameter name="sBeamedUp_4"			value="SfxAlienFoundArtifact"/>
+		<parameter name="sFallUfo_4"			value="empty"/>
+		<parameter name="sShaveBack_4"			value="SfxAlienShaveBack"/>
+		<parameter name="sShaveFront_4"			value="SfxAlienShaveFront"/>
+		<parameter name="sPlayExtra_4"			value="SfxAlienFoundArtifact"/>
+		<parameter name="sPlayDog_4"			value="SfxAlienCatchGroundhog"/>
+		<parameter name="sHitPlayer_4"			value="SfxAlienProbeSven"/>
+		<parameter name="sSleep_4"				value="empty"/>
+		<parameter name="sFallDown_4"			value="empty"/>
+		<parameter name="sShout_4"				value="empty"/>
+		<parameter name="sWhistle_4"			value="SfxAlienTurnSheep"/>
+		<parameter name="sGroundhog_4"			value="SfxAlienCatchGroundhog"/>
+
+
+		<!--   HUNTER Character Parameters   -->
+		<parameter name="AI_5" 					value="30.0"/>
+		<parameter name="HuntPlayerDistance_5" 	value="3.0"/>
+		<parameter name="HuntTileLength_5" 		value="4"/>
+		<parameter name="TileLength_5" 			value="3"/>
+		<parameter name="TileLengthRandom_5" 	value="2"/>
+		<parameter name="IdleTime_5" 			value="1.0"/>
+		<parameter name="IdleTimeRandom_5" 		value="1.5"/>
+		<parameter name="RunMultiplier_5" 		value="1.5"/>
+
+		<parameter name="RunFrameRate_5" 		value="18.0"/>
+		<parameter name="WalkFrameRate_5" 		value="12.0"/>
+		<parameter name="DefaultFrameRate_5" 	value="15.0"/>
+		<parameter name="FoundExtraFrameRate_5"	value="0.0"/>
+		<parameter name="PlayFrameRate_5" 		value="0.0"/>
+		<parameter name="BeamUpFrameRate_5" 	value="5.0"/>
+		<parameter name="ShaveFrameRate_5" 		value="0.0"/>
+		<parameter name="HitPlayerFrameRate_5" 	value="15.0"/>
+		<parameter name="DriveFrameRate_5" 		value="0.0"/>
+		<parameter name="CatchGroundhogFrameRate_5"	value="0.0"/>
+
+		<parameter name="CollisionType_5" 		value="96.0"/>
+		<parameter name="Speed_5" 				value="50.0"/>
+		<!--   time before idle starts after having walked, 0 stops walking and shoots immediately   -->
+		<parameter name="DriveSpeed_5" 			value="0.0"/>
+		<!-- shooting distance !!!   -->
+		<parameter name="WakeUpDistance_5" 		value="5.0"/>
+		<!--   dont use this one :) its the sleeptime used to set the guardstate  -->
+		<parameter name="SleepTime_5" 			value="0.0"/>
+		<!--   time hunter does nothing after having shot (if player hit *2) -->
+		<parameter name="DiggingTime_5" 		value="1.5"/>
+
+		<parameter name="DoExtra_5" 			value="true"/>
+		<parameter name="HuntExtra_5" 			value="false"/>
+		<parameter name="DoHitDog_5" 			value="false"/>
+		<parameter name="DoHitPlayerSven_5" 	value="false"/>
+		<parameter name="DoHitPlayerGuy_5" 		value="true"/>
+		<parameter name="DoHitPlayerBroemse_5"	value="true"/>
+		<parameter name="DoHitPlayerAlien_5" 	value="true"/>
+		<parameter name="DoHitPlayerWotan_5" 	value="true"/>
+		<parameter name="DoHitSheep_5" 			value="false"/>
+		<parameter name="LoseLife_5" 			value="true"/>
+		<parameter name="SleepSound_5" 			value="false"/>
+		<parameter name="StandUp_5" 			value="false"/>
+		<parameter name="FallDown_5" 			value="false"/>
+		<parameter name="DoShout_5" 			value="false"/>
+		<parameter name="FindPlayerActive_5" 	value="false"/>
+		<parameter name="FindPlayerClose_5" 	value="true"/>
+		<parameter name="BeamUp_5" 				value="false"/>
+		<parameter name="DoIdle_5" 				value="true"/>
+		<parameter name="DoIdleShoot_5" 		value="true"/>
+		<parameter name="StepOnTile_5" 			value="0"/>
+
+		<parameter name="aWalk_5"				value="aHunterWalk"/>
+		<parameter name="aDrive_5"				value="empty"/>
+		<parameter name="aExtraBack_5"			value="empty"/>
+		<parameter name="aExtraFront_5"			value="empty"/>
+		<parameter name="aBeamUp_5"				value="aGuyBeamUp"/>
+		<parameter name="aHitPlayerBack_5"		value="aHunterHitPlayerBack"/>
+		<parameter name="aHitPlayerFront_5"		value="aHunterHitPlayerFront"/>
+		<parameter name="aHitDogBack_5"			value="empty"/>
+		<parameter name="aHitDogFront_5"		value="empry"/>
+		<parameter name="aShaveBack_5"			value="empty"/>
+		<parameter name="aShaveFront_5"			value="empty"/>
+		<parameter name="aSleep_5"				value="empty"/>
+		<parameter name="aStandUp_5"			value="empty"/>
+		<parameter name="aFallDown_5"			value="empty"/>
+		<parameter name="aShoutBack_5"			value="empty"/>
+		<parameter name="aShoutFront_5"			value="empty"/>
+		<parameter name="aIdle_5"				value="aHunterIdle"/>
+
+		<parameter name="sFoundExtra_5"			value="empty"/>
+		<parameter name="sFoundPlayer_5"		value="empty"/>
+		<parameter name="sBeamedUp_5"			value="SfxHunterBeamUp"/>
+		<parameter name="sFallUfo_5"			value="empty"/>
+		<parameter name="sShaveBack_5"			value="empty"/>
+		<parameter name="sShaveFront_5"			value="empty"/>
+		<parameter name="sPlayExtra_5"			value="empty"/>
+		<parameter name="sPlayDog_5"			value="empty"/>
+		<parameter name="sHitPlayer_5"			value="SfxFightHunter"/>
+		<parameter name="sSleep_5"				value="empty"/>
+		<parameter name="sFallDown_5"			value="empty"/>
+		<parameter name="sShout_5"				value="SfxHunterFoundSven"/>
+		<parameter name="sWhistle_5"			value="SfxHunterHit"/>
+		<parameter name="sGroundhog_5"			value="empty"/>
+
+		<!--  break AI paramters -->
+
+		<!--  at what playervehicle speed start the enemies to run instead of hunt -->
+		<parameter name="RunAwaySpeed" 				value="150.00"/>
+		<!--  at what playervehicle speed cant they catch you anymore -->
+		<parameter name="CantHitPlayerSpeed" 		value="140.00"/>
+		<!--  what speed should the playervehicle have before running enemies & breakable objects over -->
+		<parameter name="CanDriveOverSpeed" 		value="145.00"/>
+
+		<!--  speed of sheep when wotan (player) is near or barks at them -->
+		<parameter name="SheepBarkSpeed" 			value="90.00"/>
+		<parameter name="SheepBarkRunMultiplier" 	value="2.00"/>
+		<parameter name="SheepBarkWalkFrameRate" 	value="25.00"/>
+		<parameter name="SheepBarkRunFrameRate" 	value="50.00"/>
+
+		<!--  speed of sheep when randomly walking or transforming into demon-sheep -->
+		<parameter name="SheepSpeed" 				value="50.00"/>
+		<parameter name="SheepRunMultiplier" 		value="3.00"/>
+		<parameter name="SheepWalkFrameRate" 		value="20.00"/>
+		<parameter name="SheepRunFrameRate" 		value="20.00"/>
+		<parameter name="DevilHuntTileLength" 		value="8.00"/>
+
+		<!--  diagonal speed adjust for all characters -->
+		<parameter name="AdjustXY" 					value="0.75"/>
+
+		<parameter name="SvenDefaultFrameRate" 		value="12"/>
+
+		<parameter name="SvenWalkDefaultFrameRate" 	value="24"/>
+		<parameter name="SvenWalkFireworkFrameRate" value="36"/>
+		<parameter name="SvenWalkAlienFrameRate" 	value="36"/>
+		<parameter name="SvenWalkImpotentFrameRate" value="16"/>
+
+		<parameter name="SvenShagDefaultFrameRate" 	value="20"/>
+		<parameter name="SvenShagFireworkFrameRate" value="30"/>
+		<parameter name="SvenShagAlienFrameRate" 	value="40"/>
+		<parameter name="SvenShagImpotentFrameRate" value="12"/>
+		<parameter name="SvenShagFrigidaFrameRate" 	value="20"/>
+		<parameter name="SvenDriveFrameRate" 		value="20"/>
+		<parameter name="SvenCatchGroundhogFrameRate" value="20"/>
+
+		<!--   Sven Speed: normal/firework/impotent  -->
+		<parameter name="SvenSlowSpeed" 	value="95.00"/>
+		<parameter name="SvenSpeed" 		value="145.00"/>
+		<parameter name="SvenRunSpeed" 		value="220.00"/>
+		<parameter name="SvenDriveSpeed" 	value="230.00"/>
+
+		<!--   time Extra has an effect on Sven (seconds)  -->
+		<parameter name="FireworkDuration" 	value="10.00"/>
+		<parameter name="ImpotentDuration" 	value="10.00"/>
+		<parameter name="SmellDuration" 	value="15.00"/>
+		<parameter name="FlowerDuration" 	value="10.00"/>
+		<parameter name="AlienDuration" 	value="15.00"/>
+
+		<!--   time Extra stays in Level when appeared (seconds)  -->
+		<parameter name="ImpotentTime" 		value="5.00"/>
+		<parameter name="SmellTime" 		value="6.00"/>
+		<parameter name="FlowerTime" 		value="7.00"/>
+		<parameter name="FireworkTime" 		value="8.00"/>
+		<parameter name="GiftTime" 			value="8.00"/>
+		<parameter name="HupeTime" 			value="5.00"/>
+
+		<parameter name="BeerTime" 			value="8.00"/>
+		<parameter name="TeddyTime" 		value="8.00"/>
+		<parameter name="BoneTime" 			value="8.00"/>
+		<parameter name="ArtifactTime" 		value="8.00"/>
+
+		<!--   time waited before new extra is placed in level (seconds)  -->
+		<parameter name="WaitTime" 			value="5.00"/>
+
+		<!--   amount of shag-anims used (45 for XXL Version; 25 for XS and XL)  -->
+		<!--   Splash-Screen after end of game is show when ShagAnims <= 25      -->
+		<parameter name="ShagAnims" 		value="45"/>
+		<!--   amount of extra-cards shown  21 max -->
+		<parameter name="ExtraCards" 		value="21"/>
+
+		<!--  default highscore names (!!! @least and no more than 10 !!!) -->
+		<parameter name="DefaultHighscoreNames" value="Jendrik/Ralf/Alex/Micha/Cüneyt/Stefan/Nazan/Wytze/Nils/Thomas"/>
+
+		<!-- Number of Help strings in StringTable.xml -->
+		<parameter name="HelpStrings"			value="50"/>
+
+		<!-- default keyboard settings -->
+		<parameter name="Player1KeyUp" 			value="256"/>
+		<parameter name="Player1KeyDown" 		value="257"/>
+		<parameter name="Player1KeyLeft" 		value="258"/>
+		<parameter name="Player1KeyRight" 		value="259"/>
+		<parameter name="Player1KeyAction" 		value="339"/>
+
+		<parameter name="Player2KeyUp" 			value="119"/>
+		<parameter name="Player2KeyDown" 		value="115"/>
+		<parameter name="Player2KeyLeft" 		value="97"/>
+		<parameter name="Player2KeyRight" 		value="100"/>
+		<parameter name="Player2KeyAction" 		value="32"/>
+
+		<!--  main menu sheep framelists -->
+		<parameter name="aSheepIdleStart"		value="0,1,2,3"/>
+		<parameter name="aSheepIdleEnd"			value="2,1,0"/>
+		<parameter name="aSheepIdleA"			value="0,1,2,3,4,1,0"/>
+		<parameter name="aSheepIdleB"			value="0,1,1,2,3,3,2,1,1,0"/>
+		<parameter name="aSheepIdleC"			value="0,1,2,0,1,2"/>
+		<parameter name="aSheepIdleD"			value="0,1,1,0"/>
+		<parameter name="aSheepIdleE"			value="3,3,3,3,3"/>
+
+		<!--  walking framelists -->
+		<parameter name="aSvenWalk"				value="0,1,2,3,4,5,6,7,8,9,10,11,12,13"/>
+		<parameter name="aGuyWalk"				value="0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15"/>
+		<parameter name="aWotanWalk"			value="0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15"/>
+		<parameter name="aBroemseWalk"			value="0,0,0,1,1,2,2,3,3,3,3,3,4,5,5,5,6,6,7,7,7,7,7,8"/>
+		<parameter name="aAlienWalk"			value="0,1,2,3,4,5,6,7,8,9,10,11"/>
+		<parameter name="aHunterWalk"			value="0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15"/>
+		<parameter name="aSheepWalk"			value="0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15"/>
+
+		<!--  driving framelists -->
+		<parameter name="aSvenDrive"			value="0,1,2,3,4,5,6,7,8"/>
+		<parameter name="aGuyDrive"				value="0,1,2,3,4,5,6,6,7,8"/>
+		<parameter name="aBroemseDrive"			value="0,1,2,3,4,5,6,7,8"/>
+		<parameter name="aAlienDrive"			value="0,1,2,3,4"/>
+
+		<!--  beaming up framelists -->
+		<parameter name="aSvenBeamUp"			value="0,1,2,3,4,5,6,7,8,9,8,7,6,5,4,3,2,1,0,1,2,3,4"/>
+		<parameter name="aSvenBeamDown"			value="0"/>
+		<parameter name="aGuyBeamUp"			value="0,1,2,3,4,5,0,1,2,3,4,5,0,1,2,6,6,6,6,6,6,6,6"/>
+		<parameter name="aWotanBeamUp"			value="0,1,2,3,4,3,2,1,0,1,2,3,4,3,2,5,5,5,5,5,5,5,5"/>
+		<parameter name="aBroemseBeamUp"		value="0,1,2,3,3,2,1,0,1,2,3,3,0,1,2,4,4,4,4,4,4,4,4"/>
+		<parameter name="aAlienBeamUp"			value="0,1,2,1,0,1,2,1,0,1,2,1,0,1,2,3,3,3,3,3,3,3,3"/>
+		<parameter name="aSheepBeamUp"			value="0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15"/>
+
+		<parameter name="aAlienElectro"			value="0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1"/>
+		<parameter name="aGuyElectro"			value="0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1"/>
+		<parameter name="aDogElectro"			value="0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1"/>
+		<parameter name="aBroemseElectro"		value="0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1"/>
+
+
+		<!--  ai-chars catching player framelists -->
+		<parameter name="aGuyHitPlayerBack"			value="0,0,0,0,0,0,0,0,0,0,0,0"/>
+		<parameter name="aGuyHitPlayerFront"		value="0,0,0,0,0,0,0,0,0,0,0,0"/>
+		<parameter name="aWotanHitPlayerBack"		value="0,0,0,0,0,0,0,0,0,0,0,0"/>
+		<parameter name="aWotanHitPlayerFront"		value="0,0,0,0,0,0,0,0,0,0,0,0"/>
+		<parameter name="aBroemseCuddleSvenBack" 	value="0,0,0,0,1,2,3,3,3,1,1,1,2,2,3,4,5,6,7,7,7,7,7,8,8,9,9,10,11,12,13,13,13,13,13,13,13,13,12,11,11,11,12,12,11,11,11,11,12,13,13,4,5,6,7,7,7,7,7,8,8,7,7,7,7,7,7,7,7,8,8,9,9,10,11,11,11,11,11,11,11,12,13,13,13,13,12,12,11,11,11,12,13,13,10,10,14,14,15,15,16,16,16,16"/>
+		<parameter name="aBroemseCuddleSvenFront" 	value="0,0,0,0,1,2,2,2,1,1,1,1,1,1,3,3,4,4,5,5,5,6,6,6,5,5,5,6,7,7,7,7,7,7,7,7,6,5,5,5,6,7,7,7,7,7,7,8,9,10,11,12,13,14,14,10,10,10,10,10,10,10,10,10,10,10,10,10,15,16,16,16,16,15,13,14,14,13,13,13,13,13,13,13,15,16,16,17,18,18,18,19,19,20,20,21,21,22,22,23,23,24,24,25,25,26,26,27,27,27"/>
+
+		<parameter name="aBroemseCuddleDogBack"		value="0,0,1,2,3,4,5,6,7,8,8,8,8,8,8,7,6,6,6,6,3,4,5,6,4,5,6,4,5,6,4,5,6,7,8,8,7,6,7,8,8,7,6,7,8,8,7,6,7,8,8,7,6,3,2,1,0"/>
+		<parameter name="aBroemseCuddleDogFront" 	value="1,2,3,4,5,7,8,9,5,5,6,6,5,5,4,4,5,5,6,6,7,8,9,7,8,9,7,8,9,7,8,9,7,8,9,5,4,4,6,6,5,5,3,1,0"/>
+
+		<parameter name="aAlienProbeSven"			value="0,1,2,2,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46"/>
+		<parameter name="aHunterHitPlayerBack"		value="0,1,2,3,4,5,6,7,8,9,10,11,0,0,0,0,0,1,1,1,0,0,0,0,0"/>
+		<parameter name="aHunterHitPlayerFront"		value="0,1,2,3,4,5,6,7,8,9,10,11,0,0,0,0,0,1,1,1,0,0,0,0,0"/>
+
+		<!--  ai-chars using extras / sleeping framelists -->
+		<parameter name="aGuyDrink"					value="0,1,2,3,3,4,5,5,6,6,7,7,7,7,7,7,8,8,9,9,10,10,10,10,10,10,10,10,10,10,10,10,10,9,9,8,8,7,7,7,7,7,7,7,7,7,7,7,8,9,10,10,10,10,10,10,10,10,10,10,10,10,9,9,8,8,11,11,11"/>
+		<parameter name="aGuyLayDown"				value="0,0,1,1,2,2,3,3,4,4,5,6,7,8,8,8,8,8,8,7,6,5,4,4,4,4,4,9,10,10,11,11,12,12,13,13"/>
+		<parameter name="aGuyStandUp"				value="0,1,2,3,4,4,5,6,7,8,9,9,10,11,12"/>
+		<parameter name="aGuySleep"					value="12,12,12,12,12,12,12,12,12,12,13,13,13,13,13,13,13,13,13,13"/>
+		<parameter name="aGuyGrumbleBack"			value="0,1,2,3,3,4,5,6,7,7,3,3,4,5,6,7,7,8,9,10"/>
+		<parameter name="aGuyGrumbleFront"			value="0,0,1,1,2,3,3,4,4,4,5,6,7,8,9,9,10"/>
+		<parameter name="aWotanBoneBack"			value="0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2"/>
+		<parameter name="aWotanBoneFront"			value="0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2"/>
+		<parameter name="aWotanSleep"				value="0,0,0,0,0,0,1,1,1,1,1,1,2,2,2,2,2,2,3,3,3,3,3,3"/>
+		<parameter name="aWotanBarkBack"			value="0,0,1,1,2,2,3,3,4,4,5,5,6,6"/>
+		<parameter name="aWotanBarkFront"			value="0,0,1,1,2,2,3,3,4,4,5,5,6,6"/>
+		<parameter name="aBroemseTeddyBack"			value="0,0,0,0,0,0,1,1,2,2,2,2,2,2,2,3,4,5,5,4,3,3,5,5,4,3,3,3,4,5,5,4,3,3,4,5,5,0,1,1,0,5,5,0,1,2,3,3,2,2,2,2,2,3,4,4,3,4,4,3,4,4,3,2,2,2,2,2,2,2,3,4,5,5,4,3,3,5,5,4,3,3,3,4,5,5,4,3,3,4,5,5,0,1,1,0,0"/>
+		<parameter name="aBroemseTeddyFront"		value="0,0,0,0,0,0,1,2,3,3,3,3,3,3,3,4,5,6,6,5,4,4,6,6,5,4,4,4,5,6,6,5,4,4,5,6,6,6,7,8,8,7,6,6,5,4,3,3,3,3,3,3,3,3,9,10,10,10,10,10,10,10,10,9,3,3,3,3,3,3,3,4,5,6,6,5,4,4,6,6,6,5,4,4,5,6,6,5,4,4,5,6,6,6,5,4,6,6,6,5,3,2"/>
+
+		<!--  player using extra framelists -->
+		<parameter name="aGuyDrinkBonus"			value="0,1,2,3,3,4,5,5,6,6,7,7,7,7,7,7,8,8,9,9,10,10,10,10,10,10,10"/>
+		<parameter name="aDogDigBonus"				value="0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0,2,0"/>
+		<parameter name="aBroemseTeddyBackBonus" 	value="0,0,0,0,0,0,1,1,2,2,2,2,2,2,2,3,4,5,5,4,3,3,5,5,4,3,3,3,4,5,5,4,3,3,4,5,5,0,1,1,0,5,5,0,0"/>
+		<parameter name="aBroemseTeddyFrontBonus" 	value="0,0,0,0,0,0,1,2,3,3,3,3,3,3,3,4,5,6,6,5,4,4,6,6,5,4,4,4,5,6,6,5,4,4,5,6,6,6,7,8,8,7,9,0,0"/>
+
+		<!--  idle framelists -->
+		<parameter name="aAlienIdle"				value="0,2,1,1,1,2,0,3,3,3"/>
+		<parameter name="aHunterIdle"				value="2,2,2,1,1,1,0,0,0,0,0,0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,6,6,6,6,6,6,6,5,5,5,4,4,4,3,3"/>
+		<parameter name="aSheepIdle"				value="0,1,2,3,4,4,4,4,4,5,6,7,8,9,6,7,8,9,9,6,7,8,9,9,10"/>
+		<parameter name="aGuyIdle"					value="2,1,0,0,0,0,0,0,1,2,3,4,5,6,6,6,6,6,6,5,4,3"/>
+		<parameter name="aBroemseIdle"				value="3,3,3,3,3,3,3,4,4,5,5,6,6,6,6,6,6,6,6,6,6,6,6,6,6,5,5,4,4"/>
+
+		<!-- Sven framelists -->
+		<parameter name="aSvenWhistle"				value="0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16"/>
+		<parameter name="aSvenWhistleDiagonal"		value="0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15"/>
+		<parameter name="aSvenElectro"				value="0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1"/>
+		<parameter name="aSvenKickInBallsFront"		value="0,0,1,1,1,1,1,2,2,3,3,4,4"/>
+		<parameter name="aSvenKickInBallsBack"		value="0,0,1,1,1,1,1,2,3,4,5,5"/>
+
+		<!-- Sheep framelists -->
+		<parameter name="aSheepWhistle"				value="0,1,2,3,4,5,6,7,6,5,4,3,4,5,6,7,8,9,10"/>
+		<parameter name="aSheepTurnIntoDevil"		value="0,1,2,3,4,5,6,7,8,9,10,11"/>
+		<parameter name="aSheepRunDevil"			value="0,1,2,3,4,5,6,7"/>
+		<parameter name="aSheepHeadBang"			value="9,9,10,10,11,11,11,11,11"/>
+		<parameter name="aDevilTurnIntoSheep"		value="11,10,9,8,7,6,5,4,3,2,1,0"/>
+
+		<!--  groundhog  framelists -->
+		<parameter name="aSvenCatchGroundhogBack"	value="0,2,4,4,4,3,2,1,0,2,4,4,4,3,2,1,0,2,4,4,4"/>
+		<parameter name="aSvenCatchGroundhogFront"	value="0,2,4,4,4,3,2,1,0,2,4,4,4,3,2,1,0,2,4,4,4"/>
+		<parameter name="aGuyCatchGroundhogBack"	value="0,1,2,3,4,5,5,6,7,8,9,10,11,12"/>
+		<parameter name="aGuyCatchGroundhogFront"	value="0,1,2,3,4,5,5,6,7,8,9,10,11,12"/>
+		<parameter name="aDogCatchGroundhogBack"	value="0,1,2,3,0,1,2,3,0,1,2,3,0,1,2,3"/>
+		<parameter name="aDogCatchGroundhogFront"	value="0,1,2,3,0,1,2,3,0,1,2,3,0,1,2,3"/>
+		<parameter name="aBroemseCatchGroundhogBack"  value="0,1,2,3,4,5,6,7,7,8,9,9,10,7,7,8,9,9,10,7,7,8,9,9,10,11,12,13,14"/>
+		<parameter name="aBroemseCatchGroundhogFront" value="0,1,2,3,4,5,6,7,7,8,9,9,10,7,7,8,9,9,10,7,7,8,9,9,10,11,12,13,14"/>
+		<parameter name="aAlienCatchGroundhogBack"	value="0,1,2,3,4,5,6,7,8,9,9,8,7,7,8,9,9,8,7,7,8,9,10,11,12,13,14"/>
+		<parameter name="aAlienCatchGroundhogFront"	value="0,1,2,3,4,5,6,7,8,9,9,8,7,7,8,9,9,8,7,7,8,9,10,11,12,13,14"/>
+
+		<parameter name="aGroundhogUp"				value="3,4,5,6"/>
+		<parameter name="aGroundhogLook"			value="7,7,7,7,6,6,6,6,7,7,7,7,6,6,6,6"/>
+		<parameter name="aGroundhogDown"			value="8,9,10,11,11,11,11,11,11,11,11,11,11,11,11,11,11,3"/>
+		<parameter name="aGroundhogDissapear"		value="3,3,2,2,1,1,0,0"/>
+
+		<!-- Sven shagging / playable characters interacting -->
+		<parameter name="aGuyShaveBackBonus"		value="0,0,0,1,2,3,3,4,5"/>
+		<parameter name="aGuyShaveFrontBonus"		value="0,0,0,1,2,3,3,4,5"/>
+		<parameter name="aBroemseShaveBackBonus" 	value="0,0,1,2,3,4,3,2,2,1"/>
+		<parameter name="aBroemseShaveFrontBonus" 	value="0,0,0,1,2,3,4,4,4,5"/>
+		<parameter name="aAlienShaveBackBonus"		value="0,0,1,1,2,2,3,3,4,4,5,5"/>
+		<parameter name="aAlienShaveFrontBonus"		value="0,1,2,3,4,3,4,5,2,1"/>
+		<parameter name="aWotanShagBack"			value="0,0,1,2,2,2,2,3,3,4,4"/>
+		<parameter name="aWotanShagFront"			value="0,0,0,1,1,2,2,2,3,3,4"/>
+
+		<parameter name="aShagAnimO02"		value="0,0,1,2,2,2,3,4"/>
+		<parameter name="aShagAnimO03"		value="0,0,1,2,2,2,3,4"/>
+		<parameter name="aShagAnimO04"		value="0,0,1,2,3,4,5,6"/>
+		<parameter name="aShagAnimO05"		value="0,0,1,2,2,2,3,4"/>
+		<parameter name="aShagAnimO06"		value="0,0,1,2,2,2,3,4"/>
+		<parameter name="aShagAnimO07"		value="0,1,2,3,3,3,4,5,6"/>
+		<parameter name="aShagAnimO08"		value="0,0,1,2,2,2,3,4"/>
+		<parameter name="aShagAnimO09"		value="0,0,1,2,2,2,3,4"/>
+		<parameter name="aShagAnimO10"		value="0,0,1,2,3,3,4,5,6"/>
+		<parameter name="aShagAnimO11"		value="0,1,2,3,4,4,4,5,6"/>
+		<parameter name="aShagAnimO12"		value="0,1,2,3,4,5,6,7,0"/>
+		<parameter name="aShagAnimO13"		value="0,0,1,2,3,4,4,4,4,5"/>
+		<parameter name="aShagAnimO14"		value="0,0,0,1,2,2,2,2,3,4"/>
+		<parameter name="aShagAnimN01"		value="0,1,2,3,3,4,4,5,6,3"/>
+		<parameter name="aShagAnimN02"		value="0,0,0,1,2,3,3,4,5,6"/>
+		<parameter name="aShagAnimN03"		value="0,0,1,2,3,4,5,5,6,7"/>
+		<parameter name="aShagAnimN04"		value="0,1,1,2,3,3,3,3,4"/>
+		<parameter name="aShagAnimN05"		value="0,0,1,2,3,4,4,4,5,6"/>
+		<parameter name="aShagAnimN06"		value="0,0,0,0,1,2,2,3,4,5"/>
+		<parameter name="aShagAnimN07"		value="0,0,0,1,2,3,3,3,4"/>
+		<parameter name="aShagAnimN08"		value="0,0,1,2,3,4,5,5,6,7"/>
+		<parameter name="aShagAnimN09"		value="0,0,0,0,1,2,3,3,3,4"/>
+		<parameter name="aShagAnimN10"		value="0,0,0,0,1,2,3,3,3,4"/>
+		<parameter name="aShagAnimN11"		value="0,0,1,2,3,4,5,5,6,7"/>
+		<parameter name="aShagAnimN12"		value="0,0,1,2,3,4,5,6,6,7"/>
+		<parameter name="aShagAnimN13"		value="0,0,1,2,2,2,2,3,4"/>
+		<parameter name="aShagAnimN14"		value="0,1,2,2,3,4,3,2,2,1"/>
+		<parameter name="aShagAnimN15"		value="0,0,0,1,2,2,2,3"/>
+		<parameter name="aShagAnimN16"		value="0,0,1,2,3,4,5,5,6,7"/>
+		<parameter name="aShagAnimN17"		value="0,1,2,3,3,3,3,4,4"/>
+		<parameter name="aShagAnimN18"		value="0,1,1,1,2,3,3,3,3,4"/>
+		<parameter name="aShagAnimN19"		value="0,0,1,2,3,4,4,5,6"/>
+		<parameter name="aShagAnimN20"		value="0,1,2,3,4,5,6,7"/>
+		<parameter name="aShagAnimN21"		value="0,1,2,3,3,4,5,5,6,7"/>
+		<parameter name="aShagAnimN22"		value="0,0,1,2,3,3,3,4,0,0"/>
+		<parameter name="aShagAnimN23"		value="0,0,1,2,3,3,3,4,0,0"/>
+		<parameter name="aShagAnimN24"		value="0,0,1,2,3,4,4,4,4,5"/>
+		<parameter name="aShagAnimN25"		value="0,1,2,3,3,4,5,6,7,7"/>
+		<parameter name="aShagAnimN26"		value="0,1,2,2,3,4,5,6,6,7"/>
+
+		<parameter name="aShagAnimN27"		value="0,1,1,1,2,3,3,3,3,4"/>
+		<parameter name="aShagAnimN28"		value="0,1,2,3,3,3,4,0,0,0"/>
+		<parameter name="aShagAnimN29"		value="0,1,1,1,2,3,3,3,3,4"/>
+		<parameter name="aShagAnimN30"		value="0,1,2,3,3,3,4,0,0,0"/>
+		<parameter name="aShagAnimN31"		value="0,1,1,1,2,3,3,3,3,4"/>
+		<parameter name="aShagAnimN32"		value="0,0,1,2,3,4,4,4,5,6"/>
+
+		<parameter name="aSvenShagChicken"		value="0,1,2,2,3,4,4,4"/>
+		<parameter name="aSvenShagGoatFront"	value="0,1,2,3,4,5,4,3,2,1"/>
+		<parameter name="aSvenShagGoatBack"		value="0,1,2,3,4,5,4,3,2,1"/>
+		<parameter name="aSvenShagPigFront"		value="0,1,1,2,2,2,1,1,0"/>
+		<parameter name="aSvenShagPigBack"		value="0,1,1,2,2,3,3,0,0"/>
+		<parameter name="aSvenShagFrigida"		value="0,1,2,2,0,0"/>
+
+		<parameter name="aSvenShagPenguinFront"	value="0,1,1,1,2,3,3,3,3,4"/>
+		<parameter name="aSvenShagPenguinBack"	value="0,1,1,1,2,3,3,3,3,4"/>
+		<parameter name="aSvenShagTurtleFront"	value="0,0,0,1,2,3,3,3,4"/>
+		<parameter name="aSvenShagTurtleBack"	value="0,0,0,1,2,3,3,3,4"/>
+		<parameter name="aSvenShagRabbitFront"	value="0,0,0,1,2,3,3,3,4"/>
+		<parameter name="aSvenShagRabbitBack"	value="0,0,0,1,2,3,3,3,4"/>
+
+		<parameter name="aSvenShagHedgehogFront"	value="0,1,1,1,2,3,3,3,3,4"/>
+		<parameter name="aSvenShagHedgehogBack"		value="0,1,1,1,2,3,3,3,3,4"/>
+		<parameter name="aSvenShagAlienPetFront"	value="0,1,1,1,2,3,3,3,3,4"/>
+		<parameter name="aSvenShagAlienPetBack"		value="0,1,1,1,2,3,3,3,3,4"/>
+		<parameter name="aSvenShagPeacockFront"		value="0,1,2,3,3,3,4,0,0,0"/>
+		<parameter name="aSvenShagPeacockBack"		value="0,1,2,3,3,3,4,0,0,0"/>
+		<parameter name="aSvenShagSkunkFront"		value="0,1,1,1,2,3,3,3,3,4"/>
+		<parameter name="aSvenShagSkunkBack"		value="0,1,1,1,2,3,3,3,3,4"/>
+
+		<parameter name="aMermaidJump"		value="0,1,2,2,3,4,5,6,6,7,8,9,10,11"/>
+		<parameter name="aMermaidIdle"		value="11,10,9,10"/>
+		<parameter name="aMermaidJumpBack"	value="11,10,9,8,7,6,5,4,3,2,1,0"/>
+		<parameter name="aMermaidShag"		value="0,0,0,1,2,2,2,3,4"/>
+
+		<!-- animals idle framelists -->
+		<parameter name="aChickenEatBack"	value="0,1,2,2,3,4,4,5,6,6,5,4,4,5,6,6,7,8,9,9,10,10,9,9,10,10,9,9,11,12,13,14,14"/>
+		<parameter name="aChickenEatFront"	value="0,1,2,2,3,4,4,5,6,6,5,4,4,5,6,6,7,8,9,9,10,10,9,9,10,10,9,9,11,12,13,14,14"/>
+		<parameter name="aChickenIdleBack"	value="0,1,2,3,3,4,5,5,4,5,5,4,3,3,4,5,5,4,5,5,6,0,0,7,8,9,9,9,0,0,10,11,12,12"/>
+		<parameter name="aChickenIdleFront"	value="0,1,2,3,3,4,5,5,4,5,5,4,3,3,4,5,5,4,5,5,6,0,0,7,8,9,9,9,0,0,10,11,12,12"/>
+		<parameter name="aChickenZeroFront"	value="0,1,2,3,3,4,1"/>
+
+		<parameter name="aGoatEatBack"		value="0,1,2,3,3,3,4,5,6,6,7,3,3,3,4,5,6,6,6,6,6,8,9,10,11,11,11,12"/>
+		<parameter name="aGoatEatFront"		value="0,1,2,3,3,3,4,5,6,6,7,3,3,3,4,5,6,6,6,6,6,8,9,10,11,11,11,12"/>
+		<parameter name="aGoatIdleBack"		value="0,1,2,3,4,4,5,6,7,0,0,1,2,3,4,4,5,6,7,0,0,1,2,3,4,4,5,6,7"/>
+		<parameter name="aGoatIdleFront"	value="0,1,2,3,4,4,5,6,7,0,0,1,2,3,4,4,5,6,7,0,0,1,2,3,4,4,5,6,7"/>
+		<parameter name="aGoatZeroFront"	value="0,1,2,3,3,4,1"/>
+
+		<parameter name="aPigEatBack"		value="0,1,2,3,4,4,5,6,7,7,5,4,4,5,6,7,7,5,4,4,5,6,7,7,7,8,9,10,11,12,12,12,13"/>
+		<parameter name="aPigEatFront"		value="0,1,2,3,4,4,5,6,7,7,5,4,4,5,6,7,7,5,4,4,5,6,7,7,7,8,9,10,11,12,12,12,13"/>
+		<parameter name="aPigIdleBack"		value="0,1,2,2,3,4,5,6,6,7,8,9,2,2,3,4,5,6,6,7,8,9,2,3,4,5,6,0,10,11,12,13,12,12,13,13,12,11,10"/>
+		<parameter name="aPigIdleFront"		value="0,1,2,2,3,4,5,6,6,7,8,9,2,2,3,4,5,6,6,7,8,9,2,3,4,5,6,0,10,11,12,13,12,12,13,13,12,11,10"/>
+		<parameter name="aPigZeroFront"		value="0,1,2,3,3,4,1"/>
+
+		<parameter name="aPenguinEatBack"	value="0,1,2,2,3,4,4,5,5,4,4,5,5,4,4,5,5,4,4,5,5,4,4,5,5,5,6,7,8,8,9,10,11,12"/>
+		<parameter name="aPenguinEatFront"	value="0,1,2,2,3,4,4,5,5,4,4,5,5,4,4,5,5,4,4,5,5,4,4,5,5,5,6,7,8,8,9,10,11,12"/>
+		<parameter name="aPenguinIdleBack"	value="0,1,2,3,3,4,5,5,6,7,7,6,5,5,4,3,3,4,5,5,6,7,7,6,5,5,4,3,3,3,8,9,10"/>
+		<parameter name="aPenguinIdleFront"	value="0,1,2,3,3,4,5,5,6,7,7,6,5,5,4,3,3,4,5,5,6,7,7,6,5,5,4,3,3,3,8,9,10"/>
+		<parameter name="aPenguinZeroFront"	value="0,1,2,2,1"/>
+
+		<parameter name="aTurtleEatBack"	value="0,1,2,3,3,4,5,6,6,7,8,3,3,4,5,6,6,7,8,3,3,4,5,6,6,9,10,11,12,12,13"/>
+		<parameter name="aTurtleEatFront"	value="0,1,2,3,3,4,5,6,6,7,8,3,3,4,5,6,6,7,8,3,3,4,5,6,6,9,10,11,12,12,13"/>
+		<parameter name="aTurtleIdleBack"	value="0,1,1,2,2,3,3,3,3,3,3,4,4,4,4,4,4,4,4,3,3,3,3,3,2,2,1,1,0,0"/>
+		<parameter name="aTurtleIdleFront"	value="0,1,1,2,2,3,3,3,3,3,3,4,4,4,4,4,4,4,4,3,3,3,3,3,2,2,1,1,0,0"/>
+		<parameter name="aTurtleZeroFront"	value="0,1,2,2,1"/>
+
+		<parameter name="aRabbitEatBack"	value="0,1,2,3,3,3,4,4,4,5,6,6,6,7,7,6,6,7,7,6,6,7,7,6,6,7,7,6,6,6,8,9"/>
+		<parameter name="aRabbitEatFront"	value="0,1,2,3,3,3,4,4,4,5,6,6,6,7,7,6,6,7,7,6,6,7,7,6,6,7,7,6,6,6,8,9"/>
+		<parameter name="aRabbitIdleBack"	value="0,1,2,3,3,4,5,6,6,7,8,9,9,10,11,12,12,3,3,4,5,6,6,13,14,15,15,16,17,18,19,20"/>
+		<parameter name="aRabbitIdleFront"	value="0,1,2,3,3,4,5,6,6,7,8,9,9,10,11,12,12,3,3,4,5,6,6,13,14,15,15,16,17,18,19,20"/>
+		<parameter name="aRabbitZeroFront"	value="0,1,2,2,1"/>
+
+		<parameter name="aAlienPetEatBack"		value="6,7,7,8,9,10,10,11,12,12,12,12,13,14,0,0,0,1,1,1,1,1,1,2,3,4,4,5"/>
+		<parameter name="aAlienPetEatFront"		value="0,0,0,0,1,1,1,1,1,1,2,3,4,4,5,6,7,7,8,9,10,10,11,12,12,12,12,13,14"/>
+		<parameter name="aAlienPetIdleBack"		value="6,7,7,8,9,10,10,11,12,12,12,12,13,14,0,0,0,1,1,1,1,1,1,2,3,4,4,5"/>
+		<parameter name="aAlienPetIdleFront"	value="0,0,0,0,1,1,1,1,1,1,2,3,4,4,5,6,7,7,8,9,10,10,11,12,12,12,12,13,14"/>
+		<parameter name="aAlienPetZeroFront"	value="0,1,2,2,1"/>
+
+		<parameter name="aHedgehogEatBack"		value="0"/>
+		<parameter name="aHedgehogEatFront"		value="0,0,0,0,1,1,2,2,2,3,4,5,5,6,6,7"/>
+		<parameter name="aHedgehogIdleBack"		value="0"/>
+		<parameter name="aHedgehogIdleFront"	value="0,0,0,0,1,1,2,2,2,3,4,5,5,6,6,7"/>
+		<parameter name="aHedgehogZeroFront"	value="0,1,2,2,1"/>
+
+		<parameter name="aPeacockEatBack"	value="0"/>
+		<parameter name="aPeacockEatFront"	value="0,0,0,0,1,1,2,3,3,4,4,4,4,4,4,5,5,6,6,7,7,7,7,7"/>
+		<parameter name="aPeacockIdleBack"	value="0"/>
+		<parameter name="aPeacockIdleFront"	value="0,0,0,0,1,1,2,3,3,4,4,4,4,4,4,5,5,6,6,7,7,7,7,7"/>
+		<parameter name="aPeacockZeroFront"	value="0,1,2,2,1"/>
+
+		<parameter name="aSkunkEatBack"		value="0"/>
+		<parameter name="aSkunkEatFront"	value="0,0,0,1,2,2,2,2,2,2,3,4,4,5"/>
+		<parameter name="aSkunkIdleBack"	value="0"/>
+		<parameter name="aSkunkIdleFront"	value="0,0,0,1,2,2,2,2,2,2,3,4,4,5"/>
+		<parameter name="aSkunkZeroFront"	value="0,1,2,2,1"/>
+
+		<!-- symbols and clouds framelists -->
+		<parameter name="aClouds"			value="0,1,2,3,4,5,4,6,5,3,4,5,4,3,4,5,6,7,8,9"/>
+		<parameter name="aFlash"			value="0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1"/>
+		<parameter name="aBeams"			value="0,0,1,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31"/>
+		<parameter name="aUfo"				value="0,1,2,3,4,5,6,7,8,9,10,11,12"/>
+
+		<parameter name="aExplode"			value="0,1,2,3,4,5,6,7,8,9,10,11,12,13"/>
+		<parameter name="aExplodeHeart"		value="0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20"/>
+		<parameter name="aExplodeFlash"		value="0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15"/>
+		<parameter name="aSplash"			value="0,1,2,3,4,5,6,7,8,9,10,11,12,13"/>
+		<parameter name="aDigging"			value="0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17"/>
+		<parameter name="aDisolving"		value="0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17"/>
+
+		<parameter name="aFirework"			value="0,1,2,3,4,5,6,7,8,9,10,11,12"/>
+		<parameter name="aMushroom1"		value="0,1,2,3,4,5"/>
+		<parameter name="aMushroom2"		value="0,1,2,3,4,5,6,7,8,9,10,11,12,13"/>
+		<parameter name="aRose"				value="0,1,2,3,4,5,6,7"/>
+		<parameter name="aAlien"			value="0,1,2,3,4,5,6,7,8,9,10,11,12"/>
+
+		<!--   Names for all ASCII keys  -->
+		<parameter name="KeyConvert"		value="null0/null1/null2/null3/null4/null5/null6/null7/Löschen/Tab/null10/null11/null12/Eingabe/null14/null15/null16/null17/null18/null19/null20/null21/null22/null23/null24/null25/null26/Esc/null28/null29/null30/null31/Leertaste/!/null34/#/$/%/&/'/(/)/*/+/,/-/./null47/0/1/2/3/4/5/6/7/8/9/:/;/</=/>/?/@/A/B/C/D/E/F/G/H/I/J/K/L/M/N/O/P/Q/R/S/T/U/V/W/X/Y/Z/[/null92/]/^/_/'/A/B/C/D/E/F/G/H/I/J/K/L/M/N/O/P/Q/R/S/T/U/V/W/X/Y/Z/{/|/}/`/null127/null128/Ü/null130/null131/Ä/null133/null134/null135/null136/null137/null138/null139/null140/null141/null142/null143/null144/null145/null146/null147/Ö/null149/null150/null151/null152/null153/null154/null155/null156/null157/null158/null159/null160/null161/null162/null163/null164/null165/null166/null167/null168/null169/null170/null171/null172/null173/null174/null175/null176/null177/null178/null179/null180/null181/null182/null183/null184/null185/null186/null187/null188/null189/null190/null191/null192/null193/null194/null195/null196/null197/null198/null199/null200/null201/null202/null203/null204/null205/null206/null207/null208/null209/null210/null211/null212/null213/null214/null215/null216/null217/null218/null219/null220/null221/null222/null223/null224/ß/null226/null227/null228/null229/null230/null231/null232/null233/null234/null235/null236/null237/null238/null239/null240/null241/null242/null243/null244/null245/null246/null247/null248/null249/null250/null251/null252/null253/null254/null255/Pfeil hoch/Pfeil runter/Pfeil links/Pfeil rechts/Einfg/Entf/Pos 1/Ende/Bild hoch/Bild runter/Pause/break/null268/null269/null270/null271/null272/null273/null274/null275/null276/null277/null278/null279/null280/null281/null282/null283/null284/null285/null286/null287/null288/null289/null290/null291/null292/null293/null294/null295/null296/null297/null298/null299/null300/null301/null302/null303/null304/null305/null306/null307/null308/null309/null310/null311/null312/null313/null314/null315/null316/null317/null318/null319/Num 5/Num 4/Num 6/Num 8/Num 2/Num 7/Num 1/Num 3/Num 9/Num 0/Num ,/null331/null332/null333/null334/null335/Alt (li.)/Alt Gr/Strg (li.)/Strg (re.)/Shift (li.)/Shift (re.)/Windows (li.)/Windows (re.)/Menü/null345/null346/null347/null348/null349/null350/Feststell/numlock/Rollen/null354/null355/null356/null357/null358/null359/null360/null361/null362/null363/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null"/>
+
+	</parameters>
+
+	<sprites path="Sven004/gfx/">
+		<!-- sheep main menu Anims -->
+		<sprite name="SheepIdle"	 		file="mainmenu\\mainsheep_idlestartend.bmp" 	rows="4" cols="1"/>
+		<sprite name="SheepIdleA" 			file="mainmenu\\mainsheep_idleA.bmp" 			rows="5" cols="1"/>
+		<sprite name="SheepIdleB" 			file="mainmenu\\mainsheep_idleB.bmp" 			rows="4" cols="1"/>
+		<sprite name="SheepIdleC" 			file="mainmenu\\mainsheep_idleC.bmp" 			rows="3" cols="1"/>
+		<sprite name="SheepIdleD" 			file="mainmenu\\mainsheep_idleD.bmp" 			rows="2" cols="1"/>
+
+		<!-- SVEN Anims -->
+		<sprite name="SvenStand" 			file="sven\\sven_stand.bmp" 		rows="8" cols="1"/>
+		<sprite name="Sven_Walk_N" 			file="sven\\sven_Walk_N.bmp" 		rows="14" cols="1"/>
+		<sprite name="Sven_Walk_NE" 		file="sven\\sven_Walk_NE.bmp" 		rows="14" cols="1"/>
+		<sprite name="Sven_Walk_E" 			file="sven\\sven_Walk_E.bmp" 		rows="14" cols="1"/>
+		<sprite name="Sven_Walk_SE" 		file="sven\\sven_Walk_SE.bmp" 		rows="14" cols="1"/>
+		<sprite name="Sven_Walk_S" 			file="sven\\sven_Walk_S.bmp" 		rows="14" cols="1"/>
+
+		<sprite name="Sven_Electric_N" 		file="sven\\sven_electric_N.bmp" 	rows="2" cols="1"/>
+		<sprite name="Sven_Electric_NE"		file="sven\\sven_electric_NE.bmp" 	rows="2" cols="1"/>
+		<sprite name="Sven_Electric_E"	 	file="sven\\sven_electric_E.bmp" 	rows="2" cols="1"/>
+		<sprite name="Sven_Electric_SE"		file="sven\\sven_electric_SE.bmp" 	rows="2" cols="1"/>
+		<sprite name="Sven_Electric_S" 		file="sven\\sven_Electric_S.bmp" 	rows="2" cols="1"/>
+
+		<sprite name="Sven_Kick_NE" 		file="Sven\\sven_kick_NE.bmp" 		rows="6" cols="1"/>
+		<sprite name="Sven_Kick_SE" 		file="Sven\\sven_kick_SE.bmp" 		rows="5" cols="1"/>
+
+		<sprite name="Sven_Whistle_N" 		file="sven\\sven_Whistle_N.bmp" 	rows="17" cols="1"/>
+		<sprite name="Sven_Whistle_NE" 		file="sven\\sven_Whistle_NE.bmp" 	rows="16" cols="1"/>
+		<sprite name="Sven_Whistle_E" 		file="sven\\sven_Whistle_E.bmp" 	rows="17" cols="1"/>
+		<sprite name="Sven_Whistle_SE" 		file="sven\\sven_Whistle_SE.bmp" 	rows="16" cols="1"/>
+		<sprite name="Sven_Whistle_S" 		file="sven\\sven_Whistle_S.bmp" 	rows="17" cols="1"/>
+
+		<sprite name="Sven_BeamUp_NE" 		file="sven\\sven_beamup_NE.bmp" 	rows="10" cols="1"/>
+		<sprite name="Sven_BeamUp_SE" 		file="sven\\sven_beamup_SE.bmp" 	rows="10" cols="1"/>
+
+		<sprite name="Sven_vehicle" 			file="sven\\sven_vehicle.bmp" 			rows="8" cols="1"/>
+		<sprite name="Sven_Vehicle_Stand" 		file="sven\\sven_Vehicle_stand.bmp" 	rows="8" cols="1"/>
+		<sprite name="Sven_Vehicle_Drive_N" 	file="sven\\sven_Vehicle_Drive_N.bmp" 	rows="9" cols="1"/>
+		<sprite name="Sven_Vehicle_Drive_NE" 	file="sven\\sven_Vehicle_Drive_NE.bmp" 	rows="9" cols="1"/>
+		<sprite name="Sven_Vehicle_Drive_E" 	file="sven\\sven_Vehicle_Drive_E.bmp" 	rows="9" cols="1"/>
+		<sprite name="Sven_Vehicle_Drive_SE" 	file="sven\\sven_Vehicle_Drive_SE.bmp" 	rows="9" cols="1"/>
+		<sprite name="Sven_Vehicle_Drive_S" 	file="sven\\sven_Vehicle_Drive_S.bmp" 	rows="9" cols="1"/>
+
+		<sprite name="Sven_CatchGroundhog_NE" 	file="sven\\Sven_CatchGroundhog_NE.bmp" rows="5" cols="1"/>
+		<sprite name="Sven_CatchGroundhog_SE" 	file="sven\\Sven_CatchGroundhog_SE.bmp" rows="5" cols="1"/>
+
+		<!-- GUY Anims -->
+		<sprite name="GuyStand" 			file="Guy\\Guy_stand.bmp" 			rows="8" cols="1"/>
+		<sprite name="Guy_Walk_N" 			file="Guy\\Guy_Walk_N.bmp" 			rows="16" cols="1"/>
+		<sprite name="Guy_Walk_NE" 			file="Guy\\Guy_Walk_NE.bmp" 		rows="16" cols="1"/>
+		<sprite name="Guy_Walk_E" 			file="Guy\\Guy_Walk_E.bmp" 			rows="16" cols="1"/>
+		<sprite name="Guy_Walk_SE" 			file="Guy\\Guy_Walk_SE.bmp" 		rows="16" cols="1"/>
+		<sprite name="Guy_Walk_S" 			file="Guy\\Guy_Walk_S.bmp" 			rows="16" cols="1"/>
+
+		<sprite name="Guy_StandUp_NE" 		file="Guy\\Guy_standup_NE.bmp" 		rows="13" cols="1"/>
+		<sprite name="Guy_StandUp_SE" 		file="Guy\\Guy_standup_SE.bmp" 		rows="13" cols="1"/>
+		<sprite name="Guy_Laydown_NE" 		file="Guy\\Guy_laydown_NE.bmp" 		rows="14" cols="1"/>
+		<sprite name="Guy_Laydown_SE" 		file="Guy\\Guy_laydown_SE.bmp" 		rows="14" cols="1"/>
+		<sprite name="Guy_Drink_NE" 		file="Guy\\Guy_UseExtra_NE.bmp" 	rows="12" cols="1"/>
+		<sprite name="Guy_Drink_SE" 		file="Guy\\Guy_UseExtra_SE.bmp" 	rows="12" cols="1"/>
+		<sprite name="Guy_Grumble_NE" 		file="Guy\\Guy_shout_NE.bmp" 		rows="11" cols="1"/>
+		<sprite name="Guy_Grumble_SE" 		file="Guy\\Guy_shout_SE.bmp" 		rows="11" cols="1"/>
+		<sprite name="Guy_BeamUp_NE" 		file="Guy\\Guy_beamup_NE.bmp" 		rows="6" cols="1"/>
+		<sprite name="Guy_BeamUp_SE" 		file="Guy\\Guy_beamup_SE.bmp" 		rows="6" cols="1"/>
+		<sprite name="Guy_Shaving_NE" 		file="Guy\\guy_UseSheep_NE.bmp" 	rows="6" cols="1"/>
+		<sprite name="Guy_Shaving_SE" 		file="Guy\\guy_UseSheep_SE.bmp" 	rows="6" cols="1"/>
+		<sprite name="GuyZzz" 				file="Guy\\Guy_gfx_zzz.bmp" 		rows="13" cols="1"/>
+
+		<sprite name="Guy_vehicle" 			file="Guy\\Guy_vehicle.bmp" 			rows="8" cols="1"/>
+		<sprite name="Guy_Vehicle_Stand" 	file="Guy\\Guy_Vehicle_stand.bmp" 		rows="8" cols="1"/>
+		<sprite name="Guy_Vehicle_Drive_N" 	file="Guy\\Guy_Vehicle_Drive_N.bmp" 	rows="9" cols="1"/>
+		<sprite name="Guy_Vehicle_Drive_NE" file="Guy\\Guy_Vehicle_Drive_NE.bmp" 	rows="9" cols="1"/>
+		<sprite name="Guy_Vehicle_Drive_E" 	file="Guy\\Guy_Vehicle_Drive_E.bmp" 	rows="9" cols="1"/>
+		<sprite name="Guy_Vehicle_Drive_SE" file="Guy\\Guy_Vehicle_Drive_SE.bmp" 	rows="9" cols="1"/>
+		<sprite name="Guy_Vehicle_Drive_S" 	file="Guy\\Guy_Vehicle_Drive_S.bmp" 	rows="9" cols="1"/>
+
+		<sprite name="Guy_CatchGroundhog_NE" file="Guy\\Guy_CatchGroundhog_NE.bmp" 	rows="13" cols="1"/>
+		<sprite name="Guy_CatchGroundhog_SE" file="Guy\\Guy_CatchGroundhog_SE.bmp" 	rows="13" cols="1"/>
+		
+		<sprite name="Guy_Idle_N" 			file="Guy\\Guy_Idle_N.bmp" 			rows="7" cols="1"/>
+		<sprite name="Guy_Idle_NE" 			file="Guy\\Guy_Idle_NE.bmp" 		rows="7" cols="1"/>
+		<sprite name="Guy_Idle_E" 			file="Guy\\Guy_Idle_E.bmp" 			rows="7" cols="1"/>
+		<sprite name="Guy_Idle_SE" 			file="Guy\\Guy_Idle_SE.bmp" 		rows="7" cols="1"/>
+		<sprite name="Guy_Idle_S" 			file="Guy\\Guy_Idle_S.bmp" 			rows="7" cols="1"/>
+		
+		<sprite name="Guy_Electric_N" 		file="Guy\\Guy_electric_N.bmp" 	rows="2" cols="1"/>
+
+		<!-- DOG Anims -->
+		<sprite name="DogStand" 			file="Dog\\Dog_stand.bmp" 			rows="8" cols="1"/>
+		<sprite name="Dog_Walk_N" 			file="Dog\\Dog_Walk_N.bmp"			rows="16" cols="1"/>
+		<sprite name="Dog_Walk_NE" 			file="Dog\\Dog_Walk_NE.bmp" 		rows="16" cols="1"/>
+		<sprite name="Dog_Walk_E" 			file="Dog\\Dog_Walk_E.bmp" 			rows="16" cols="1"/>
+		<sprite name="Dog_Walk_SE" 			file="Dog\\Dog_Walk_SE.bmp" 		rows="16" cols="1"/>
+		<sprite name="Dog_Walk_S" 			file="Dog\\Dog_Walk_S.bmp" 			rows="16" cols="1"/>
+
+		<sprite name="Dog_Sleep_NE" 		file="Dog\\Dog_sleep_NE.bmp" 		rows="4" cols="1"/>
+		<sprite name="Dog_Sleep_SE" 		file="Dog\\Dog_sleep_SE.bmp" 		rows="4" cols="1"/>
+		<sprite name="Dog_BeamUp_NE" 		file="Dog\\Dog_beamup_NE.bmp" 		rows="5" cols="1"/>
+		<sprite name="Dog_BeamUp_SE" 		file="Dog\\Dog_beamup_SE.bmp" 		rows="5" cols="1"/>
+		<sprite name="Dog_Shag_NE" 			file="Dog\\Dog_shag_NE.bmp" 		rows="5" cols="1"/>
+		<sprite name="Dog_Shag_SE" 			file="Dog\\Dog_shag_SE.bmp" 		rows="5" cols="1"/>
+
+		<sprite name="Dog_CatchGroundhog_NE" file="Dog\\Dog_CatchGroundhog_NE.bmp" 	rows="4" cols="1"/>
+		<sprite name="Dog_CatchGroundhog_SE" file="Dog\\Dog_CatchGroundhog_SE.bmp" 	rows="4" cols="1"/>
+
+		<sprite name="Dog_Bark_N" 			file="Dog\\Dog_Bark_N.bmp"			rows="7" cols="1"/>
+		<sprite name="Dog_Bark_NE" 			file="Dog\\Dog_Bark_NE.bmp" 		rows="7" cols="1"/>
+		<sprite name="Dog_Bark_E" 			file="Dog\\Dog_Bark_E.bmp" 			rows="7" cols="1"/>
+		<sprite name="Dog_Bark_SE" 			file="Dog\\Dog_Bark_SE.bmp" 		rows="7" cols="1"/>
+		<sprite name="Dog_Bark_S" 			file="Dog\\Dog_Bark_S.bmp" 			rows="7" cols="1"/>
+
+		<sprite name="Dog_Electric_N" 		file="Dog\\Dog_electric_N.bmp" 		rows="2" cols="1"/>
+
+		<!-- BROEMSE Anims -->
+		<sprite name="BroemseStand" 		file="Broemse\\Broemse_stand.bmp" 			rows="8" cols="1"/>
+		<sprite name="Broemse_Walk_N" 		file="Broemse\\Broemse_Walk_N.bmp" 			rows="8" cols="1"/>
+		<sprite name="Broemse_Walk_NE" 		file="Broemse\\Broemse_Walk_NE.bmp" 		rows="8" cols="1"/>
+		<sprite name="Broemse_Walk_E" 		file="Broemse\\Broemse_Walk_E.bmp" 			rows="8" cols="1"/>
+		<sprite name="Broemse_Walk_SE" 		file="Broemse\\Broemse_Walk_SE.bmp" 		rows="8" cols="1"/>
+		<sprite name="Broemse_Walk_S" 		file="Broemse\\Broemse_Walk_S.bmp" 			rows="8" cols="1"/>
+
+		<sprite name="Broemse_Teddy_NE" 	file="Broemse\\Broemse_UseExtra_NE.bmp" 	rows="6" cols="1"/>
+		<sprite name="Broemse_Teddy_SE" 	file="Broemse\\Broemse_UseExtra_SE.bmp" 	rows="11" cols="1"/>
+		<sprite name="Broemse_Sven_NE" 		file="Broemse\\Broemse_hit_sven_NE.bmp"		rows="17" cols="1"/>
+		<sprite name="Broemse_Sven_SE" 		file="Broemse\\Broemse_hit_sven_SE.bmp" 	rows="28" cols="1"/>
+		<sprite name="Broemse_Wotan_NE" 	file="Broemse\\Broemse_hit_dog_NE.bmp" 		rows="9" cols="1"/>
+		<sprite name="Broemse_Wotan_SE" 	file="Broemse\\Broemse_hit_dog_SE.bmp"		rows="10" cols="1"/>
+		<sprite name="Broemse_BeamUp_NE" 	file="Broemse\\Broemse_beamup_NE.bmp"		rows="4" cols="1"/>
+		<sprite name="Broemse_BeamUp_SE" 	file="Broemse\\Broemse_beamup_SE.bmp"		rows="4" cols="1"/>
+		<sprite name="Broemse_Sheep_NE" 	file="Broemse\\broemse_UseSheep_SE.bmp" 	rows="5" cols="1"/>
+		<sprite name="Broemse_Sheep_SE" 	file="Broemse\\broemse_UseSheep_NE.bmp" 	rows="6" cols="1"/>
+
+		<sprite name="Broemse_vehicle" 			file="Broemse\\Broemse_vehicle.bmp" 			rows="8" cols="1"/>
+		<sprite name="Broemse_Vehicle_Stand" 	file="Broemse\\Broemse_Vehicle_stand.bmp" 		rows="8" cols="1"/>
+		<sprite name="Broemse_Vehicle_Drive_N" 	file="Broemse\\Broemse_Vehicle_Drive_N.bmp" 	rows="9" cols="1"/>
+		<sprite name="Broemse_Vehicle_Drive_NE" file="Broemse\\Broemse_Vehicle_Drive_NE.bmp" 	rows="9" cols="1"/>
+		<sprite name="Broemse_Vehicle_Drive_E" 	file="Broemse\\Broemse_Vehicle_Drive_E.bmp" 	rows="9" cols="1"/>
+		<sprite name="Broemse_Vehicle_Drive_SE" file="Broemse\\Broemse_Vehicle_Drive_SE.bmp" 	rows="9" cols="1"/>
+		<sprite name="Broemse_Vehicle_Drive_S" 	file="Broemse\\Broemse_Vehicle_Drive_S.bmp" 	rows="9" cols="1"/>
+
+		<sprite name="Broemse_CatchGroundhog_NE" file="Broemse\\Broemse_CatchGroundhog_NE.bmp" 	rows="15" cols="1"/>
+		<sprite name="Broemse_CatchGroundhog_SE" file="Broemse\\Broemse_CatchGroundhog_SE.bmp" 	rows="15" cols="1"/>
+
+		<sprite name="Broemse_Idle_N" 		file="Broemse\\Broemse_Idle_N.bmp" 			rows="7" cols="1"/>
+		<sprite name="Broemse_Idle_NE" 		file="Broemse\\Broemse_Idle_NE.bmp" 		rows="7" cols="1"/>
+		<sprite name="Broemse_Idle_E" 		file="Broemse\\Broemse_Idle_E.bmp" 			rows="7" cols="1"/>
+		<sprite name="Broemse_Idle_SE" 		file="Broemse\\Broemse_Idle_SE.bmp" 		rows="7" cols="1"/>
+		<sprite name="Broemse_Idle_S" 		file="Broemse\\Broemse_Idle_S.bmp" 			rows="7" cols="1"/>
+
+		<sprite name="Broemse_Electric_N" 		file="Broemse\\Broemse_electric_N.bmp" 	rows="2" cols="1"/>
+
+		<!-- ALIEN Anims -->
+		<sprite name="AlienStand" 				file="alien\\alien_stand.bmp" 			rows="8" cols="1"/>
+		<sprite name="Alien_Walk_N" 			file="alien\\alien_Walk_N.bmp" 			rows="12" cols="1"/>
+		<sprite name="Alien_Walk_NE" 			file="alien\\alien_Walk_NE.bmp" 		rows="12" cols="1"/>
+		<sprite name="Alien_Walk_E" 			file="alien\\alien_Walk_E.bmp" 			rows="12" cols="1"/>
+		<sprite name="Alien_Walk_SE"	 		file="alien\\alien_Walk_SE.bmp" 		rows="12" cols="1"/>
+		<sprite name="Alien_Walk_S" 			file="alien\\alien_Walk_S.bmp" 			rows="12" cols="1"/>
+
+		<sprite name="Alien_Idle_N" 			file="alien\\alien_idle_N.bmp" 			rows="4" cols="1"/>
+		<sprite name="Alien_Idle_NE" 			file="alien\\alien_idle_NE.bmp" 		rows="4" cols="1"/>
+		<sprite name="Alien_Idle_E" 			file="alien\\alien_idle_E.bmp" 			rows="4" cols="1"/>
+		<sprite name="Alien_Idle_SE" 			file="alien\\alien_idle_SE.bmp" 		rows="4" cols="1"/>
+		<sprite name="Alien_Idle_S" 			file="alien\\alien_idle_S.bmp" 			rows="4" cols="1"/>
+
+		<sprite name="Alien_Probe_Sven" 		file="alien\\alien_probe_sven.bmp" 		rows="47" cols="1"/>
+		<sprite name="Alien_UseSheep_SE" 		file="alien\\alien_UseSheep_SE.bmp" 	rows="6" cols="1"/>
+		<sprite name="Alien_UseSheep_NE" 		file="alien\\alien_UseSheep_NE.bmp" 	rows="6" cols="1"/>
+		<sprite name="Alien_BeamUp_S" 			file="alien\\alien_beamup_S.bmp" 		rows="3" cols="1"/>
+
+		<sprite name="Alien_vehicle" 			file="Alien\\Alien_vehicle.bmp" 			rows="8" cols="1"/>
+		<sprite name="Alien_Vehicle_Stand" 		file="Alien\\Alien_Vehicle_stand.bmp" 		rows="8" cols="1"/>
+		<sprite name="Alien_Vehicle_Drive_N" 	file="Alien\\Alien_Vehicle_Drive_N.bmp" 	rows="5" cols="1"/>
+		<sprite name="Alien_Vehicle_Drive_NE" 	file="Alien\\Alien_Vehicle_Drive_NE.bmp" 	rows="5" cols="1"/>
+		<sprite name="Alien_Vehicle_Drive_E" 	file="Alien\\Alien_Vehicle_Drive_E.bmp" 	rows="5" cols="1"/>
+		<sprite name="Alien_Vehicle_Drive_SE" 	file="Alien\\Alien_Vehicle_Drive_SE.bmp" 	rows="5" cols="1"/>
+		<sprite name="Alien_Vehicle_Drive_S" 	file="Alien\\Alien_Vehicle_Drive_S.bmp" 	rows="5" cols="1"/>
+
+		<sprite name="Alien_CatchGroundhog_NE" 	file="Alien\\Alien_CatchGroundhog_NE.bmp" 	rows="15" cols="1"/>
+		<sprite name="Alien_CatchGroundhog_SE" 	file="Alien\\Alien_CatchGroundhog_SE.bmp" 	rows="15" cols="1"/>
+
+		<sprite name="Alien_Electric_N" 		file="Alien\\Alien_electric_N.bmp" 	rows="2" cols="1"/>
+
+		<!-- HUNTER Anims -->
+		<sprite name="HunterStand" 			file="Hunter\\Hunter_stand.bmp" 		rows="8" cols="1"/>
+		<sprite name="Hunter_Walk_N" 		file="Hunter\\Hunter_Walk_N.bmp" 		rows="16" cols="1"/>
+		<sprite name="Hunter_Walk_NE" 		file="Hunter\\Hunter_Walk_NE.bmp" 		rows="16" cols="1"/>
+		<sprite name="Hunter_Walk_E" 		file="Hunter\\Hunter_Walk_E.bmp" 		rows="16" cols="1"/>
+		<sprite name="Hunter_Walk_SE" 		file="Hunter\\Hunter_Walk_SE.bmp" 		rows="16" cols="1"/>
+		<sprite name="Hunter_Walk_S" 		file="Hunter\\Hunter_Walk_S.bmp" 		rows="16" cols="1"/>
+
+		<sprite name="Hunter_Idle_N" 		file="Hunter\\Hunter_idle_N.bmp" 		rows="7" cols="1"/>
+		<sprite name="Hunter_Idle_NE" 		file="Hunter\\Hunter_idle_NE.bmp" 		rows="7" cols="1"/>
+		<sprite name="Hunter_Idle_E" 		file="Hunter\\Hunter_idle_E.bmp" 		rows="7" cols="1"/>
+		<sprite name="Hunter_Idle_SE" 		file="Hunter\\Hunter_idle_SE.bmp" 		rows="7" cols="1"/>
+		<sprite name="Hunter_Idle_S" 		file="Hunter\\Hunter_idle_S.bmp" 		rows="7" cols="1"/>
+
+		<sprite name="Hunter_Shoot_N" 		file="Hunter\\Hunter_Shoot_N.bmp" 		rows="12" cols="1"/>
+		<sprite name="Hunter_Shoot_NE" 		file="Hunter\\Hunter_Shoot_NE.bmp" 		rows="12" cols="1"/>
+		<sprite name="Hunter_Shoot_E" 		file="Hunter\\Hunter_Shoot_E.bmp" 		rows="12" cols="1"/>
+		<sprite name="Hunter_Shoot_SE" 		file="Hunter\\Hunter_Shoot_SE.bmp" 		rows="12" cols="1"/>
+		<sprite name="Hunter_Shoot_S" 		file="Hunter\\Hunter_Shoot_S.bmp" 		rows="12" cols="1"/>
+
+		<!-- SHEEP Anims -->
+		<sprite name="SheepStand" 			file="Sheep\\Sheep_Stand.bmp" 			rows="8" cols="1"/>
+		<sprite name="Sheep_Walk_N" 		file="sheep\\Sheep_Walk_N.bmp" 			rows="16" cols="1"/>
+		<sprite name="Sheep_Walk_NE" 		file="sheep\\sheep_Walk_NE.bmp" 		rows="16" cols="1"/>
+		<sprite name="Sheep_Walk_E" 		file="sheep\\sheep_Walk_E.bmp" 			rows="16" cols="1"/>
+		<sprite name="Sheep_Walk_SE"	 	file="sheep\\sheep_Walk_SE.bmp" 		rows="16" cols="1"/>
+		<sprite name="Sheep_Walk_S" 		file="sheep\\sheep_Walk_S.bmp" 			rows="16" cols="1"/>
+
+		<sprite name="Sheep_Whistle_NE"	 	file="Sheep\\Sheep_Whistle_NE.bmp" 		rows="11" cols="1"/>
+		<sprite name="Sheep_Whistle_SE" 	file="Sheep\\Sheep_Whistle_SE.bmp" 		rows="11" cols="1"/>
+		<sprite name="Sheep_Demon_NE" 		file="Sheep\\sheep_demon_NE.bmp" 		rows="12" cols="1"/>
+		<sprite name="Sheep_Demon_SE" 		file="Sheep\\sheep_demon_SE.bmp" 		rows="12" cols="1"/>
+		<sprite name="Sheep_DemonRun_NE" 	file="Sheep\\sheep_demon_run_NE.bmp" 	rows="8" cols="1"/>
+		<sprite name="Sheep_DemonRun_SE" 	file="Sheep\\sheep_demon_run_SE.bmp" 	rows="8" cols="1"/>
+		<sprite name="Sheep_BeamUp_NE" 		file="Sheep\\sheep_Walk_NE.bmp" 		rows="16" cols="1"/>
+		<sprite name="Sheep_BeamUp_SE" 		file="Sheep\\sheep_Walk_SE.bmp" 		rows="16" cols="1"/>
+
+		<sprite name="Sheep_Idle_N" 		file="sheep\\Sheep_Idle_N.bmp" 			rows="11" cols="1"/>
+		<sprite name="Sheep_Idle_NE" 		file="sheep\\sheep_Idle_NE.bmp" 		rows="11" cols="1"/>
+		<sprite name="Sheep_Idle_E" 		file="sheep\\sheep_Idle_E.bmp" 			rows="11" cols="1"/>
+		<sprite name="Sheep_Idle_SE"	 	file="sheep\\sheep_Idle_SE.bmp" 		rows="11" cols="1"/>
+		<sprite name="Sheep_Idle_S" 		file="sheep\\sheep_Idle_S.bmp" 			rows="11" cols="1"/>
+
+		<!-- SHAG Anims -->
+		<sprite name="Shag02" 		file="Shag\\shag02_NE.bmp" rows="5" cols="1"/>
+		<sprite name="Shag03" 		file="Shag\\shag03_NE.bmp" rows="5" cols="1"/>
+		<sprite name="Shag04" 		file="Shag\\shag04_SE.bmp" rows="7" cols="1"/>
+		<sprite name="Shag05" 		file="Shag\\shag05_SE.bmp" rows="5" cols="1"/>
+		<sprite name="Shag06" 		file="Shag\\shag06_NE.bmp" rows="5" cols="1"/>
+		<sprite name="Shag07" 		file="Shag\\shag07_NE.bmp" rows="7" cols="1"/>
+		<sprite name="Shag08" 		file="Shag\\shag08_SE.bmp" rows="5" cols="1"/>
+		<sprite name="Shag09" 		file="Shag\\shag09_SE.bmp" rows="5" cols="1"/>
+		<sprite name="Shag10" 		file="Shag\\shag10_SE.bmp" rows="7" cols="1"/>
+		<sprite name="Shag11" 		file="Shag\\shag11_SE.bmp" rows="7" cols="1"/>
+		<sprite name="Shag12" 		file="Shag\\shag12_NE.bmp" rows="8" cols="1"/>
+		<sprite name="Shag13" 		file="Shag\\shag13_SE.bmp" rows="6" cols="1"/>
+		<sprite name="Shag14" 		file="Shag\\shag14_NE.bmp" rows="5" cols="1"/>
+		<sprite name="NF01" 		file="Shag\\NF01_SE.bmp" 	rows="7" cols="1"/>
+		<sprite name="NF02" 		file="Shag\\NF02_NE.bmp" 	rows="7" cols="1"/>
+		<sprite name="NF03" 		file="Shag\\NF03_NE.bmp" 	rows="8" cols="1"/>
+		<sprite name="NF04" 		file="Shag\\NF04_SE.bmp" 	rows="5" cols="1"/>
+		<sprite name="NF05" 		file="Shag\\NF05_NE.bmp" 	rows="7" cols="1"/>
+		<sprite name="NF06" 		file="Shag\\NF06_NE.bmp" 	rows="6" cols="1"/>
+		<sprite name="NF07" 		file="Shag\\NF07_NE.bmp" 	rows="5" cols="1"/>
+		<sprite name="NF08" 		file="Shag\\NF08_SE.bmp" 	rows="8" cols="1"/>
+		<sprite name="NF09" 		file="Shag\\NF09_SE.bmp" 	rows="5" cols="1"/>
+		<sprite name="NF10" 		file="Shag\\NF10_SE.bmp" 	rows="5" cols="1"/>
+		<sprite name="NF11" 		file="Shag\\NF11_SE.bmp" 	rows="8" cols="1"/>
+		<sprite name="NF12" 		file="Shag\\NF12_SE.bmp" 	rows="8" cols="1"/>
+		<sprite name="NF13" 		file="Shag\\NF13_SE.bmp" 	rows="5" cols="1"/>
+		<sprite name="NF14" 		file="Shag\\NF14_SE.bmp" 	rows="5" cols="1"/>
+		<sprite name="NF15" 		file="Shag\\NF15_SE.bmp" 	rows="5" cols="1"/>
+		<sprite name="NF16" 		file="Shag\\NF16_SE.bmp" 	rows="8" cols="1"/>
+		<sprite name="NF17" 		file="Shag\\NF17_NE.bmp" 	rows="5" cols="1"/>
+		<sprite name="NF18" 		file="Shag\\NF18_NE.bmp" 	rows="5" cols="1"/>
+		<sprite name="NF19" 		file="Shag\\NF19_SE.bmp" 	rows="7" cols="1"/>
+		<sprite name="NF20" 		file="Shag\\NF20_NE.bmp" 	rows="8" cols="1"/>
+		<sprite name="NF21" 		file="Shag\\NF21_NE.bmp" 	rows="8" cols="1"/>
+		<sprite name="NF22" 		file="Shag\\NF22_NE.bmp" 	rows="5" cols="1"/>
+		<sprite name="NF23" 		file="Shag\\NF23_SE.bmp" 	rows="5" cols="1"/>
+		<sprite name="NF24" 		file="Shag\\NF24_SE.bmp" 	rows="6" cols="1"/>
+		<sprite name="NF25" 		file="Shag\\NF25_SE.bmp" 	rows="8" cols="1"/>
+		<sprite name="NF26" 		file="Shag\\NF26_NE.bmp" 	rows="8" cols="1"/>
+		<sprite name="NF27" 		file="Shag\\NF27_SE.bmp" 	rows="5" cols="1"/>
+		<sprite name="NF28" 		file="Shag\\NF28_SE.bmp" 	rows="5" cols="1"/>
+		<sprite name="NF29" 		file="Shag\\NF29_SE.bmp" 	rows="5" cols="1"/>
+		<sprite name="NF30" 		file="Shag\\NF30_NE.bmp" 	rows="5" cols="1"/>
+		<sprite name="NF31" 		file="Shag\\NF31_NE.bmp" 	rows="5" cols="1"/>
+		<sprite name="NF32" 		file="Shag\\NF32_NE.bmp" 	rows="7" cols="1"/>
+
+		<sprite name="FrigidaHard_NE" 		file="Shag\\frigida_shag01_NE.bmp" 	rows="3" cols="1"/>
+		<sprite name="FrigidaHard_SE" 		file="Shag\\frigida_shag01_SE.bmp" 	rows="3" cols="1"/>
+		<sprite name="FrigidaNormal_NE" 	file="Shag\\frigida_shag02_NE.bmp" 	rows="3" cols="1"/>
+		<sprite name="FrigidaNormal_SE" 	file="Shag\\frigida_shag02_SE.bmp" 	rows="3" cols="1"/>
+		<sprite name="FrigidaDisappointed_NE" file="Shag\\frigida_shag03_NE.bmp" 	rows="3" cols="1"/>
+		<sprite name="FrigidaDisappointed_SE" file="Shag\\frigida_shag03_SE.bmp" 	rows="3" cols="1"/>
+		<sprite name="FrigidaExhausted_NE" 	file="Shag\\frigida_shag04_NE.bmp" 	rows="3" cols="1"/>
+		<sprite name="FrigidaExhausted_SE" 	file="Shag\\frigida_shag04_SE.bmp" 	rows="3" cols="1"/>
+
+		<sprite name="MermaidJump" 			file="Shag\\mermaid_jump.bmp" 	rows="12" cols="1"/>
+		<sprite name="MermaidShag" 			file="Shag\\mermaid_shag.bmp" 	rows="5" cols="1"/>
+
+		<!-- ANIMALS Anims -->
+		<sprite name="ChickenStand" 		file="animals\\Chicken_Stand.bmp" 		rows="4" cols="1"/>
+		<sprite name="Chicken_Shag_NE" 		file="animals\\Chicken_shag_NE.bmp" 	rows="5" cols="1"/>
+		<sprite name="Chicken_Shag_SE" 		file="animals\\Chicken_shag_SE.bmp" 	rows="5" cols="1"/>
+		<sprite name="Chicken_Eat_NE" 		file="animals\\chicken_eat_NE.bmp" 		rows="15" cols="1"/>
+		<sprite name="Chicken_Eat_SE" 		file="animals\\chicken_eat_SE.bmp" 		rows="15" cols="1"/>
+		<sprite name="Chicken_Idle_NE" 		file="animals\\Chicken_idle_NE.bmp" 	rows="13" cols="1"/>
+		<sprite name="Chicken_Idle_SE"	 	file="animals\\Chicken_idle_SE.bmp" 	rows="13" cols="1"/>
+		<sprite name="Chicken_Zero" 		file="animals\\Chicken_blink_SE.bmp" 	rows="5" cols="1"/>
+
+		<sprite name="GoatStand" 			file="animals\\Goat_Stand.bmp" 		rows="4" cols="1"/>
+		<sprite name="Goat_Shag_NE" 		file="animals\\Goat_shag_NE.bmp" 	rows="6" cols="1"/>
+		<sprite name="Goat_Shag_SE" 		file="animals\\Goat_shag_SE.bmp" 	rows="6" cols="1"/>
+		<sprite name="Goat_Eat_NE" 			file="animals\\Goat_eat_NE.bmp" 	rows="13" cols="1"/>
+		<sprite name="Goat_Eat_SE" 			file="animals\\Goat_eat_SE.bmp" 	rows="13" cols="1"/>
+		<sprite name="Goat_Idle_NE" 		file="animals\\Goat_idle_NE.bmp" 	rows="8" cols="1"/>
+		<sprite name="Goat_Idle_SE" 		file="animals\\Goat_idle_SE.bmp" 	rows="8" cols="1"/>
+		<sprite name="Goat_Zero" 			file="animals\\Goat_blink_SE.bmp" 	rows="5" cols="1"/>
+
+		<sprite name="PigStand" 			file="animals\\Pig_Stand.bmp" 		rows="4" cols="1"/>
+		<sprite name="Pig_Shag_NE" 			file="animals\\Pig_shag_NE.bmp" 	rows="4" cols="1"/>
+		<sprite name="Pig_Shag_SE" 			file="animals\\Pig_shag_SE.bmp" 	rows="3" cols="1"/>
+		<sprite name="Pig_Eat_NE" 			file="animals\\Pig_eat_NE.bmp" 		rows="14" cols="1"/>
+		<sprite name="Pig_Eat_SE" 			file="animals\\Pig_eat_SE.bmp" 		rows="14" cols="1"/>
+		<sprite name="Pig_Idle_NE" 			file="animals\\Pig_idle_NE.bmp" 	rows="14" cols="1"/>
+		<sprite name="Pig_Idle_SE" 			file="animals\\Pig_idle_SE.bmp" 	rows="14" cols="1"/>
+		<sprite name="Pig_Zero" 			file="animals\\Pig_blink_SE.bmp" 	rows="5" cols="1"/>
+
+		<sprite name="PenguinStand" 		file="animals\\Penguin_Stand.bmp" 	rows="4" cols="1"/>
+		<sprite name="Penguin_Shag_NE" 		file="animals\\Penguin_shag_NE.bmp" rows="5" cols="1"/>
+		<sprite name="Penguin_Shag_SE" 		file="animals\\Penguin_shag_SE.bmp" rows="5" cols="1"/>
+		<sprite name="Penguin_Eat_NE" 		file="animals\\Penguin_eat_NE.bmp" 	rows="13" cols="1"/>
+		<sprite name="Penguin_Eat_SE" 		file="animals\\Penguin_eat_SE.bmp" 	rows="13" cols="1"/>
+		<sprite name="Penguin_Idle_NE" 		file="animals\\Penguin_idle_NE.bmp" rows="11" cols="1"/>
+		<sprite name="Penguin_Idle_SE" 		file="animals\\Penguin_idle_SE.bmp" rows="11" cols="1"/>
+		<sprite name="Penguin_Zero" 		file="animals\\Penguin_blink_SE.bmp" rows="3" cols="1"/>
+
+		<sprite name="TurtleStand" 			file="animals\\Turtle_Stand.bmp" 	rows="4" cols="1"/>
+		<sprite name="Turtle_Shag_NE" 		file="animals\\Turtle_shag_NE.bmp" 	rows="5" cols="1"/>
+		<sprite name="Turtle_Shag_SE" 		file="animals\\Turtle_shag_SE.bmp" 	rows="5" cols="1"/>
+		<sprite name="Turtle_Eat_NE" 		file="animals\\Turtle_eat_NE.bmp" 	rows="14" cols="1"/>
+		<sprite name="Turtle_Eat_SE" 		file="animals\\Turtle_eat_SE.bmp" 	rows="14" cols="1"/>
+		<sprite name="Turtle_Idle_NE" 		file="animals\\Turtle_idle_NE.bmp" 	rows="5" cols="1"/>
+		<sprite name="Turtle_Idle_SE" 		file="animals\\Turtle_idle_SE.bmp" 	rows="5" cols="1"/>
+		<sprite name="Turtle_Zero" 			file="animals\\Turtle_blink_SE.bmp" rows="3" cols="1"/>
+
+		<sprite name="RabbitStand" 			file="animals\\Rabbit_Stand.bmp" 	rows="4" cols="1"/>
+		<sprite name="Rabbit_Shag_NE" 		file="animals\\Rabbit_shag_NE.bmp" 	rows="5" cols="1"/>
+		<sprite name="Rabbit_Shag_SE" 		file="animals\\Rabbit_shag_SE.bmp" 	rows="5" cols="1"/>
+		<sprite name="Rabbit_Eat_NE" 		file="animals\\Rabbit_eat_NE.bmp" 	rows="10" cols="1"/>
+		<sprite name="Rabbit_Eat_SE" 		file="animals\\Rabbit_eat_SE.bmp" 	rows="10" cols="1"/>
+		<sprite name="Rabbit_Idle_NE" 		file="animals\\Rabbit_idle_NE.bmp" 	rows="21" cols="1"/>
+		<sprite name="Rabbit_Idle_SE" 		file="animals\\Rabbit_idle_SE.bmp" 	rows="21" cols="1"/>
+		<sprite name="Rabbit_Zero" 			file="animals\\Rabbit_blink_SE.bmp" rows="3" cols="1"/>
+
+		<sprite name="AlienPetStand" 		file="animals\\AlienPet_Stand.bmp" 		rows="4" cols="1"/>
+		<sprite name="AlienPet_Shag_NE" 	file="animals\\AlienPet_shag_NE.bmp" 	rows="5" cols="1"/>
+		<sprite name="AlienPet_Shag_SE" 	file="animals\\AlienPet_shag_SE.bmp" 	rows="5" cols="1"/>
+		<sprite name="AlienPet_Eat_NE" 		file="animals\\AlienPet_idle_SE.bmp" 	rows="15" cols="1"/>
+		<sprite name="AlienPet_Eat_SE" 		file="animals\\AlienPet_idle_SE.bmp" 	rows="15" cols="1"/>
+		<sprite name="AlienPet_Idle_NE" 	file="animals\\AlienPet_idle_SE.bmp" 	rows="15" cols="1"/>
+		<sprite name="AlienPet_Idle_SE" 	file="animals\\AlienPet_idle_SE.bmp" 	rows="15" cols="1"/>
+		<sprite name="AlienPet_Zero" 		file="animals\\AlienPet_blink_SE.bmp" 	rows="3" cols="1"/>
+
+		<sprite name="HedgehogStand" 		file="animals\\Hedgehog_Stand.bmp"		rows="4" cols="1"/>
+		<sprite name="Hedgehog_Shag_NE" 	file="animals\\Hedgehog_shag_NE.bmp" 	rows="5" cols="1"/>
+		<sprite name="Hedgehog_Shag_SE" 	file="animals\\Hedgehog_shag_SE.bmp" 	rows="5" cols="1"/>
+		<sprite name="Hedgehog_Eat_NE" 		file="animals\\Hedgehog_Stand.bmp" 		rows="4" cols="1"/>
+		<sprite name="Hedgehog_Eat_SE" 		file="animals\\Hedgehog_idle_SE.bmp" 	rows="8" cols="1"/>
+		<sprite name="Hedgehog_Idle_NE" 	file="animals\\Hedgehog_Stand.bmp" 		rows="4" cols="1"/>
+		<sprite name="Hedgehog_Idle_SE" 	file="animals\\Hedgehog_idle_SE.bmp" 	rows="8" cols="1"/>
+		<sprite name="Hedgehog_Zero" 		file="animals\\Hedgehog_blink_SE.bmp" 	rows="3" cols="1"/>
+
+		<sprite name="PeacockStand" 		file="animals\\Peacock_Stand.bmp" 		rows="4" cols="1"/>
+		<sprite name="Peacock_Shag_NE" 		file="animals\\Peacock_shag_NE.bmp" 	rows="5" cols="1"/>
+		<sprite name="Peacock_Shag_SE" 		file="animals\\Peacock_shag_SE.bmp" 	rows="5" cols="1"/>
+		<sprite name="Peacock_Eat_NE" 		file="animals\\Peacock_Stand.bmp" 		rows="4" cols="1"/>
+		<sprite name="Peacock_Eat_SE" 		file="animals\\Peacock_idle_SE.bmp" 	rows="8" cols="1"/>
+		<sprite name="Peacock_Idle_NE" 		file="animals\\Peacock_Stand.bmp" 		rows="4" cols="1"/>
+		<sprite name="Peacock_Idle_SE" 		file="animals\\Peacock_idle_SE.bmp" 	rows="8" cols="1"/>
+		<sprite name="Peacock_Zero" 		file="animals\\Peacock_blink_SE.bmp" 	rows="3" cols="1"/>
+
+		<sprite name="SkunkStand" 			file="animals\\Skunk_Stand.bmp" 	rows="4" cols="1"/>
+		<sprite name="Skunk_Shag_NE" 		file="animals\\Skunk_shag_NE.bmp" 	rows="5" cols="1"/>
+		<sprite name="Skunk_Shag_SE" 		file="animals\\Skunk_shag_SE.bmp" 	rows="5" cols="1"/>
+		<sprite name="Skunk_Eat_NE" 		file="animals\\Skunk_Stand.bmp" 	rows="4" cols="1"/>
+		<sprite name="Skunk_Eat_SE" 		file="animals\\Skunk_idle_SE.bmp" 	rows="6" cols="1"/>
+		<sprite name="Skunk_Idle_NE" 		file="animals\\Skunk_Stand.bmp" 	rows="4" cols="1"/>
+		<sprite name="Skunk_Idle_SE" 		file="animals\\Skunk_idle_SE.bmp" 	rows="6" cols="1"/>
+		<sprite name="Skunk_Zero" 			file="animals\\Skunk_blink_SE.bmp" 	rows="3" cols="1"/>
+
+		<sprite name="Groundhog" 			file="animals\\Groundhog.bmp" 		rows="12" cols="1"/>
+
+		<sprite name="IconPlayer1" 			file="icon_1player.bmp" 			rows="1" cols="1"/>
+		<sprite name="IconPlayer2" 			file="icon_2player.bmp" 			rows="1" cols="1"/>
+
+	</sprites>
+</Sven004>

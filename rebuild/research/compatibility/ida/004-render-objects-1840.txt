@@ -1,0 +1,230 @@
+              v242 = *(_DWORD *)(v4 + 38516) + 8; /*0x41cd58*/
+              goto LABEL_387; /*0x41cd5b*/
+            case 6: /*0x41ccae*/
+              v242 = *(_DWORD *)(v4 + 38516) + 12; /*0x41cd63*/
+LABEL_387:
+              v238 = *(_DWORD *)sub_41E6C0(v242); /*0x41cd66*/
+              v239 = *(_DWORD *)(v4 + 38488); /*0x41cd74*/
+LABEL_381:
+              (*(void (__thiscall **)(int, _DWORD, _DWORD, _DWORD, int))(*(_DWORD *)v238 + 40))( /*0x41cccb*/
+                v238,
+                *(_DWORD *)(this + 4156),
+                *(_DWORD *)(v4 + 38440),
+                *(_DWORD *)(v4 + 38444),
+                v239);
+LABEL_382:
+              v240 = *(_DWORD *)sub_41E6C0(0); /*0x41cce6*/
+              v241 = *(_DWORD *)(v4 + 38516); /*0x41cd09*/
+              v332 = (double)dword_4B6A08[v241] + *(float *)(v4 + 38444); /*0x41cd1e*/
+              v292 = (double)dword_47BF78[v241] + *(float *)(v4 + 38440); /*0x41cd2e*/
+              (*(void (__stdcall **)(_DWORD, _DWORD, _DWORD, int))(*(_DWORD *)v240 + 40))( /*0x41cd31*/
+                *(_DWORD *)(this + 4156),
+                LODWORD(v292),
+                LODWORD(v332),
+                *(_DWORD *)(v4 + 38524) + *(unsigned __int8 *)(v4 + 38505));
+              break; /*0x41cd31*/
+            case 0x11: /*0x41ccae*/
+              v116 = *(_DWORD *)(this + 416804); /*0x41cd36*/
+              v157 = *(_DWORD *)(v4 + 38516); /*0x41cd3c*/
+              goto LABEL_480; /*0x41cd42*/
+            default:
+              goto LABEL_481;
+          }
+          break;
+        case 12: /*0x4198a9*/
+          switch ( *(_DWORD *)(v4 + 38512) ) /*0x41cd96*/
+          {
+            case 0: /*0x41cd96*/
+            case 3: /*0x41cd96*/
+              if ( *(_BYTE *)(v4 + 38536) ) /*0x41cd9d*/
+                goto LABEL_392; /*0x41cda5*/
+              v243 = *(_DWORD *)(this + 416864); /*0x41cda7*/
+              v244 = *(_DWORD *)(v4 + 38516); /*0x41cdad*/
+              goto LABEL_391; /*0x41cdad*/
+            case 4: /*0x41cd96*/
+              v247 = *(_DWORD *)(v4 + 38516) + 4; /*0x41ce35*/
+              goto LABEL_397; /*0x41ce38*/
+            case 5: /*0x41cd96*/
+              v247 = *(_DWORD *)(v4 + 38516) + 8; /*0x41ce40*/
+              goto LABEL_397; /*0x41ce43*/
+            case 6: /*0x41cd96*/
+              v247 = *(_DWORD *)(v4 + 38516) + 12; /*0x41ce4b*/
+LABEL_397:
+              v243 = *(_DWORD *)sub_41E6C0(v247); /*0x41ce4e*/
+              v244 = *(_DWORD *)(v4 + 38488); /*0x41ce5c*/
+LABEL_391:
+              (*(void (__thiscall **)(int, _DWORD, _DWORD, _DWORD, int))(*(_DWORD *)v243 + 40))( /*0x41cdb3*/
+                v243,
+                *(_DWORD *)(this + 4156),
+                *(_DWORD *)(v4 + 38440),
+                *(_DWORD *)(v4 + 38444),
+                v244);
+LABEL_392:
+              v245 = *(_DWORD *)sub_41E6C0(0); /*0x41cdce*/
+              v246 = *(_DWORD *)(v4 + 38516); /*0x41cdf1*/
+              v333 = (double)dword_4B6A18[v246] + *(float *)(v4 + 38444); /*0x41ce06*/
+              v293 = (double)dword_47BF88[v246] + *(float *)(v4 + 38440); /*0x41ce16*/
+              (*(void (__stdcall **)(_DWORD, _DWORD, _DWORD, int))(*(_DWORD *)v245 + 40))( /*0x41ce19*/
+                *(_DWORD *)(this + 4156),
+                LODWORD(v293),
+                LODWORD(v333),
+                *(_DWORD *)(v4 + 38524) + *(unsigned __int8 *)(v4 + 38505));
+              break; /*0x41ce19*/
+            case 0x11: /*0x41cd96*/
+              v116 = *(_DWORD *)(this + 416864); /*0x41ce1e*/
+              v157 = *(_DWORD *)(v4 + 38516); /*0x41ce24*/
+              goto LABEL_480; /*0x41ce2a*/
+            default:
+              goto LABEL_481;
+          }
+          break;
+        case 13: /*0x4198a9*/
+          switch ( *(_DWORD *)(v4 + 38512) ) /*0x41ce7e*/
+          {
+            case 0: /*0x41ce7e*/
+            case 3: /*0x41ce7e*/
+              if ( *(_BYTE *)(v4 + 38536) ) /*0x41ce85*/
+                goto LABEL_402; /*0x41ce8d*/
+              v248 = *(_DWORD *)(this + 416924); /*0x41ce8f*/
+              v249 = *(_DWORD *)(v4 + 38516); /*0x41ce95*/
+              goto LABEL_401; /*0x41ce95*/
+            case 4: /*0x41ce7e*/
+              v252 = *(_DWORD *)(v4 + 38516) + 4; /*0x41cf1d*/
+              goto LABEL_407; /*0x41cf20*/
+            case 5: /*0x41ce7e*/
+              v252 = *(_DWORD *)(v4 + 38516) + 8; /*0x41cf28*/
+              goto LABEL_407; /*0x41cf2b*/
+            case 6: /*0x41ce7e*/
+              v252 = *(_DWORD *)(v4 + 38516) + 12; /*0x41cf33*/
+LABEL_407:
+              v248 = *(_DWORD *)sub_41E6C0(v252); /*0x41cf36*/
+              v249 = *(_DWORD *)(v4 + 38488); /*0x41cf44*/
+LABEL_401:
+              (*(void (__thiscall **)(int, _DWORD, _DWORD, _DWORD, int))(*(_DWORD *)v248 + 40))( /*0x41ce9b*/
+                v248,
+                *(_DWORD *)(this + 4156),
+                *(_DWORD *)(v4 + 38440),
+                *(_DWORD *)(v4 + 38444),
+                v249);
+LABEL_402:
+              v250 = *(_DWORD *)sub_41E6C0(0); /*0x41ceb6*/
+              v251 = *(_DWORD *)(v4 + 38516); /*0x41ced9*/
+              v334 = (double)dword_47BFA8[v251] + *(float *)(v4 + 38444); /*0x41ceee*/
+              v294 = (double)dword_47BF98[v251] + *(float *)(v4 + 38440); /*0x41cefe*/
+              (*(void (__stdcall **)(_DWORD, _DWORD, _DWORD, int))(*(_DWORD *)v250 + 40))( /*0x41cf01*/
+                *(_DWORD *)(this + 4156),
+                LODWORD(v294),
+                LODWORD(v334),
+                *(_DWORD *)(v4 + 38524) + *(unsigned __int8 *)(v4 + 38505));
+              break; /*0x41cf01*/
+            case 0x11: /*0x41ce7e*/
+              v116 = *(_DWORD *)(this + 416924); /*0x41cf06*/
+              v157 = *(_DWORD *)(v4 + 38516); /*0x41cf0c*/
+              goto LABEL_480; /*0x41cf12*/
+            default:
+              goto LABEL_481;
+          }
+          break;
+        case 14: /*0x4198a9*/
+          switch ( *(_DWORD *)(v4 + 38512) ) /*0x41cf66*/
+          {
+            case 0: /*0x41cf66*/
+            case 3: /*0x41cf66*/
+              if ( *(_BYTE *)(v4 + 38536) ) /*0x41cf6d*/
+                goto LABEL_417; /*0x41cf75*/
+              v253 = *(_DWORD *)(this + 416984); /*0x41cf77*/
+              v254 = *(_DWORD *)(v4 + 38516); /*0x41cf7d*/
+              goto LABEL_416; /*0x41cf83*/
+            case 4: /*0x41cf66*/
+              v255 = *(_DWORD *)(v4 + 38516) + 4; /*0x41cf9c*/
+              goto LABEL_415; /*0x41cf9f*/
+            case 5: /*0x41cf66*/
+              v255 = *(_DWORD *)(v4 + 38516) + 8; /*0x41cfa7*/
+              goto LABEL_415; /*0x41cfaa*/
+            case 6: /*0x41cf66*/
+              v255 = *(_DWORD *)(v4 + 38516) + 12; /*0x41cfb2*/
+LABEL_415:
+              v253 = *(_DWORD *)sub_41E6C0(v255); /*0x41cfb5*/
+              v254 = *(_DWORD *)(v4 + 38488); /*0x41cfc3*/
+LABEL_416:
+              (*(void (__thiscall **)(int, _DWORD, _DWORD, _DWORD, int))(*(_DWORD *)v253 + 40))( /*0x41cfc9*/
+                v253,
+                *(_DWORD *)(this + 4156),
+                *(_DWORD *)(v4 + 38440),
+                *(_DWORD *)(v4 + 38444),
+                v254);
+LABEL_417:
+              v256 = *(_DWORD *)sub_41E6C0(0); /*0x41cfe4*/
+              v257 = *(_DWORD *)(v4 + 38516); /*0x41d007*/
+              v335 = (double)dword_47BFC8[v257] + *(float *)(v4 + 38444); /*0x41d01c*/
+              v295 = (double)dword_47BFB8[v257] + *(float *)(v4 + 38440); /*0x41d02c*/
+              (*(void (__stdcall **)(_DWORD, _DWORD, _DWORD, int))(*(_DWORD *)v256 + 40))( /*0x41d02f*/
+                *(_DWORD *)(this + 4156),
+                LODWORD(v295),
+                LODWORD(v335),
+                *(_DWORD *)(v4 + 38524) + *(unsigned __int8 *)(v4 + 38505));
+              break; /*0x41d02f*/
+            case 0x11: /*0x41cf66*/
+              v116 = *(_DWORD *)(this + 416984); /*0x41cf85*/
+              v157 = *(_DWORD *)(v4 + 38516); /*0x41cf8b*/
+              goto LABEL_480; /*0x41cf91*/
+            default:
+              goto LABEL_481;
+          }
+          break;
+        case 15: /*0x4198a9*/
+          switch ( *(_DWORD *)(v4 + 38512) ) /*0x41b27e*/
+          {
+            case 0: /*0x41b27e*/
+              if ( *(_DWORD *)(v4 + 38524) ) /*0x41b285*/
+              {
+                v125 = *(_DWORD *)sub_41E6C0(*(_DWORD *)(v4 + 38516) + 9); /*0x41b2bb*/
+                v126 = *(_DWORD *)(v4 + 38488); /*0x41b2bd*/
+              }
+              else
+              {
+                v125 = *(_DWORD *)sub_41E6C0(0); /*0x41b29c*/
+                v126 = *(_DWORD *)(v4 + 38516); /*0x41b29e*/
+              }
+              (*(void (__thiscall **)(int, _DWORD, _DWORD, _DWORD, int))(*(_DWORD *)v125 + 40))( /*0x41b2db*/
+                v125,
+                *(_DWORD *)(this + 4156),
+                *(_DWORD *)(v4 + 38440),
+                *(_DWORD *)(v4 + 38444),
+                v126);
+              if ( (*(_BYTE *)(this + 337396) || dword_5C56F8 == 4) /*0x41b315*/
+                && *(float *)(112 * (v3 + 344) + this) == 1000000000.0 )
+              {
+                v127 = cString::StringF(v363, aGuardstate); /*0x41b331*/
+                v367 = 0; /*0x41b33b*/
+                sub_41E6C0(2); /*0x41b346*/
+                sub_463380( /*0x41b3a0*/
+                  *(_DWORD *)(this + 4156),
+                  (__int64)((double)(*(_WORD *)(v4 + 38462) >> 1) + *(float *)(v4 + 38440)),
+                  (__int64)((double)*(unsigned __int16 *)(v4 + 38464) + *(float *)(v4 + 38444) - 30.0),
+                  v127,
+                  1);
+                v367 = -1; /*0x41b3ac*/
+                cString::~cString(v363); /*0x41b3b7*/
+              }
+              v129 = *(float *)(112 * (v3 + 344) + this); /*0x41b3d3*/
+              v130 = v129 < 1000.0; /*0x41b3d6*/
+              v131 = 0; /*0x41b3d6*/
+              v132 = v129 == 1000.0; /*0x41b3d6*/
+              if ( (v128 & 0x4100) == 0 ) /*0x41b3e3*/
+                goto LABEL_282; /*0x41b3e3*/
+              break; /*0x41b3e3*/
+            case 1: /*0x41b27e*/
+              goto LABEL_261;
+            case 0x10: /*0x41b27e*/
+              goto LABEL_194;
+            case 0x11: /*0x41b27e*/
+              v134 = (_DWORD *)sub_41E6C0(25); /*0x41b486*/
+              goto LABEL_197; /*0x41b486*/
+            case 0x14: /*0x41b27e*/
+            case 0x15: /*0x41b27e*/
+              v134 = (_DWORD *)sub_41E6C0(*(_DWORD *)(v4 + 38516) / 4 + 19); /*0x41b4a1*/
+              goto LABEL_197; /*0x41b4a1*/
+            case 0x20: /*0x41b27e*/
+            case 0x21: /*0x41b27e*/
+              v135 = *(_DWORD *)(112 * *(unsigned __int16 *)(v4 + 38460) + this + 38516) / 2 + 21; /*0x41b4e2*/

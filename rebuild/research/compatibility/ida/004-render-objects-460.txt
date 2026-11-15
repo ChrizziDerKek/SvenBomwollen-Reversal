@@ -1,0 +1,230 @@
+                    v342 = v63; /*0x41a776*/
+LABEL_94:
+                    v303 = v60; /*0x41a777*/
+                    v274 = *(float *)(v4 + 38440) - 20.0; /*0x41a78a*/
+                    (*(void (__thiscall **)(int, _DWORD, _DWORD, _DWORD, int))(*(_DWORD *)v62 + 40))( /*0x41a796*/
+                      v62,
+                      *(_DWORD *)(this + 4156),
+                      LODWORD(v274),
+                      LODWORD(v303),
+                      v342);
+LABEL_165:
+                    sub_41E5A0(v3); /*0x41b05a*/
+                    break; /*0x41b062*/
+                  case 1: /*0x41a3fa*/
+                  case 2: /*0x41a3fa*/
+                    switch ( *(_DWORD *)(112 * *(_DWORD *)(v4 + 38524) + this + 38516) / 2 ) /*0x41a48a*/
+                    {
+                      case 0: /*0x41a48a*/
+                        v54 = (int *)sub_41E6C0(29); /*0x41a493*/
+                        goto LABEL_71; /*0x41a493*/
+                      case 1: /*0x41a48a*/
+                        v54 = (int *)sub_41E6C0(30); /*0x41a497*/
+                        goto LABEL_71; /*0x41a497*/
+                      case 2: /*0x41a48a*/
+                        v54 = (int *)sub_41E6C0(31); /*0x41a49b*/
+                        goto LABEL_71; /*0x41a49b*/
+                      case 3: /*0x41a48a*/
+                        v54 = (int *)sub_41E6C0(32); /*0x41a4a5*/
+LABEL_71:
+                        v55 = *v54; /*0x41a4aa*/
+                        v56 = *(_DWORD *)(v4 + 38524); /*0x41a4ac*/
+                        v301 = *(float *)(112 * v56 + this + 38444) - 60.0; /*0x41a4da*/
+                        v272 = *(float *)(112 * v56 + this + 38440) - 20.0; /*0x41a4f0*/
+                        (*(void (__thiscall **)(int, _DWORD, _DWORD, _DWORD, _DWORD))(*(_DWORD *)v55 + 40))( /*0x41a4f4*/
+                          v55,
+                          *(_DWORD *)(this + 4156),
+                          LODWORD(v272),
+                          LODWORD(v301),
+                          *(_DWORD *)(v4 + 38488));
+                        break; /*0x41a4f4*/
+                      default:
+                        break;
+                    }
+                    v57 = *(_DWORD *)sub_41E6C0(0); /*0x41a4f7*/
+                    v58 = 112 * *(_DWORD *)(v4 + 38524) + this; /*0x41a522*/
+                    v59 = *(_DWORD *)(v58 + 38516); /*0x41a525*/
+                    v302 = (double)dword_47BEB8[v59] + *(float *)(v58 + 38444) - 10.0; /*0x41a54e*/
+                    v273 = (double)dword_47BE98[v59] + *(float *)(v58 + 38440); /*0x41a564*/
+                    (*(void (__thiscall **)(int, _DWORD, _DWORD, _DWORD, int))(*(_DWORD *)v57 + 40))( /*0x41a568*/
+                      v57,
+                      *(_DWORD *)(this + 4156),
+                      LODWORD(v273),
+                      LODWORD(v302),
+                      *(_DWORD *)(v58 + 38524) + *(unsigned __int8 *)(v58 + 38505));
+                    sub_41E5A0(v3); /*0x41a56e*/
+                    goto LABEL_481; /*0x41a573*/
+                  case 3: /*0x41a3fa*/
+                    if ( *(int *)(this + 92 * v3 + 337064) <= 0 ) /*0x41a589*/
+                      goto LABEL_75; /*0x41a589*/
+                    v53 = (int *)sub_41E6C0(*(_DWORD *)(v4 + 38516) + 33); /*0x41a595*/
+                    goto LABEL_90; /*0x41a595*/
+                  case 4: /*0x41a3fa*/
+                    if ( *(int *)(this + 92 * v3 + 337064) > 0 ) /*0x41a5c9*/
+                      (*(void (__thiscall **)(_DWORD, _DWORD, _DWORD, _DWORD, _DWORD))(**(_DWORD **)(this + 416140) + 40))( /*0x41a5ef*/
+                        *(_DWORD *)(this + 416140),
+                        *(_DWORD *)(this + 4156),
+                        *(_DWORD *)(v4 + 38440),
+                        *(_DWORD *)(v4 + 38444),
+                        *(_DWORD *)(v4 + 38516));
+                    v61 = *(_DWORD *)sub_41E6C0(54); /*0x41a5ff*/
+                    (*(void (__thiscall **)(int, _DWORD, _DWORD, _DWORD, _DWORD))(*(_DWORD *)v61 + 40))( /*0x41a616*/
+                      v61,
+                      *(_DWORD *)(this + 4156),
+                      *(_DWORD *)(v4 + 38440),
+                      *(_DWORD *)(v4 + 38444),
+                      *(_DWORD *)(v4 + 38488));
+                    goto LABEL_165; /*0x41a616*/
+                  case 5: /*0x41a3fa*/
+                  case 0xF: /*0x41a3fa*/
+                    if ( *(int *)(this + 92 * v3 + 337064) > 0 ) /*0x41a687*/
+                      (*(void (__thiscall **)(_DWORD, _DWORD, _DWORD, _DWORD, _DWORD))(**(_DWORD **)(this + 416140) + 40))( /*0x41a6a8*/
+                        *(_DWORD *)(this + 416140),
+                        *(_DWORD *)(this + 4156),
+                        *(_DWORD *)(v4 + 38440),
+                        *(_DWORD *)(v4 + 38444),
+                        *(_DWORD *)(v4 + 38516));
+                    goto LABEL_165; /*0x41a6a8*/
+                  case 0xE: /*0x41a3fa*/
+                    if ( *(int *)(this + 92 * v3 + 337064) > 0 ) /*0x41a62c*/
+                      (*(void (__thiscall **)(_DWORD, _DWORD, _DWORD, _DWORD, _DWORD))(**(_DWORD **)(this + 416140) + 40))( /*0x41a652*/
+                        *(_DWORD *)(this + 416140),
+                        *(_DWORD *)(this + 4156),
+                        *(_DWORD *)(v4 + 38440),
+                        *(_DWORD *)(v4 + 38444),
+                        *(_DWORD *)(v4 + 38516));
+                    v62 = *(_DWORD *)sub_41E6C0(54); /*0x41a668*/
+                    v342 = 1; /*0x41a66a*/
+                    v60 = *(float *)(v4 + 38444) - 60.0; /*0x41a66b*/
+                    goto LABEL_94; /*0x41a671*/
+                  case 0x1E: /*0x41a3fa*/
+                  case 0x1F: /*0x41a3fa*/
+                    v62 = *(_DWORD *)sub_41E6C0(*(_DWORD *)(v4 + 38516) / 2 + 42); /*0x41a6cd*/
+                    v63 = *(_DWORD *)(v4 + 38488); /*0x41a6cf*/
+                    v60 = *(float *)(v4 + 38444) - 60.0; /*0x41a6d5*/
+                    goto LABEL_93; /*0x41a6db*/
+                  case 0x20: /*0x41a3fa*/
+                    v62 = *(_DWORD *)sub_41E6C0(*(_DWORD *)(v4 + 38516) / 2 + 17); /*0x41a700*/
+                    v63 = *(_DWORD *)(v4 + 38488); /*0x41a702*/
+                    v60 = *(float *)(v4 + 38444) - 60.0; /*0x41a708*/
+                    goto LABEL_93; /*0x41a70e*/
+                  case 0x21: /*0x41a3fa*/
+                    v65 = *(float *)(v4 + 38480); /*0x41a710*/
+                    v66 = v65 < -27.0; /*0x41a716*/
+                    v67 = 0; /*0x41a716*/
+                    v68 = v65 == -27.0; /*0x41a716*/
+                    if ( (v64 & 0x4100) != 0 ) /*0x41a723*/
+                      goto LABEL_165; /*0x41a723*/
+                    v50 = *(_DWORD *)(v4 + 38516) / 2 + 25; /*0x41a730*/
+                    goto LABEL_89; /*0x41a730*/
+                  case 0x3C: /*0x41a3fa*/
+                    v51 = (int *)sub_41E6C0(0); /*0x41a75d*/
+                    v60 = *(float *)(v4 + 38444) - 80.0; /*0x41a768*/
+                    goto LABEL_92; /*0x41a768*/
+                  default:
+                    goto LABEL_165;
+                }
+                break; /*0x41a768*/
+              case 2: /*0x41a3dc*/
+                switch ( *(_DWORD *)(v4 + 38512) ) /*0x41a7bd*/
+                {
+                  case 0: /*0x41a7bd*/
+                    v69 = *(_DWORD *)(v4 + 38508); /*0x41a7c4*/
+                    if ( v69 != 8 ) /*0x41a7cd*/
+                    {
+                      v71 = v69 + 1; /*0x41a7fb*/
+                      goto LABEL_110; /*0x41a7fc*/
+                    }
+                    if ( *(float *)(v4 + 38548) != 0.0 && *(_BYTE *)(v4 + 38458) ) /*0x41a7e2*/
+                    {
+                      v70 = (_DWORD *)sub_41E6C0(*(_DWORD *)(v4 + 38516) + 25); /*0x41a7f6*/
+                      goto LABEL_111; /*0x41a7f6*/
+                    }
+                    goto LABEL_102; /*0x41a7ea*/
+                  case 3: /*0x41a7bd*/
+LABEL_102:
+                    v70 = (_DWORD *)sub_41E6C0(0); /*0x41a801*/
+                    v72 = *(_DWORD *)(v4 + 38516); /*0x41a80e*/
+                    goto LABEL_112; /*0x41a814*/
+                  case 4: /*0x41a7bd*/
+                    v70 = (_DWORD *)sub_41E6C0(33); /*0x41a81b*/
+                    goto LABEL_111; /*0x41a81b*/
+                  case 0xE: /*0x41a7bd*/
+                    v73 = (_DWORD *)sub_41E6C0(33); /*0x41a825*/
+                    (*(void (__thiscall **)(_DWORD, _DWORD, _DWORD, _DWORD, int))(*(_DWORD *)*v73 + 40))( /*0x41a82b*/
+                      *v73,
+                      *(_DWORD *)(this + 4156),
+                      *(_DWORD *)(v4 + 38440),
+                      *(_DWORD *)(v4 + 38444),
+                      1);
+                    goto LABEL_165; /*0x41a82b*/
+                  case 0x1E: /*0x41a7bd*/
+                  case 0x1F: /*0x41a7bd*/
+                    v71 = *(_DWORD *)(v4 + 38516) / 2 + 21; /*0x41a838*/
+                    goto LABEL_110; /*0x41a83b*/
+                  case 0x3C: /*0x41a7bd*/
+                    v74 = *(_DWORD *)sub_41E6C0(0); /*0x41a856*/
+                    v304 = *(float *)(v4 + 38444) - 20.0; /*0x41a860*/
+                    (*(void (__thiscall **)(int, _DWORD, _DWORD, _DWORD, _DWORD))(*(_DWORD *)v74 + 40))( /*0x41a863*/
+                      v74,
+                      *(_DWORD *)(this + 4156),
+                      *(_DWORD *)(v4 + 38440),
+                      LODWORD(v304),
+                      *(_DWORD *)(v4 + 38516));
+                    goto LABEL_165; /*0x41a863*/
+                  case 0x48: /*0x41a7bd*/
+                    v71 = *(_DWORD *)(v4 + 38516) / 2 + 9; /*0x41a870*/
+                    goto LABEL_110; /*0x41a873*/
+                  case 0x49: /*0x41a7bd*/
+                    v76 = *(float *)(v4 + 38480); /*0x41a875*/
+                    v77 = v76 < -27.0; /*0x41a87b*/
+                    v78 = 0; /*0x41a87b*/
+                    v79 = v76 == -27.0; /*0x41a87b*/
+                    if ( (v75 & 0x4100) != 0 ) /*0x41a888*/
+                      goto LABEL_165; /*0x41a888*/
+                    v71 = *(_DWORD *)(v4 + 38516) / 2 + 13; /*0x41a895*/
+LABEL_110:
+                    v70 = (_DWORD *)sub_41E6C0(v71); /*0x41a898*/
+LABEL_111:
+                    v72 = *(_DWORD *)(v4 + 38488); /*0x41a8a4*/
+LABEL_112:
+                    (*(void (__thiscall **)(_DWORD, _DWORD, _DWORD, _DWORD, int))(*(_DWORD *)*v70 + 40))( /*0x41a8ab*/
+                      *v70,
+                      *(_DWORD *)(this + 4156),
+                      *(_DWORD *)(v4 + 38440),
+                      *(_DWORD *)(v4 + 38444),
+                      v72);
+                    break; /*0x41a8c4*/
+                  default:
+                    goto LABEL_165;
+                }
+                goto LABEL_165; /*0x41a8c4*/
+              case 3: /*0x41a3dc*/
+                switch ( *(_DWORD *)(v4 + 38512) ) /*0x41a8eb*/
+                {
+                  case 0: /*0x41a8eb*/
+                    if ( *(int *)(this + 92 * v3 + 337064) > 0 ) /*0x41a906*/
+                    {
+                      if ( *(float *)(v4 + 38548) == 0.0 || *(_BYTE *)(this + 92 * v3 + 337072) == 1 ) /*0x41a922*/
+                      {
+                        v81 = *(_DWORD *)sub_41E6C0(37); /*0x41a95b*/
+                        (*(void (__thiscall **)(int, _DWORD, _DWORD, _DWORD, _DWORD))(*(_DWORD *)v81 + 40))( /*0x41a96b*/
+                          v81,
+                          *(_DWORD *)(this + 4156),
+                          *(_DWORD *)(v4 + 38440),
+                          *(_DWORD *)(v4 + 38444),
+                          *(_DWORD *)(v4 + 38516));
+                      }
+                      else
+                      {
+LABEL_118:
+                        v80 = *(_DWORD *)sub_41E6C0(*(_DWORD *)(v4 + 38516) + 29); /*0x41a924*/
+                        (*(void (__thiscall **)(int, _DWORD, _DWORD, _DWORD, _DWORD))(*(_DWORD *)v80 + 40))( /*0x41a949*/
+                          v80,
+                          *(_DWORD *)(this + 4156),
+                          *(_DWORD *)(v4 + 38440),
+                          *(_DWORD *)(v4 + 38444),
+                          *(_DWORD *)(v4 + 38488));
+                      }
+                      goto LABEL_165; /*0x41a949*/
+                    }

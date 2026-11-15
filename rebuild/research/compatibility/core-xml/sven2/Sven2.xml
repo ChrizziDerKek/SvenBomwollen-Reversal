@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sven2 version="1.0">
+		<sounds>
+			<!--   levelstart  -->
+			<sound name="SfxStart" file="sven2/sfx/start1.ogg"/>
+			<sound name="SfxTurnPoints" file="sven2/sfx/points.ogg"/>
+			<sound name="SfxLoseLife" file="sven2/sfx/item_negativ.ogg"/>
+			<sound name="SfxNewLife" file="sven2/sfx/new_life.ogg"/>
+			<sound name="SfxWecker" file="sven2/sfx/wecker1.ogg"/>
+			<sound name="SfxWeckerAlarm" file="sven2/sfx/weckeralarm1.ogg"/>
+			<sound name="SfxGameOver" file="sven2/sfx/gameover.ogg"/>
+			<sound name="SfxFinishPack" file="sven2/sfx/pack_finished.ogg"/>
+			<!--   collect extra  -->
+			<sound name="SfxPositive" file="sven2/sfx/item_gift.ogg"/>
+			<sound name="SfxFirework" file="sven2/sfx/item_firework.ogg"/>
+			<sound name="SfxImpotence" file="sven2/sfx/item_impotenz.ogg"/>
+			<sound name="SfxRose" file="sven2/sfx/item_rose.ogg"/>
+			<sound name="SfxSmell" file="sven2/sfx/item_stinky.ogg"/>
+			<!--   UFO  -->
+			<sound name="SfxUFO" file="sven2/sfx/ufo2.ogg"/>
+			<sound name="SfxBeam" file="sven2/sfx/beam.ogg"/>
+			<!--   Dog  -->
+			<sound name="SfxDogBeamUp" file="sven2/sfx/wotan_beamup.ogg"/>
+			<sound name="SfxDogDig" file="sven2/sfx/wotan_diggin.ogg"/>
+			<sound name="SfxDogFoundBone" file="sven2/sfx/Wotan_foundbone.ogg"/>
+			<sound name="SfxDogFoundSven" file="sven2/sfx/Wotan_foundSven.ogg"/>
+			<!--   Lars  -->
+			<sound name="SfxLarsDrink" file="sven2/sfx/Lars_drink.ogg"/>
+			<sound name="SfxLarsFall" file="sven2/sfx/lars_fall.ogg"/>
+			<sound name="SfxLarsGroan" file="sven2/sfx/Lars_angry.ogg"/>
+			<sound name="SfxLarsSleep" file="sven2/sfx/Lars_sleep.ogg"/>
+			<sound name="SfxGuyFoundBeer" file="sven2/sfx/Lars_FoundBeer.ogg"/>
+			<sound name="SfxGuyFoundSven" file="sven2/sfx/Lars_FoundBeer.ogg"/>
+			<sound name="SfxLarsBeamUp" file="sven2/sfx/Lars_angry.ogg"/>
+			<!--   Broemse  -->
+			<sound name="SfxBroemseFoundTeddy" file="sven2/sfx/Broemse_FoundTeddy.ogg"/>
+			<sound name="SfxBroemseFoundSven" file="sven2/sfx/Broemse_FoundSven.ogg"/>
+			<sound name="SfxBroemseBeamUp" file="sven2/sfx/Broemse_beamup.ogg"/>
+			<sound name="SfxBroemsePlaysTeddy" file="sven2/sfx/broemse_plays_teddy.ogg"/>
+			<sound name="SfxBroemsePlaysWotan" file="sven2/sfx/broemse_plays_dog.ogg"/>
+			<sound name="SfxBroemsePlaysSven" file="sven2/sfx/broemse_plays_sven.ogg"/>
+			<sound name="SfxBroemsePlayAliens" file="sven2/sfx/Broemse_in_UFO3.ogg"/>
+			<!--   Alien  -->
+			<sound name="SfxAlienFoundSven" file="sven2/sfx/alien_foundsven.ogg"/>
+			<sound name="SfxAlienProbeSven" file="sven2/sfx/alien_analprobe_mix2.ogg"/>
+			<!--   Fight  -->
+			<sound name="SfxFightDog" file="sven2/sfx/fightdog.ogg"/>
+			<sound name="SfxFightGuy" file="sven2/sfx/fightguy.ogg"/>
+			<!--   Sven  -->
+			<sound name="SfxSvenWhistle" file="sven2/sfx/sven_whistle.ogg"/>
+			<sound name="SfxWaterSplash" file="sven2/sfx/water_splash22.ogg"/>
+			<sound name="SfxSvenFall" file="sven2/sfx/sven_hits_ground.ogg"/>
+			<!--   sheep   -->
+			<sound name="SfxExplode" file="sven2/sfx/sheep_explode3.ogg"/>
+			<sound name="SfxFrigida" file="sven2/sfx/frigida_kettle.ogg"/>
+			<sound name="SfxFrigidaWhistle" file="sven2/sfx/frigida.ogg"/>
+			<!--   Devil-Sheep  -->
+			<sound name="SfxDevil" file="sven2/sfx/devil1.ogg"/>
+			<sound name="SfxDevilElectro" file="sven2/sfx/devil_voltage.ogg"/>
+			<!--   angry sheep kicks sven  -->
+			<sound name="SfxHitBalls" file="sven2/sfx/Sheep_kickSven.ogg"/>
+			<!--   sheep bleating happy -->
+			<sound name="SfxBlaat20" file="sven2/sfx/Sheep_happy1.ogg"/>
+			<sound name="SfxBlaat21" file="sven2/sfx/Sheep_happy2.ogg"/>
+			<!--   sheep bleating beamup -->
+			<sound name="SfxBlaat22" file="sven2/sfx/Sheep_beamup.ogg"/>
+			<!--   sheep bleating angry -->
+			<sound name="SfxBlaat23" file="sven2/sfx/Sheep_angry1.ogg"/>
+			<sound name="SfxBlaat24" file="sven2/sfx/Sheep_angry2.ogg"/>
+			<!--   Shag Sounds  -->
+			<sound name="SfxFuck02" file="sven2/sfx/rammel2.ogg"/>
+			<sound name="SfxFuck03" file="sven2/sfx/rammel10.ogg"/>
+			<sound name="SfxFuck04" file="sven2/sfx/rammel4.ogg"/>
+			<sound name="SfxFuck05" file="sven2/sfx/rammel5.ogg"/>
+			<sound name="SfxFuck06" file="sven2/sfx/rammel12.ogg"/>
+			<sound name="SfxFuck07" file="sven2/sfx/rammel2.ogg"/>
+			<sound name="SfxFuck08" file="sven2/sfx/rammel8.ogg"/>
+			<sound name="SfxFuck09" file="sven2/sfx/rammel9.ogg"/>
+			<sound name="SfxFuck10" file="sven2/sfx/shag_whip.ogg"/>
+			<sound name="SfxFuck11" file="sven2/sfx/rammel11.ogg"/>
+			<sound name="SfxFuck12" file="sven2/sfx/rammel12.ogg"/>
+			<sound name="SfxFuck13" file="sven2/sfx/rammel13.ogg"/>
+			<sound name="SfxFuck14" file="sven2/sfx/rammel14.ogg"/>
+			<sound name="SfxNewFuck01" file="sven2/sfx/nf01.ogg"/>
+			<sound name="SfxNewFuck02" file="sven2/sfx/nf02.ogg"/>
+			<sound name="SfxNewFuck03" file="sven2/sfx/nf03.ogg"/>
+			<sound name="SfxNewFuck04" file="sven2/sfx/nf04.ogg"/>
+			<sound name="SfxNewFuck05" file="sven2/sfx/nf05.ogg"/>
+			<sound name="SfxNewFuck06" file="sven2/sfx/nf06.ogg"/>
+			<sound name="SfxNewFuck07" file="sven2/sfx/nf07.ogg"/>
+			<sound name="SfxNewFuck08" file="sven2/sfx/nf08.ogg"/>
+			<sound name="SfxNewFuck09" file="sven2/sfx/nf09.ogg"/>
+			<sound name="SfxNewFuck10" file="sven2/sfx/nf10.ogg"/>
+			<sound name="SfxNewFuck11" file="sven2/sfx/nf11.ogg"/>
+			<sound name="SfxNewFuck12" file="sven2/sfx/nf12.ogg"/>
+			<sound name="SfxNewFuck13" file="sven2/sfx/nf13.ogg"/>
+			<sound name="SfxNewFuck14" file="sven2/sfx/nf14.ogg"/>
+			<sound name="SfxNewFuck15" file="sven2/sfx/nf15.ogg"/>
+			<sound name="SfxNewFuck16" file="sven2/sfx/nf16.ogg"/>
+			<sound name="SfxNewFuck17" file="sven2/sfx/nf17.ogg"/>
+			<sound name="SfxNewFuck18" file="sven2/sfx/nf18.ogg"/>
+			<sound name="SfxNewFuck19" file="sven2/sfx/nf19.ogg"/>
+			<sound name="SfxNewFuck20" file="sven2/sfx/nf20.ogg"/>
+			<sound name="SfxFuckChicken" file="sven2/sfx/shag_chick.ogg"/>
+			<sound name="SfxFuckGoat" file="sven2/sfx/shag_goat.ogg"/>
+			<sound name="SfxFuckPig" file="sven2/sfx/shag_pig.ogg"/>
+			<!--   Sounds and Music  -->
+			<sound name="Tune01" file="sven2/sfx/Sven2_music.ogg"		streaming="true"/>
+			<sound name="Tune02" file="sven2/sfx/Sven2Highscore.ogg"	streaming="true"/>
+		</sounds>
+
+	<parameters>
+		<!--   Character Parameters   -->
+
+		<!--   Speed                = walking speed
+			   Run Multiplier       = multiplier for running-speed
+			   HuntSvenDistance     = amount of tiles that enemies detect Sven and start hunting him
+			   HuntTileLength       = amount of tiles that Sven is hunted when detected
+			   TileLength           = amount of tiles a character walks until StandStillTime
+			   TileLengtRandom      = random multiplier for TileLength
+			   StandStillTime       = time (sec.) a character stands still between walking
+			   StandStillTimeRandom = random multiplier for StandStillTime
+			   SleepTime            = default sleeping-time for Lars and Wotan at the beginning of a level (can be adjusted per level in the editor)
+	     -->
+
+		<parameter name="GuySpeed" value="35.00"/>
+		<parameter name="GuyRunMultiplier" value="2.00"/>
+		<parameter name="GuyHuntSvenDistance" value="2.0"/>
+		<parameter name="GuyHuntTileLength" value="10"/>
+
+		<parameter name="GuyTileLength" value="5"/>
+		<parameter name="GuyTileLengthRandom" value="2"/>
+		<parameter name="GuyStandStillTime" value="4.0"/>
+		<parameter name="GuyStandStillTimeRandom" value="1.5"/>
+		<parameter name="GuySleepTime" value="15.0"/>
+
+
+		<parameter name="DogSpeed" value="55.00"/>
+		<parameter name="DogRunMultiplier" value="2.00"/>
+		<parameter name="DogHuntSvenDistance" value="3.0"/>
+		<parameter name="DogHuntTileLength" value="20"/>
+		<parameter name="DogWakeUpDistance" value="3.0"/>
+
+		<parameter name="DogTileLength" value="5"/>
+		<parameter name="DogTileLengthRandom" value="3"/>
+		<parameter name="DogStandStillTime" value="4.0"/>
+		<parameter name="DogStandStillTimeRandom" value="2.0"/>
+		<parameter name="DogSleepTime" value="15.0"/>
+		<parameter name="DogDiggingTime" value="15.0"/>
+
+		<parameter name="BroemseSpeed" value="50.00"/>
+		<parameter name="BroemseRunMultiplier" value="2.00"/>
+		<parameter name="BroemseHuntSvenDistance" value="4.0"/>
+		<parameter name="BroemseHuntTileLength" value="20"/>
+
+		<parameter name="BroemseTileLength" value="6"/>
+		<parameter name="BroemseTileLengthRandom" value="2"/>
+		<parameter name="BroemseStandStillTime" value="3.0"/>
+		<parameter name="BroemseStandStillTimeRandom" value="2"/>
+
+
+		<parameter name="AlienSpeed" value="60.00"/>
+		<parameter name="AlienRunMultiplier" value="2.00"/>
+		<parameter name="AlienHuntSvenDistance" value="4.0"/>
+		<parameter name="AlienHuntTileLength" value="20"/>
+
+		<parameter name="AlienTileLength" value="3"/>
+		<parameter name="AlienTileLengthRandom" value="3"/>
+		<parameter name="AlienStandStillTime" value="3.0"/>
+		<parameter name="AlienStandStillTimeRandom" value="1.5"/>
+
+
+		<parameter name="SheepSpeed" value="50.00"/>
+		<parameter name="SheepRunMultiplier" value="1.00"/>
+
+
+		<!--  diagonal speed adjust -->
+		<parameter name="SvenDiagonalMultiplier" value="0.75"/>
+		<parameter name="GuyAdjustXY" value="0.75"/>
+		<parameter name="DogAdjustXY" value="0.75"/>
+		<parameter name="BroemseAdjustXY" value="0.75"/>
+		<parameter name="AlienAdjustXY" value="0.75"/>
+
+		<!--  animation framerate of walk-cycles   -->
+		<parameter name="GuyRunFrameRate" value="30.0"/>
+		<parameter name="GuyWalkFrameRate" value="15.0"/>
+
+		<parameter name="DogRunFrameRate" value="30.0"/>
+		<parameter name="DogWalkFrameRate" value="15.0"/>
+
+		<parameter name="BroemseRunFrameRate" value="50.0"/>
+		<parameter name="BroemseWalkFrameRate" value="25.0"/>
+
+		<parameter name="ALienRunFrameRate" value="30.0"/>
+		<parameter name="AlienWalkFrameRate" value="15.0"/>
+
+		<parameter name="SvenDefaultFrameRate" value="15"/>
+
+		<parameter name="SvenWalkDefaultFrameRate" value="24"/>
+		<parameter name="SvenWalkFireworkFrameRate" value="36"/>
+		<parameter name="SvenWalkAlienFrameRate" value="36"/>
+		<parameter name="SvenWalkImpotentFrameRate" value="16"/>
+
+		<parameter name="SvenShagDefaultFrameRate" value="20"/>
+		<parameter name="SvenShagFireworkFrameRate" value="30"/>
+		<parameter name="SvenShagAlienFrameRate" value="40"/>
+		<parameter name="SvenShagImpotentFrameRate" value="12"/>
+
+		<parameter name="SvenShagFrigidaFrameRate" value="16"/>
+
+		<!--   inactive time for characters in fight !?? (seconds)  -->
+		<parameter name="DogFightTime" value="1.5"/>
+		<parameter name="GuyFightTime" value="1.5"/>
+
+		<!--   Sven Speed: normal/firework/impotent  -->
+		<parameter name="SvenSpeed" value="145.00"/>
+		<parameter name="SvenRunSpeed" value="220.00"/>
+		<parameter name="SvenSlowSpeed" value="95.00"/>
+
+		<!--   time Extra has an effect on Sven (seconds)  -->
+		<parameter name="FireworkDuration" value="10.00"/>
+		<parameter name="ImpotentDuration" value="10.00"/>
+		<parameter name="SmellDuration" value="15.00"/>
+		<parameter name="FlowerDuration" value="10.00"/>
+		<parameter name="AlienDuration" value="15.00"/>
+
+		<!--   time Extra stays in Level when appeared (seconds)  -->
+		<parameter name="ImpotentTime" value="16.00"/>
+		<parameter name="SmellTime" value="16.00"/>
+		<parameter name="FlowerTime" value="12.00"/>
+		<parameter name="FireworkTime" value="10.00"/>
+		<parameter name="GiftTime" value="8.00"/>
+
+		<parameter name="BeerTime" value="16.00"/>
+		<parameter name="TeddyTime" value="14.00"/>
+		<parameter name="BoneTime" value="12.00"/>
+		<parameter name="ArtifactTime" value="8.00"/>
+
+		<!--   time waited before new extra is placed in level (seconds)  -->
+		<parameter name="WaitTime" value="10.00"/>
+
+	<!--   amount of shag-anims used (max.33)  -->
+		<parameter name="ShagAnims" value="33"/>
+
+		<!--  default highscore names (!!! @least and no more than 10 !!!) -->
+		<parameter name="DefaultHighscoreNames" value="Jendrik/Wytze/Ralf/Alex/Nazan/Cüneyt/Nils/Stefan/Micha/Thomas"/>
+	</parameters>
+</sven2>

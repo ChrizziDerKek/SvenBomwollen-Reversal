@@ -1,0 +1,29 @@
+{
+  "jsonrpc": "2.0",
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"n\":2,\"matches\":[{\"addr\":\"0x4507a8\",\"string\":\"SvenXXX\\\\gfx\\\\rain.bmp\"},{\"addr\":\"0x4507c0\",\"string\":\"SvenXXX\\\\gfx\\\\snowflakes.bmp\"}],\"cursor\":{\"done\":true}}"
+      }
+    ],
+    "structuredContent": {
+      "n": 2,
+      "matches": [
+        {
+          "addr": "0x4507a8",
+          "string": "SvenXXX\\gfx\\rain.bmp"
+        },
+        {
+          "addr": "0x4507c0",
+          "string": "SvenXXX\\gfx\\snowflakes.bmp"
+        }
+      ],
+      "cursor": {
+        "done": true
+      }
+    },
+    "isError": false
+  },
+  "id": 1
+}

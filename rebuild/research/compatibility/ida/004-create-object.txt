@@ -1,0 +1,230 @@
+int __thiscall sub_414EC0(int this, int a2, int a3, int a4, int a5, int a6, int a7)
+{
+  int v8; // ebp
+  int v9; // ecx
+  _DWORD *v10; // edx
+  int result; // eax
+  int v12; // esi
+  int v13; // edx
+  int v14; // edx
+  int v15; // eax
+  double v16; // st7
+  int v17; // edx
+  int v18; // edx
+  double v19; // st7
+  unsigned __int16 v20; // dx
+  int v21; // eax
+  int v22; // edx
+  double v23; // st7
+  unsigned __int16 v24; // ax
+  int v25; // edx
+  unsigned __int16 v26; // cx
+  int v27; // eax
+  __int16 v28; // ax
+  __int16 v29; // ax
+  int v30; // eax
+  __int16 v31; // ax
+  double v32; // st7
+  __int16 v33; // ax
+  double v34; // st7
+  __int16 v35; // dx
+  __int16 v36; // dx
+  __int16 v37; // dx
+  int v38; // eax
+  int v39; // eax
+  int v40; // eax
+  int v41; // eax
+  int v42; // eax
+  int v43; // eax
+  int v44; // eax
+  int v45; // eax
+  int v46; // eax
+  int v47; // eax
+  __int16 v48; // ax
+  __int16 v49; // ax
+  __int16 v50; // cx
+  __int16 v51; // ax
+  __int16 v52; // ax
+  __int16 v53; // ax
+  int v54; // eax
+  __int16 v55; // dx
+  __int16 v56; // ax
+  int v57; // edx
+  int v58; // eax
+  int v59; // edx
+  int v60; // eax
+  __int16 v61; // dx
+  __int16 v62; // dx
+  __int16 v63; // dx
+  __int16 v64; // cx
+  int v65; // ecx
+  __int16 v66; // dx
+  int v67; // edx
+  __int16 v68; // ax
+  __int16 v69; // cx
+  __int16 v70; // cx
+  __int16 v71; // dx
+  __int16 v72; // ax
+  __int16 v73; // cx
+  _DWORD *v74; // eax
+  __int16 v75; // cx
+  int v76; // eax
+  int v77; // eax
+  int v78; // eax
+  int v79; // eax
+  int v80; // edx
+  int v81; // eax
+  __int16 v82; // dx
+  int v83; // eax
+  int v84; // eax
+  int v85; // eax
+  __int16 v86; // cx
+  int v87; // eax
+  int v88; // eax
+  __int16 v89; // cx
+  __int16 v90; // dx
+
+  v8 = 0; /*0x414ec8*/
+  v9 = *(_DWORD *)(this + 317508); /*0x414eca*/
+  if ( v9 <= 0 ) /*0x414ed2*/
+  {
+    result = -1; /*0x414eed*/
+  }
+  else
+  {
+    v10 = (_DWORD *)(this + 38484); /*0x414ed4*/
+    do /*0x414ee9*/
+    {
+      result = -1; /*0x414edc*/
+      if ( *v10 == -1 ) /*0x414ee1*/
+        break; /*0x414ee1*/
+      ++v8; /*0x414ee3*/
+      v10 += 28; /*0x414ee4*/
+    }
+    while ( v8 < v9 ); /*0x414ee9*/
+  }
+  if ( v8 != v9 )
+  {
+    if ( v8 > *(_DWORD *)(this + 316976) ) /*0x414efe*/
+      *(_DWORD *)(this + 316976) = v8; /*0x414f00*/
+    v12 = 112 * v8 + this; /*0x414f1a*/
+    if ( a2 == -1 ) /*0x414f0c*/
+      *(_DWORD *)(v12 + 38484) = -1; /*0x414f1d*/
+    else
+      *(_DWORD *)(v12 + 38484) = a2; /*0x414f34*/
+    *(_DWORD *)(v12 + 38440) = -998244352; /*0x414f3f*/
+    *(_DWORD *)(v12 + 38444) = -998244352; /*0x414f45*/
+    switch ( *(_DWORD *)(v12 + 38484) )
+    {
+      case 0:
+        *(_DWORD *)(v12 + 38484) = 0; /*0x414f65*/
+        *(_BYTE *)(v12 + 38456) = 0; /*0x414f6b*/
+        *(_DWORD *)(v12 + 38532) = 30; /*0x414f71*/
+        *(_DWORD *)(v12 + 38508) = 8; /*0x414f7b*/
+        *(float *)(v12 + 38448) = (float)a3; /*0x414f85*/
+        *(_DWORD *)(v12 + 38512) = 0; /*0x414f8f*/
+        *(_DWORD *)(v12 + 38480) = 0; /*0x414f95*/
+        *(_DWORD *)(v12 + 38476) = 0; /*0x414f9b*/
+        *(float *)(v12 + 38452) = (float)a4; /*0x414fa1*/
+        *(_DWORD *)(v12 + 38468) = *(_DWORD *)(this + 38060); /*0x414fad*/
+        v13 = *(_DWORD *)(this + 38060); /*0x414fb7*/
+        *(_DWORD *)(v12 + 38520) = a7; /*0x414fbd*/
+        *(_DWORD *)(v12 + 38472) = v13; /*0x414fc8*/
+        *(_DWORD *)(v12 + 38524) = -1; /*0x414fce*/
+        *(_BYTE *)(v12 + 38502) = 0; /*0x414fd4*/
+        *(_DWORD *)(v12 + 38544) = 0; /*0x414fda*/
+        *(_BYTE *)(v12 + 38536) = 1; /*0x414fe0*/
+        *(_DWORD *)(v12 + 38488) = 6; /*0x414fe7*/
+        *(_DWORD *)(v12 + 38516) = 6; /*0x414fed*/
+        v14 = *(_DWORD *)(this + 38076); /*0x414ff3*/
+        *(_DWORD *)(v12 + 38492) = 0; /*0x414ff9*/
+        *(_DWORD *)(v12 + 38496) = v14; /*0x414fff*/
+        *(_WORD *)(v12 + 38500) = 14; /*0x415005*/
+        *(_WORD *)(v12 + 38462) = *(_WORD *)(**(_DWORD **)(this + 414052) + 16); /*0x41501a*/
+        result = v8; /*0x41502a*/
+        *(_WORD *)(v12 + 38464) = *(_WORD *)(**(_DWORD **)(this + 414052) + 20); /*0x415030*/
+        return result; /*0x41503a*/
+      case 1:
+        *(_DWORD *)(v12 + 38484) = 1; /*0x415045*/
+        *(_BYTE *)(v12 + 38456) = 0; /*0x41504f*/
+        *(_DWORD *)(v12 + 38532) = 0; /*0x415055*/
+        *(float *)(v12 + 38448) = (float)a3; /*0x41505b*/
+        *(_DWORD *)(v12 + 38508) = a5; /*0x415065*/
+        *(_DWORD *)(v12 + 38488) = 0; /*0x41506b*/
+        *(_DWORD *)(v12 + 38512) = 0; /*0x415071*/
+        *(float *)(v12 + 38452) = (float)a4; /*0x415077*/
+        *(_WORD *)(v12 + 38462) = *(_WORD *)(*(_DWORD *)(*(_DWORD *)(this + 414016) + 4 * a5) + 16); /*0x41508a*/
+        result = v8; /*0x41509f*/
+        *(_WORD *)(v12 + 38464) = *(_WORD *)(*(_DWORD *)(*(_DWORD *)(this + 414016) + 4 * a5) + 20); /*0x4150a1*/
+        return result; /*0x4150ab*/
+      case 2:
+        *(_DWORD *)(v12 + 38484) = 2; /*0x4150b2*/
+        *(_BYTE *)(v12 + 38456) = 0; /*0x4150bc*/
+        *(_DWORD *)(v12 + 38532) = 30; /*0x4150c2*/
+        *(_DWORD *)(v12 + 38488) = 0; /*0x4150cc*/
+        *(float *)(v12 + 38448) = (float)a3; /*0x4150d2*/
+        *(float *)(v12 + 38452) = (float)a4; /*0x4150dc*/
+        v15 = rand(); /*0x4150e2*/
+        *(_DWORD *)(v12 + 38496) = 1101004800; /*0x4150ee*/
+        *(_BYTE *)(v12 + 38536) = 0; /*0x415100*/
+        *(_DWORD *)(v12 + 38508) = -1; /*0x415106*/
+        *(_DWORD *)(v12 + 38516) = 0; /*0x415110*/
+        *(_DWORD *)(v12 + 38512) = 0; /*0x41511d*/
+        *(_DWORD *)(v12 + 38476) = 0; /*0x415125*/
+        *(_DWORD *)(v12 + 38480) = 0; /*0x41512b*/
+        *(_DWORD *)(v12 + 38524) = 6; /*0x415131*/
+        *(_BYTE *)(v12 + 38502) = 0; /*0x41513b*/
+        *(_BYTE *)(v12 + 38505) = 0; /*0x415141*/
+        *(_BYTE *)(v12 + 38503) = 0; /*0x415147*/
+        *(_BYTE *)(v12 + 38504) = 0; /*0x41514d*/
+        *(_WORD *)(v12 + 38540) = 0; /*0x415153*/
+        *(_WORD *)(v12 + 38538) = 2; /*0x41515a*/
+        *(_DWORD *)(v12 + 38544) = 0; /*0x415163*/
+        *(_DWORD *)(v12 + 38520) = a7; /*0x41517e*/
+        *(float *)(v12 + 38492) = (float)(v15 % 1000 + 450); /*0x415184*/
+        *(_DWORD *)(112 * (v8 + 344) + this) = 1103626240; /*0x41518a*/
+        *(_WORD *)(v12 + 38462) = *(_WORD *)(**(_DWORD **)(this + 414088) + 16); /*0x41519d*/
+        result = v8; /*0x4151b1*/
+        *(_WORD *)(v12 + 38464) = *(_WORD *)(**(_DWORD **)(this + 414088) + 20); /*0x4151b3*/
+        return result; /*0x4151bd*/
+      case 3:
+        *(_DWORD *)(v12 + 38508) = -1; /*0x4167d0*/
+        *(_DWORD *)(v12 + 38484) = 3; /*0x4167dc*/
+        *(_BYTE *)(v12 + 38456) = 0; /*0x4167e6*/
+        *(float *)(v12 + 38448) = (float)a3; /*0x4167ec*/
+        *(_DWORD *)(v12 + 38532) = 40; /*0x4167fd*/
+        *(_DWORD *)(v12 + 38524) = 0; /*0x416809*/
+        *(float *)(v12 + 38452) = (float)a4; /*0x41680f*/
+        *(_BYTE *)(v12 + 38457) = 5; /*0x416818*/
+        *(_DWORD *)(v12 + 38516) = 0; /*0x41681f*/
+        *(_DWORD *)(112 * (v8 + 344) + this) = 1132068864; /*0x416825*/
+        *(_DWORD *)(v12 + 38512) = 0; /*0x416830*/
+        *(_DWORD *)(v12 + 38488) = 0; /*0x416836*/
+        v48 = *(_WORD *)(*(_DWORD *)(this + 415636) + 1084); /*0x416842*/
+        *(_DWORD *)(v12 + 38492) = 0; /*0x416849*/
+        *(_WORD *)(v12 + 38500) = v48; /*0x41684f*/
+        *(_DWORD *)(v12 + 38496) = 1084227584; /*0x416856*/
+        *(_BYTE *)(v12 + 38536) = 0; /*0x416860*/
+        *(_DWORD *)(v12 + 38520) = a7; /*0x416866*/
+        *(_WORD *)(v12 + 38462) = *(_WORD *)(*(_DWORD *)(this + 415636) + 16); /*0x416876*/
+        result = v8; /*0x416884*/
+        *(_WORD *)(v12 + 38464) = *(_WORD *)(*(_DWORD *)(this + 415636) + 20); /*0x41688a*/
+        return result; /*0x416894*/
+      case 4:
+        *(_DWORD *)(v12 + 38508) = -1; /*0x415e6a*/
+        *(_DWORD *)(v12 + 38484) = 4; /*0x415e76*/
+        *(_BYTE *)(v12 + 38456) = 0; /*0x415e80*/
+        *(float *)(v12 + 38448) = (float)a3; /*0x415e86*/
+        *(_DWORD *)(v12 + 38532) = 40; /*0x415e97*/
+        *(_DWORD *)(v12 + 38524) = 6; /*0x415ea3*/
+        *(float *)(v12 + 38452) = (float)a4; /*0x415ead*/
+        *(_BYTE *)(v12 + 38457) = 0; /*0x415eb6*/
+        *(_DWORD *)(v12 + 38516) = 0; /*0x415ebc*/
+        *(_DWORD *)(112 * (v8 + 344) + this) = 1103626240; /*0x415ec2*/
+        *(_DWORD *)(v12 + 38544) = 0; /*0x415ec9*/
+        *(_DWORD *)(v12 + 38512) = 0; /*0x415ecf*/
+        *(_DWORD *)(v12 + 38488) = 0; /*0x415ed5*/
+        *(_WORD *)(v12 + 38500) = *(_WORD *)(*(_DWORD *)(this + 416440) + 1084); /*0x415ee8*/
+        v38 = rand(); /*0x415eef*/
+        *(_DWORD *)(v12 + 38496) = 1097859072; /*0x415efb*/
+        *(_BYTE *)(v12 + 38536) = 0; /*0x415f07*/
