@@ -12,7 +12,7 @@ namespace sven2 {
 void runGame(Engine& engine,const std::filesystem::path& saves,bool audio,unsigned seconds,bool directTutorial) {
     using Page=GameUi::Page;
     GameUi ui(engine,saves);
-    WindowInput controls(engine.windowHandle());
+    WindowInput controls(engine.windowHandle(),engine.scaledVideo());
     std::unique_ptr<GameSession> session;
     bool playing=false;
     auto play=[&](const std::string& path) {

@@ -476,7 +476,8 @@ const std::vector<SpriteDraw>& GameUi::draws(float elapsed,const std::vector<Spr
         break;
     }
     if(!notice_.empty()) small_.appendWrapped(draws_,notice_,120,460,560,20);
-    draws_.push_back({cursor_,mouse_.x-9,mouse_.y-9,buttonAt(mouse_)>=0?1:0});
+    if(mouse_.x>=0 && mouse_.y>=0)
+        draws_.push_back({cursor_,mouse_.x-9,mouse_.y-9,buttonAt(mouse_)>=0?1:0});
     return draws_;
 }
 }

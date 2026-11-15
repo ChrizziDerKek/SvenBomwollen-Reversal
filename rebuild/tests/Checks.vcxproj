@@ -46,6 +46,7 @@
     <ClInclude Include="../Sven2Bootstrap/level/LevelEffects.h"/>
     <ClInclude Include="../Sven2Bootstrap/scene/SceneRenderer.h"/>
   </ItemGroup>
+  <Import Project="../FsrShaders.targets"/>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/>
 </Project>
 

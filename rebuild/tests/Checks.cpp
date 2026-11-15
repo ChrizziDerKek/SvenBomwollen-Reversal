@@ -2,6 +2,7 @@
 #include "../Sven2Bootstrap/LevelScene.h"
 #include "../Sven2Bootstrap/GameUi.h"
 #include "../Sven2Bootstrap/GameSession.h"
+#include "graphics/FsrPresenter.h"
 #include <algorithm>
 #include <cmath>
 #include <fstream>
@@ -17,6 +18,70 @@ namespace sven2 { void log(const std::string& text) { std::cout<<text<<std::endl
 namespace {
 void require(bool value,const char* message) {
     if(!value) throw std::runtime_error(message);
+}
+void checkScalingCoordinates() {
+    using sven2::FsrPresenter;
+    auto r=FsrPresenter::viewport(1920,1080);
+    require(r.left==240 && r.right==1680 && r.top==0 && r.bottom==1080,"Widescreen scaling must pillarbox to 4:3.");
+    auto p=FsrPresenter::logicalMouse({960,540},1920,1080);
+    require(p.x==400 && p.y==300,"Scaled mouse center must map to the logical game center.");
+    p=FsrPresenter::logicalMouse({239,100},1920,1080);
+    require(p.x<0 && p.y<0,"Black bars must not activate game UI.");
+    p=FsrPresenter::logicalMouse({1679,1079},1920,1080);
+    require(p.x==799 && p.y==599,"Bottom-right scaled pixel must stay inside logical bounds.");
+    r=FsrPresenter::viewport(800,1000);
+    require(r.top==200 && r.bottom==800,"Tall windows must letterbox without distorting the game.");
+    p=FsrPresenter::logicalMouse({0,0},0,0);
+    require(p.x<0 && p.y<0,"Minimized windows must not divide mouse coordinates by zero.");
+}
+std::vector<std::uint32_t> readScaledCapture(const char* path,int width,int height) {
+    std::ifstream file(path,std::ios::binary);
+    BITMAPFILEHEADER header{};BITMAPINFOHEADER info{};
+    file.read(reinterpret_cast<char*>(&header),sizeof(header));file.read(reinterpret_cast<char*>(&info),sizeof(info));
+    require(file && info.biWidth==width && info.biHeight==-height && info.biBitCount==32,"Scaled capture dimensions/format are incorrect.");
+    file.seekg(header.bfOffBits);
+    std::vector<std::uint32_t> pixels(width*height);
+    file.read(reinterpret_cast<char*>(pixels.data()),pixels.size()*4);
+    require(static_cast<bool>(file),"Truncated GPU capture.");
+    for(auto& pixel:pixels) pixel&=0xffffff;
+    return pixels;
+}
+void checkUpscalerGpu() {
+    using sven2::ScalingFilter;
+    SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+    sven2::FsrPresenter presenter(1280,720,ScalingFilter::fsr1,0.5f);
+    std::vector<std::uint32_t> source(800*600,0x336699);
+    presenter.present(source.data(),"fsr-flat.bmp");
+    auto flat=readScaledCapture("fsr-flat.bmp",1280,720);
+    require(flat[360*1280]==0 && flat[360*1280+1279]==0,"FSR black bars must be black.");
+    for(int x:{160,640,1119}) {
+        const auto c=flat[360*1280+x];
+        for(int shift:{0,8,16}) require(std::abs(static_cast<int>((c>>shift)&255)-static_cast<int>((0x336699>>shift)&255))<=1,
+            "FSR must preserve constant colors, channels and edge clamping.");
+    }
+    for(int y=0;y<600;++y) for(int x=0;x<800;++x)
+        source[y*800+x]=x<400?0x202020:(y>x-400?0xf0c080:0x4070c0);
+    presenter.setFilter(ScalingFilter::nearest);presenter.present(source.data(),"nearest.bmp");
+    auto nearest=readScaledCapture("nearest.bmp",1280,720);
+    presenter.setFilter(ScalingFilter::bilinear);presenter.present(source.data(),"bilinear.bmp");
+    auto bilinear=readScaledCapture("bilinear.bmp",1280,720);
+    presenter.setFilter(ScalingFilter::fsr1);presenter.present(source.data(),"fsr-edges.bmp");
+    auto fsr=readScaledCapture("fsr-edges.bmp",1280,720);
+    require(nearest!=bilinear && fsr!=bilinear && fsr!=nearest,"FSR, bilinear and nearest must execute distinct filters.");
+    presenter.setSharpness(2.0f);presenter.present(source.data(),"fsr-soft.bmp");
+    require(fsr!=readScaledCapture("fsr-soft.bmp",1280,720),"RCAS sharpening adjustment has no effect.");
+    RECT rect{0,0,800,600};AdjustWindowRect(&rect,WS_OVERLAPPEDWINDOW,FALSE);
+    SetWindowPos(presenter.window(),nullptr,0,0,rect.right-rect.left,rect.bottom-rect.top,SWP_NOMOVE|SWP_NOZORDER);
+    presenter.present(source.data(),"native-sized.bmp");
+    require(readScaledCapture("native-sized.bmp",800,600)==source,"Native-size fallback must not sharpen or resample the source.");
+    SendMessageW(presenter.window(),WM_KEYDOWN,VK_F11,0);
+    presenter.present(source.data());
+    SendMessageW(presenter.window(),WM_KEYDOWN,VK_F11,0);
+    presenter.present(source.data(),"restored.bmp");
+    require(readScaledCapture("restored.bmp",800,600)==source,"Fullscreen restoration must recreate the original-sized targets.");
+    SendMessageW(presenter.window(),WM_CLOSE,0,0);
+    require(presenter.closed(),"Closing the scaled window must request game exit.");
+    sven2::log("PASS: native FSR1 shaders, RCAS, comparison filters, color/edge preservation, letterboxing, resize/fullscreen and close.");
 }
 void checkCapturePixel(const char* path,int x,int y,std::uint32_t expected) {
     std::ifstream file(path,std::ios::binary);
@@ -1453,6 +1518,12 @@ int main(int argc,char** argv) {
             (std::to_wstring(GetCurrentProcessId())+L"-"+std::to_wstring(GetTickCount64()));
         std::filesystem::create_directories(saves);
         std::filesystem::current_path(saves);
+        checkScalingCoordinates();
+        if(argc==2 && std::string(argv[1])=="--upscaler") {
+            checkUpscalerGpu();
+            sven2::log("GPU captures: "+saves.string());
+            return 0;
+        }
         if(FAILED(CoInitializeEx(nullptr,COINIT_APARTMENTTHREADED))) throw std::runtime_error("Cannot initialize COM.");
         struct ComLifetime { ~ComLifetime() { CoUninitialize(); } } apartment;
         const auto fixtureData=saves/L"data";

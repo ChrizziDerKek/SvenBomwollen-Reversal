@@ -1,5 +1,6 @@
 #include "EngineAbi.h"
 #include "GameApp.h"
+#include "graphics/FsrPresenter.h"
 #include <algorithm>
 #include <cstdio>
 #include <chrono>
@@ -46,9 +47,25 @@ static int bootstrap(int argc,char** argv) {
     auto dataDirectory=root/L"assets";
     bool probe=false,audio=true,nativeInput=false,directTutorial=false;
     unsigned seconds=0;
+    bool scaled=true;
+    int outputWidth=1280,outputHeight=960;
+    float sharpness=0.5f;
+    auto filter=sven2::ScalingFilter::fsr1;
+    std::filesystem::path capture;
     for(int i=1;i<argc;++i) {
         const std::string option=argv[i];
         if(option=="--probe") probe=true;
+        else if(option=="--upscaler" && i+1<argc) {
+            const std::string mode=argv[++i];scaled=mode!="native";
+            if(mode=="fsr1") filter=sven2::ScalingFilter::fsr1;
+            else if(mode=="nearest") filter=sven2::ScalingFilter::nearest;
+            else if(mode=="bilinear") filter=sven2::ScalingFilter::bilinear;
+            else if(mode!="native") throw std::runtime_error("Upscaler must be native, nearest, bilinear or fsr1.");
+        }
+        else if(option=="--output-width" && i+1<argc) outputWidth=std::stoi(argv[++i]);
+        else if(option=="--output-height" && i+1<argc) outputHeight=std::stoi(argv[++i]);
+        else if(option=="--sharpness" && i+1<argc) sharpness=std::stof(argv[++i]);
+        else if(option=="--capture" && i+1<argc) capture=std::filesystem::absolute(argv[++i]);
         else if(option=="--tutorial") directTutorial=true;
         else if(option=="--no-audio") audio=false;
         else if(option=="--no-input") nativeInput=false;
@@ -58,6 +75,8 @@ static int bootstrap(int argc,char** argv) {
         else if(option=="--game-dir" && i+1<argc) game=std::filesystem::absolute(argv[++i]);
         else if(option=="--help") {
             std::cout<<"Sven2Bootstrap [--tutorial] [--data-dir PATH] [--game-dir PATH] [--no-audio]\n"
+                     <<"Graphics: --upscaler native|fsr1|nearest|bilinear (default: fsr1) --output-width N --output-height N --sharpness 0..2\n"
+                     <<"Scaled mode: F6 filter; F7 softer; F8 sharper; F11 borderless fullscreen. --capture FILE writes the first scaled frame.\n"
                      <<"Diagnostics: --probe, --seconds N, --native-input\n";
             return 0;
         } else {
@@ -78,7 +97,13 @@ static int bootstrap(int argc,char** argv) {
     engine.initializePlugins();
     engine.verifyData();
     if(!probe) {
+        if(scaled) SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
         engine.startVideo(nativeInput);
+        if(scaled) engine.startScaledVideo(outputWidth,outputHeight,filter,sharpness);
+        if(!capture.empty()) {
+            if(!scaled) throw std::runtime_error("--capture requires a scaled presentation mode.");
+            engine.captureNextFrame(capture);
+        }
         const bool audioReady=audio && engine.startAudio();
         if(audio && !audioReady) sven2::log("Audio device unavailable.");
         sven2::runGame(engine,runtime/L"saves",audioReady,seconds,directTutorial);

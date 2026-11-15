@@ -1,5 +1,6 @@
 #include "EngineAbi.h"
 #include "SupportedBuild.h"
+#include "graphics/FsrPresenter.h"
 #include <algorithm>
 #include <cstring>
 #include <stdexcept>
@@ -233,24 +234,34 @@ void Engine::stopMusic() {
 }
 void Engine::tick() { symbol<void(__thiscall*)(void*)>(core_,"?Tick@cApplication@@UAEXXZ")(application_); }
 HWND Engine::windowHandle() const {
+    if(presenter_) return presenter_->window();
     void* device=video();
     void* window=method<void*(__thiscall*)(void*)>(device,0x18)(device);
     return symbol<HWND(__thiscall*)(const void*)>(core_,"?GetHandle@cWindow@@QBEPAUHWND__@@XZ")(window);
 }
-bool Engine::exitRequested() {return symbol<bool(__thiscall*)(void*)>(core_,"?GetExitRequest@cApplication@@QAE_NXZ")(application_);}
+void Engine::startScaledVideo(int width,int height,ScalingFilter filter,float sharpness) {
+    if(!videoStarted_ || presenter_) throw std::runtime_error("Start native video once before enabling scaled presentation.");
+    auto original=windowHandle();
+    presenter_=std::make_unique<FsrPresenter>(width,height,filter,sharpness);
+    scaledFrame_.resize(800*600);
+    ShowWindow(original,SW_HIDE);
+    log("Scaled presentation: D3D11, AMD FSR1 EASU + RCAS available; logical frame stays 800x600.");
+}
+bool Engine::exitRequested() {return (presenter_ && presenter_->closed()) || symbol<bool(__thiscall*)(void*)>(core_,"?GetExitRequest@cApplication@@QAE_NXZ")(application_);}
 void Engine::drawFrame(const std::vector<SpriteDraw>& scene,const char* captureOverride) {
     void* device=video();
     // Original game at 0x410DD0 asks video slot +0x1C for surface 2.
     // Slot +0x50 is pixel-format metadata, not a drawing surface.
-    void* surface=method<void*(__thiscall*)(void*,int)>(device,0x1c)(device,2);
+    void* surface=presenter_?nullptr:method<void*(__thiscall*)(void*,int)>(device,0x1c)(device,2);
     auto get=[&](const char* name){return symbol<int(__thiscall*)(void*)>(engine_,name)(surface);};
-    int width=get("?GetWidth@cBitmap@@QBEHXZ"),height=get("?GetHeight@cBitmap@@QBEHXZ");
-    int bpp=get("?GetBPP@cBitmap@@QBEHXZ");
-    auto* pixels=static_cast<unsigned char*>(symbol<void*(__thiscall*)(void*)>(engine_,"?Lock@cSurface@@QAEPAXXZ")(surface));
-    int pitch=get("?GetPitch@cBitmap@@QBEHXZ");
+    int width=presenter_?800:get("?GetWidth@cBitmap@@QBEHXZ"),height=presenter_?600:get("?GetHeight@cBitmap@@QBEHXZ");
+    int bpp=presenter_?32:get("?GetBPP@cBitmap@@QBEHXZ");
+    if(presenter_) std::fill(scaledFrame_.begin(),scaledFrame_.end(),0);
+    auto* pixels=presenter_?reinterpret_cast<unsigned char*>(scaledFrame_.data()):static_cast<unsigned char*>(symbol<void*(__thiscall*)(void*)>(engine_,"?Lock@cSurface@@QAEPAXXZ")(surface));
+    int pitch=presenter_?800*4:get("?GetPitch@cBitmap@@QBEHXZ");
     if (!pixels || width<1 || width>8192 || height<1 || height>8192 || (bpp!=16 && bpp!=32) || pitch<width*(bpp/8))
         throw std::runtime_error("Unexpected native drawing surface layout.");
-    if (frames==0) log("Native surface: "+std::to_string(width)+"x"+std::to_string(height)+", bpp="+std::to_string(bpp)+", pitch="+std::to_string(pitch));
+    if (frames==0) log(std::string(presenter_?"Composition surface: ":"Native surface: ")+std::to_string(width)+"x"+std::to_string(height)+", bpp="+std::to_string(bpp)+", pitch="+std::to_string(pitch));
 
     for(const auto& draw:scene) {
         const auto& sprite=*draw.sprite;
@@ -293,12 +304,18 @@ void Engine::drawFrame(const std::vector<SpriteDraw>& scene,const char* captureO
         if(!capture) throw std::runtime_error("Cannot write native-surface capture.");
         log(std::string("Captured first native drawing surface to ")+capturePath+".");
     }
-    symbol<void(__thiscall*)(void*)>(engine_,"?Unlock@cSurface@@QAEXXZ")(surface);
-    method<void(__thiscall*)(void*)>(device,0x34)(device);
-    method<void(__thiscall*)(void*,int)>(device,0x38)(device,1);
+    if(presenter_) {
+        presenter_->present(scaledFrame_.data(),captureNext_);
+        captureNext_.clear();
+    } else {
+        symbol<void(__thiscall*)(void*)>(engine_,"?Unlock@cSurface@@QAEXXZ")(surface);
+        method<void(__thiscall*)(void*)>(device,0x34)(device);
+        method<void(__thiscall*)(void*,int)>(device,0x38)(device,1);
+    }
     ++frames;
 }
 void Engine::shutdown() {
+    presenter_.reset();
     stopUfoSound();
     stopMusic();
     if (videoStarted_) symbol<void(__thiscall*)(void*)>(engine_,"?Exit@cApplicationEx@@UAEXXZ")(application_);

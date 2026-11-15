@@ -13,6 +13,57 @@ The remake starts at the original title menu. Start opens a single episode list,
 
 Hilfe contains the four original text tabs. On its character tab, Up/Down or the arrow buttons selects the character. Highscore shows the selected episode's local table. Click its arrows or use Left/Right or Up/Down to traverse episodes across packages. A qualifying episode score opens name entry and saves after Enter.
 
+## FSR1 graphics experiment
+
+```powershell
+powershell -File rebuild/Run-Sven2.ps1 -Upscaler fsr1
+powershell -File rebuild/Run-Sven2.ps1 -Upscaler fsr1 -Width 1920 -Height 1080 -Sharpness 0.5
+```
+
+The default D3D11 presenter scales the original **800×600** composition using
+AMD's unmodified FSR1 EASU and RCAS shaders. The default experiment window is
+1280×960. Resize it freely; 4:3 is preserved with black bars, and mouse input
+maps back to the logical frame. Simulation, collisions and source textures
+stay unchanged. The original video window is hidden while this presenter is
+active; the original runtime and audio plugins are still used.
+
+* **F6:** cycle nearest-neighbor → bilinear → FSR1.
+* **F7:** soften RCAS by 0.25 stops; **F8:** sharpen by 0.25 stops.
+* **F11:** toggle borderless fullscreen on the current monitor.
+
+`-Sharpness` accepts 0…2 stops: **0 is strongest**, 2 is weakest. The title bar
+shows the active filter and value. `-Upscaler nearest` and `-Upscaler bilinear`
+start directly in comparison modes. At native size or smaller, FSR1 mode uses
+ordinary sampling instead of applying an upscaler. `-Upscaler native` explicitly
+selects the existing original video presentation. Launching the executable
+directly also defaults to FSR1.
+
+This first experiment scales the **whole composed frame**, including bitmap
+text, UI and the game cursor. It sharpens/reconstructs edges; it does not create
+new high-resolution texture artwork. Separating UI composition is a possible
+later refinement after comparing the appearance. D3D11 feature level 11_0 is
+required; software WARP is attempted if hardware initialization fails. The
+experiment reports an error if its initialization fails rather than silently
+selecting another filter.
+
+`-Capture E:/path/frame.bmp` captures the first scaled output frame. The output
+folder must exist. Keep the executable's adjacent `shaders` folder when moving
+a build; no shader download is needed at runtime.
+
+```powershell
+powershell -File rebuild/Build.ps1 -Checks
+rebuild/bin/Win32/Debug/Sven2Checks.exe --upscaler
+```
+
+The optional GPU checks exercise real shaders, color preservation, edge
+clamping, the comparison filters, sharpening, letterboxing, resize/fullscreen
+and closing. Captures go under a new `runtime/checks` directory. Ordinary
+regressions also check aspect-ratio and mouse-coordinate calculations without
+requiring a graphics device. See [third-party provenance](third_party/fsr1/README.md).
+
+The agreed next steps are recorded in [ROADMAP.md](ROADMAP.md): FSR1 experiment,
+full XXX port, editor integration, then full 004 support and old-format conversion.
+
 ## Folder game data
 
 The default data root is the existing repository `assets` directory. The remake reads the extracted XML, levels, images, and sounds directly. Its native sound plugin receives absolute paths to those loose files.

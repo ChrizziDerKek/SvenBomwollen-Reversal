@@ -5,11 +5,14 @@
 #include <deque>
 #include <filesystem>
 #include <map>
+#include <memory>
 #include <string>
 #include <tuple>
 #include <vector>
 
 namespace sven2 {
+class FsrPresenter;
+enum class ScalingFilter;
 // Only trivial ABI containers cross the VC6/modern-MSVC boundary.
 // Engine constructors allocate strings; consuming-by-value methods destroy them.
 struct LegacyString { std::uint32_t words[4]{}; };
@@ -44,6 +47,9 @@ public:
     std::vector<unsigned char> readAsset(const std::string& path);
     const Sprite* loadSprite(const std::string& path, short rows, short columns, bool opaque=false);
     void startVideo(bool input=true);
+    void startScaledVideo(int width,int height,ScalingFilter filter,float sharpness);
+    bool scaledVideo() const { return presenter_!=nullptr; }
+    void captureNextFrame(const std::filesystem::path& path) { captureNext_=path; }
     bool startAudio();
     bool playSample(const std::string& path);
     void stopUfoSound();
@@ -59,6 +65,9 @@ public:
     unsigned frames=0;
 private:
     HMODULE core_=nullptr, engine_=nullptr;
+    std::unique_ptr<FsrPresenter> presenter_;
+    std::vector<std::uint32_t> scaledFrame_;
+    std::filesystem::path captureNext_;
     std::filesystem::path directory_;
     GameData data_;
     std::deque<Sprite> sprites_;

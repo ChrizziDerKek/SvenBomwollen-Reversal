@@ -28,6 +28,19 @@ Playable systems include title/episode selection, Help, local highscores and ani
 
 `GameApp` coordinates the application, `GameData` discovers resources, `GameSession` owns campaign state and `GameUi` handles presentation. `LevelScene` owns stable world slots and update scheduling, with focused components for the grid, player, enemies, animals, items, UFOs, effects, resources and rendering. Player, enemy and animal controllers share a polymorphic `CharacterController` update interface while retaining the established simulation order. See [ARCHITECTURE.md](rebuild/docs/ARCHITECTURE.md) for ownership/update order and [ENGINE_ABI.md](rebuild/docs/ENGINE_ABI.md) for the original DLL boundary.
 
+## Roadmap and graphics experiment
+
+The agreed order is **FSR1 graphics upscaling → full XXX port → editor
+integration → full 004 port with old-format conversion**. See
+[the roadmap](rebuild/ROADMAP.md) and [the complete game/pack compatibility
+audit](rebuild/research/compatibility/REPORT.md).
+
+FSR1 is now the default presentation mode. It can also be selected explicitly through
+`powershell -File rebuild/Run-Sven2.ps1 -Upscaler fsr1`. It presents the original
+800×600 composition through a D3D11 EASU/RCAS pipeline, with comparison filters,
+resizing, aspect-ratio preservation and borderless fullscreen. Use
+`-Upscaler native` for original video presentation. See [graphics controls and limitations](rebuild/README.md#fsr1-graphics-experiment).
+
 ## Run it
 
 Run commands from the repository root on Windows.

@@ -1,8 +1,9 @@
 #include "platform/WindowInput.h"
+#include "graphics/FsrPresenter.h"
 #include <stdexcept>
 
 namespace sven2 {
-WindowInput::WindowInput(HWND window):window_(window) {
+WindowInput::WindowInput(HWND window,bool scaled):window_(window),scaled_(scaled) {
     SetLastError(0);
     original_=reinterpret_cast<WNDPROC>(SetWindowLongPtrW(window_,GWLP_WNDPROC,reinterpret_cast<LONG_PTR>(procedure)));
     if(!original_) throw std::runtime_error("Cannot attach game text input.");
@@ -32,6 +33,10 @@ UiInput WindowInput::poll() {
     input.erase=pressed(VK_BACK);
     GetCursorPos(&input.mouse);
     ScreenToClient(window_,&input.mouse);
+    if(scaled_) {
+        RECT client{};GetClientRect(window_,&client);
+        input.mouse=FsrPresenter::logicalMouse(input.mouse,client.right,client.bottom);
+    }
     input.mouseMoved=input.mouse.x!=mouse_.x || input.mouse.y!=mouse_.y;
     mouse_=input.mouse;
     previous_=held;
