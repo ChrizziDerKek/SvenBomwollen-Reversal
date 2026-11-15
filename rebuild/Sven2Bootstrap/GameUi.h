@@ -27,6 +27,10 @@ public:
     const LevelPackInfo& pack() const;
     const LevelSetInfo& levelset() const;
     Page page() const { return page_; }
+    bool usesSceneBackground() const {
+        return page_==Page::pause || page_==Page::results ||
+            (page_==Page::quit && quitReturn_==Page::pause);
+    }
     void show(Page page);
     void showResults(const RoundResult& result);
     void setNotice(const std::string& notice);

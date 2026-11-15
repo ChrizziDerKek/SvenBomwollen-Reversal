@@ -109,6 +109,81 @@ sven2::LevelInfo fixtureLevel(sven2::Engine& engine,const std::string& name,
     return level;
 }
 
+void checkDepthOrdering(sven2::Engine& engine,bool capture=false) {
+    const auto& packs=engine.data().packs();
+    const auto xs=std::find_if(packs.begin(),packs.end(),[](const auto& p) {return p.name=="XS";});
+    auto addScenery=[&](sven2::LevelInfo level,int y,int texture=0,int height=80,int adjustment=0,int x=240) {
+        auto bytes=engine.readAsset(level.map);
+        const size_t record=16+9048+2*100;
+        auto integer=[&](size_t offset,int value) {std::memcpy(bytes.data()+record+offset,&value,4);};
+        auto real=[&](size_t offset,float value) {std::memcpy(bytes.data()+record+offset,&value,4);};
+        real(0,static_cast<float>(x));real(4,static_cast<float>(y));real(8,static_cast<float>(x));real(12,static_cast<float>(y));
+        integer(16,0);integer(20,80);integer(24,height);integer(44,1);integer(48,0);integer(68,texture);integer(92,adjustment);
+        std::ofstream file(engine.data().root()/std::filesystem::u8path(level.map),std::ios::binary|std::ios::trunc);
+        file.write(reinterpret_cast<const char*>(bytes.data()),static_cast<std::streamsize>(bytes.size()));
+        require(static_cast<bool>(file),"Cannot write depth regression scenery.");
+        return level;
+    };
+    auto index=[](const std::vector<sven2::SpriteDraw>& draws,const sven2::Sprite* sprite,int x,int y) {
+        const auto found=std::find_if(draws.begin(),draws.end(),[&](const auto& d) {return d.sprite==sprite && d.x==x && d.y==y;});
+        require(found!=draws.end(),"Depth regression sprite is missing.");
+        return found-draws.begin();
+    };
+    const char* files[]={"Chicken","Goat","Pig"};
+    for(int kind=11;kind<=13;++kind) {
+        const auto* animalSprite=engine.loadSprite(std::string("Sven2/gfx/Animals/")+files[kind-11]+"_Stand.bmp",4,1);
+        const auto north=fixtureLevel(engine,"depth-north-"+std::to_string(kind),{{0,240,160,4},{kind,240,200,1}});
+        sven2::LevelScene approach(engine,*xs,north,1);
+        const auto& front=approach.draws();
+        require(index(front,animalSprite,240,200)>index(front,approach.player().sprite,240,160),
+                "Sven approaching from above painted his legs over the animal.");
+        if(capture) engine.drawFrame(front,("animal-north-"+std::to_string(kind)+".bmp").c_str());
+        const auto south=addScenery(fixtureLevel(engine,"depth-interaction-"+std::to_string(kind),{{0,240,240,0},{kind,240,200,0}}),230);
+        const auto& texture=engine.data().tileset(*xs,south).tiles.front();
+        const auto* scenery=engine.loadSprite(texture.file,texture.frames,1);
+        sven2::LevelScene interacting(engine,*xs,south,1);
+        const auto& idle=interacting.draws();
+        require(index(idle,animalSprite,240,200)<index(idle,scenery,240,230),"Occlusion fixture animal is not behind the scenery.");
+        if(capture) engine.drawFrame(idle,("animal-behind-idle-"+std::to_string(kind)+".bmp").c_str());
+        interacting.update(0.01f,0,0,true);
+        require(interacting.player().sprite!=animalSprite,"Animal interaction did not start.");
+        for(int frame=0;frame<4;++frame) {
+            const auto& active=interacting.draws();
+            require(index(active,interacting.player().sprite,240,200)<index(active,scenery,240,230),
+                    "Animal interaction jumped in front of intervening scenery.");
+            require(std::none_of(active.begin(),active.end(),[&](const auto& d) {return d.sprite==animalSprite;}),
+                    "Animal stand sprite was drawn again over its combined interaction.");
+            if(capture && frame==0) engine.drawFrame(active,("animal-behind-interaction-"+std::to_string(kind)+".bmp").c_str());
+            interacting.update(0.01f,0,0,false);
+        }
+    }
+    const auto moving=addScenery(fixtureLevel(engine,"depth-mid-step",{{0,240,160,4},{11,480,400,0}}),175);
+    const auto& texture=engine.data().tileset(*xs,moving).tiles.front();
+    const auto* scenery=engine.loadSprite(texture.file,texture.frames,1);
+    sven2::LevelScene walk(engine,*xs,moving,1);
+    const auto& before=walk.draws();
+    require(index(before,walk.player().sprite,240,160)<index(before,scenery,240,175),"Mid-step depth fixture has the wrong initial order.");
+    walk.move(0.1f,0,1);
+    require(walk.player().y>160 && walk.player().y<200,"Depth fixture did not stop between grid cells.");
+    const auto& after=walk.draws();
+    require(index(after,walk.player().sprite,walk.player().x,walk.player().y)>index(after,scenery,240,175),
+            "Moving Sven kept the old tile's depth until committing his step.");
+    const auto xxl=std::find_if(packs.begin(),packs.end(),[](const auto& p) {return p.name=="XXL";});
+    auto heapLevel=fixtureLevel(engine,"depth-forest-heap",{{0,240,280,4},{11,480,400,0}});
+    heapLevel.tileset=xxl->levelsets.front().levels.front().tileset;
+    heapLevel=addScenery(heapLevel,379,2,19,20,284);
+    const auto& heapImage=engine.data().tileset(*xxl,heapLevel).tiles.at(2);
+    const auto* heap=engine.loadSprite(heapImage.file,heapImage.frames,1);
+    sven2::LevelScene crossing(engine,*xxl,heapLevel,1);
+    crossing.move(0.1f,0,1);
+    const auto& crossingDraws=crossing.draws();
+    require(crossing.player().y>280 && crossing.player().y<320 &&
+            index(crossingDraws,crossing.player().sprite,crossing.player().x,crossing.player().y)>index(crossingDraws,heap,284,379),
+            "Forest dirt heap covered Sven after his rendered depth crossed it mid-step.");
+    if(capture) engine.drawFrame(crossingDraws,"forest-heap-mid-step.bmp");
+    sven2::log("PASS: interpolated depth, north animal approaches and occluded chicken/goat/pig interactions.");
+}
+
 void driveTutorial(sven2::Engine& engine,
                    const std::function<void(float,int,int,bool)>& update,
                    const std::function<const std::vector<sven2::SpriteDraw>&()>& draws,
@@ -318,7 +393,12 @@ void checkMenus(sven2::Engine& engine,const std::filesystem::path& saves) {
     require(exitMenu.page()==Page::quit,"Exit button did not open confirmation.");
     const auto* logo=engine.loadSprite("Sven2/gfx/SvenLogo.bmp",1,1);
     const auto* logoDetail=engine.loadSprite("Sven2/gfx/SvenLogo_O.bmp",4,1);
-    const auto& exitDraws=exitMenu.draws(0);
+    // Model a retained completed session being supplied after returning to title.
+    const std::vector<sven2::SpriteDraw> staleLevel={{logo,-777,-777,0}};
+    const auto& exitDraws=exitMenu.draws(0,&staleLevel);
+    require(!exitMenu.usesSceneBackground() && std::none_of(exitDraws.begin(),exitDraws.end(),[](const auto& draw) {
+        return draw.x==-777;
+    }),"Title exit confirmation drew the retained level behind the menu.");
     require(std::any_of(exitDraws.begin(),exitDraws.end(),[&](const auto& draw) {
         return draw.sprite==logo && draw.x==234 && draw.y==180;
     }) && std::any_of(exitDraws.begin(),exitDraws.end(),[&](const auto& draw) {
@@ -330,6 +410,9 @@ void checkMenus(sven2::Engine& engine,const std::filesystem::path& saves) {
     exitMenu.handle(chooseNo);
     require(exitMenu.handle(input)==sven2::UiAction::none && exitMenu.page()==Page::title,
             "Declining exit did not return to the title.");
+    exitMenu.show(Page::pause);
+    const auto& pauseDraws=exitMenu.draws(0,&staleLevel);
+    require(exitMenu.usesSceneBackground() && pauseDraws.front().x==-777,"Pause dialog lost its active level background.");
     sven2::RoundResult completed{1250,1,180,3,3,0,0,0,false,false,3,2};
     ui.showResults(completed);
     const auto firstDrawCount=ui.draws(0.1f).size();
@@ -1390,6 +1473,7 @@ int main(int argc,char** argv) {
         checkScores(saves);
         checkGlyphs(engine);
         checkMenus(engine,saves);
+        checkDepthOrdering(engine);
         checkMovement(engine);
         checkInteraction(engine);
         checkReportedGameplay(engine);
@@ -1408,6 +1492,7 @@ int main(int argc,char** argv) {
         checkCatalog(engine);
         if(argc==2 && std::string(argv[1])=="--visual") {
             engine.startVideo(false);
+            checkDepthOrdering(engine,true);
             checkEnemyItems(engine,true);
             checkDemonSheep(engine,true);
             checkGirlBeamReturn(engine,true);
@@ -1461,6 +1546,9 @@ int main(int argc,char** argv) {
             engine.drawFrame(session.draws(),"level.bmp");
             ui.show(Page::pause);
             engine.drawFrame(ui.draws(0,&session.draws()),"pause.bmp");
+            ui.show(Page::title);
+            ui.handle(exitClick);
+            engine.drawFrame(ui.draws(0,&session.draws()),"menu-exit-after-level.bmp");
             const auto walking=fixtureLevel(engine,"visual-walk",{{0,240,200,0},{2,640,400,0}});
             sven2::LevelScene east(engine,*xs,walking,1),west(engine,*xs,walking,1);
             east.update(0.1f,1,0,false);west.update(0.1f,-1,0,false);

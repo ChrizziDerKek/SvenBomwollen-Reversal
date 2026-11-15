@@ -1,0 +1,59 @@
+{
+  "recorded_at_utc": "2026-11-15T13:26:12.251541+00:00",
+  "changes": [
+    "Current rendered Y used for depth sorting",
+    "Non-sheep depth offset derived as height minus the native adjustment of 40",
+    "Combined non-sheep animation keeps target animal depth",
+    "Title-origin exit ignores retained level background"
+  ],
+  "scope": "General rendering/UI fixes; no level data changes",
+  "counts": {
+    "original_levels": 105,
+    "ParityLab_levels": 31,
+    "example_levels": 5
+  },
+  "logs": {
+    "Debug": "runtime/draw-order-visual.log",
+    "Release": "runtime/draw-order-Release.log",
+    "example_Debug": "runtime/draw-order-example-Debug.log",
+    "example_Release": "runtime/draw-order-example-Release.log",
+    "ParityLab": "runtime/draw-order-parity.log",
+    "game_smoke": "runtime/draw-order-game-smoke.log"
+  },
+  "native_captures_sha256": {
+    "runtime/checks/3020-7644750/animal-behind-idle-11.bmp": "741c812f2a55efe4ca828874c15a21bba4633b896afcada92816f666970ca4b3",
+    "runtime/checks/3020-7644750/animal-behind-idle-12.bmp": "770a1c7b39d470226d699dfbd7401b052189e195a1e1471e75e6123f7b225a6d",
+    "runtime/checks/3020-7644750/animal-behind-idle-13.bmp": "47f16b2e9cfdf0ecb7adae455c549147e466b3124143b23e10d099b3d6e07b2a",
+    "runtime/checks/3020-7644750/animal-behind-interaction-11.bmp": "f8239356856c1940f2a4131fb4c83c93f08ef660b5f63d8562f6885a27abf4e5",
+    "runtime/checks/3020-7644750/animal-behind-interaction-12.bmp": "31ba8d6bd978ec2aca5165988af058cb49b5f9dd9169587a15a5143702d63807",
+    "runtime/checks/3020-7644750/animal-behind-interaction-13.bmp": "00fe4184702efc86a85d63caf4dc083a66e2c8b0d2bcf91e32eae1c782c38884",
+    "runtime/checks/3020-7644750/animal-north-11.bmp": "b3a318f06f3d674c967d4b058fe900f62fdc45644ca0a5ffe81def3c7e282eb8",
+    "runtime/checks/3020-7644750/animal-north-12.bmp": "9a936a34bddf3c8904e49e878f00396069a879e0d139b6830595bd01431b4e46",
+    "runtime/checks/3020-7644750/animal-north-13.bmp": "035eff0990eef7688df5f72c5cfe4aa550d198bad4127b5117a0e8375fad6ee9",
+    "runtime/checks/3020-7644750/forest-heap-mid-step.bmp": "07f52ec6459841e48e26961d44e48803955aa6d690b76867369973cd7f9d8a59",
+    "runtime/checks/3020-7644750/menu-exit-after-level.bmp": "b86ce3cffb9197f1b3efe6665e322bd90a7cbc3bc7c477ea57c15551ef640b39"
+  },
+  "executables_sha256": {
+    "bin/Win32/Debug/Sven2Bootstrap.exe": "cb99c051ffaafc15633ea063c3229c559c3a0523f0d27cdcc1a6062e655c377a",
+    "bin/Win32/Debug/Sven2Checks.exe": "72c8f83460c80d691f2bdf2b0d216833a639652ea67ba6847f349daffcb40388",
+    "bin/Win32/Release/Sven2Bootstrap.exe": "fbaa6a34f6b1676d115fa0dd797eea5e82100a1ee72b36ea93d32152a08e8b94",
+    "bin/Win32/Release/Sven2Checks.exe": "0e6bb967895f3c507f10d14d6f44650f0f382a9ef1345b3d9f985af389071013"
+  },
+  "source_sha256": {
+    "Sven2Bootstrap/scene/SceneRenderer.cpp": "7bd81a7f1561bd991099966f0f9b55f63cfffb20eaf81b6fd256cd25502c416d",
+    "Sven2Bootstrap/LevelScene.cpp": "7e6b801c106c2fb5f023a64ff4f04af2f9a45ee62710af18cfab2213d24ba9bc",
+    "Sven2Bootstrap/GameUi.cpp": "79b6c7394f5b6a392c2db98584715738d85e3178dea81d4d40bd3c22afb1957f",
+    "Sven2Bootstrap/GameUi.h": "ff532a2d23587b536dfa93156958cd08e4c18fd17eb2d807e53462ca19ed96bd",
+    "Sven2Bootstrap/GameApp.cpp": "cccaeb2bcfe746ebc28806f4c44253690e7121b69b0b012cf2952725eaedaed5",
+    "tests/Checks.cpp": "759ac39fabfc808c38fbf22660d17261c19276ff8c8262da904165b3cfe5650f"
+  },
+  "native_evidence": [
+    "runtime/depth-queue-original.asm",
+    "runtime/animal-depth-initializer.asm"
+  ],
+  "notes": [
+    "Non-sheep compound-animation target-depth anchoring is the requested occlusion correction, not a recovered native special-case queue rule.",
+    "No full manual campaign replay claimed; native regression captures inspected.",
+    "User-deleted rebuild_working_copy was not recreated."
+  ]
+}

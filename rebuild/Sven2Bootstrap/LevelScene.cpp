@@ -115,7 +115,8 @@ LevelScene::LevelScene(Engine& engine,const LevelPackInfo& pack,const LevelInfo&
             object.moodBlink=record.moodBlink()&1;
             object.attempts=0; // 0x422420 resets interaction counts at level entry.
             if(isAnimal(kind)) { object.impatience=2*(object.impatience/2); ++remainingTargets_; }
-            if(kind>=11 && kind<=13) { object.pulse=26; object.state=0; object.depthOffset=40; }
+            // 0x422AF6 sets the stored adjustment (+92), not the final sort offset.
+            if(kind>=11 && kind<=13) { object.pulse=26; object.state=0; object.depthOffset=record.height()-40; }
             if(kind==3) object.idle=static_cast<float>(50+randomInt(100));
             if(kind==3 || kind==6) {
                 const auto& rules=resources_.enemyRules_[kind];

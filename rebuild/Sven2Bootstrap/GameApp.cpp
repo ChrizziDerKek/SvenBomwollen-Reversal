@@ -103,7 +103,7 @@ void runGame(Engine& engine,const std::filesystem::path& saves,bool audio,unsign
             const auto& scene=session->draws();
             engine.drawFrame(scene);
         } else {
-            const bool overlay=session && (ui.page()==Page::pause || ui.page()==Page::quit || ui.page()==Page::results);
+            const bool overlay=session && ui.usesSceneBackground();
             const auto* background=overlay?&session->draws():nullptr;
             engine.drawFrame(ui.draws(elapsed,background));
         }

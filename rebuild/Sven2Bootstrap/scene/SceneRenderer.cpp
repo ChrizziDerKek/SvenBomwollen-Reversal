@@ -13,10 +13,24 @@ SceneRenderer::SceneRenderer(LevelScene& scene):scene_(scene),overlayFont_(scene
 const std::vector<SpriteDraw>& SceneRenderer::draws() {
     sorted_=scene_.world_;
     sorted_.insert(sorted_.end(),scene_.effects_.sceneEffects_.begin(),scene_.effects_.sceneEffects_.end());
+    // Original 0x40D72C sorts rendered Y + height - adjustment. Player grid
+    // ownership stays at the committed cell while the sprite moves between cells.
+    auto depth=[&](const Object& object) {
+        // These animations are placed at the animal's canvas, although the
+        // command is stored on Sven. Keep that compound sprite at its visible
+        // owner's depth instead of promoting it to Sven's approach position.
+        if(object.kind==0 && scene_.player_.playerAction_==1 && scene_.player_.activeSheep_>=0) {
+            const auto& animal=scene_.world_[scene_.player_.activeSheep_];
+            if(animal.kind>=11 && animal.kind<=13)
+                return static_cast<float>(animal.y+animal.depthOffset);
+        }
+        const float y=object.kind==0?scene_.player_.y_:object.y;
+        return static_cast<float>(y+object.depthOffset);
+    };
     // Start each frame in file slot order to preserve the original equal-depth behavior.
     for(size_t i=0;i<sorted_.size();++i)
         for(size_t j=i+1;j<sorted_.size();++j)
-            if(sorted_[i].committedY+sorted_[i].depthOffset>sorted_[j].committedY+sorted_[j].depthOffset)
+            if(depth(sorted_[i])>depth(sorted_[j]))
                 std::swap(sorted_[i],sorted_[j]);
     draws_.clear();
     draws_.push_back(background_);

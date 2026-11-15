@@ -370,7 +370,7 @@ const std::vector<SpriteDraw>& GameUi::draws(float elapsed,const std::vector<Spr
     scroll_=std::fmod(scroll_+elapsed*10,800.0f);
     if(cardPlaying_) cardAge_+=elapsed;
     draws_.clear();
-    if(scene) draws_=*scene;
+    if(scene && usesSceneBackground()) draws_=*scene;
     else {
         const int x=-static_cast<int>(scroll_);
         draws_={{clouds_,x,65,0},{clouds_,x+800,65,0},{backdrop_,0,0,0}};
