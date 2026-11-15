@@ -67,7 +67,6 @@ private:
     void* ufoChannel_=nullptr;
     void* musicStream_=nullptr;
     std::map<std::string,void*> samples_;
-    std::map<std::string,void*> streams_;
     alignas(4) unsigned char application_[0xd0]{};
     bool constructed_=false, prepared_=false, videoStarted_=false;
     LegacyString string(const char* text, bool url=false);

@@ -196,8 +196,7 @@ bool Engine::ufoSoundPlaying() const {
 bool Engine::playMusic(const std::string& path) {
     if(!soundSystem_) return false;
     stopMusic();
-    auto found=streams_.find(path);
-    if(found==streams_.end()) {
+    {
         LegacyString url=string(data_.assetPath(path).string().c_str(),true);
         void* loaded=nullptr;
         try {
@@ -207,16 +206,15 @@ bool Engine::playMusic(const std::string& path) {
             throw;
         }
         destroyString(url);
-        if(loaded) found=streams_.emplace(path,loaded).first;
+        musicStream_=loaded;
     }
-    if(found==streams_.end()) {
+    if(!musicStream_) {
         log("Music stream unavailable: "+path);
         return false;
     }
-    musicStream_=found->second;
     if(!method<void*(__thiscall*)(void*)>(musicStream_,0x20)(musicStream_)) {
         log("Music playback unavailable: "+path);
-        musicStream_=nullptr;
+        stopMusic();
         return false;
     }
     log("Started music stream: "+path);
@@ -226,6 +224,10 @@ bool Engine::playMusic(const std::string& path) {
 void Engine::stopMusic() {
     if(!musicStream_) return;
     method<void(__thiscall*)(void*)>(musicStream_,0x1c)(musicStream_);
+    // DX_SoundSystemPlugin::LoadStream permits only four allocated streams
+    // (0x100039FF). Stop alone leaves that slot occupied. Its deleting
+    // destructor unregisters the stream and its channel (0x10002290).
+    method<void*(__thiscall*)(void*,unsigned)>(musicStream_,0)(musicStream_,1);
     musicStream_=nullptr;
     log("Stopped music stream.");
 }

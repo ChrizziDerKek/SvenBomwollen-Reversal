@@ -1,66 +1,103 @@
 # SvenBomwollen-Reversal
 
-Reversing an old game from my childhood for fun
+Reverse-engineering an old childhood favourite for fun, and building tools to understand, edit and play it again.
 
-![](thumbnail.jpg?raw=true "Title")
+![Project preview](thumbnail.jpg?raw=true "SvenBomwollen-Reversal")
 
-#  Content
+This repository covers **Sven Zwo / Sven2, Sven XXX and Sven 004**: archive research, extracted resources, runtime dumpers, a Windows level editor and a playable Sven2 reconstruction. Current editing and rebuilding focus on **Sven2 v6**. XXX and 004 remain research targets; this is not a finished reconstruction or universal editor for all three games.
 
-## assets
-Decoder output for all Sven Zwø .pak and .dat files. Includes:
-- Character spritesheets
-- Items
-- Menus, GUI elements and icons
-- Sound effects
-- Localized strings in xml format
-- Game parameters like character movement speed, item usage durations, animation framerates and more
-- Level elements and backgrounds
-- Level layout files (not decoded yet)
+## Work so far
 
-## decoder
-Simple C# application that can decode the .pak and .dat format that Sven Zwø uses. Not tested on XXX and 004 yet, but because the engine is effectively identical, it probably works for the other games too.\
-``Usage: decoder <file.dat|file.pak> <output-folder>``
+Archive research explains the `MUDGE4.0` `.pak`/`.dat` container, directory tree and XOR encoding. Extraction exposes sprites, backgrounds, sounds, localized text, parameters, package XML and binary levels. Texture dumpers, level logs, controlled pack modifications and retained disassembly/decompiler evidence support the investigation.
 
-## dumper
-DLL file for dumping all loaded textures while the game is running. Just inject it with your favourite injector and play some levels! Includes 3 pre-compiled versions for Sven Zwø, XXX and 004.
+The later Sven2 investigation corrected the level format: **374 padded tile records (22 by 17), a separate teleporter count and 16 destinations, a float timer, and 256 complete 100-byte objects**. The visible playfield is 20 by 15 cells, mapped by `raw = 23 + y*22 + x`. Actor/item links, animal constructors, spawners and depth sorting are documented in [the verified format guide](docs/VERIFIED_FORMAT.md), with evidence and remaining uncertainties. Original experiments and detailed technical notes remain [below](#historical-research-and-detailed-technical-notes).
 
-## games
-The actual games we reverse (Sven Zwø, XXX and 004).
+### Level editor
 
-## editor
-Current Sven Zwo level editor development. Supports direct pack editing, new packages/levelsets, linked actors and items, corrected teleporter data, depth ordering, and improved controls. Start with [editor/Start-Editor.cmd](editor/Start-Editor.cmd) and read the [editor guide](editor/README.md).
+The current [C#/WPF editor](editor/README.md) opens archives directly, edits levels, saves renamed copies, imports levels, extends levelsets and creates packages from existing resource templates. It includes scenery and linked actor/item placement, collision and spawner brushes, teleporter destination ordering, level timers, animal facing and initial sheep impatience. Selection, overlap picking, depth adjustment, zoom/pan, undo/redo and raw inspectors support detailed editing.
 
-## levellogger
-Old project which simply dumps all texture data from a running level. Just inject it with your favourite injector and play some levels! Includes 3 pre-compiled versions for Sven Zwø, XXX and 004. You can also see example logs in the logfiles folder.
+The writer preserves unknown archive metadata and untouched resources, reopens output for verification and backs up existing destinations. All five supplied `.pak` archives have documented byte-exact untouched roundtrips. The first custom XS pack has user-confirmed collision, characters and item spawners. Later rename handling and constructor-based animal controls have regression coverage but still need a new in-game acceptance check. Preview uses representative frames rather than full live simulation.
 
-## patcher
-DLL file for patching packfile signature checks. This has to be loaded very early, so injecting the dll won't work. Instead, use CFF Explorer to add an import to the exported Dummy function.
+**The editor cannot generate publisher signatures.** New packages reuse template resources/dependencies. Modified archives used with the original game still need the existing signature-check bypass. Saving a new pack does not establish original-executable acceptance.
 
-## rebuild
-Rebuilt sourcecode of Sven Zwø using the original game engine.
+### Sven2 reconstruction
 
-## screenshots
-Screenshots that were used for testing, as a note or inside this readme.
+The [rebuild](rebuild/README.md) reconstructs game logic in **C++ with MSVC, targeting x86/Win32**, using retained original-code evidence. It explicitly **reuses the original DLLs** in `games/sven2`, including `mudGE.dll`, `wtnlib.dll`, `pluginpack.dll` and the sound plugin. These dependencies have not been rewritten. `EngineAbi` bridges their legacy interfaces. The rebuild handles sprite decoding/composition and Win32 input while presenting through the original video runtime.
 
-## tests
-Stores patched pack files, notes and C# scripts that I used for testing the .lvl file format. I tested it with trial-and-error by modifying the first tutorial level:
-- XS_tutorial_4sheep: Adds a 4th sheep\
-![](screenshots/extra_sheep.png?raw=true "Title")
-- XS_tutorial_field01v01: Copies level data from field01v01\
-![](screenshots/meltdown.png?raw=true "Title")
-- XS_tutorial_10sheep: Adds 10 sheep\
-![](screenshots/more_sheep.png?raw=true "Title")
-- XS_tutorial_new_bush: Adds a new bush object with a somewhat accurate collision box\
-![](screenshots/new_bush.png?raw=true "Title")
-- XS_tutorial_no_collision: Removes all colliders from the level\
-![](screenshots/no_collision.png?raw=true "Title")
-- XS_tutorial_blank: Removes all objects from the level\
-![](screenshots/void.png?raw=true "Title")
-- XS_tutorial_weirdness: Adds a second sven to the level and the original sven no longer plays animations\
-![](screenshots/what.png?raw=true "Title")
+Playable systems include title/episode selection, Help, local highscores and animation cards; campaign progression, score/time/lives and bonuses; movement/collision, animals and demon sheep, enemy interactions/distractions, items and powerups, teleports, UFO sequences and effects. The extracted catalog supplies **105 v6 levels across five level packages**, plus core resources. Loading and simulating every level does not establish exhaustive gameplay parity.
 
+`GameApp` coordinates the application, `GameData` discovers resources, `GameSession` owns campaign state and `GameUi` handles presentation. `LevelScene` owns stable world slots and update scheduling, with focused components for the grid, player, enemies, animals, items, UFOs, effects, resources and rendering. Player, enemy and animal controllers share a polymorphic `CharacterController` update interface while retaining the established simulation order. See [ARCHITECTURE.md](rebuild/docs/ARCHITECTURE.md) for ownership/update order and [ENGINE_ABI.md](rebuild/docs/ENGINE_ABI.md) for the original DLL boundary.
 
-# Research and notes
+## Run it
+
+Run commands from the repository root on Windows.
+
+**Editor:** install the .NET 8 SDK, or a later SDK with .NET 8 desktop targeting support. Double-click [Start-Editor.cmd](editor/Start-Editor.cmd), or run:
+
+```powershell
+dotnet run --project editor/leveleditor_clean.csproj --configuration Release
+```
+
+Repository assets load automatically. Open a pack, edit and use **Save Pack As** to write the archive; saving only its extracted level does not update the pack. See the [editor guide](editor/README.md) for new-package workflows. A built executable needs the .NET 8 Desktop Runtime.
+
+**Rebuild:** install Visual Studio 2022 with Desktop development with C++, v143 and a Windows SDK. Build x86 (Win32), then launch:
+
+```powershell
+powershell -File rebuild/Build.ps1
+powershell -File rebuild/Run-Sven2.ps1
+
+# Start directly in the first tutorial
+powershell -File rebuild/Run-Sven2.ps1 -Tutorial
+
+# Use another extracted data root
+powershell -File rebuild/Run-Sven2.ps1 -DataDirectory E:/MySvenData
+```
+
+The default data root is `assets`; supported original DLLs load from `games/sven2`. Each extracted package folder has a matching XML descriptor. Move with arrows/WASD, press Space repeatedly to interact, and Escape for the leave/resume prompt. See the [rebuild guide](rebuild/README.md) for menus, data paths and diagnostics.
+
+**Archive extraction:** the C# [decoder](decoder) accepts `decoder <file.dat|file.pak> <output-folder>`. Historical assumptions about XXX/004 compatibility are not verified support claims.
+
+**Weekend Adventure** is a new five-level campaign using original artwork and newly authored layouts: a farmyard tractor loop, connected barn pens, bridged river islands, a wooded trail and a machinery-filled alien laboratory. Run `powershell -File rebuild/Run-ExamplePack.ps1`. The [pack guide](rebuild/docs/EXAMPLE_PACK.md) explains the levels, generator and isolated data overlay. Structural accessibility/novelty checks, Debug/Release catalog simulation and native previews pass; the levels have not all been manually completed or balance-tested.
+
+## Validation and limits
+
+Recorded checks cover archive preservation, level boundaries, actor links, teleporter/spawner constraints and editor interactions. Rebuild checks cover catalog loading/simulation, gameplay scenarios, native startup, UI captures, audio requests and local score persistence. The architecture report records Debug/Release matches against a **100,800-frame pre-refactor trace** over all 105 original levels. This demonstrates preservation of the working rebuild during cleanup, not equivalence to the original executable. See [validation.json](rebuild/validation.json) and [refactor-validation.json](rebuild/refactor-validation.json).
+
+```powershell
+powershell -File rebuild/Test-Bootstrap.ps1
+powershell -File rebuild/Test-Bootstrap.ps1 -Configuration Release
+powershell -File rebuild/Run-ParityLab.ps1
+```
+
+[ParityLab](rebuild/docs/PARITY_LAB.md) provides 31 authored maps in 30 episodes for focused comparisons. Build the rebuild first; its launcher prepares a separate resource overlay. Regenerating the source lab maps uses Python. These are loose packages, not publisher-signed archives. Generation alone does not verify gameplay.
+
+The [playtest status](rebuild/docs/PLAYTEST_STATUS.md) records user-confirmed animals, powerups, enemy interactions and lives/endings, including demon sheep and the original zero-score life refund. Remaining comparisons include original/rebuild input timing, whole-session RNG, movement edge cases, dynamic depth ties, animation details and visual/audio output. Successful playback requests do not establish waveform equivalence. Local scores use UTF-8 TSV; original signed highscore import and online submission remain incomplete. Win32 input and an 800 by 600, 32-bit window are host adaptations. See the [parity checklist](rebuild/docs/PARITY_CHECKLIST.md).
+
+This README uses UTF-8. Some original resource XML declares UTF-8 but contains Windows-1252 text; the rebuild converts that legacy encoding in memory.
+
+## Folder map
+
+| Folder | Purpose |
+| --- | --- |
+| [assets](assets) | Extracted images, sounds, XML, parameters and binary levels; current editor/rebuild data source. |
+| [games](games) | Original targets in `sven2`, `svenxxx` and `sven004`; includes the rebuild's required DLLs. |
+| [docs](docs) | Verified format, retained binary evidence and validation material. |
+| [editor](editor) | Current WPF editor, launcher, archive writer and editing logic. Milestone READMEs describe older baselines. |
+| [rebuild](rebuild) | C++ reconstruction, solution, build/run/check scripts, tests, parity docs and authored test packs. Generated logs/captures live under `runtime`. |
+| [decoder](decoder) | C# archive extraction utility. |
+| [dumper](dumper) | Runtime texture-dumping DLL project, including historical builds for all three games. |
+| [levellogger](levellogger) | Earlier injected level/texture logger and research tooling. |
+| [patcher](patcher) | Early-loaded signature-check bypass for modified original-game archives; historical details below. |
+| [tests](tests) | Original patched-pack experiments and format scripts; distinct from `rebuild/tests`. |
+| [screenshots](screenshots) | Research screenshots and examples retained below. |
+| [codexhandoff](codexhandoff) | Archived handoff material, including the untouched `data/SvenLevelEditor_m1_fix2` beta. Read its `AGENTS.md` before exploring descendants. |
+| `rebuild_working_copy` | Protected backup, not the active development tree or a build input/output. |
+
+## Historical research and detailed technical notes
+
+These original experiments, code sketches, screenshots and the full coordinate table are retained as research history. Some interpretations were uncertain and have since been corrected. Prefer [VERIFIED_FORMAT.md](docs/VERIFIED_FORMAT.md), the [editor guide](editor/README.md) and [rebuild documentation](rebuild/README.md) for current facts.
+
+The old 375-tile/11-reserved-word layout, T3 teleporter-controller interpretation, object boundaries and normal slot-based draw order below are superseded. The verified layout has 374 tiles, a separate teleporter table and timer, and complete 100-byte objects; T3 is the alien actor tile. Historical DLL structures/signatures are sketches, not the current [ABI contract](rebuild/docs/ENGINE_ABI.md). The pack-editing work proposed at the end is now implemented in the development editor.
 
 
 ## Engine

@@ -1324,9 +1324,10 @@ void checkCatalog(sven2::Engine& engine,size_t minimum=105) {
 int main(int argc,char** argv) {
     try {
         const bool preview=argc==3 && std::string(argv[1])=="--catalog-preview";
+        const bool catalogAudio=argc==3 && std::string(argv[1])=="--catalog-audio";
         const auto trace=argc==3 && std::string(argv[1])=="--trace"?
             std::filesystem::absolute(std::filesystem::u8path(argv[2])):std::filesystem::path{};
-        const auto catalog=argc==3 && (std::string(argv[1])=="--catalog" || preview)?
+        const auto catalog=argc==3 && (std::string(argv[1])=="--catalog" || preview || catalogAudio)?
             std::filesystem::absolute(std::filesystem::u8path(argv[2])):std::filesystem::path{};
         wchar_t executable[32768]{};
         GetModuleFileNameW(nullptr,executable,32768);
@@ -1349,6 +1350,26 @@ int main(int argc,char** argv) {
             return 0;
         }
         if(!catalog.empty()) {
+            if(catalogAudio) {
+                engine.startVideo(false);
+                require(engine.startAudio(),"Catalog audio backend failed to initialize.");
+                require(engine.playMusic("Sven2/sfx/Sven2_music.ogg"),"Menu music failed.");
+                for(int pass=0;pass<3;++pass) for(const auto& pack:engine.data().packs()) for(const auto& set:pack.levelsets) for(const auto& level:set.levels) {
+                    sven2::LevelScene scene(engine,pack,level,1);
+                    sven2::log("Testing ambient stream: "+level.music);
+                    require(engine.playMusic(level.music),"Level ambient stream failed.");
+                    engine.drawFrame(scene.draws());
+                    const auto started=GetTickCount64();
+                    while(GetTickCount64()-started<1200) {engine.tick();scene.update(1.0f/60,0,0,false);Sleep(10);}
+                    engine.drawFrame(scene.draws());
+                }
+                engine.stopMusic();
+                engine.stopMusic(); // Repeated cleanup must be harmless.
+                require(engine.playMusic("Sven2/sfx/Sven2Highscore.ogg"),"Highscore music failed after campaign streams.");
+                require(engine.playMusic("Sven2/sfx/Sven2_music.ogg"),"Returning to menu music failed.");
+                engine.stopMusic();
+                sven2::log("PASS: sequential catalog ambient streams.");
+            }
             checkLabFixtures(engine);
             checkCatalog(engine,1);
             if(preview) {
