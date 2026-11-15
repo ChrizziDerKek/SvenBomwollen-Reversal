@@ -1,0 +1,91 @@
+<?xml version='1.0' encoding='utf-8'?>
+<sven2 version="1.0">
+  <package name="XXX_XS">
+    <dependencies>
+      <requires file="Sven2.dat" key="key" value="value" />
+    </dependencies>
+    <levelsets>
+      <levelset name="Training">
+        <level name="Training 01" tileset="Garden" music="XXX_XS/sfx/atmo_garden.ogg" map="XXX_XS/levels/training01.lvl" />
+        <level name="Training 02" tileset="Garden" music="XXX_XS/sfx/atmo_garden.ogg" map="XXX_XS/levels/training02.lvl" />
+        <level name="Bonus 01" tileset="Garden" music="XXX_XS/sfx/atmo_garden.ogg" map="XXX_XS/levels/training02lars.lvl" />
+        <level name="Training 03" tileset="Garden" music="XXX_XS/sfx/atmo_garden.ogg" map="XXX_XS/levels/training03.lvl" />
+        <level name="Training 04" tileset="Garden" music="XXX_XS/sfx/atmo_garden.ogg" map="XXX_XS/levels/training04.lvl" />
+        <level name="Bonus 02" tileset="Garden" music="XXX_XS/sfx/atmo_garden.ogg" map="XXX_XS/levels/training04lars.lvl" />
+        <level name="Training 05" tileset="Garden" music="XXX_XS/sfx/atmo_garden.ogg" map="XXX_XS/levels/training05.lvl" />
+        <level name="Training 06" tileset="Garden" music="XXX_XS/sfx/atmo_garden.ogg" map="XXX_XS/levels/training06.lvl" />
+      </levelset>
+      <levelset name="Garten 01">
+        <level name="Garten 01" tileset="Garden" music="XXX_XS/sfx/atmo_garden.ogg" map="XXX_XS/levels/garden01.lvl" />
+        <level name="Garten 02" tileset="Garden" music="XXX_XS/sfx/atmo_garden.ogg" map="XXX_XS/levels/garden02.lvl" />
+        <level name="Garten 03" tileset="Garden" music="XXX_XS/sfx/atmo_garden.ogg" map="XXX_XS/levels/garden03.lvl" />
+        <level name="Bonus 01" tileset="Garden" music="XXX_XS/sfx/atmo_garden.ogg" map="XXX_XS/levels/garden03lars.lvl" />
+        <level name="Garten 04" tileset="Garden" music="XXX_XS/sfx/atmo_garden.ogg" map="XXX_XS/levels/garden04.lvl" />
+        <level name="Garten 05" tileset="Garden" music="XXX_XS/sfx/atmo_garden.ogg" map="XXX_XS/levels/garden05.lvl" />
+        <level name="Garten 06" tileset="Garden" music="XXX_XS/sfx/atmo_garden.ogg" map="XXX_XS/levels/garden06.lvl" />
+        <level name="Bonus 02" tileset="Garden" music="XXX_XS/sfx/atmo_garden.ogg" map="XXX_XS/levels/garden06lars.lvl" />
+        <level name="Garten 07" tileset="Garden" music="XXX_XS/sfx/atmo_garden.ogg" map="XXX_XS/levels/garden07.lvl" />
+        <level name="Garten 08" tileset="Garden" music="XXX_XS/sfx/atmo_garden.ogg" map="XXX_XS/levels/garden08.lvl" />
+        <level name="Garten 09" tileset="Garden" music="XXX_XS/sfx/atmo_garden.ogg" map="XXX_XS/levels/garden09.lvl" />
+      </levelset>
+      <levelset name="Garten 02">
+        <level name="Garten 01" tileset="Garden" music="XXX_XS/sfx/atmo_garden.ogg" map="XXX_XS/levels/garden10.lvl" />
+        <level name="Garten 02" tileset="Garden" music="XXX_XS/sfx/atmo_garden.ogg" map="XXX_XS/levels/garden11.lvl" />
+        <level name="Garten 03" tileset="Garden" music="XXX_XS/sfx/atmo_garden.ogg" map="XXX_XS/levels/garden12.lvl" />
+        <level name="Bonus 01" tileset="Garden" music="XXX_XS/sfx/atmo_garden.ogg" map="XXX_XS/levels/garden12lars.lvl" />
+        <level name="Garten 04" tileset="Garden" music="XXX_XS/sfx/atmo_garden.ogg" map="XXX_XS/levels/garden13.lvl" />
+        <level name="Garten 05" tileset="Garden" music="XXX_XS/sfx/atmo_garden.ogg" map="XXX_XS/levels/garden14.lvl" />
+        <level name="Garten 06" tileset="Garden" music="XXX_XS/sfx/atmo_garden.ogg" map="XXX_XS/levels/garden15.lvl" />
+        <level name="Bonus 02" tileset="Garden" music="XXX_XS/sfx/atmo_garden.ogg" map="XXX_XS/levels/garden15lars.lvl" />
+        <level name="Garten 07" tileset="Garden" music="XXX_XS/sfx/atmo_garden.ogg" map="XXX_XS/levels/garden16.lvl" />
+        <level name="Garten 08" tileset="Garden" music="XXX_XS/sfx/atmo_garden.ogg" map="XXX_XS/levels/garden17.lvl" />
+        <level name="Garten 09" tileset="Garden" music="XXX_XS/sfx/atmo_garden.ogg" map="XXX_XS/levels/garden18.lvl" />
+      </levelset>
+    </levelsets>
+    <tilesets>
+      <tileset name="Garden" background="XXX_XS/gfx_garden/BG_garden.jpg">
+        <tile file="XXX_XS/gfx_garden/BG_garden_bench1.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/BG_garden_box1.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/BG_garden_bush1.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/BG_garden_bush2.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/BG_garden_bush3.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/BG_garden_bush4.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/BG_garden_bush5.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/BG_garden_bush6.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/BG_garden_deckchair.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/BG_garden_fence1.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/BG_garden_fence2.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/BG_garden_fence3.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/BG_garden_fence4.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/BG_garden_field1.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/BG_garden_field2.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/BG_garden_field3.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/BG_garden_field4.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/BG_garden_house1.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/BG_garden_house2.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/BG_garden_pond.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/BG_garden_puddle1.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/BG_garden_puddle2.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/BG_garden_road1.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/BG_garden_road2.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/BG_garden_tree1.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/Garden_dwarf01.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/Garden_dwarf02.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/Garden_dwarf03.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/Garden_dwarf04.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/Garden_dwarf05.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/Garden_dwarf06.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/Garden_dwarf07.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/BG_Garden_lawnmower.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/BG_Garden_lawn01.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/BG_Garden_lawn02.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/BG_Garden_lawn03.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/BG_Garden_lawn04.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/BG_garden_fence5.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/BG_garden_fence6.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/BG_garden_bush7.bmp" frames="1" />
+        <tile file="XXX_XS/gfx_garden/help_trigger.bmp" frames="1" />
+      </tileset>
+    </tilesets>
+  </package>
+</sven2>

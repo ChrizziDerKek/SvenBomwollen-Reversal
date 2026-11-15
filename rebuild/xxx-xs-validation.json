@@ -1,0 +1,80 @@
+{
+  "recorded_at_utc": "2026-11-15T14:00:31.143954+00:00",
+  "source_archive_sha256": "398a94ea8631f62bc3e666d925c138c154938a4ad53bb24ec4b8d44742dee46a",
+  "manifest_sha256": "dc62a4256046affd181a0619231fcf667948c6f546d7b85768c24fab59f1a0fd",
+  "levelsets": {
+    "Training": 8,
+    "Garten 01": 11,
+    "Garten 02": 11
+  },
+  "counts": {
+    "removed_player_slots": 30,
+    "turtle_to_goat_slots": 7,
+    "removed_mermaid_slots": 11,
+    "removed_help_art_slots": 21,
+    "stripped_help_ids": 21
+  },
+  "combined_levels": 135,
+  "independent_archive_reader_agreement": "All 74 entries match the existing C# decoder byte-for-byte.",
+  "logs": {
+    "original_Debug": "runtime/xxx-xs-regression-Debug.log",
+    "original_Release": "runtime/xxx-xs-regression-Release.log",
+    "backport_Debug": "runtime/xxx-xs-catalog-Debug.log",
+    "combined_Debug": "runtime/xxx-xs-combined-Debug.log",
+    "combined_Release": "runtime/xxx-xs-combined-Release.log",
+    "native_previews": "runtime/xxx-xs-previews.log",
+    "native_audio": "runtime/xxx-xs-audio.log",
+    "game_smoke": "runtime/xxx-xs-game-smoke.log"
+  },
+  "preview_directory": "runtime/checks/15032-9385140",
+  "previews_sha256": {
+    "pack-level-1.bmp": "9ca303b535861ac631e5761dd78948f7dcb4e05bbe4e2003442b5bfb85352755",
+    "pack-level-10.bmp": "4b1d4de66df443c79913d2ef83b3932e41215fd008551e505d8105603dd02e61",
+    "pack-level-11.bmp": "9bc959b520bccb8b91fb7715564f378da2d4b8145912dbc2c77f30edde08df1b",
+    "pack-level-12.bmp": "6c5f1a00f5be0dd7ed233a4dd7409455060a73be647f3843c29bcc5245641e3e",
+    "pack-level-13.bmp": "a720d3409c50d6923555ead7e7fa7047152d3589c1c6ceda65a6bb9ccd0e2328",
+    "pack-level-14.bmp": "6a3dc2e0c523701bcddb3a68966c836f4fb5e90bc52e6f804b56f40758f0572a",
+    "pack-level-15.bmp": "bf94e5ee13f0475dace18b2e164d43b8a041d19d9d2923844fc3db7285c21bb3",
+    "pack-level-16.bmp": "95a7003b0d8ff212429f075829d3ad7a3ce44c9c3caffa9f7071c05bcafe5be5",
+    "pack-level-17.bmp": "c86a2cf591122a0f92a112af7fc56044e2df27fdbd62647d5b8fa428d83ea233",
+    "pack-level-18.bmp": "1a1dfd515ceef04b8b033f092626057b677b9adb7d0be63a34a0b405b15a37b1",
+    "pack-level-19.bmp": "233ab329b2524f47b52fbffe3368ae6a6a8deb3569d8b6c8f535663bf8b43946",
+    "pack-level-2.bmp": "8ab8c53e68ee501b1b97601103074f3fc594b8e2ea28a1f2c56eb7abd9b00c0a",
+    "pack-level-20.bmp": "beb4c80077f4045e65889ae7103d334be9fb175b776939efea590ba850bb8545",
+    "pack-level-21.bmp": "a01b83b21e44f1b111039a30bce0e5d08112042cbc78d5a58de18b2afac2cb47",
+    "pack-level-22.bmp": "29348d151d28969ea6564dde810d2c19cc27c3a610f40e87646212780ca66111",
+    "pack-level-23.bmp": "78d33b4aa0914efa7b5b9f4c64e53340c3e8d22f55c280e9af8152580a43de66",
+    "pack-level-24.bmp": "f8d96829dece2fd076581c546011f45d3dd6d358a95b3c978acde6925d26339d",
+    "pack-level-25.bmp": "46b8dfba1a2ba400a1cac610fa4e04a92bfee353d5428aec6fe7b79a1a4fc044",
+    "pack-level-26.bmp": "b4c61783b78eb8150efadb82f4316f70b785f73ad176b99a65bac29d7a84cb55",
+    "pack-level-27.bmp": "b8ea6993417ac8b8e6db3313b96b4a03b61d9916931f83f0ce2a3b0401f9b125",
+    "pack-level-28.bmp": "828a6342e80ec4f8560fe43a62eaa5af0d0603be75251cdb8d93dd9f2236f87a",
+    "pack-level-29.bmp": "1d5be664f08dcc58fabf086bb26cb6e0c27e548adcc6866533ec77fce9e849a8",
+    "pack-level-3.bmp": "7cb818dc20443f38f380ff86776ee24e05199055efc4190e90aff4a0c356707a",
+    "pack-level-30.bmp": "a28e5187d48d44784c322be905183daae85a65b4c5e0579e3eae9a8dc3357587",
+    "pack-level-4.bmp": "0facc97c628c0e381b6870ca1f3f815d7396d7e0c3e82e7339c1cde5b445e8b7",
+    "pack-level-5.bmp": "9e5e959bfbac34311e490c36b452074e162cb0bab082857d4c7a534fdafa5307",
+    "pack-level-6.bmp": "53b8c6e71030f71522ee515411d9e6f9466b7cfb1675cdc28beca7aec6c4f1a3",
+    "pack-level-7.bmp": "35bd6a84c568bfd67dd0e63609f626b1f0285463f25544cab65b92125c5c6a34",
+    "pack-level-8.bmp": "d86022f8531be88b565126883243cda3e9be3175aca55c68127d698ee57b67be",
+    "pack-level-9.bmp": "9e1fb917dc44d59144bdbfb4255d2e8136f3e0a600fde7f7fbd478a53d6115a9"
+  },
+  "executables_sha256": {
+    "Debug/Sven2Bootstrap.exe": "ac7580c0ddc94541dde198f2d1141d88c2a5face1af91bd79e8eaf908a8a434f",
+    "Debug/Sven2Checks.exe": "46baade858420a9f8ce3b41e338714b1fdb62e2f4ab05bdbef919685554e6c4f",
+    "Release/Sven2Bootstrap.exe": "1ad82217fe312d903f922222e8fed8f3f9ceb80b0487968d232d933268ab436e",
+    "Release/Sven2Checks.exe": "829c4bb504f4a1f43e976f522ba9b68be8f909ddeeea6c08b897a648640d93a5"
+  },
+  "source_sha256": {
+    "tools/backport_xxx_xs.py": "668c8e8268a9d1bdcf69e12119d63f55af30c879cef8ae7fa531f9d1e216f897",
+    "Run-XxxXs.ps1": "d76da74762f4c7f94a1aa6828696205aa70b7a28bdc0b8d97a4bf2e86eedb690",
+    "Sven2Bootstrap/LevelScene.cpp": "4c2178060faaedf0b05107f90a6bc8ab825bfd72b93f8cf73e63dfa8b0bd3cef",
+    "tests/Checks.cpp": "30e5479fe7f0327e33dfcb5eb81c7d5481aa4c337d1c6498fff891bc7b489d3f"
+  },
+  "limitations": [
+    "Not all 30 maps have been manually completed.",
+    "Zwo core rules/actors/UI/audio, normal Sven bonus maps, no XXX multiplayer/weather/help/mermaid/turtle implementation.",
+    "Preplaced powerups use native Zwo expiry durations.",
+    "Loose-data output; no claim of signed PAK generation or unmodified original-executable acceptance."
+  ]
+}

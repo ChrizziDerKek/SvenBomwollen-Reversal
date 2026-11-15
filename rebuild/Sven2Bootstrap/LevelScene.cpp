@@ -82,11 +82,13 @@ LevelScene::LevelScene(Engine& engine,const LevelPackInfo& pack,const LevelInfo&
         case 11: image={"Sven2/gfx/Animals/Chicken_Stand.bmp",4}; ++actors; break;
         case 12: image={"Sven2/gfx/Animals/Goat_Stand.bmp",4}; ++actors; break;
         case 13: image={"Sven2/gfx/Animals/Pig_Stand.bmp",4}; ++actors; break;
+        case 14: case 15: case 16: case 17: case 18:
+            image={"Sven2/gfx/icons.bmp",5}; break;
         default: throw std::runtime_error("Unsupported object kind in LevelScene: "+std::to_string(kind));
         }
         auto [entry, inserted]=sprites.try_emplace(image.file,nullptr);
         if(inserted) entry->second=engine.loadSprite(image.file,image.frames,1);
-        int frame=kind==1?std::clamp(record.frame(),0,static_cast<int>(image.frames)-1):std::clamp(facing,0,static_cast<int>(image.frames)-1);
+        int frame=kind>=14 && kind<=18?kind-14:kind==1?std::clamp(record.frame(),0,static_cast<int>(image.frames)-1):std::clamp(facing,0,static_cast<int>(image.frames)-1);
         SpriteDraw draw{entry->second,static_cast<int>(x),static_cast<int>(y),frame};
         if(pass==0) {
             Object object;
@@ -117,6 +119,13 @@ LevelScene::LevelScene(Engine& engine,const LevelPackInfo& pack,const LevelInfo&
             if(isAnimal(kind)) { object.impatience=2*(object.impatience/2); ++remainingTargets_; }
             // 0x422AF6 sets the stored adjustment (+92), not the final sort offset.
             if(kind>=11 && kind<=13) { object.pulse=26; object.state=0; object.depthOffset=record.height()-40; }
+            if(kind>=14 && kind<=18) {
+                // Native Zwo initializer 0x422B41..0x422B6F also initializes
+                // serialized powerups, not just those created by a spawner.
+                const char* duration[]={"FireworkTime","GiftTime","ImpotentTime","SmellTime","FlowerTime"};
+                object.pulse=parameter(duration[kind-14],10);
+                object.depthOffset=record.height()-40;
+            }
             if(kind==3) object.idle=static_cast<float>(50+randomInt(100));
             if(kind==3 || kind==6) {
                 const auto& rules=resources_.enemyRules_[kind];

@@ -184,6 +184,40 @@ void checkDepthOrdering(sven2::Engine& engine,bool capture=false) {
     sven2::log("PASS: interpolated depth, north animal approaches and occluded chicken/goat/pig interactions.");
 }
 
+void checkSerializedPowerups(sven2::Engine& engine) {
+    const auto& packs=engine.data().packs();
+    const auto xs=std::find_if(packs.begin(),packs.end(),[](const auto& p) {return p.name=="XS";});
+    const auto* icons=engine.loadSprite("Sven2/gfx/icons.bmp",5,1);
+    const char* durations[]={"FireworkTime","GiftTime","ImpotentTime","SmellTime","FlowerTime"};
+    for(int kind=14;kind<=18;++kind) {
+        auto level=fixtureLevel(engine,"serialized-powerup-"+std::to_string(kind),{{0,240,200,2},{7,280,200,0},{2,640,400,0}});
+        auto bytes=engine.readAsset(level.map);
+        const size_t record=16+9048+100;
+        auto put=[&](size_t off,int value) {std::memcpy(bytes.data()+off,&value,4);};
+        int tile=0;std::memcpy(&tile,bytes.data()+record+80,4);
+        put(record+44,kind);put(record+48,kind-14);
+        bytes[16+tile*24+12]=static_cast<unsigned char>(kind+118);
+        std::ofstream file(engine.data().root()/std::filesystem::u8path(level.map),std::ios::binary|std::ios::trunc);
+        file.write(reinterpret_cast<const char*>(bytes.data()),static_cast<std::streamsize>(bytes.size()));file.close();
+        require(static_cast<bool>(file),"Cannot write serialized powerup fixture.");
+        sven2::LevelScene pickup(engine,*xs,level,1),expiry(engine,*xs,level,1);
+        const auto& initial=pickup.draws();
+        require(std::any_of(initial.begin(),initial.end(),[&](const auto& d) {return d.sprite==icons && d.frame==kind-14;}),
+                "Serialized powerup used the wrong icon frame.");
+        step(pickup,1,0);
+        const auto& collected=pickup.draws();
+        require(std::none_of(collected.begin(),collected.end(),[&](const auto& d) {return d.sprite==icons;}),
+                "Serialized powerup did not disappear on collection.");
+        require(!pickup.takeSounds().empty(),"Serialized powerup did not activate on collection.");
+        const float duration=static_cast<float>(engine.data().parameter(durations[kind-14],10));
+        expiry.update(duration+0.1f,0,0,false);
+        const auto& expired=expiry.draws();
+        require(std::none_of(expired.begin(),expired.end(),[&](const auto& d) {return d.sprite==icons;}),
+                "Serialized powerup did not expire at its native Zwo duration.");
+    }
+    sven2::log("PASS: all five serialized Zwo powerup kinds render, collect and expire.");
+}
+
 void driveTutorial(sven2::Engine& engine,
                    const std::function<void(float,int,int,bool)>& update,
                    const std::function<const std::vector<sven2::SpriteDraw>&()>& draws,
@@ -1474,6 +1508,7 @@ int main(int argc,char** argv) {
         checkGlyphs(engine);
         checkMenus(engine,saves);
         checkDepthOrdering(engine);
+        checkSerializedPowerups(engine);
         checkMovement(engine);
         checkInteraction(engine);
         checkReportedGameplay(engine);
