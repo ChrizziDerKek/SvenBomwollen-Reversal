@@ -7,12 +7,11 @@
 #include <stdexcept>
 #include <system_error>
 
-namespace
-{
-[[noreturn]] void IoError(cstr operation, DWORD error = GetLastError())
+[[noreturn]] static void IoError(cstr operation, DWORD error = GetLastError())
 {
 	throw std::system_error(static_cast<i32>(error), std::system_category(), operation);
 }
+
 struct Handle
 {
 	HANDLE Value = INVALID_HANDLE_VALUE;
@@ -22,7 +21,8 @@ struct Handle
 			CloseHandle(Value);
 	}
 };
-void Validate(const HighscoreEntry& entry)
+
+static void Validate(const HighscoreEntry& entry)
 {
 	if (entry.Level < 0)
 		throw std::invalid_argument("Highscore level must be nonnegative");
@@ -49,14 +49,15 @@ void Validate(const HighscoreEntry& entry)
 	if (count > 20)
 		throw std::invalid_argument("Highscore name exceeds 20 Unicode characters");
 }
-void Rank(std::vector<HighscoreEntry>& entries)
+
+static void Rank(std::vector<HighscoreEntry>& entries)
 {
-	std::stable_sort(entries.begin(), entries.end(), [](const HighscoreEntry& a, const HighscoreEntry& b)
-	                 { return a.Score > b.Score; });
+	std::stable_sort(entries.begin(), entries.end(), [](const HighscoreEntry& a, const HighscoreEntry& b) { return a.Score > b.Score; });
 	if (entries.size() > 10)
 		entries.resize(10);
 }
-void SaveTextFile(const fpath& file, const str& data)
+
+static void SaveTextFile(const fpath& file, const str& data)
 {
 	std::filesystem::create_directories(file.parent_path());
 	// CREATE_NEW prevents collisions and never truncates another writer's temp.
@@ -104,7 +105,6 @@ void SaveTextFile(const fpath& file, const str& data)
 	}
 }
 
-} // namespace
 Highscores::Highscores(fpath file, std::vector<HighscoreEntry> defaults)
     : File(std::filesystem::absolute(std::move(file)))
 {
@@ -186,22 +186,25 @@ Highscores::Highscores(fpath file, std::vector<HighscoreEntry> defaults)
 	}
 	Rank(Entries);
 }
+
 bool Highscores::Qualifies(i32 score) const noexcept
 {
 	return score >= 0 && (Entries.size() < 10 || score > Entries.back().Score);
 }
+
 void Highscores::Submit(const str& name, i32 score, i32 level, i32 sheep)
 {
 	if (level < 1)
 		throw std::invalid_argument("Submitted highscore level must be at least 1");
 	HighscoreEntry entry{ name, score, level, sheep };
 	Validate(entry);
-	auto next = Entries;
+	std::vector<HighscoreEntry> next = Entries;
 	next.push_back(std::move(entry));
 	Rank(next);
 	Save(next);
 	Entries.swap(next);
 }
+
 void Highscores::Save(const std::vector<HighscoreEntry>& entriesToSave) const
 {
 	str data;

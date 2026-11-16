@@ -118,7 +118,6 @@
     <ClInclude Include="Scene/Objects/ObjectCatalog.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Engine/LegacyAudioAbi.h" />
     <ClCompile Include="Scene/Characters/AnimalCharacter.cpp" />
     <ClInclude Include="Scene/Characters/AnimalCharacter.h" />
     <ClCompile Include="Scene/Characters/EnemyCharacter.cpp" />

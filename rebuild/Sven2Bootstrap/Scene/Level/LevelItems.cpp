@@ -9,8 +9,7 @@
 
 LevelItems::LevelItems(LevelScene& scene)
     : Scene(scene)
-{
-}
+{}
 
 i32 LevelItems::FindDistraction(const Object& actor, ItemCode code) const
 {
@@ -70,11 +69,13 @@ void LevelItems::SpawnItem(ObjectKind kind, i32 tile)
 		return;
 	size_t slot = Scene.Objects.Size();
 	for (size_t i = 0; i < Scene.Objects.Size(); ++i)
+	{
 		if (Scene.Objects[i].Freed && i != Scene.PlayerIndex && static_cast<i32>(i) != Scene.Player.ActiveSheep && static_cast<i32>(i) != Scene.UfoController.Ufo.Target)
 		{
 			slot = i;
 			break;
 		}
+	}
 	if (slot >= 256)
 		return; // original object pool also has 256 slots
 	Object object;

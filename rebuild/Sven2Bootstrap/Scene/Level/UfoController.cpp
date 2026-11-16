@@ -8,8 +8,7 @@
 
 UfoController::UfoController(LevelScene& scene)
     : Scene(scene)
-{
-}
+{}
 
 void UfoController::RequestUfo(i32 target)
 {

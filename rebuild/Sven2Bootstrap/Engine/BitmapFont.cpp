@@ -136,8 +136,7 @@ void BitmapFont::Layout(std::vector<SpriteDraw>* draws, const wstr& text, i32 x,
 		}
 	}
 	i32 offset = 0;
-	auto newline = [&]()
-	{ measured = (std::max)(measured, offset); offset = 0; y = Checked(static_cast<i64>(y) + lineHeight); };
+	auto newline = [&]() { measured = (std::max)(measured, offset); offset = 0; y = Checked(static_cast<i64>(y) + lineHeight); };
 	for (size_t i = 0; i < glyphs.size(); ++i)
 	{
 		i32 g = glyphs[i];

@@ -64,8 +64,7 @@ GameData::GameData(fpath root)
 	for (const auto& entry : std::filesystem::directory_iterator(root))
 		if (entry.is_directory() && !EqualWindows(entry.path().filename().native(), L"Sven2"))
 			directories.push_back(entry.path().filename());
-	std::sort(directories.begin(), directories.end(), [](const fpath& a, const fpath& b)
-	          { const i32 order = CompareStringOrdinal(a.c_str(), -1, b.c_str(), -1, TRUE); return order == CSTR_LESS_THAN || (order == CSTR_EQUAL && a.native() < b.native()); });
+	std::sort(directories.begin(), directories.end(), [](const fpath& a, const fpath& b) { const i32 order = CompareStringOrdinal(a.c_str(), -1, b.c_str(), -1, TRUE); return order == CSTR_LESS_THAN || (order == CSTR_EQUAL && a.native() < b.native()); });
 	for (const fpath& directory : directories)
 	{
 		const wstr expected = directory.native() + L".xml";
@@ -104,8 +103,7 @@ fpath GameData::AssetPath(str name) const
 	for (const fpath& part : relative)
 	{
 		const wstr& component = part.native();
-		if (component.empty() || component == L"." || component == L".." || component.find_first_of(L"<>:\"|?*") != wstr::npos || component.back() == L'.' || component.back() == L' ' || std::any_of(component.begin(), component.end(), [](wchar_t c)
-		                                                                                                                                                                                              { return c < 32; }))
+		if (component.empty() || component == L"." || component == L".." || component.find_first_of(L"<>:\"|?*") != wstr::npos || component.back() == L'.' || component.back() == L' ' || std::any_of(component.begin(), component.end(), [](wchar_t c) { return c < 32; }))
 			throw std::invalid_argument("Invalid relative asset component.");
 		bool found = false;
 		for (const auto& entry : std::filesystem::directory_iterator(resolved))

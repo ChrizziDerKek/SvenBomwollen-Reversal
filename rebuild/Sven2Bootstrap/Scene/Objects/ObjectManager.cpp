@@ -6,43 +6,39 @@
 #include "Scene/Characters/Characters.h"
 #include <stdexcept>
 
-namespace
-{
 class SceneryObject final : public BaseObject
 {
 public:
 	SceneryObject(LevelScene& scene, size_t index)
 	    : BaseObject(scene, ObjectPhase::Items, index)
-	{
-	}
+	{}
 	void Update(f32 seconds) override;
 };
+
 class ItemObject final : public BaseObject
 {
 public:
 	ItemObject(LevelScene& scene, size_t index)
 	    : BaseObject(scene, ObjectPhase::Items, index)
-	{
-	}
+	{}
 	void Update(f32 seconds) override;
 };
+
 class EffectObject final : public BaseObject
 {
 public:
 	EffectObject(LevelScene& scene, size_t index)
 	    : BaseObject(scene, ObjectPhase::Effects, index)
-	{
-	}
+	{}
 	void Update(f32 seconds) override;
 };
-} // namespace
 
 ObjectManager::ObjectManager(LevelScene& scene)
     : Scene(scene), PendingPlayer(std::make_unique<PlayerCharacter>(scene)), Player(PendingPlayer.get())
-{
-}
+{}
 
 ObjectManager::~ObjectManager() = default;
+
 PlayerCharacter& ObjectManager::GetPlayer()
 {
 	return *Player;
@@ -83,6 +79,7 @@ void ObjectManager::Add(const WorldObject& state)
 	Objects.push_back(Create(state, Size()));
 	Objects.back()->Initialize();
 }
+
 void ObjectManager::Replace(size_t index, const WorldObject& state)
 {
 	if (Objects.at(index).get() == Player)
@@ -126,10 +123,12 @@ void SceneryObject::Update(f32 seconds)
 {
 	Scene.GetItems().UpdateObject(GetIndex(), seconds);
 }
+
 void ItemObject::Update(f32 seconds)
 {
 	Scene.GetItems().UpdateObject(GetIndex(), seconds);
 }
+
 void EffectObject::Update(f32 seconds)
 {
 	Scene.GetEffects().UpdateWorldEffect(GetIndex(), seconds);

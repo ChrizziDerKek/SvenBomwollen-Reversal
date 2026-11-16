@@ -12,14 +12,17 @@ AnimalCharacter::AnimalCharacter(LevelScene& scene, size_t index, ObjectPhase ph
 	const f64 speed = scene.Engine.GetData().NumericParam("SheepSpeed", 50);
 	SheepSpeed = std::isfinite(speed) && speed > 0 ? static_cast<f32>(speed) : 50;
 }
+
 void AnimalCharacter::Update(f32 seconds)
 {
 	UpdateOtherAnimal(seconds);
 }
+
 void AnimalCharacter::Resolve()
 {
 	ResolveSheep(GetState());
 }
+
 void Sheep::Update(f32 seconds)
 {
 	UpdateSheep(seconds);

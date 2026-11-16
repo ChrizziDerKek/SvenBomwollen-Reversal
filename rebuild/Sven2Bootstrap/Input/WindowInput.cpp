@@ -29,8 +29,7 @@ WindowInput::Result WindowInput::Poll()
 	std::array<bool, 256> held{};
 	for (i32 i = 0; i < 256; ++i)
 		held[i] = (GetAsyncKeyState(i) & 0x8000) != 0;
-	auto pressed = [&](i32 key)
-	{ return held[key] && !Previous[key]; };
+	auto pressed = [&](i32 key) { return held[key] && !Previous[key]; };
 	input.Confirm = pressed(VK_RETURN) || pressed(VK_SPACE);
 	input.Back = pressed(VK_ESCAPE);
 	input.Click = pressed(VK_LBUTTON);

@@ -9,8 +9,7 @@
 
 SceneRenderer::SceneRenderer(LevelScene& scene)
     : Scene(scene), OverlayFont(scene.Engine, true)
-{
-}
+{}
 
 const std::vector<SpriteDraw>& SceneRenderer::Draws()
 {

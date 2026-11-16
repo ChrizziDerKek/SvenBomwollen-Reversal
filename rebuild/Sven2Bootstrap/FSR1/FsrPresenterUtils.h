@@ -1,9 +1,6 @@
 #pragma once
 #include "Types.h"
 
-namespace
-{
-
 void Check(HRESULT result, cstr operation)
 {
 	if (FAILED(result))
@@ -26,4 +23,3 @@ ComPtr<ID3DBlob> Compile(cstr entry, cstr target, cstr pass = nullptr)
 		throw std::runtime_error("FSR1 shader compilation: " + (errors ? str(static_cast<cstr>(errors->GetBufferPointer()), errors->GetBufferSize()) : "Cannot read shaders/Fsr1.hlsl or its AMD headers."));
 	return code;
 }
-} // namespace

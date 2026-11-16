@@ -15,6 +15,5 @@ public:
 protected:
 	BaseCharacter(LevelScene& scene, ObjectPhase phase = ObjectPhase::Player, size_t index = 0)
 	    : BaseObject(scene, phase, index)
-	{
-	}
+	{}
 };

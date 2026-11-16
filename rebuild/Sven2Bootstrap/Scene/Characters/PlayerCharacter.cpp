@@ -8,8 +8,7 @@
 
 PlayerCharacter::PlayerCharacter(LevelScene& scene)
     : BaseCharacter(scene)
-{
-}
+{}
 
 void PlayerCharacter::MarkPlayerCell()
 {

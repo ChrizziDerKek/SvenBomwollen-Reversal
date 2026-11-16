@@ -1,4 +1,3 @@
-#include "LegacyAudioAbi.h"
 #include "Utility/Logger.h"
 #include "MudGE.h"
 #include "FSR1/FsrPresenter.h"
@@ -175,7 +174,7 @@ bool MudGE::PlaySample(const str& path, bool looped)
 		// Sven2_Audio_LoadSoundsFromXml uses the sample loader at slot +0x68.
 		try
 		{
-			sample->second = Method<any(__thiscall*)(any, const LegacyString&)>(SoundSystem, LegacyAudioAbi::LoadSample)(SoundSystem, url);
+			sample->second = Method<any(__thiscall*)(any, const LegacyString&)>(SoundSystem, 0x68)(SoundSystem, url);
 		}
 		catch (...)
 		{
@@ -193,9 +192,9 @@ bool MudGE::PlaySample(const str& path, bool looped)
 		// Original 0x422D23..0x422D2E: sample slot +0x40 ORs flag 2,
 		// which DX_SoundSystemPlugin maps to DSBPLAY_LOOPING.
 		StopLoopedSound();
-		Method<void(__thiscall*)(any, i32)>(sample->second, LegacyAudioAbi::SetSampleFlags)(sample->second, LegacyAudioAbi::LoopingSampleFlag);
+		Method<void(__thiscall*)(any, i32)>(sample->second, 0x40)(sample->second, 0x02);
 	}
-	any channel = Method<any(__thiscall*)(any)>(sample->second, LegacyAudioAbi::PlaySample)(sample->second);
+	any channel = Method<any(__thiscall*)(any)>(sample->second, 0x54)(sample->second);
 	if (looped)
 		LoopedChannel = channel;
 	if (looped && channel)
@@ -208,14 +207,14 @@ void MudGE::StopLoopedSound()
 	if (!LoopedChannel)
 		return;
 	// Original Sven2_Audio_StopLoopedSound, 0x424070: channel slot +0x10.
-	Method<void(__thiscall*)(any)>(LoopedChannel, LegacyAudioAbi::StopChannel)(LoopedChannel);
+	Method<void(__thiscall*)(any)>(LoopedChannel, 0x10)(LoopedChannel);
 	LoopedChannel = nullptr;
 	Log("Stopped looping sound.");
 }
 
 bool MudGE::LoopedSoundPlaying() const
 {
-	return LoopedChannel && Method<bool(__thiscall*)(any)>(LoopedChannel, LegacyAudioAbi::ChannelPlaying)(LoopedChannel);
+	return LoopedChannel && Method<bool(__thiscall*)(any)>(LoopedChannel, 0x0C)(LoopedChannel);
 }
 
 bool MudGE::PlayMusic(const str& path)
@@ -227,7 +226,7 @@ bool MudGE::PlayMusic(const str& path)
 	any loaded = nullptr;
 	try
 	{
-		loaded = Method<any(__thiscall*)(any, const LegacyString&, i32)>(SoundSystem, LegacyAudioAbi::LoadStream)(SoundSystem, url, 1);
+		loaded = Method<any(__thiscall*)(any, const LegacyString&, i32)>(SoundSystem, 0x70)(SoundSystem, url, 1);
 	}
 	catch (...)
 	{
@@ -241,7 +240,7 @@ bool MudGE::PlayMusic(const str& path)
 		Log("Music stream unavailable: " + path);
 		return false;
 	}
-	if (!Method<any(__thiscall*)(any)>(MusicStream, LegacyAudioAbi::StreamPlaying)(MusicStream))
+	if (!Method<any(__thiscall*)(any)>(MusicStream, 0x20)(MusicStream))
 	{
 		Log("Music playback unavailable: " + path);
 		StopMusic();
@@ -255,11 +254,11 @@ void MudGE::StopMusic()
 {
 	if (!MusicStream)
 		return;
-	Method<void(__thiscall*)(any)>(MusicStream, LegacyAudioAbi::StopStream)(MusicStream);
+	Method<void(__thiscall*)(any)>(MusicStream, 0x1C)(MusicStream);
 	// DX_SoundSystemPlugin::LoadStream permits only four allocated streams
 	// (0x100039FF). Stop alone leaves that slot occupied. Its deleting
 	// destructor unregisters the stream and its channel (0x10002290).
-	Method<any(__thiscall*)(any, u32)>(MusicStream, LegacyAudioAbi::DestroyStream)(MusicStream, LegacyAudioAbi::DeleteObject);
+	Method<any(__thiscall*)(any, u32)>(MusicStream, 0x00)(MusicStream, 0x01);
 	MusicStream = nullptr;
 	Log("Stopped music stream.");
 }

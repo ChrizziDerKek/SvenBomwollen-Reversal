@@ -9,8 +9,7 @@
 
 SceneResources::SceneResources(LevelScene& scene)
     : Scene(scene)
-{
-}
+{}
 
 const Sprite* SceneResources::GetSprite(const str& path, i32 frames)
 {
@@ -92,7 +91,6 @@ void SceneResources::InitializeActors()
 		ActorSprites[ObjectKind::Alien].Battle[d] = GetSprite("Sven2/gfx/Alien/anim_alien_probe2.bmp", 55);
 		ActorSprites[ObjectKind::Dog].Battle[d] = ActorSprites[ObjectKind::Farmer].Battle[d] = GetSprite("Sven2/gfx/anim_cloud.bmp", 10);
 	}
-
 	struct AnimalResources
 	{
 		ObjectKind Kind;
@@ -187,7 +185,6 @@ void SceneResources::InitializePlayer()
 	const ::Sprite* frigidaFront = Scene.Engine.LoadSprite("Sven2/gfx/Frigida/anim_frigida_final_normal_front.bmp", 3, 1);
 	const ::Sprite* frigidaBack = Scene.Engine.LoadSprite("Sven2/gfx/Frigida/anim_frigida_final_normal_back.bmp", 3, 1);
 	Frigida = { frigidaBack, frigidaFront, frigidaFront, frigidaBack };
-
 	// 0x40B040 installs two variants per animation; 0x4413DC supplies all 66 Directions.
 	Interactions = ShagAnimation::Load(Scene.Engine);
 }

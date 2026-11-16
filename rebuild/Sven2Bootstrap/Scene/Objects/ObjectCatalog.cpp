@@ -30,8 +30,6 @@ const CharacterDefinition* FindCharacterDefinition(ObjectKind serializedKind)
 	return nullptr;
 }
 
-namespace
-{
 const std::vector<ItemDefinition> Items = {
 	{ ObjectKind::Beer, ItemCode::Beer, "Sven2/gfx/Beer.bmp", 1, 0, "BeerTime", 16, nullptr, 0, nullptr },
 	{ ObjectKind::Teddy, ItemCode::Teddy, "Sven2/gfx/Teddybear.bmp", 1, 0, "TeddyTime", 16, nullptr, 0, nullptr },
@@ -43,7 +41,6 @@ const std::vector<ItemDefinition> Items = {
 	{ ObjectKind::StinkMushroom, ItemCode::StinkMushroom, "Sven2/gfx/icons.bmp", 5, 3, "SmellTime", 10, "SmellDuration", 15, "item_stinky.ogg" },
 	{ ObjectKind::Flower, ItemCode::Flower, "Sven2/gfx/icons.bmp", 5, 4, "FlowerTime", 10, "FlowerDuration", 10, "item_rose.ogg" }
 };
-}
 
 const ItemDefinition* FindItemDefinition(ObjectKind kind)
 {

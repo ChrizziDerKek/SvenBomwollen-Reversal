@@ -10,9 +10,7 @@ class BaseObject
 public:
 	virtual ~BaseObject() = default;
 	virtual void Update(f32 seconds) = 0;
-	virtual void Initialize()
-	{
-	}
+	virtual void Initialize() {}
 	WorldObject& GetState()
 	{
 		return State;
@@ -35,8 +33,7 @@ public:
 protected:
 	BaseObject(LevelScene& scene, ObjectPhase phase, size_t index = 0)
 	    : Scene(scene), Phase(phase), SlotIndex(index)
-	{
-	}
+	{}
 
 	LevelScene& Scene;
 	WorldObject State;

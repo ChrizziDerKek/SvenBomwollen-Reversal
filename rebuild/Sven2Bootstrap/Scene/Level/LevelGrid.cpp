@@ -9,8 +9,7 @@
 
 LevelGrid::LevelGrid(LevelScene& scene)
     : Scene(scene)
-{
-}
+{}
 
 void LevelGrid::Load(const LevelFile& file)
 {

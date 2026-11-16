@@ -169,8 +169,7 @@ void GameSession::UpdateLifeEffects(f32 seconds)
 				effect.Y = 601;
 			}
 		}
-		LifeEffects.erase(std::remove_if(LifeEffects.begin(), LifeEffects.end(), [&](const LifeEffect& effect)
-		                                 { return effect.Y > 600 || effect.X < -LifeIcon->FrameWidth; }),
+		LifeEffects.erase(std::remove_if(LifeEffects.begin(), LifeEffects.end(), [&](const LifeEffect& effect) { return effect.Y > 600 || effect.X < -LifeIcon->FrameWidth; }),
 		                  LifeEffects.end());
 	}
 }
@@ -290,6 +289,7 @@ std::vector<SoundRequest> GameSession::TakeAudioEvents()
 {
 	return std::exchange(Sounds, {});
 }
+
 std::vector<str> GameSession::TakeSounds()
 {
 	std::vector<str> result;

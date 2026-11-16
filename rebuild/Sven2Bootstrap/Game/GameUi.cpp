@@ -4,29 +4,29 @@
 #include <iomanip>
 #include <sstream>
 
-namespace
-{
 str Padded(i32 value, i32 width = 5)
 {
 	std::ostringstream text;
 	text << std::setw(width) << value;
 	return text.str();
 }
+
 i32 Wrap(i32 value, i32 length)
 {
 	return (value + length) % length;
 }
+
 bool Within(POINT point, i32 x, i32 y, i32 width, i32 height)
 {
 	return point.x >= x && point.y >= y && point.x < x + width && point.y < y + height;
 }
+
 str Numbered(cstr prefix, i32 index)
 {
 	std::ostringstream text;
 	text << prefix << std::setfill('0') << std::setw(2) << index;
 	return text.str();
 }
-} // namespace
 
 GameUi::GameUi(MudGE& engine, fpath saves)
     : Engine(engine), Data(engine.GetData()), Saves(std::move(saves)), Large(engine), Small(engine, true), Green(engine, false, true), Clouds(engine.LoadSprite("Sven2/gfx/mainmenu_clouds.jpg", 1, 1, true)), Backdrop(engine.LoadSprite("Sven2/gfx/mainmenu_BG.jpg", 1, 1)), Logo(engine.LoadSprite("Sven2/gfx/SvenLogo.bmp", 1, 1)), LogoDetail(engine.LoadSprite("Sven2/gfx/SvenLogo_O.bmp", 4, 1)), Buttons(engine.LoadSprite("Sven2/gfx/mainmenu_buttons.bmp", 10, 1)), PackPanel(engine.LoadSprite("Sven2/gfx/smallmenu_choose_level.bmp", 1, 1)), HelpBackdrop(engine.LoadSprite("Sven2/gfx/Help_BG.jpg", 1, 1)), HelpTabs(engine.LoadSprite("Sven2/gfx/Help_file_cards.bmp", 8, 1)), ScorePanel(engine.LoadSprite("Sven2/gfx/ScoreScreen_BG.bmp", 1, 1)), PackFinish(engine.LoadSprite("Sven2/gfx/ScoreScreen_BG_levelpack.bmp", 1, 1)), ScoreTabs(engine.LoadSprite("Sven2/gfx/Highsc_file_cards.bmp", 10, 1)), Highlight(engine.LoadSprite("Sven2/gfx/selection_bar.bmp", 1, 1)), PausePanel(engine.LoadSprite("Sven2/gfx/smallmenu_BG.bmp", 1, 1)), Timer(engine.LoadSprite("Sven2/gfx/timer.bmp", 1, 1)), Life(engine.LoadSprite("Sven2/gfx/Life_icon.bmp", 1, 1)), Sheep(engine.LoadSprite("Sven2/gfx/Sheep/Sheep_Stand.bmp", 4, 1)), Score(engine.LoadSprite("Sven2/gfx/score.bmp", 4, 1)), Icons(engine.LoadSprite("Sven2/gfx/icons.bmp", 5, 1)), Artifact(engine.LoadSprite("Sven2/gfx/Artifact.bmp", 1, 1)), Arrows(engine.LoadSprite("Sven2/gfx/pijlen.bmp", 8, 1)), Cursor(engine.LoadSprite("Sven2/gfx/mousecursor.bmp", 5, 1)), CardBlank(engine.LoadSprite("Sven2/gfx/Highsc_file_card_blank.bmp", 1, 1)), NoAnimation(engine.LoadSprite("Sven2/gfx/noanim.bmp", 1, 1)), LeaveImage(engine.LoadSprite("Sven2/gfx/smallmenu_BG_verlassen.bmp", 1, 1)), GameOverImage(engine.LoadSprite("Sven2/gfx/smallmenu_BG_gameover.bmp", 1, 1))
@@ -42,10 +42,12 @@ const LevelPackInfo& GameUi::GetPack() const
 {
 	return Data.GetPacks().at(PackIndex);
 }
+
 const LevelSetInfo& GameUi::GetLevelSet() const
 {
 	return GetPack().LevelSets.at(SetIndex);
 }
+
 void GameUi::Show(Page page)
 {
 	CurrentPage = page;
@@ -61,10 +63,12 @@ void GameUi::Show(Page page)
 		EpisodeFirst = selected == entries.end() ? 0 : std::max(0, static_cast<i32>(selected - entries.begin()) - 6);
 	}
 }
+
 void GameUi::SetNotice(const str& message)
 {
 	this->Notice = message;
 }
+
 std::vector<str> GameUi::TakeSounds()
 {
 	std::vector<str> events;
@@ -442,12 +446,11 @@ void GameUi::AppendScores()
 	DrawCommands.push_back({ Score, 375, 70, 0 });
 	Large.Append(DrawCommands, Data.Text("HighscoreLevel"), 540, 80);
 	DrawCommands.push_back({ Sheep, 595, 35, 1 });
-	auto entriesToDraw = Scores().GetEntries();
+	std::vector<HighscoreEntry> entriesToDraw = Scores().GetEntries();
 	i32 editingRow = -1;
 	if (CurrentPage == Page::Name)
 	{
-		auto position = std::find_if(entriesToDraw.begin(), entriesToDraw.end(), [&](const HighscoreEntry& entry)
-		                             { return entry.Score < Result.Score; });
+		auto position = std::find_if(entriesToDraw.begin(), entriesToDraw.end(), [&](const HighscoreEntry& entry) { return entry.Score < Result.Score; });
 		editingRow = static_cast<i32>(position - entriesToDraw.begin());
 		entriesToDraw.insert(position, { EnteredName, Result.Score, Result.Level, Result.TotalSheep });
 		if (entriesToDraw.size() > 10)

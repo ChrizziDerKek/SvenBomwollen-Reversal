@@ -9,12 +9,13 @@
 
 EnemyCharacter::EnemyCharacter(LevelScene& scene, size_t index)
     : BaseCharacter(scene, ObjectPhase::Enemies, index)
-{
-}
+{}
+
 void EnemyCharacter::Initialize()
 {
 	DrawEnemy(GetState());
 }
+
 void EnemyCharacter::Update(f32 seconds)
 {
 	UpdateEnemy(seconds);

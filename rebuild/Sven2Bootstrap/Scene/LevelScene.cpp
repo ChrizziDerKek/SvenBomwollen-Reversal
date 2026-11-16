@@ -8,7 +8,7 @@
 #include <map>
 #include <stdexcept>
 
-const LevelPackInfo& FirstPack(const MudGE& engine)
+static const LevelPackInfo& FirstPack(const MudGE& engine)
 {
 	for (const LevelPackInfo& pack : engine.GetData().GetPacks())
 		if (pack.Name == "XS")
@@ -16,7 +16,7 @@ const LevelPackInfo& FirstPack(const MudGE& engine)
 	throw std::runtime_error("The XS level pack is missing.");
 }
 
-const LevelInfo& FirstLevel(const MudGE& engine)
+static const LevelInfo& FirstLevel(const MudGE& engine)
 {
 	const LevelPackInfo& pack = FirstPack(engine);
 	for (const LevelSetInfo& set : pack.LevelSets)
@@ -27,12 +27,12 @@ const LevelInfo& FirstLevel(const MudGE& engine)
 
 LevelScene::LevelScene(MudGE& engine)
     : LevelScene(engine, static_cast<u32>(GetTickCount64()))
-{
-}
+{}
+
 LevelScene::LevelScene(MudGE& engine, u32 seed)
     : LevelScene(engine, FirstPack(engine), FirstLevel(engine), seed)
-{
-}
+{}
+
 LevelScene::LevelScene(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& level, u32 seed, u32* sharedRandomState)
     : Engine(engine), Objects(*this), RandomState(seed), SharedRandomState(sharedRandomState), Grid(*this), Resources(*this), Player(Objects.GetPlayer()), Items(*this), UfoController(*this), Effects(*this), Renderer(*this)
 {
@@ -42,7 +42,7 @@ LevelScene::LevelScene(MudGE& engine, const LevelPackInfo& pack, const LevelInfo
 	UfoController.HideUfo = file->GetHidesUfo();
 	InitialTime = file->GetTimeLimit();
 	Objects.Reserve(LevelFile::ObjectCount);
-	std::array<i32, LevelFile::ObjectCount> slots;
+	std::array<i32, LevelFile::ObjectCount> slots{};
 	slots.fill(-1);
 	Grid.Load(*file);
 	Renderer.Background = { engine.LoadSprite(descriptor.Background, 1, 1, true), 0, 0, 0 };
@@ -352,6 +352,7 @@ std::vector<SoundRequest> LevelScene::TakeAudioEvents()
 	result.swap(Sounds);
 	return result;
 }
+
 std::vector<str> LevelScene::TakeSounds()
 {
 	std::vector<str> result;
@@ -359,10 +360,12 @@ std::vector<str> LevelScene::TakeSounds()
 		result.push_back(request.Asset);
 	return result;
 }
+
 const std::vector<SpriteDraw>& LevelScene::Draws()
 {
 	return Renderer.Draws();
 }
+
 bool LevelScene::TakeSplashSound()
 {
 	return Effects.TakeSplashSound();

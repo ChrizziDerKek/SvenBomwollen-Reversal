@@ -12,12 +12,12 @@ struct SoundRequest
 {
 	SoundRequest(str asset, SoundPlayback playback = SoundPlayback::OneShot)
 	    : Asset(std::move(asset)), Playback(playback)
-	{
-	}
+	{}
+
 	SoundRequest(cstr asset)
 	    : SoundRequest(str(asset))
-	{
-	}
+	{}
+
 	str Asset;
 	SoundPlayback Playback;
 };

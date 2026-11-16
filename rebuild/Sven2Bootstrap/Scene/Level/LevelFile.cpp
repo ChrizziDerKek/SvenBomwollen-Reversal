@@ -3,17 +3,15 @@
 #include <cmath>
 #include <stdexcept>
 
-namespace
-{
 template <class T>
 T ReadWord(const u8* bytes, size_t offset)
 {
 	static_assert(sizeof(T) == 4);
-	T value;
+	T value{};
 	std::memcpy(&value, bytes + offset, 4);
 	return value;
 }
-} // namespace
+
 LevelFile::LevelFile(const bytestream& bytes, const str& path)
 {
 	constexpr size_t headerSize = 16, gridAndStateSize = 9048, objectBytes = 100;
