@@ -289,9 +289,9 @@ void LevelScene::Update(f32 seconds, i32 dx, i32 dy, bool actionPressed)
 {
 	if (!std::isfinite(seconds) || seconds < 0)
 		return;
-	if (!Player.PlayerAction)
+	if (Player.PlayerAction == PlayerActionState::Idle)
 		Player.ActionQueued = false; // source clears the edge flag in idle/walking state 0
-	if (actionPressed && !Player.ActionDown && (Player.PlayerAction == PlayerActions::Idle || Player.PlayerAction == PlayerActions::Interaction || Player.PlayerAction == PlayerActions::Frigida))
+	if (actionPressed && !Player.ActionDown && (Player.PlayerAction == PlayerActionState::Idle || Player.PlayerAction == PlayerActionState::Interaction || Player.PlayerAction == PlayerActionState::Frigida))
 		Player.ActionQueued = true;
 	Player.ActionDown = actionPressed;
 	dx = std::clamp(dx, -1, 1);

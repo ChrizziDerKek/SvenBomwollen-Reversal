@@ -273,7 +273,7 @@ void EnemyCharacter::EnemyArrived()
 		BeginBattle();
 		return;
 	}
-	const bool activity = Scene.Player.PlayerAction == PlayerActions::Interaction || Scene.Player.PlayerAction == PlayerActions::Frigida;
+	const bool activity = Scene.Player.PlayerAction == PlayerActionState::Interaction || Scene.Player.PlayerAction == PlayerActionState::Frigida;
 	// Lars sometimes gives up with a directional grumble once Sven stops.
 	if (actor.Kind == ObjectKind::Farmer && actor.Hunting && actor.ItemTarget < 0 && !activity && Scene.RandomInt(2) == 0)
 	{
@@ -379,7 +379,7 @@ void EnemyCharacter::UpdateEnemy(f32 seconds)
 			}
 		}
 		const ItemCode code = DistractionCode(actor.Kind);
-		const bool activity = Scene.Player.PlayerAction == PlayerActions::Interaction || Scene.Player.PlayerAction == PlayerActions::Frigida;
+		const bool activity = Scene.Player.PlayerAction == PlayerActionState::Interaction || Scene.Player.PlayerAction == PlayerActionState::Frigida;
 		if (!actor.Retry)
 		{
 			if (code != ItemCode::None)
@@ -585,7 +585,7 @@ void EnemyCharacter::BeginBattle()
 	actor.Draw.Frame = 0;
 	if (actor.Kind == ObjectKind::Girl)
 		actor.AnimRate = 20;
-	Scene.Player.PlayerAction = PlayerActions::Idle;
+	Scene.Player.PlayerAction = PlayerActionState::Idle;
 	Scene.Player.ActiveSheep = -1;
 	Scene.Player.Interaction = nullptr;
 	Scene.Player.ActionQueued = false;

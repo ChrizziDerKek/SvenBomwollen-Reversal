@@ -22,7 +22,7 @@ const std::vector<SpriteDraw>& SceneRenderer::Draws()
 		// These animations are placed at the animal's canvas, although the
 		// command is stored on Sven. Keep that compound sprite at its visible
 		// owner's depth instead of promoting it to Sven's approach position.
-		if (object.Kind == ObjectKind::Player && Scene.Player.PlayerAction == PlayerActions::Interaction && Scene.Player.ActiveSheep >= 0)
+		if (object.Kind == ObjectKind::Player && Scene.Player.PlayerAction == PlayerActionState::Interaction && Scene.Player.ActiveSheep >= 0)
 		{
 			const WorldObject& animal = Scene.Objects[Scene.Player.ActiveSheep];
 			if (Scene.IsAnimal(animal.Kind) && animal.Kind != ObjectKind::Sheep)
@@ -49,7 +49,7 @@ const std::vector<SpriteDraw>& SceneRenderer::Draws()
 	{
 		if (object.Freed)
 			continue;
-		const bool interacting = Scene.IsAnimal(object.Kind) && Scene.Player.ActiveSheep >= 0 && (Scene.Player.PlayerAction == PlayerActions::Interaction || Scene.Player.PlayerAction == PlayerActions::Kicked || Scene.Player.PlayerAction == PlayerActions::Frigida) && object.Tile == Scene.Objects[Scene.Player.ActiveSheep].Tile;
+		const bool interacting = Scene.IsAnimal(object.Kind) && Scene.Player.ActiveSheep >= 0 && (Scene.Player.PlayerAction == PlayerActionState::Interaction || Scene.Player.PlayerAction == PlayerActionState::Kicked || Scene.Player.PlayerAction == PlayerActionState::Frigida) && object.Tile == Scene.Objects[Scene.Player.ActiveSheep].Tile;
 		if (object.Kind == ObjectKind::Player && Scene.Objects.Combat.Enemy >= 0)
 			continue;
 		if (!interacting && object.Draw.Sprite)
@@ -69,7 +69,7 @@ const std::vector<SpriteDraw>& SceneRenderer::Draws()
 			indicator(object);
 		// Original player render states 1/2 draw the indicator after the combined
 		// interaction sprite (0x40D977-0x40D9E8), so it cannot be painted over.
-		if (object.Kind == ObjectKind::Player && Scene.Player.ActiveSheep >= 0 && (Scene.Player.PlayerAction == PlayerActions::Interaction || Scene.Player.PlayerAction == PlayerActions::Kicked || Scene.Player.PlayerAction == PlayerActions::Frigida) && Scene.IsAnimal(Scene.Objects[Scene.Player.ActiveSheep].Kind))
+		if (object.Kind == ObjectKind::Player && Scene.Player.ActiveSheep >= 0 && (Scene.Player.PlayerAction == PlayerActionState::Interaction || Scene.Player.PlayerAction == PlayerActionState::Kicked || Scene.Player.PlayerAction == PlayerActionState::Frigida) && Scene.IsAnimal(Scene.Objects[Scene.Player.ActiveSheep].Kind))
 			indicator(Scene.Objects[Scene.Player.ActiveSheep]);
 	}
 	const i32 frame = static_cast<i32>(Scene.Effects.SplashAge * SplashFrameRate);

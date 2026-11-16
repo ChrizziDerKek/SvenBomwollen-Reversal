@@ -120,13 +120,13 @@ void PlayerCharacter::Act(bool continuation)
 			animal.State = ActorState::Turning;
 			animal.Age = 0;
 			animal.Idle = 75;
-			PlayerAction = PlayerActions::Whistle;
+			PlayerAction = PlayerActionState::Whistle;
 			Scene.Sounds.push_back("Sven2/sfx/Sven_whistle.ogg");
 			return;
 		}
 		if (animal.Kind == ObjectKind::Sheep && animal.Impatience == 10 && animal.Temperament != 2)
 		{
-			PlayerAction = PlayerActions::Kicked;
+			PlayerAction = PlayerActionState::Kicked;
 			Scene.Effects.AddTime(-10, animal.X + 60, animal.Y + 60);
 			Scene.Sounds.push_back("Sven2/sfx/Sheep_kickSven.ogg");
 			return;
@@ -140,7 +140,7 @@ void PlayerCharacter::Act(bool continuation)
 			++animal.Attempts;
 		if (animal.Kind == ObjectKind::Sheep && animal.Temperament == 2)
 		{
-			PlayerAction = PlayerActions::Frigida;
+			PlayerAction = PlayerActionState::Frigida;
 			Scene.Sounds.push_back("Sven2/sfx/Frigida_kettle.ogg");
 			Scene.Objects[Scene.PlayerIndex].Draw = { Scene.Resources.Frigida[animal.Facing], static_cast<i32>(animal.X), static_cast<i32>(animal.Y), FrigidaFrames[0], SheepMirror[animal.Facing] };
 			return;
@@ -154,7 +154,7 @@ void PlayerCharacter::Act(bool continuation)
 				ActiveSheep = -1;
 				return;
 			}
-			PlayerAction = PlayerActions::Interaction;
+			PlayerAction = PlayerActionState::Interaction;
 			Scene.Sounds.push_back(Interaction->Sound);
 			Scene.Objects[Scene.PlayerIndex].Draw = { Interaction->Sprite, static_cast<i32>(animal.X), static_cast<i32>(animal.Y), Interaction->Frames.front(), Interaction->Mirror };
 			return;
@@ -172,7 +172,7 @@ void PlayerCharacter::Act(bool continuation)
 		if (SelectedInteraction < 0 || Scene.Resources.Interactions[SelectedInteraction].Facing != animal.Facing)
 			SelectedInteraction = static_cast<i32>(choices[Scene.RandomInt(static_cast<i32>(choices.size()))]);
 		Interaction = &Scene.Resources.Interactions[SelectedInteraction];
-		PlayerAction = PlayerActions::Interaction;
+		PlayerAction = PlayerActionState::Interaction;
 		Scene.Sounds.push_back(Interaction->Sound);
 		Scene.Objects[Scene.PlayerIndex].Draw = { Interaction->Sprite, static_cast<i32>(animal.X), static_cast<i32>(animal.Y), Interaction->Frames.front(), Interaction->Mirror };
 		return;
@@ -186,7 +186,7 @@ void PlayerCharacter::FinishInteraction()
 	animal.Impatience -= 2;
 	if (animal.Impatience < 0)
 		dynamic_cast<AnimalCharacter&>(Scene.Objects.Get(ActiveSheep)).Resolve();
-	PlayerAction = PlayerActions::Idle;
+	PlayerAction = PlayerActionState::Idle;
 	ActiveSheep = -1;
 	Interaction = nullptr;
 	RestorePlayer();
@@ -215,10 +215,10 @@ void PlayerCharacter::AdvancePlayer(f32 dt, i32 dx, i32 dy)
 	if (Scene.Objects.Combat.Enemy >= 0)
 		return;
 	Scene.Items.PickupPlayerItem();
-	if (PlayerAction)
+	if (PlayerAction != PlayerActionState::Idle)
 	{
 		ActionAge += dt;
-		if (PlayerAction == PlayerActions::Interaction && Interaction)
+		if (PlayerAction == PlayerActionState::Interaction && Interaction)
 		{
 			const f32 effectiveActionRate = Scene.Items.PlayerEffect == ItemCode::Rocket ? Scene.Parameter("SvenShagFireworkFrameRate", 30) : (Scene.Items.PlayerEffect == ItemCode::SlowMushroom ? Scene.Parameter("SvenShagImpotentFrameRate", 12) : (Scene.Items.PlayerEffect == ItemCode::AlienPower ? Scene.Parameter("SvenShagAlienFrameRate", 40) : ActionRate));
 			i32 frame = static_cast<i32>(ActionAge * effectiveActionRate);
@@ -230,30 +230,30 @@ void PlayerCharacter::AdvancePlayer(f32 dt, i32 dx, i32 dy)
 				Scene.Objects[Scene.PlayerIndex].Draw = { Interaction->Sprite, static_cast<i32>(animal.X), static_cast<i32>(animal.Y), Interaction->Frames[frame], Interaction->Mirror };
 			}
 		}
-		else if (PlayerAction == PlayerActions::Kicked && ActionAge * DefaultRate < Scene.Resources.Kicks[Scene.Objects[ActiveSheep].Facing]->Rows)
+		else if (PlayerAction == PlayerActionState::Kicked && ActionAge * DefaultRate < Scene.Resources.Kicks[Scene.Objects[ActiveSheep].Facing]->Rows)
 		{
 			const WorldObject& animal = Scene.Objects[ActiveSheep];
 			Scene.Objects[Scene.PlayerIndex].Draw = { Scene.Resources.Kicks[animal.Facing], static_cast<i32>(animal.X), static_cast<i32>(animal.Y), static_cast<i32>(ActionAge * DefaultRate), SheepMirror[animal.Facing] };
 		}
-		else if (PlayerAction == PlayerActions::Frigida && ActionAge * FrigidaRate < 7)
+		else if (PlayerAction == PlayerActionState::Frigida && ActionAge * FrigidaRate < 7)
 		{
 			const WorldObject& animal = Scene.Objects[ActiveSheep];
 			Scene.Objects[Scene.PlayerIndex].Draw = { Scene.Resources.Frigida[animal.Facing], static_cast<i32>(animal.X), static_cast<i32>(animal.Y), FrigidaFrames[static_cast<i32>(ActionAge * FrigidaRate)], SheepMirror[animal.Facing] };
 		}
-		else if (PlayerAction == PlayerActions::Whistle && ActionAge * DefaultRate < 22)
+		else if (PlayerAction == PlayerActionState::Whistle && ActionAge * DefaultRate < 22)
 		{
 			i32 frame = std::min(21, static_cast<i32>(ActionAge * DefaultRate));
 			Scene.Objects[Scene.PlayerIndex].Draw = { Scene.Resources.Whistles[Facing], static_cast<i32>(X), static_cast<i32>(Y), Facing % 2 ? WhistleDiagonal[frame] : WhistleStraight[frame], SvenMirror[Facing] };
 		}
 		else
 		{
-			if (PlayerAction == PlayerActions::Kicked)
+			if (PlayerAction == PlayerActionState::Kicked)
 			{
 				// Player state 13 at 0x42A283 releases the sheep at mood 6.
 				Scene.Objects[ActiveSheep].Impatience = 6;
 				ActionQueued = false;
 			}
-			if (PlayerAction == PlayerActions::Frigida)
+			if (PlayerAction == PlayerActionState::Frigida)
 			{
 				WorldObject& animal = Scene.Objects[ActiveSheep];
 				++animal.Impatience;
@@ -262,7 +262,7 @@ void PlayerCharacter::AdvancePlayer(f32 dt, i32 dx, i32 dy)
 				if (animal.Impatience == 11)
 					dynamic_cast<AnimalCharacter&>(Scene.Objects.Get(ActiveSheep)).Resolve();
 			}
-			PlayerAction = PlayerActions::Idle;
+			PlayerAction = PlayerActionState::Idle;
 			ActiveSheep = -1;
 			RestorePlayer();
 			if (ActionQueued)
@@ -297,7 +297,7 @@ void PlayerCharacter::AdvancePlayer(f32 dt, i32 dx, i32 dy)
 	{
 		ActionQueued = false;
 		Act();
-		if (PlayerAction)
+		if (PlayerAction != PlayerActionState::Idle)
 			return;
 	}
 	if (centered)

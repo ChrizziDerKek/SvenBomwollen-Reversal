@@ -61,7 +61,7 @@ private:
 	bool ActionQueued = false;
 	i32 Facing = 0;
 	i32 ActiveSheep = -1;
-	i32 PlayerAction = PlayerActions::Idle;
+	PlayerActionState PlayerAction = PlayerActionState::Idle;
 	i32 SelectedInteraction = -1;
 	f32 X{};
 	f32 Y{};

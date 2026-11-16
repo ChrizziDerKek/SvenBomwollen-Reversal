@@ -52,7 +52,7 @@ void UfoController::BeginBeam()
 	}
 	if (static_cast<size_t>(target) == Scene.PlayerIndex)
 	{
-		if (Scene.Player.PlayerAction || Scene.Player.PlayerShockAge >= 0 || Scene.Objects.Combat.Enemy >= 0 || Scene.Grid.TileAt(Scene.Player.X, Scene.Player.Y) != Ufo.TargetTile)
+		if (Scene.Player.PlayerAction != PlayerActionState::Idle || Scene.Player.PlayerShockAge >= 0 || Scene.Objects.Combat.Enemy >= 0 || Scene.Grid.TileAt(Scene.Player.X, Scene.Player.Y) != Ufo.TargetTile)
 		{
 			Ufo.Clock = 0;
 			return;

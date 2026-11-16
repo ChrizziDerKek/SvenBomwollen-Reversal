@@ -34,7 +34,7 @@ void AnimalCharacter::UpdateOtherAnimal(f32 seconds)
 	WorldObject& actor = GetState();
 	if (actor.Freed || !Scene.IsAnimal(actor.Kind) || actor.Kind == ObjectKind::Sheep)
 		return;
-	if (static_cast<i32>(i) == Scene.Player.ActiveSheep && Scene.Player.PlayerAction != PlayerActions::Whistle)
+	if (static_cast<i32>(i) == Scene.Player.ActiveSheep && Scene.Player.PlayerAction != PlayerActionState::Whistle)
 		return;
 	if (actor.State == ActorState::BeamingUp)
 	{
@@ -179,7 +179,7 @@ bool AnimalCharacter::ShockPlayer(Object& animal, i32 timeChange)
 	// 0x42C990 cancels interpolation, the current interaction and powerup.
 	Scene.Player.CancelPlayerStep();
 	Scene.Player.ActiveSheep = -1;
-	Scene.Player.PlayerAction = PlayerActions::Idle;
+	Scene.Player.PlayerAction = PlayerActionState::Idle;
 	Scene.Player.Interaction = nullptr;
 	Scene.Player.ActionQueued = false;
 	Scene.Player.SelectedInteraction = -1;
@@ -295,7 +295,7 @@ void AnimalCharacter::UpdateSheep(f32 seconds)
 		animal.Draw.Mirror = SheepMirror[animal.Facing];
 		return;
 	}
-	if (static_cast<i32>(i) == Scene.Player.ActiveSheep && Scene.Player.PlayerAction != PlayerActions::Whistle)
+	if (static_cast<i32>(i) == Scene.Player.ActiveSheep && Scene.Player.PlayerAction != PlayerActionState::Whistle)
 		return;
 	animal.Age += seconds;
 	if (animal.State == ActorState::Turning)
