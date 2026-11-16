@@ -17,7 +17,8 @@ void InitLogger(const fpath& runtime, bool probe)
 void Log(const str& message)
 {
 	std::cout << message << std::endl;
-	if (LogFile) {
+	if (LogFile)
+	{
 		LogFile << message << '\n';
 		LogFile.flush();
 	}

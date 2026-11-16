@@ -1,8 +1,9 @@
 #pragma once
 #include "Types.h"
+#include "Scene/Objects/BaseObject.h"
 
 class LevelScene;
-class BaseCharacter
+class BaseCharacter : public BaseObject
 {
 public:
 	virtual ~BaseCharacter() = default;
@@ -12,9 +13,8 @@ public:
 	BaseCharacter& operator=(const BaseCharacter&) = delete;
 
 protected:
-	BaseCharacter(LevelScene& scene)
-		: Scene(scene)
-	{ }
-
-	LevelScene& Scene;
+	BaseCharacter(LevelScene& scene, ObjectPhase phase = ObjectPhase::Player, size_t index = 0)
+	    : BaseObject(scene, phase, index)
+	{
+	}
 };

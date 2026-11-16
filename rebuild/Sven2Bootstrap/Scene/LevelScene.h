@@ -1,1 +1,122 @@
+#include "Engine/SoundRequest.h"
+#include "Types.h"
+#include "Scene/Objects/ObjectManager.h"
 #pragma once
+#include "Engine/Structures.h"
+#include "Scene/Level/LevelGrid.h"
+#include "Scene/SceneResources.h"
+#include "Scene/Characters/PlayerCharacter.h"
+#include "Scene/Characters/EnemyCharacter.h"
+#include "Scene/Characters/AnimalCharacter.h"
+#include "Scene/Level/LevelItems.h"
+#include "Scene/Level/UfoController.h"
+#include "Scene/Level/LevelEffects.h"
+#include "Scene/SceneRenderer.h"
+
+class LevelScene
+{
+public:
+	explicit LevelScene(MudGE& engine);
+	LevelScene(const LevelScene&) = delete;
+	LevelScene& operator=(const LevelScene&) = delete;
+	LevelScene(MudGE& engine, u32 seed);
+	LevelScene(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& level, u32 seed = GetTickCount(), u32* sharedRandomState = nullptr);
+	void Move(f32 seconds, i32 dx, i32 dy);
+	// actionPressed is the current space-key state; edges are buffered during an interaction.
+	void Update(f32 seconds, i32 dx, i32 dy, bool actionPressed);
+	void TimeExpired();
+	bool Completed() const
+	{
+		return RemainingTargets == 0;
+	}
+	i32 GetRemainingTargets() const
+	{
+		return RemainingTargets;
+	}
+	i32 GetCompletedSheep() const
+	{
+		return CompletedSheep;
+	}
+	f32 GetInitialTime() const
+	{
+		return InitialTime;
+	}
+	bool UfoActive() const
+	{
+		return UfoController.Active();
+	}
+	i32 TakeScoreDelta();
+	f32 TakeTimeDelta();
+	std::vector<str> TakeSounds();
+	std::vector<SoundRequest> TakeAudioEvents();
+	i32 TakeLifeHits();    // attack events; GameSession applies campaign life insurance
+	i32 TakeLivesGained(); // gift pickup; separate from the loss callback
+	const std::vector<SpriteDraw>& Draws();
+	// Consumes the splash event from both APIs, so callers may safely use either.
+	bool TakeSplashSound();
+	ObjectManager& GetObjects()
+	{
+		return Objects;
+	}
+	const ObjectManager& GetObjects() const
+	{
+		return Objects;
+	}
+	const SpriteDraw& GetPlayerDraw() const
+	{
+		return Objects[PlayerIndex].Draw;
+	}
+
+public:
+	LevelItems& GetItems()
+	{
+		return Items;
+	}
+	LevelEffects& GetEffects()
+	{
+		return Effects;
+	}
+
+private:
+	friend class LevelGrid;
+	friend class ObjectManager;
+	friend class SceneResources;
+	friend class PlayerCharacter;
+	friend class EnemyCharacter;
+	friend class AnimalCharacter;
+	friend class LevelItems;
+	friend class UfoController;
+	friend class LevelEffects;
+	friend class SceneRenderer;
+	using Object = WorldObject;
+
+	static bool IsAnimal(i32 kind);
+	static bool IsEnemy(i32 kind);
+	static i32 OccupancyKind(i32 kind);
+	f32 Parameter(cstr key, f32 fallback) const;
+	i32 RandomInt(i32 limit);
+	bool AdvanceActor(Object& actor, AnimationSequence table, f32 rate, f32 seconds);
+	void EmitNamedSound(cstr name);
+	void AddScore(i32 amount);
+	void RecordLifeLoss();
+	void RemoveActor(size_t index, bool playerResolved);
+	MudGE& Engine;
+	i32 PendingLifeHits = 0;
+	ObjectManager Objects;
+	bool Expired = false;
+	i32 RemainingTargets = 0, ScoreDelta = 0;
+	i32 CompletedSheep = 0;
+	f32 InitialTime = 0;
+	std::vector<SoundRequest> Sounds;
+	size_t PlayerIndex{};
+	u32 RandomState = 1;
+	u32* SharedRandomState = nullptr;
+	LevelGrid Grid;
+	SceneResources Resources;
+	PlayerCharacter& Player;
+
+	LevelItems Items;
+	UfoController UfoController;
+	LevelEffects Effects;
+	SceneRenderer Renderer;
+};

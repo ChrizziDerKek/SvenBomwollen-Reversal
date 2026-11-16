@@ -14,7 +14,7 @@ class FsrPresenter
 {
 public:
 	FsrPresenter(i32 width, i32 height, ScalingFilter filter, f32 sharpness);
-	~FsrPresenter() = default;
+	~FsrPresenter();
 	FsrPresenter(const FsrPresenter&) = delete;
 	FsrPresenter& operator=(const FsrPresenter&) = delete;
 	HWND Window() const;

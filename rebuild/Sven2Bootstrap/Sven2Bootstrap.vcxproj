@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<?xml version='1.0' encoding='utf-8'?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -52,8 +52,6 @@
     <ClCompile Include="Engine\BitmapFont.cpp" />
     <ClCompile Include="Engine\MudGE.cpp" />
     <ClCompile Include="Input\WindowInput.cpp" />
-    <ClCompile Include="Scene\Characters\AnimalCharacters.cpp" />
-    <ClCompile Include="Scene\Characters\EnemyCharacters.cpp" />
     <ClCompile Include="Scene\Characters\PlayerCharacter.cpp" />
     <ClCompile Include="Scene\LevelScene.cpp" />
     <ClCompile Include="Scene\SceneConstants.cpp" />
@@ -70,9 +68,7 @@
     <ClInclude Include="FSR1\ffx_a.h" />
     <ClInclude Include="FSR1\ffx_fsr1.h" />
     <ClInclude Include="FSR1\FsrPresenterUtils.h" />
-    <ClInclude Include="Scene\Characters\AnimalCharacters.h" />
     <ClInclude Include="Scene\Characters\BaseCharacter.h" />
-    <ClInclude Include="Scene\Characters\EnemyCharacters.h" />
     <ClInclude Include="Scene\Characters\PlayerCharacter.h" />
     <ClInclude Include="Scene\LevelScene.h" />
     <ClInclude Include="Scene\SceneRenderer.h" />
@@ -90,4 +86,47 @@
   </ItemGroup>
   <Import Project="FsrShaders.targets" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ItemGroup>
+    <ClInclude Include="FSR1/FsrPresenter.h" />
+    <ClCompile Include="Game/GameApp.cpp" />
+    <ClInclude Include="Game/GameApp.h" />
+    <ClCompile Include="Game/GameSession.cpp" />
+    <ClInclude Include="Game/GameSession.h" />
+    <ClCompile Include="Game/GameUi.cpp" />
+    <ClInclude Include="Game/GameUi.h" />
+    <ClCompile Include="Game/Highscores.cpp" />
+    <ClInclude Include="Game/Highscores.h" />
+    <ClCompile Include="Scene/SceneResources.cpp" />
+    <ClInclude Include="Scene/SceneResources.h" />
+    <ClCompile Include="Scene/Level/LevelEffects.cpp" />
+    <ClInclude Include="Scene/Level/LevelEffects.h" />
+    <ClCompile Include="Scene/Level/LevelFile.cpp" />
+    <ClInclude Include="Scene/Level/LevelFile.h" />
+    <ClCompile Include="Scene/Level/LevelGrid.cpp" />
+    <ClInclude Include="Scene/Level/LevelGrid.h" />
+    <ClCompile Include="Scene/Level/LevelItems.cpp" />
+    <ClInclude Include="Scene/Level/LevelItems.h" />
+    <ClCompile Include="Scene/Level/UfoController.cpp" />
+    <ClInclude Include="Scene/Level/UfoController.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Scene/Characters/Characters.h" />
+    <ClInclude Include="Scene/Objects/BaseObject.h" />
+    <ClInclude Include="Scene/Objects/ObjectKind.h" />
+    <ClCompile Include="Scene/Objects/ObjectManager.cpp" />
+    <ClInclude Include="Scene/Objects/ObjectManager.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Engine/SoundRequest.h" />
+    <ClCompile Include="Scene/Objects/ObjectCatalog.cpp" />
+    <ClInclude Include="Scene/Objects/ObjectCatalog.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Engine/LegacyAudioAbi.h" />
+    <ClCompile Include="Scene/Characters/AnimalCharacter.cpp" />
+    <ClInclude Include="Scene/Characters/AnimalCharacter.h" />
+    <ClCompile Include="Scene/Characters/EnemyCharacter.cpp" />
+    <ClInclude Include="Scene/Characters/EnemyCharacter.h" />
+    <ClInclude Include="Scene/Characters/PlayerAction.h" />
+  </ItemGroup>
 </Project>

@@ -1,0 +1,12 @@
+{
+  "protected_backup_sources": 68,
+  "backup_source_hashes_unchanged": true,
+  "baseline_trace_matches": true,
+  "trace_format": "v1; UFO resource root casing normalized in trace formatter only",
+  "levels": 105,
+  "seeds": 2,
+  "frames_per_seed": 480,
+  "compared_frames": 100800,
+  "trace_sha256": "af789d9ea3dfd7acfb4783f1c7a5b89fa8d420f51ef302f09f3abee5bf2b3715",
+  "amd_shader_headers_unchanged": true
+}

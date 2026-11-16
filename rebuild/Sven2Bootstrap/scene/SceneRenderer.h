@@ -1,4 +1,5 @@
 #pragma once
+#include "Types.h"
 #include "Engine/BitmapFont.h"
 #include "ShagAnimation.h"
 
@@ -22,6 +23,6 @@ private:
 	BitmapFont OverlayFont;
 	std::vector<Object> Sorted;
 	std::vector<SpriteDraw> Overlays;
-	std::vector<SpriteDraw> Draws;
+	std::vector<SpriteDraw> DrawCommands;
 	SpriteDraw Background{};
 };
