@@ -70,7 +70,7 @@ private:
 	any LoopedChannel = nullptr;
 	any MusicStream = nullptr;
 	std::map<std::pair<str, bool>, any> Samples;
-	alignas(4) u8 Application[0xd0]{};
+	alignas(4) u8 Application[0xD0]{};
 	bool Constructed = false;
 	bool Prepared = false;
 	bool VideoStarted = false;

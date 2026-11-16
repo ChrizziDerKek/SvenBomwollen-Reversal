@@ -91,10 +91,9 @@ const Sprite* MudGE::LoadSprite(const str& path, i16 rows, i16 columns, bool opa
 	UINT width = 0, height = 0;
 	if (FAILED(CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory))) || FAILED(factory->CreateStream(&stream)) || FAILED(stream->InitializeFromMemory(bytes.data(), static_cast<DWORD>(bytes.size()))) || FAILED(factory->CreateDecoderFromStream(stream.Get(), nullptr, WICDecodeMetadataCacheOnLoad, &decoder)) || FAILED(decoder->GetFrame(0, &frame)) || FAILED(frame->GetSize(&width, &height)) || FAILED(factory->CreateFormatConverter(&converter)) || FAILED(converter->Initialize(frame.Get(), GUID_WICPixelFormat32bppBGRA, WICBitmapDitherTypeNone, nullptr, 0, WICBitmapPaletteTypeCustom)))
 		throw std::runtime_error("Cannot decode sprite: " + path);
-	if (rows < 1 || columns < 1 || !width || !height || width > 8192 || height > 8192 ||
-	    width % columns || height % rows || width * height > 16 * 1024 * 1024)
+	if (rows < 1 || columns < 1 || !width || !height || width > 8192 || height > 8192 || width % columns || height % rows || width * height > 16 * 1024 * 1024)
 		throw std::runtime_error("Invalid sprite sheet dimensions: " + path);
-	Sprite image{{}, static_cast<i32>(width), static_cast<i32>(width / columns), static_cast<i32>(height / rows), rows, columns, !opaque};
+	Sprite image{ {}, static_cast<i32>(width), static_cast<i32>(width / columns), static_cast<i32>(height / rows), rows, columns, !opaque };
 	image.Pixels.resize(width * height);
 	if (FAILED(converter->CopyPixels(nullptr, width * 4, width * height * 4, reinterpret_cast<u8*>(image.Pixels.data()))))
 		throw std::runtime_error("Cannot read sprite pixels: " + path);

@@ -172,7 +172,7 @@ Highscores::Highscores(fpath file, std::vector<HighscoreEntry> defaults)
 				if (parsedSheep.ec != std::errc() || parsedSheep.ptr != lastSheep || sheep < 0)
 					throw std::invalid_argument("Invalid animal count");
 			}
-			HighscoreEntry entry{line.substr(tab + 1, levelTab == str::npos ? str::npos : levelTab - tab - 1), score, level, sheep};
+			HighscoreEntry entry{ line.substr(tab + 1, levelTab == str::npos ? str::npos : levelTab - tab - 1), score, level, sheep };
 			Validate(entry);
 			Entries.push_back(std::move(entry));
 			if (Entries.size() > 10)
@@ -194,7 +194,7 @@ void Highscores::Submit(const str& name, i32 score, i32 level, i32 sheep)
 {
 	if (level < 1)
 		throw std::invalid_argument("Submitted highscore level must be at least 1");
-	HighscoreEntry entry{name, score, level, sheep};
+	HighscoreEntry entry{ name, score, level, sheep };
 	Validate(entry);
 	auto next = Entries;
 	next.push_back(std::move(entry));

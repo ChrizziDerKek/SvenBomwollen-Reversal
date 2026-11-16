@@ -1,3 +1,4 @@
+#include "Scene/Objects/ObjectCatalog.h"
 #include "Scene/Level/LevelItems.h"
 #include "Scene/LevelScene.h"
 #include "Scene/SceneConstants.h"
@@ -11,11 +12,35 @@ LevelItems::LevelItems(LevelScene& scene)
 {
 }
 
-i32 LevelItems::FindDistraction(const Object& actor, i32 code) const
+i32 LevelItems::FindDistraction(const Object& actor, ItemCode code) const
 {
 	// 0x4051D0 scans the immediate ring, then the outer ring, in this order.
 	static constexpr i32 neighbors[24][2] = {
-	    {0, -1}, {1, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, -2}, {1, -2}, {2, -2}, {2, -1}, {2, 0}, {2, 1}, {2, 2}, {1, 2}, {0, 2}, {-1, 2}, {-2, 2}, {-2, 1}, {-2, 0}, {-2, -1}, {-2, -2}, {-1, -2}};
+		{ 0, -1 },
+		{ 1, -1 },
+		{ 1, 0 },
+		{ 1, 1 },
+		{ 0, 1 },
+		{ -1, 1 },
+		{ -1, 0 },
+		{ -1, -1 },
+		{ 0, -2 },
+		{ 1, -2 },
+		{ 2, -2 },
+		{ 2, -1 },
+		{ 2, 0 },
+		{ 2, 1 },
+		{ 2, 2 },
+		{ 1, 2 },
+		{ 0, 2 },
+		{ -1, 2 },
+		{ -2, 2 },
+		{ -2, 1 },
+		{ -2, 0 },
+		{ -2, -1 },
+		{ -2, -2 },
+		{ -1, -2 }
+	};
 	for (const i32* offset : neighbors)
 	{
 		i32 x = actor.Tile % Stride + offset[0], y = actor.Tile / Stride + offset[1];
@@ -35,13 +60,13 @@ void LevelItems::RemoveItem(i32 tile)
 	const i32 index = Scene.Grid.ItemObjects[tile];
 	if (index >= 0 && static_cast<size_t>(index) < Scene.Objects.Size())
 		Scene.Objects[index].Freed = true;
-	Scene.Grid.ItemCodes[tile] = 0;
+	Scene.Grid.ItemCodes[tile] = ItemCode::None;
 	Scene.Grid.ItemObjects[tile] = -1;
 }
 
-void LevelItems::SpawnItem(i32 kind, i32 tile)
+void LevelItems::SpawnItem(ObjectKind kind, i32 tile)
 {
-	if (kind < Kinds::Beer || kind > Kinds::Flower || Scene.IsAnimal(kind) || Scene.Grid.ItemCodes[tile])
+	if (!IsItem(kind) || Scene.Grid.ItemCodes[tile] != ItemCode::None)
 		return;
 	size_t slot = Scene.Objects.Size();
 	for (size_t i = 0; i < Scene.Objects.Size(); ++i)
@@ -60,56 +85,49 @@ void LevelItems::SpawnItem(i32 kind, i32 tile)
 	object.CenterX = object.CenterY = 40;
 	object.CommittedY = object.Y;
 	object.DepthOffset = 20; // height 80, depth adjustment 60
-	object.Draw = {Scene.Resources.ItemSprites[kind], static_cast<i32>(object.X), static_cast<i32>(object.Y), kind >= Kinds::Rocket ? kind - 14 : 0};
-	cstr duration = kind == Kinds::Beer ? "BeerTime" : kind == Kinds::Teddy       ? "TeddyTime"
-	                                               : kind == Kinds::Bone          ? "BoneTime"
-	                                               : kind == Kinds::Artifact      ? "ArtifactTime"
-	                                               : kind == Kinds::Rocket        ? "FireworkTime"
-	                                               : kind == Kinds::Gift          ? "GiftTime"
-	                                               : kind == Kinds::SlowMushroom  ? "ImpotentTime"
-	                                               : kind == Kinds::StinkMushroom ? "SmellTime"
-	                                                                              : "FlowerTime";
-	object.Pulse = Scene.Parameter(duration, kind >= Kinds::Rocket ? 10.0f : 16.0f);
+	object.Draw = { Scene.Resources.ItemSprites[kind], static_cast<i32>(object.X), static_cast<i32>(object.Y), GetItemDefinition(kind).Frame };
+	const ItemDefinition& definition = GetItemDefinition(kind);
+	object.Pulse = Scene.Parameter(definition.LifetimeKey, definition.DefaultLifetime);
 	if (slot == Scene.Objects.Size())
 		Scene.Objects.Add(object);
 	else
 		Scene.Objects.Replace(slot, object);
-	static constexpr u8 codes[12] = {130, 131, 129, 128, 0, 0, 0, 132, 133, 134, 135, 136};
-	Scene.Grid.ItemCodes[tile] = codes[kind - 7];
+	Scene.Grid.ItemCodes[tile] = definition.Code;
 	Scene.Grid.ItemObjects[tile] = static_cast<i32>(slot);
 }
 
 void LevelItems::SpawnItems()
 {
 	// 0x411400 makes one attempt per present marker group, not one per marker.
-	static constexpr i32 choices[9] = {7, 8, 9, 10, 14, 15, 16, 17, 18};
-	for (i32 group = 0; group < 3; ++group)
+	for (const auto& [group, tiles] : Scene.Grid.Spawners)
 	{
-		if (Scene.Grid.Spawners[group].empty())
+		if (tiles.empty())
 			continue;
-		i32 tile = Scene.Grid.Spawners[group][Scene.RandomInt(static_cast<i32>(Scene.Grid.Spawners[group].size()))];
-		if (Scene.Grid.ItemCodes[tile])
+		const i32 tile = tiles[Scene.RandomInt(static_cast<i32>(tiles.size()))];
+		if (Scene.Grid.ItemCodes[tile] != ItemCode::None)
 			continue;
-		const i32 occupant = Scene.Grid.TileAt(Scene.Player.X, Scene.Player.Y) == tile ? 100 : Scene.Grid.Tiles[tile];
-		if (group != 1 && occupant >= 3 && occupant <= 6)
+		const OccupancyCode occupant = Scene.Grid.TileAt(Scene.Player.X, Scene.Player.Y) == tile ? OccupancyCode::Player : Scene.Grid.Tiles[tile];
+		if (group != SpawnerCode::Powerup && IsEnemyOccupancy(occupant))
 			continue;
-		if (group != 0 && occupant == 100)
+		if (group != SpawnerCode::Distraction && occupant == OccupancyCode::Player)
 			continue;
-		const i32 selection = group == 0 ? Scene.RandomInt(4) : group == 1 ? 4 + Scene.RandomInt(5)
-		                                                                   : Scene.RandomInt(9);
-		SpawnItem(choices[selection], tile);
+		std::vector<ObjectKind> choices;
+		for (const ItemDefinition& item : GetItemDefinitions())
+			if (group == SpawnerCode::Mixed || (group == SpawnerCode::Powerup ? IsPowerup(item.Kind) : !IsPowerup(item.Kind)))
+				choices.push_back(item.Kind);
+		SpawnItem(choices[Scene.RandomInt(static_cast<i32>(choices.size()))], tile);
 	}
 }
 
 void LevelItems::UpdateItems(f32 seconds)
 {
 	EffectAge += seconds;
-	if (PlayerEffect)
+	if (PlayerEffect != ItemCode::None)
 	{
 		EffectRemaining -= seconds;
 		if (EffectRemaining < 0)
 		{
-			PlayerEffect = 0;
+			PlayerEffect = ItemCode::None;
 			EffectRemaining = 0;
 		}
 	}
@@ -124,16 +142,16 @@ void LevelItems::UpdateItems(f32 seconds)
 
 void LevelItems::AffectNearbySheep()
 {
-	if (PlayerEffect != 135 && PlayerEffect != 136)
+	if (PlayerEffect != ItemCode::StinkMushroom && PlayerEffect != ItemCode::Flower)
 		return;
 	const i32 tile = Scene.Grid.TileAt(Scene.Player.X, Scene.Player.Y);
 	if (tile < 0)
 		return;
-	const i32 mood = PlayerEffect == 135 ? 10 : 0;
+	const i32 mood = PlayerEffect == ItemCode::StinkMushroom ? 10 : 0;
 	bool changed = false;
 	for (WorldObject& animal : Scene.Objects)
 	{
-		if (animal.Freed || animal.Kind != Kinds::Sheep || animal.Temperament == 2 || animal.Impatience == mood || animal.Tile < 0)
+		if (animal.Freed || animal.Kind != ObjectKind::Sheep || animal.Temperament == 2 || animal.Impatience == mood || animal.Tile < 0)
 			continue;
 		const i32 dx = std::abs(animal.Tile % Stride - tile % Stride);
 		const i32 dy = std::abs(animal.Tile / Stride - tile / Stride);
@@ -157,19 +175,19 @@ void LevelItems::PickupPlayerItem()
 	const i32 tile = Scene.Grid.TileAt(Scene.Player.X, Scene.Player.Y);
 	if (tile < 0)
 		return;
-	const i32 code = Scene.Grid.ItemCodes[tile];
-	if (code == 128)
+	const ItemCode code = Scene.Grid.ItemCodes[tile];
+	if (code == ItemCode::Artifact)
 	{
-		if (PlayerEffect == 137 || Scene.UfoController.Ufo.State >= 0)
+		if (PlayerEffect == ItemCode::AlienPower || Scene.UfoController.Ufo.State != UfoState::Inactive)
 			return;
 		RemoveItem(tile);
 		Scene.UfoController.RequestUfo(static_cast<i32>(Scene.PlayerIndex));
 		return;
 	}
-	if (code < 132 || code > 136 || (code != 133 && PlayerEffect == 137))
+	if (!IsPlayerPowerup(code) || (code != ItemCode::Gift && PlayerEffect == ItemCode::AlienPower))
 		return;
 	RemoveItem(tile);
-	if (code == 133)
+	if (code == ItemCode::Gift)
 	{
 		// Nested independent rand tests at 0x42AA71, not a flat weighted draw.
 		if (Scene.RandomInt(50) == 0)
@@ -189,14 +207,9 @@ void LevelItems::PickupPlayerItem()
 	}
 	PlayerEffect = code;
 	EffectAge = 0;
-	cstr duration = code == 132 ? "FireworkDuration" : code == 134 ? "ImpotentDuration"
-	                                               : code == 135   ? "SmellDuration"
-	                                                               : "FlowerDuration";
-	EffectRemaining = Scene.Parameter(duration, code == 135 ? 15.0f : 10.0f);
-	cstr sound = code == 132 ? "item_firework.ogg" : code == 134 ? "item_impotenz.ogg"
-	                                             : code == 135   ? "item_stinky.ogg"
-	                                                             : "item_rose.ogg";
-	Scene.Sounds.push_back(str("Sven2/sfx/") + sound);
+	const ItemDefinition& definition = GetItemDefinition(code);
+	EffectRemaining = Scene.Parameter(definition.EffectDurationKey, definition.DefaultEffectDuration);
+	Scene.Sounds.push_back(str("Sven2/sfx/") + definition.PickupSound);
 }
 
 void LevelItems::UpdateObject(size_t i, f32 seconds)
@@ -204,7 +217,7 @@ void LevelItems::UpdateObject(size_t i, f32 seconds)
 	WorldObject& object = Scene.Objects[i];
 	if (object.Freed)
 		return;
-	if (object.Kind == Kinds::Scenery && object.State == 1)
+	if (object.Kind == ObjectKind::Scenery && object.State == ActorState::SceneryMoving)
 	{
 		f32 velocity;
 		std::memcpy(&velocity, &object.Original[7], 4);
@@ -217,7 +230,7 @@ void LevelItems::UpdateObject(size_t i, f32 seconds)
 		}
 		object.Draw.X = static_cast<i32>(object.X);
 	}
-	if ((object.Kind >= Kinds::Beer && object.Kind <= Kinds::Artifact && !object.Permanent) || (object.Kind >= Kinds::Rocket && object.Kind <= Kinds::Flower))
+	if (IsItem(object.Kind) && (!object.Permanent || IsPowerup(object.Kind)))
 	{
 		object.Pulse -= seconds;
 		if (object.Pulse < 0)

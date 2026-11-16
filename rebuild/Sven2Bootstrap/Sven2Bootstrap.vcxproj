@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -80,10 +80,6 @@
     <ClInclude Include="Types.h" />
     <ClInclude Include="Utility\SupportedBuild.h" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="FSR1\README.md" />
-    <None Include="FSR1\SOURCE.json" />
-  </ItemGroup>
   <Import Project="FsrShaders.targets" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ItemGroup>
@@ -128,5 +124,9 @@
     <ClCompile Include="Scene/Characters/EnemyCharacter.cpp" />
     <ClInclude Include="Scene/Characters/EnemyCharacter.h" />
     <ClInclude Include="Scene/Characters/PlayerAction.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Scene/Objects/ObjectState.h" />
+    <ClInclude Include="Scene/Level/LevelCodes.h" />
   </ItemGroup>
 </Project>

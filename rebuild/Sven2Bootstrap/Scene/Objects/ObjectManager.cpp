@@ -55,7 +55,7 @@ std::unique_ptr<BaseObject> ObjectManager::Create(const WorldObject& state, size
 	if (definition && definition->Create)
 		object = definition->Create(Scene, index);
 	else
-		switch (static_cast<ObjectKind>(state.Kind))
+		switch (state.Kind)
 		{
 		case ObjectKind::Player:
 			if (!PendingPlayer)
@@ -117,7 +117,7 @@ std::vector<size_t> ObjectManager::Find(ObjectKind kind, bool includeFreed) cons
 {
 	std::vector<size_t> result;
 	for (size_t index = 0; index < Size(); ++index)
-		if ((*this)[index].Kind == static_cast<i32>(kind) && (includeFreed || !(*this)[index].Freed))
+		if ((*this)[index].Kind == kind && (includeFreed || !(*this)[index].Freed))
 			result.push_back(index);
 	return result;
 }

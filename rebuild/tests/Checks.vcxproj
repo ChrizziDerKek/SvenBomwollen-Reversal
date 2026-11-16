@@ -119,4 +119,8 @@
     <ClInclude Include="../Sven2Bootstrap/Scene/Characters/EnemyCharacter.h" />
     <ClInclude Include="../Sven2Bootstrap/Scene/Characters/PlayerAction.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="../Sven2Bootstrap/Scene/Objects/ObjectState.h" />
+    <ClInclude Include="../Sven2Bootstrap/Scene/Level/LevelCodes.h" />
+  </ItemGroup>
 </Project>

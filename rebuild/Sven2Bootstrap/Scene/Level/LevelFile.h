@@ -1,5 +1,6 @@
 #pragma once
 #include "Types.h"
+#include "LevelCodes.h"
 #include <array>
 #include <cstdint>
 #include <cstring>
@@ -123,9 +124,11 @@ private:
 
 struct LevelCell
 {
-	i32 Terrain = 0;
-	u8 Direction = 0, ItemCode = 0;
-	i32 ItemObject = -1, Spawner = 0;
+	OccupancyCode Terrain = OccupancyCode::Empty;
+	u8 Direction = 0;
+	::ItemCode ItemCode = ::ItemCode::None;
+	i32 ItemObject = -1;
+	SpawnerCode Spawner = SpawnerCode::None;
 };
 
 class LevelFile

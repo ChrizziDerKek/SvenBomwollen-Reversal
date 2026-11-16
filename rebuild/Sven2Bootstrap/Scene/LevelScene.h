@@ -90,9 +90,9 @@ private:
 	friend class SceneRenderer;
 	using Object = WorldObject;
 
-	static bool IsAnimal(i32 kind);
-	static bool IsEnemy(i32 kind);
-	static i32 OccupancyKind(i32 kind);
+	static bool IsAnimal(ObjectKind kind);
+	static bool IsEnemy(ObjectKind kind);
+	static OccupancyCode GetOccupancyCode(ObjectKind kind);
 	f32 Parameter(cstr key, f32 fallback) const;
 	i32 RandomInt(i32 limit);
 	bool AdvanceActor(Object& actor, AnimationSequence table, f32 rate, f32 seconds);

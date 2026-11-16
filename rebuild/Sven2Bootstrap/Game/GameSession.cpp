@@ -5,10 +5,7 @@
 #include <utility>
 
 GameSession::GameSession(MudGE& engine, const LevelPackInfo& pack, const LevelSetInfo& levelSet)
-    : Engine(engine), Pack(pack), LevelSet(levelSet), Font(engine, true), GreenFont(engine, true, true),
-      Clock(engine.LoadSprite("Sven2/gfx/timer.bmp", 1, 1)),
-      ScoreIcon(engine.LoadSprite("Sven2/gfx/score.bmp", 4, 1)),
-      LifeIcon(engine.LoadSprite("Sven2/gfx/Life_icon.bmp", 1, 1))
+    : Engine(engine), Pack(pack), LevelSet(levelSet), Font(engine, true), GreenFont(engine, true, true), Clock(engine.LoadSprite("Sven2/gfx/timer.bmp", 1, 1)), ScoreIcon(engine.LoadSprite("Sven2/gfx/score.bmp", 4, 1)), LifeIcon(engine.LoadSprite("Sven2/gfx/Life_icon.bmp", 1, 1))
 {
 	if (levelSet.Levels.empty())
 		throw std::runtime_error("The selected levelset is Empty.");
@@ -146,10 +143,9 @@ void GameSession::SpawnLifeEffect(i32 slot, bool incoming)
 {
 	// Original object constructors 65/66, 0x40CF84-0x40D0FB.
 	if (incoming)
-		LifeEffects.push_back({static_cast<f32>(slot * 32), -32, 0, RandomInt(100) * 0.04f, true});
+		LifeEffects.push_back({ static_cast<f32>(slot * 32), -32, 0, RandomInt(100) * 0.04f, true });
 	else
-		LifeEffects.push_back({static_cast<f32>(slot * 32), 565,
-		                       (50 - RandomInt(100)) * 0.04f, (20 - RandomInt(100)) * 0.04f, false});
+		LifeEffects.push_back({ static_cast<f32>(slot * 32), 565, (50 - RandomInt(100)) * 0.04f, (20 - RandomInt(100)) * 0.04f, false });
 }
 
 void GameSession::UpdateLifeEffects(f32 seconds)
@@ -275,11 +271,11 @@ const std::vector<SpriteDraw>& GameSession::Draws()
 {
 	DrawCommands = Scene->Draws();
 	for (const LifeEffect& effect : LifeEffects)
-		DrawCommands.push_back({LifeIcon, static_cast<i32>(effect.X), static_cast<i32>(effect.Y), 0});
-	DrawCommands.push_back({Clock, 4, 4, 0});
-	DrawCommands.push_back({ScoreIcon, 654, 4, ScoreFrame});
+		DrawCommands.push_back({ LifeIcon, static_cast<i32>(effect.X), static_cast<i32>(effect.Y), 0 });
+	DrawCommands.push_back({ Clock, 4, 4, 0 });
+	DrawCommands.push_back({ ScoreIcon, 654, 4, ScoreFrame });
 	for (i32 life = 0; life < VisibleLives; ++life)
-		DrawCommands.push_back({LifeIcon, life * 32, 565, 0});
+		DrawCommands.push_back({ LifeIcon, life * 32, 565, 0 });
 	char text[40]{};
 	std::snprintf(text, sizeof(text), "%5i", Score);
 	Font.Append(DrawCommands, text, 709, 19);
@@ -304,6 +300,5 @@ std::vector<str> GameSession::TakeSounds()
 
 RoundResult GameSession::GetResult() const
 {
-	return {Score, LevelNumber(), TimeBonus, ResultSheep, ResultLives, static_cast<i32>(Time),
-	        SheepBonus, LifeBonus, Finished(), GameOver(), PreviousSheep + Scene->GetCompletedSheep(), ScoreFrame};
+	return { Score, LevelNumber(), TimeBonus, ResultSheep, ResultLives, static_cast<i32>(Time), SheepBonus, LifeBonus, Finished(), GameOver(), PreviousSheep + Scene->GetCompletedSheep(), ScoreFrame };
 }

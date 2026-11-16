@@ -3,6 +3,8 @@
 * Work in `rebuild`. Never modify `rebuild_working_copy`, the user's frozen backup.
 * Follow `.clang-format`: Allman braces, tabs, four-column indentation.
 * Use PascalCase for project classes, methods and attributes; use camelCase for parameters and local variables.
+* Keep ordinary expressions/calls on one line; parenthesize nested conditional branches so formatting does not split ternary chains. Keep initializer spacing like `{ 1, 1 }`.
+* Use `ObjectKind` directly, classification helpers and catalog mappings; never derive array indices or cell codes by subtracting from a kind. Keep scoped state/cell enums at runtime and convert raw values at serialization boundaries.
 * Prefer the aliases in `Sven2Bootstrap/Types.h`, including `str`, `fpath`, `bytestream` and numeric aliases.
 * Prefer explicit short/readable types. Keep `auto` for unwieldy iterator/container expressions, structured bindings and unnamed lambdas.
 * Preserve required SDK/library names, XML keys, ABI export strings and C++ hooks (`main`, `begin`, `end`).

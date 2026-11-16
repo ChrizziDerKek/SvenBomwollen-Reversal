@@ -27,7 +27,7 @@ LevelFile::LevelFile(const bytestream& bytes, const str& path)
 	for (size_t index = 0; index < Cells.size(); ++index)
 	{
 		const u8* cell = grid + index * 24;
-		Cells[index] = {ReadWord<i32>(cell, 0), cell[4], cell[12], ReadWord<i32>(cell, 16), ReadWord<i32>(cell, 20)};
+		Cells[index] = { static_cast<OccupancyCode>(ReadWord<i32>(cell, 0)), cell[4], static_cast<ItemCode>(cell[12]), ReadWord<i32>(cell, 16), static_cast<SpawnerCode>(ReadWord<i32>(cell, 20)) };
 	}
 	TimeLimit = ReadWord<f32>(grid, 9044);
 	if (!std::isfinite(TimeLimit) || TimeLimit < 0)
@@ -37,8 +37,7 @@ LevelFile::LevelFile(const bytestream& bytes, const str& path)
 	for (size_t slot = 1; slot <= 16 && Puddles.size() < static_cast<size_t>(count); ++slot)
 	{
 		const i32 tile = ReadWord<i32>(destinations, slot * 4);
-		if (tile >= 0 && static_cast<size_t>(tile) < Cells.size() && Cells[tile].Terrain == 10 &&
-		    std::find(Puddles.begin(), Puddles.end(), tile) == Puddles.end())
+		if (tile >= 0 && static_cast<size_t>(tile) < Cells.size() && Cells[tile].Terrain == OccupancyCode::Puddle && std::find(Puddles.begin(), Puddles.end(), tile) == Puddles.end())
 			Puddles.push_back(tile);
 	}
 	for (size_t slot = 0; slot < Objects.size(); ++slot)

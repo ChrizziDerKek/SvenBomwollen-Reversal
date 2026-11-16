@@ -29,11 +29,11 @@ private:
 	const Sprite *Explosion = nullptr, *Hearts = nullptr;
 	const Sprite *Digging = nullptr, *SleepSymbols = nullptr;
 	std::array<const Sprite*, 4> PlayerBeamSprites{};
-	std::map<i32, ActorSprites> ActorSprites;
-	std::map<i32, EnemyRules> EnemyRules;
-	std::map<i32, std::array<ShagAnimation, 4>> AnimalActions;
+	std::map<ObjectKind, ActorSprites> ActorSprites;
+	std::map<ObjectKind, EnemyRules> EnemyRules;
+	std::map<ObjectKind, std::array<ShagAnimation, 4>> AnimalActions;
 	std::map<str, const Sprite*> SpriteCache;
-	std::map<i32, const Sprite*> ItemSprites;
+	std::map<ObjectKind, const Sprite*> ItemSprites;
 	std::array<const Sprite*, 5> EffectSprites{};
 	const Sprite* UfoSprite = nullptr;
 	const Sprite* UfoShadow = nullptr;

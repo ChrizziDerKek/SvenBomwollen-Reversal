@@ -8,8 +8,6 @@
 #include <map>
 #include <stdexcept>
 
-namespace
-{
 const LevelPackInfo& FirstPack(const MudGE& engine)
 {
 	for (const LevelPackInfo& pack : engine.GetData().GetPacks())
@@ -17,6 +15,7 @@ const LevelPackInfo& FirstPack(const MudGE& engine)
 			return pack;
 	throw std::runtime_error("The XS level pack is missing.");
 }
+
 const LevelInfo& FirstLevel(const MudGE& engine)
 {
 	const LevelPackInfo& pack = FirstPack(engine);
@@ -25,9 +24,9 @@ const LevelInfo& FirstLevel(const MudGE& engine)
 			return set.Levels.front();
 	throw std::runtime_error("The XS level pack has no levels.");
 }
-} // namespace
+
 LevelScene::LevelScene(MudGE& engine)
-    : LevelScene(engine, GetTickCount())
+    : LevelScene(engine, static_cast<u32>(GetTickCount64()))
 {
 }
 LevelScene::LevelScene(MudGE& engine, u32 seed)
@@ -35,19 +34,18 @@ LevelScene::LevelScene(MudGE& engine, u32 seed)
 {
 }
 LevelScene::LevelScene(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& level, u32 seed, u32* sharedRandomState)
-    : Engine(engine), Objects(*this), RandomState(seed), SharedRandomState(sharedRandomState),
-      Grid(*this), Resources(*this), Player(Objects.GetPlayer()), Items(*this), UfoController(*this), Effects(*this), Renderer(*this)
+    : Engine(engine), Objects(*this), RandomState(seed), SharedRandomState(sharedRandomState), Grid(*this), Resources(*this), Player(Objects.GetPlayer()), Items(*this), UfoController(*this), Effects(*this), Renderer(*this)
 {
 	const TileSetInfo& descriptor = engine.GetData().TileSet(pack, level);
 	Log("Read level map: " + level.Map);
-	const LevelFile file(engine.ReadAsset(level.Map), level.Map);
-	UfoController.HideUfo = file.GetHidesUfo();
-	InitialTime = file.GetTimeLimit();
+	const LevelFile* file = new LevelFile(engine.ReadAsset(level.Map), level.Map);
+	UfoController.HideUfo = file->GetHidesUfo();
+	InitialTime = file->GetTimeLimit();
 	Objects.Reserve(LevelFile::ObjectCount);
 	std::array<i32, LevelFile::ObjectCount> slots;
 	slots.fill(-1);
-	Grid.Load(file);
-	Renderer.Background = {engine.LoadSprite(descriptor.Background, 1, 1, true), 0, 0, 0};
+	Grid.Load(*file);
+	Renderer.Background = { engine.LoadSprite(descriptor.Background, 1, 1, true), 0, 0, 0 };
 	Effects.Splashes[0].Sprite = engine.LoadSprite("Sven2/gfx/FX_all_splash.bmp", SplashFrames, 1);
 	Resources.Explosion = engine.LoadSprite("Sven2/gfx/explode.bmp", 14, 1);
 	Resources.Hearts = engine.LoadSprite("Sven2/gfx/anim_clouds_with_hearts.bmp", 21, 1);
@@ -55,11 +53,11 @@ LevelScene::LevelScene(MudGE& engine, const LevelPackInfo& pack, const LevelInfo
 	std::map<str, const Sprite*> sprites;
 	u32 scenery = 0, actors = 0;
 	bool foundPlayer = false;
-	for (size_t slot = 0; slot < file.GetObjects().size(); ++slot)
+	for (size_t slot = 0; slot < file->GetObjects().size(); ++slot)
 	{
-		const LevelObjectRecord& record = file.GetObjects()[slot];
-		i32 kind = record.Kind();
-		if (kind == -1)
+		const LevelObjectRecord& record = file->GetObjects()[slot];
+		ObjectKind kind = static_cast<ObjectKind>(record.Kind());
+		if (kind == ObjectKind::Inactive)
 			continue;
 		f32 x = record.X(), y = record.Y();
 		if (!std::isfinite(x) || !std::isfinite(y) || std::abs(x) > 32767 || std::abs(y) > 32767)
@@ -69,91 +67,38 @@ LevelScene::LevelScene(MudGE& engine, const LevelPackInfo& pack, const LevelInfo
 			continue;
 		i32 texture = record.TextureOrPermanent(), facing = record.Facing();
 		TileInfo image;
-		switch (kind)
+		if (kind == ObjectKind::Player)
 		{
-		case Kinds::Player:
 			if (foundPlayer || pass != 0)
 				throw std::runtime_error("Expected one world player per level.");
 			foundPlayer = true;
 			PlayerIndex = Objects.Size();
 			Player.X = x;
 			Player.Y = y;
-			image = {FindCharacterDefinition(kind)->SpriteAsset, FindCharacterDefinition(kind)->Frames};
+		}
+		const CharacterDefinition* character = FindCharacterDefinition(kind);
+		const ItemDefinition* item = FindItemDefinition(kind);
+		if (character)
+		{
+			image = { character->SpriteAsset, character->Frames };
 			++actors;
-			break;
-		case Kinds::Scenery:
+		}
+		else if (item)
+			image = { item->SpriteAsset, item->Frames };
+		else if (kind == ObjectKind::Scenery)
+		{
 			if (texture < 0 || static_cast<size_t>(texture) >= descriptor.Tiles.size())
 				throw std::runtime_error("Level object references a missing tileset texture.");
 			image = descriptor.Tiles[texture];
 			++scenery;
-			break;
-		case Kinds::Sheep:
-			image = {FindCharacterDefinition(kind)->SpriteAsset, FindCharacterDefinition(kind)->Frames};
-			++actors;
-			break;
-		case Kinds::Alien:
-			image = {FindCharacterDefinition(kind)->SpriteAsset, FindCharacterDefinition(kind)->Frames};
-			++actors;
-			break;
-		case Kinds::Dog:
-			image = {FindCharacterDefinition(kind)->SpriteAsset, FindCharacterDefinition(kind)->Frames};
-			++actors;
-			break;
-		case Kinds::Farmer:
-			image = {FindCharacterDefinition(kind)->SpriteAsset, FindCharacterDefinition(kind)->Frames};
-			++actors;
-			break;
-		case Kinds::Girl:
-			image = {FindCharacterDefinition(kind)->SpriteAsset, FindCharacterDefinition(kind)->Frames};
-			++actors;
-			break;
-		case Kinds::Beer:
-			image = {"Sven2/gfx/Beer.bmp", 1};
-			break;
-		case Kinds::Teddy:
-			image = {"Sven2/gfx/Teddybear.bmp", 1};
-			break;
-		case Kinds::Bone:
-			image = {"Sven2/gfx/Bone.bmp", 1};
-			break;
-		case Kinds::Artifact:
-			image = {"Sven2/gfx/Artifact.bmp", 1};
-			break;
-		case Kinds::Chicken:
-			image = {FindCharacterDefinition(kind)->SpriteAsset, FindCharacterDefinition(kind)->Frames};
-			++actors;
-			break;
-		case Kinds::Goat:
-			image = {FindCharacterDefinition(kind)->SpriteAsset, FindCharacterDefinition(kind)->Frames};
-			++actors;
-			break;
-		case Kinds::Pig:
-			image = {FindCharacterDefinition(kind)->SpriteAsset, FindCharacterDefinition(kind)->Frames};
-			++actors;
-			break;
-		case Kinds::Rocket:
-		case Kinds::Gift:
-		case Kinds::SlowMushroom:
-		case Kinds::StinkMushroom:
-		case Kinds::Flower:
-			image = {"Sven2/gfx/icons.bmp", 5};
-			break;
-		default:
-		{
-			const CharacterDefinition* definition = FindCharacterDefinition(kind);
-			if (!definition)
-				throw std::runtime_error("Unsupported object kind in LevelScene: " + std::to_string(kind));
-			image = {definition->SpriteAsset, definition->Frames};
-			++actors;
-			break;
 		}
-		}
+		else
+			throw std::runtime_error("Unsupported object kind in LevelScene: " + std::to_string(static_cast<i32>(kind)));
 		auto [entry, inserted] = sprites.try_emplace(image.File, nullptr);
 		if (inserted)
 			entry->second = engine.LoadSprite(image.File, image.Frames, 1);
-		i32 frame = kind >= Kinds::Rocket && kind <= Kinds::Flower ? kind - 14 : kind == Kinds::Scenery ? std::clamp(record.Frame(), 0, static_cast<i32>(image.Frames) - 1)
-		                                                                                                : std::clamp(facing, 0, static_cast<i32>(image.Frames) - 1);
-		SpriteDraw draw{entry->second, static_cast<i32>(x), static_cast<i32>(y), frame};
+		i32 frame = IsPowerup(kind) ? GetItemDefinition(kind).Frame : (kind == ObjectKind::Scenery ? std::clamp(record.Frame(), 0, static_cast<i32>(image.Frames) - 1) : std::clamp(facing, 0, static_cast<i32>(image.Frames) - 1));
+		SpriteDraw draw{ entry->second, static_cast<i32>(x), static_cast<i32>(y), frame };
 		if (pass == 0)
 		{
 			Object object;
@@ -163,7 +108,7 @@ LevelScene::LevelScene(MudGE& engine, const LevelPackInfo& pack, const LevelInfo
 			object.DepthOffset = record.Height() - record.DepthAdjustment();
 			object.CommittedY = y;
 			object.Kind = kind;
-			object.Tile = kind >= Kinds::Sheep ? record.Tile() : Grid.TileAt(x, y);
+			object.Tile = (IsAnimal(kind) || IsEnemy(kind) || IsItem(kind)) ? record.Tile() : Grid.TileAt(x, y);
 			object.Facing = IsAnimal(kind) ? std::clamp(facing, 0, 3) : std::clamp(facing, 0, 7);
 			object.Temperament = record.Temperament();
 			object.AngerTicks = record.AngerTicks();
@@ -174,7 +119,7 @@ LevelScene::LevelScene(MudGE& engine, const LevelPackInfo& pack, const LevelInfo
 			object.X = object.TargetX = x;
 			object.Y = object.TargetY = y;
 			object.Original = record.GetWords();
-			object.State = record.State();
+			object.State = static_cast<ActorState>(record.State());
 			object.Permanent = record.TextureOrPermanent();
 			object.CenterX = record.Width() * 0.5f;
 			object.CenterY = record.Height() * 0.5f;
@@ -189,28 +134,27 @@ LevelScene::LevelScene(MudGE& engine, const LevelPackInfo& pack, const LevelInfo
 				++RemainingTargets;
 			}
 			// 0x422AF6 sets the stored adjustment (+92), not the final sort offset.
-			if (IsAnimal(kind) && kind != Kinds::Sheep)
+			if (IsAnimal(kind) && kind != ObjectKind::Sheep)
 			{
 				object.Pulse = 26;
-				object.State = 0;
+				object.State = ActorState::Idle;
 				object.DepthOffset = record.Height() - 40;
 			}
-			if (kind >= Kinds::Rocket && kind <= Kinds::Flower)
+			if (IsPowerup(kind))
 			{
 				// Native Zwo initializer 0x422B41..0x422B6F also initializes
 				// serialized powerups, not just those created by a spawner.
-				cstr duration[] = {"FireworkTime", "GiftTime", "ImpotentTime", "SmellTime", "FlowerTime"};
-				object.Pulse = Parameter(duration[kind - 14], 10);
+				const ItemDefinition& definition = GetItemDefinition(kind);
+				object.Pulse = Parameter(definition.LifetimeKey, definition.DefaultLifetime);
 				object.DepthOffset = record.Height() - 40;
 			}
-			if (kind == Kinds::Alien)
+			if (kind == ObjectKind::Alien)
 				object.Idle = static_cast<f32>(50 + RandomInt(100));
-			if (kind == Kinds::Alien || kind == Kinds::Girl)
+			if (kind == ObjectKind::Alien || kind == ObjectKind::Girl)
 			{
 				const ::EnemyRules& rules = Resources.EnemyRules[kind];
-				object.Pulse = rules.Idle + (kind == Kinds::Girl ? rules.IdleRandom : RandomInt(static_cast<i32>(rules.IdleRandom)));
+				object.Pulse = rules.Idle + (kind == ObjectKind::Girl ? rules.IdleRandom : RandomInt(static_cast<i32>(rules.IdleRandom)));
 			}
-
 			slots[slot] = static_cast<i32>(Objects.Size());
 			Objects.Add(object);
 		}
@@ -221,12 +165,12 @@ LevelScene::LevelScene(MudGE& engine, const LevelPackInfo& pack, const LevelInfo
 	{
 		const i32 slot = Grid.ItemObjects[tile];
 		Grid.ItemObjects[tile] = slot >= 0 && slot < 256 ? slots[slot] : -1;
-		if (Grid.ItemCodes[tile] == 0)
+		if (Grid.ItemCodes[tile] == ItemCode::None)
 			Grid.ItemObjects[tile] = -1;
 	}
 	std::vector<size_t> sheep;
 	for (size_t i = 0; i < Objects.Size(); ++i)
-		if (Objects[i].Kind == Kinds::Sheep)
+		if (Objects[i].Kind == ObjectKind::Sheep)
 			sheep.push_back(i);
 	if (!sheep.empty())
 		Objects[sheep[RandomInt(static_cast<i32>(sheep.size()))]].Temperament = 1; // 0x422C00
@@ -240,26 +184,28 @@ LevelScene::LevelScene(MudGE& engine, const LevelPackInfo& pack, const LevelInfo
 	Objects[PlayerIndex].CommittedY = Player.Y;
 	Renderer.Sorted.reserve(Objects.Size());
 	Renderer.DrawCommands.reserve(1 + Objects.Size() + Renderer.Overlays.size());
-	Log("Loaded " + level.Map + " with " + std::to_string(scenery) + " scenery objects and " +
-	    std::to_string(actors) + " actors from folder data.");
+	Log("Loaded " + level.Map + " with " + std::to_string(scenery) + " scenery objects and " + std::to_string(actors) + " actors from folder data.");
+	delete file;
 }
 
-bool LevelScene::IsAnimal(i32 kind)
+bool LevelScene::IsAnimal(ObjectKind kind)
 {
 	const CharacterDefinition* definition = FindCharacterDefinition(kind);
 	return definition && definition->Category == CharacterCategory::Animal;
 }
 
-bool LevelScene::IsEnemy(i32 kind)
+bool LevelScene::IsEnemy(ObjectKind kind)
 {
 	const CharacterDefinition* definition = FindCharacterDefinition(kind);
 	return definition && definition->Category == CharacterCategory::Enemy;
 }
 
-i32 LevelScene::OccupancyKind(i32 kind)
+OccupancyCode LevelScene::GetOccupancyCode(ObjectKind kind)
 {
 	const CharacterDefinition* definition = FindCharacterDefinition(kind);
-	return definition ? definition->OccupancyCode : kind;
+	if (!definition)
+		throw std::invalid_argument("Object kind has no character occupancy code.");
+	return definition->OccupancyCode;
 }
 
 f32 LevelScene::Parameter(cstr key, f32 fallback) const
@@ -323,11 +269,11 @@ void LevelScene::RemoveActor(size_t index, bool playerResolved)
 	if (IsAnimal(actor.Kind))
 	{
 		--RemainingTargets;
-		if (playerResolved && actor.Kind == Kinds::Sheep)
+		if (playerResolved && actor.Kind == ObjectKind::Sheep)
 			++CompletedSheep;
 	}
-	if (actor.Tile >= 0 && static_cast<size_t>(actor.Tile) < Grid.Tiles.size() && Grid.Tiles[actor.Tile] == OccupancyKind(actor.Kind))
-		Grid.Tiles[actor.Tile] = Empty;
+	if (actor.Tile >= 0 && static_cast<size_t>(actor.Tile) < Grid.Tiles.size() && Grid.Tiles[actor.Tile] == GetOccupancyCode(actor.Kind))
+		Grid.Tiles[actor.Tile] = OccupancyCode::Empty;
 	for (i32& reservation : Grid.Reservations)
 		if (reservation == static_cast<i32>(index))
 			reservation = -1;

@@ -22,26 +22,23 @@
 #pragma comment(lib, "xmllite.lib")
 #pragma comment(lib, "shlwapi.lib")
 
-namespace
-{
 #include "GameDataUtils.h"
-}
 
 GameData::GameData(fpath root)
     : Root(std::filesystem::canonical(root))
 {
 	if (!std::filesystem::is_directory(root))
 		throw std::runtime_error("Data root is not a directory.");
-	const auto core = ReadXml(ReadAsset("Sven2/Sven2.xml"));
-	for (const auto& section : core.Children)
+	const Node core = ReadXml(ReadAsset("Sven2/Sven2.xml"));
+	for (const Node& section : core.Children)
 	{
 		if (section.Name == "sounds")
-			for (const auto& item : section.Children)
+			for (const Node& item : section.Children)
 				if (item.Name == "sound")
 					Sounds[item.Attribute("name")] = item.Attribute("file");
 		if (section.Name != "parameters")
 			continue;
-		for (const auto& item : section.Children)
+		for (const Node& item : section.Children)
 		{
 			if (item.Name != "parameter")
 				continue;
@@ -54,12 +51,12 @@ GameData::GameData(fpath root)
 				NumericParams[name] = value;
 		}
 	}
-	const auto table = ReadXml(ReadAsset("Sven2/StringTable.xml"));
-	for (const auto& section : table.Children)
+	const Node table = ReadXml(ReadAsset("Sven2/StringTable.xml"));
+	for (const Node& section : table.Children)
 	{
 		if (section.Name != "stringtable")
 			continue;
-		for (const auto& item : section.Children)
+		for (const Node& item : section.Children)
 			if (item.Name == "string")
 				Strings[item.Attribute("name")] = item.Attribute("value");
 	}
@@ -68,9 +65,7 @@ GameData::GameData(fpath root)
 		if (entry.is_directory() && !EqualWindows(entry.path().filename().native(), L"Sven2"))
 			directories.push_back(entry.path().filename());
 	std::sort(directories.begin(), directories.end(), [](const fpath& a, const fpath& b)
-	          {
-        const i32 order = CompareStringOrdinal(a.c_str(), -1, b.c_str(), -1, TRUE);
-        return order == CSTR_LESS_THAN || (order == CSTR_EQUAL && a.native() < b.native()); });
+	          { const i32 order = CompareStringOrdinal(a.c_str(), -1, b.c_str(), -1, TRUE); return order == CSTR_LESS_THAN || (order == CSTR_EQUAL && a.native() < b.native()); });
 	for (const fpath& directory : directories)
 	{
 		const wstr expected = directory.native() + L".xml";
@@ -86,8 +81,8 @@ GameData::GameData(fpath root)
 		if (!found)
 			continue;
 		const str descriptor = (directory / fpath(expected)).generic_u8string();
-		const auto document = ReadXml(ReadAsset(descriptor));
-		for (const auto& package : document.Children)
+		const Node document = ReadXml(ReadAsset(descriptor));
+		for (const Node& package : document.Children)
 			if (package.Name == "package")
 				Packs.push_back(ReadPack(package, descriptor));
 	}
@@ -106,9 +101,9 @@ fpath GameData::AssetPath(str name) const
 	if (relative.has_root_path())
 		throw std::invalid_argument("Asset path must be relative.");
 	fpath resolved = Root;
-	for (const auto& part : relative)
+	for (const fpath& part : relative)
 	{
-		const auto& component = part.native();
+		const wstr& component = part.native();
 		if (component.empty() || component == L"." || component == L".." || component.find_first_of(L"<>:\"|?*") != wstr::npos || component.back() == L'.' || component.back() == L' ' || std::any_of(component.begin(), component.end(), [](wchar_t c)
 		                                                                                                                                                                                              { return c < 32; }))
 			throw std::invalid_argument("Invalid relative asset component.");
@@ -138,7 +133,7 @@ bytestream GameData::ReadAsset(const str& name) const
 	std::ifstream file(AssetPath(name), std::ios::binary | std::ios::ate);
 	if (!file)
 		throw std::runtime_error("Cannot open asset: " + name);
-	const auto length = file.tellg();
+	const std::streampos length = file.tellg();
 	if (length < 0 || static_cast<u64>(length) > static_cast<u64>((std::numeric_limits<std::streamsize>::max)()) || static_cast<u64>(length) > (std::numeric_limits<size_t>::max)())
 		throw std::runtime_error("Invalid asset size: " + name);
 	bytestream bytes(static_cast<size_t>(length));
@@ -179,7 +174,7 @@ str GameData::StringParam(const str& name, const str& defaultValue) const
 
 const TileSetInfo& GameData::TileSet(const LevelPackInfo& pack, const LevelInfo& level) const
 {
-	for (const auto& set : pack.TileSets)
+	for (const TileSetInfo& set : pack.TileSets)
 		if (set.Name == level.TileSet)
 			return set;
 	throw std::out_of_range("Unknown tileset '" + level.TileSet + "' in " + pack.Descriptor);

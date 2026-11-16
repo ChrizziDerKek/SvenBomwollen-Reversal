@@ -44,8 +44,7 @@ public:
 	}
 	bool UsesSceneBackground() const
 	{
-		return CurrentPage == Page::Pause || CurrentPage == Page::Results ||
-		       (CurrentPage == Page::Quit && QuitReturn == Page::Pause);
+		return CurrentPage == Page::Pause || CurrentPage == Page::Results || (CurrentPage == Page::Quit && QuitReturn == Page::Pause);
 	}
 	void Show(Page page);
 	void ShowResults(const RoundResult& result);
@@ -85,5 +84,5 @@ private:
 	std::array<const Sprite*, 4> People{};
 	f32 Scroll = 0, UiAge = 0;
 	str EnteredName, Notice;
-	POINT Mouse{400, 300};
+	POINT Mouse{ 400, 300 };
 };

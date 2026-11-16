@@ -38,6 +38,6 @@ private:
 	bool Scaled;
 	WNDPROC Original = nullptr;
 	std::array<bool, 256> Previous{};
-	POINT Mouse{-1, -1};
+	POINT Mouse{ -1, -1 };
 	wstr Typed;
 };

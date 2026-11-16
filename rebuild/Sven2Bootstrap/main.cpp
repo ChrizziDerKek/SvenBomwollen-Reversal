@@ -14,8 +14,8 @@
 
 static i32 Bootstrap(i32 argc, char** argv)
 {
-	wchar_t executable[32768]{};
-	GetModuleFileNameW(nullptr, executable, 32768);
+	wchar_t executable[MAX_PATH]{};
+	GetModuleFileNameW(nullptr, executable, MAX_PATH);
 	fpath root = fpath(executable).parent_path().parent_path().parent_path().parent_path().parent_path();
 	fpath game = root / L"games" / L"sven2";
 	fpath dataDirectory = root / L"assets";
@@ -120,6 +120,7 @@ static i32 Bootstrap(i32 argc, char** argv)
 	Log("PASS");
 	return 0;
 }
+
 static LONG Crash(EXCEPTION_POINTERS* e)
 {
 	if (e->ExceptionRecord->ExceptionCode == 0xe06d7363)
@@ -129,6 +130,7 @@ static LONG Crash(EXCEPTION_POINTERS* e)
 	Log(text);
 	return EXCEPTION_EXECUTE_HANDLER;
 }
+
 static i32 Guarded(i32 argc, char** argv)
 {
 	__try
@@ -140,6 +142,7 @@ static i32 Guarded(i32 argc, char** argv)
 		return 2;
 	}
 }
+
 i32 main(i32 argc, char** argv)
 {
 	SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX | SEM_NOOPENFILEERRORBOX);

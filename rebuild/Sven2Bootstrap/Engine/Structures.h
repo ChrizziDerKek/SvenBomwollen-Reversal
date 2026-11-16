@@ -1,5 +1,7 @@
 #pragma once
 #include "Types.h"
+#include "Scene/Objects/ObjectKind.h"
+#include "Scene/Objects/ObjectState.h"
 #include <array>
 
 class FsrPresenter;
@@ -92,12 +94,12 @@ struct WorldObject
 {
 	SpriteDraw Draw{};
 	f64 DepthOffset = 0;
-	i32 Kind = 1;
+	ObjectKind Kind = ObjectKind::Scenery;
 	i32 Tile = -1;
 	i32 Facing = 0;
 	i32 Impatience = 6;
 	i32 Temperament = 0;
-	i32 State = 0;
+	ActorState State = ActorState::Idle;
 	i32 TurnTo = -1;
 	i32 AngerTicks = 0;
 	i32 Attempts = 0;
@@ -169,7 +171,7 @@ struct EnemyRules
 
 struct UfoFlight
 {
-	i32 State = -1;
+	UfoState State = UfoState::Inactive;
 	i32 Target = -1;
 	i32 TargetTile = -1;
 	f32 X = 0;

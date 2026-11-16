@@ -13,11 +13,11 @@ UfoController::UfoController(LevelScene& scene)
 
 void UfoController::RequestUfo(i32 target)
 {
-	if (Ufo.State >= 0 || target < 0 || static_cast<size_t>(target) >= Scene.Objects.Size() || Scene.Objects[target].Freed)
+	if (Ufo.State != UfoState::Inactive || target < 0 || static_cast<size_t>(target) >= Scene.Objects.Size() || Scene.Objects[target].Freed)
 		return;
 	const WorldObject& actor = Scene.Objects[target];
 	Ufo = UfoFlight{};
-	Ufo.State = 0;
+	Ufo.State = UfoState::Arriving;
 	Ufo.Target = target;
 	Ufo.TargetTile = actor.Tile;
 	if (static_cast<size_t>(target) == Scene.PlayerIndex)
@@ -28,9 +28,8 @@ void UfoController::RequestUfo(i32 target)
 	}
 	else
 	{
-		Ufo.X = actor.X + (actor.Kind == Kinds::Farmer ? 80 : 60);
-		Ufo.Y = actor.Y + (actor.Kind == Kinds::Farmer ? 120 : actor.Kind == Kinds::Girl ? 80
-		                                                                                 : 60);
+		Ufo.X = actor.X + (actor.Kind == ObjectKind::Farmer ? 80 : 60);
+		Ufo.Y = actor.Y + (actor.Kind == ObjectKind::Farmer ? 120 : (actor.Kind == ObjectKind::Girl ? 80 : 60));
 	}
 	Scene.Sounds.emplace_back(Scene.Engine.GetData().SoundPath("SfxUFO"), SoundPlayback::Loop);
 }
@@ -47,9 +46,7 @@ void UfoController::BeginBeam()
 		return;
 	}
 	WorldObject& actor = Scene.Objects[target];
-	if (actor.Freed || (static_cast<size_t>(target) != Scene.PlayerIndex && actor.Tile != Ufo.TargetTile) ||
-	    (Scene.IsAnimal(actor.Kind) && (Scene.Player.ActiveSheep == target || actor.State == 4 || actor.State == 3 ||
-	                                    (actor.Kind == Kinds::Sheep && actor.State >= 11 && actor.State <= 14))))
+	if (actor.Freed || (static_cast<size_t>(target) != Scene.PlayerIndex && actor.Tile != Ufo.TargetTile) || (Scene.IsAnimal(actor.Kind) && (Scene.Player.ActiveSheep == target || actor.State == ActorState::AnimalWalking || actor.State == ActorState::Turning || (actor.Kind == ObjectKind::Sheep && IsDemonState(actor.State)))))
 	{
 		Ufo.Clock = 0;
 		return;
@@ -64,12 +61,12 @@ void UfoController::BeginBeam()
 		Scene.Player.PlayerBeamState = 21;
 		Scene.Player.PlayerBeamClock = 0;
 		Scene.Player.PlayerLift = 0;
-		Scene.Items.PlayerEffect = 0;
+		Scene.Items.PlayerEffect = ItemCode::None;
 		Scene.Player.CancelPlayerStep();
 	}
 	else
 	{
-		actor.State = 17;
+		actor.State = ActorState::BeamingUp;
 		actor.Lift = 0;
 		actor.Age = 0;
 		actor.Pulse = 175;
@@ -78,20 +75,20 @@ void UfoController::BeginBeam()
 			Ufo.CollectAnimals = true;
 			Scene.Sounds.push_back("Sven2/sfx/Sheep_beamup.ogg");
 		}
-		else if (actor.Kind == Kinds::Alien)
+		else if (actor.Kind == ObjectKind::Alien)
 			Scene.AddScore(75);
-		else if (actor.Kind == Kinds::Dog)
+		else if (actor.Kind == ObjectKind::Dog)
 		{
 			Scene.AddScore(50);
 			Scene.Sounds.push_back("Sven2/sfx/wotan_beamup.ogg");
 		}
-		else if (actor.Kind == Kinds::Girl)
+		else if (actor.Kind == ObjectKind::Girl)
 		{
 			Scene.AddScore(25);
 			Ufo.Clock = 400.0f / 60;
 			Scene.Sounds.push_back("Sven2/sfx/Broemse_beamup.ogg");
 		}
-		else if (actor.Kind == Kinds::Farmer)
+		else if (actor.Kind == ObjectKind::Farmer)
 			Scene.Sounds.push_back("Sven2/sfx/Lars_angry.ogg");
 	}
 	Ufo.Beam = true;
@@ -121,14 +118,14 @@ void UfoController::UpdateUfo(f32 seconds)
 			{
 				Scene.Player.PlayerLift = 0;
 				Scene.Player.PlayerBeamState = 0;
-				Scene.Items.PlayerEffect = 137;
+				Scene.Items.PlayerEffect = ItemCode::AlienPower;
 				Scene.Items.EffectRemaining = Scene.Parameter("AlienDuration", 15);
 				Scene.Items.EffectAge = 0;
 				Scene.Sounds.push_back("Sven2/sfx/sven_hits_ground.ogg");
 			}
 		}
 	}
-	if (Ufo.State < 0)
+	if (Ufo.State == UfoState::Inactive)
 	{
 		if (Scene.Expired)
 		{
@@ -148,7 +145,7 @@ void UfoController::UpdateUfo(f32 seconds)
 		if (static_cast<size_t>(Ufo.BeamAge) >= ActorFrameTables.at(AnimationSequence::UfoBeam).size())
 			Ufo.Beam = false;
 	}
-	if (Ufo.State == 0)
+	if (Ufo.State == UfoState::Arriving)
 	{
 		Ufo.AngleX -= seconds * Ufo.AngularSpeed;
 		Ufo.AngleY -= seconds * Ufo.AngularSpeed;
@@ -157,29 +154,29 @@ void UfoController::UpdateUfo(f32 seconds)
 		if (Ufo.Radius < 0)
 		{
 			Ufo.Radius = 0;
-			Ufo.State = 1;
+			Ufo.State = UfoState::Beaming;
 			BeginBeam();
 		}
 	}
-	else if (Ufo.State == 1)
+	else if (Ufo.State == UfoState::Beaming)
 	{
 		Ufo.Clock -= seconds;
 		if (Ufo.Clock < 0)
 		{
 			Ufo.AngularSpeed = 0.005f;
-			Ufo.State = Ufo.CollectAnimals ? 3 : 2;
+			Ufo.State = Ufo.CollectAnimals ? UfoState::SelectingAnimal : UfoState::Departing;
 		}
 	}
-	else if (Ufo.State == 2)
+	else if (Ufo.State == UfoState::Departing)
 	{
 		Ufo.AngleX += seconds * Ufo.AngularSpeed;
 		Ufo.AngleY += seconds * Ufo.AngularSpeed;
 		Ufo.AngularSpeed += seconds * 0.0002f;
 		Ufo.Radius += seconds * 175;
 		if (Ufo.Radius > 1000)
-			Ufo.State = -1;
+			Ufo.State = UfoState::Inactive;
 	}
-	else if (Ufo.State == 3)
+	else if (Ufo.State == UfoState::SelectingAnimal)
 	{
 		std::vector<i32> candidates;
 		for (size_t i = 0; i < Scene.Objects.Size(); ++i)
@@ -187,7 +184,7 @@ void UfoController::UpdateUfo(f32 seconds)
 				candidates.push_back(static_cast<i32>(i));
 		if (candidates.empty())
 		{
-			Ufo.State = 2;
+			Ufo.State = UfoState::Departing;
 			return;
 		}
 		Ufo.Target = candidates[Scene.RandomInt(static_cast<i32>(candidates.size()))];
@@ -197,9 +194,9 @@ void UfoController::UpdateUfo(f32 seconds)
 		Ufo.TargetY = actor.Y + 60;
 		Ufo.VX = (Ufo.TargetX - Ufo.X) * 0.5f;
 		Ufo.VY = (Ufo.TargetY - Ufo.Y) * 0.5f;
-		Ufo.State = 4;
+		Ufo.State = UfoState::MovingToAnimal;
 	}
-	else if (Ufo.State == 4)
+	else if (Ufo.State == UfoState::MovingToAnimal)
 	{
 		auto advance = [seconds](f32 current, f32 target, f32 velocity)
 		{
@@ -210,7 +207,7 @@ void UfoController::UpdateUfo(f32 seconds)
 		Ufo.Y = advance(Ufo.Y, Ufo.TargetY, Ufo.VY);
 		if (Ufo.X == Ufo.TargetX && Ufo.Y == Ufo.TargetY)
 		{
-			Ufo.State = 1;
+			Ufo.State = UfoState::Beaming;
 			if (Scene.Expired)
 				BeginBeam();
 			else

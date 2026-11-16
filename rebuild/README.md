@@ -66,6 +66,18 @@ Use PascalCase for classes, methods and attributes, camelCase for parameters and
 preferred; `auto` remains for long types, structured bindings and lambdas.
 Required SDK/library spellings and language hooks are exceptions.
 
+Keep ordinary expressions and calls on a single line, with initializer spacing
+such as `{ 1, 1 }`. Parenthesize nested conditional branches to keep clang-format
+from wrapping ternary chains. Data tables retain their row layout.
+
+`ObjectKind` is used directly. `ObjectCatalog` maps character categories, item
+sprites/frames, lifetimes, pickup effects, distraction codes and native table
+indices explicitly; callers use helpers such as `IsAnimal`, `IsEnemy`, `IsItem`
+and `IsPowerup` instead of interpreting kind-number ranges.
+`ActorState`, `UfoState`, `OccupancyCode`, `ItemCode` and `SpawnerCode` keep
+runtime domains separate. Native numeric IDs are converted when reading level
+records. Actor-state aliases document IDs reused by different native classes.
+
 ```powershell
 powershell -File rebuild/Build.ps1 -Checks
 rebuild/bin/Win32/Debug/Sven2Checks.exe

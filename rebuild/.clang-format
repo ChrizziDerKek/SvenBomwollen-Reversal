@@ -13,3 +13,8 @@ ReferenceAlignment: Left
 NamespaceIndentation: None
 SortIncludes: Never
 AccessModifierOffset: -4
+Cpp11BracedListStyle: false
+BinPackArguments: true
+BinPackParameters: true
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false

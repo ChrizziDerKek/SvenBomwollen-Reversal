@@ -11,9 +11,9 @@ public:
 	explicit LevelItems(LevelScene& scene);
 	LevelItems(const LevelItems&) = delete;
 	LevelItems& operator=(const LevelItems&) = delete;
-	i32 FindDistraction(const Object& actor, i32 code) const;
+	i32 FindDistraction(const Object& actor, ItemCode code) const;
 	void RemoveItem(i32 tile);
-	void SpawnItem(i32 kind, i32 tile);
+	void SpawnItem(ObjectKind kind, i32 tile);
 	void SpawnItems();
 	void UpdateItems(f32 seconds);
 	void UpdateObject(size_t i, f32 seconds);
@@ -29,5 +29,6 @@ private:
 	friend class UfoController;
 	LevelScene& Scene;
 	f32 SpawnClock = 0, SpawnPeriod = 10, EffectRemaining = 0, EffectAge = 0;
-	i32 PlayerEffect = 0, LivesGained = 0;
+	ItemCode PlayerEffect = ItemCode::None;
+	i32 LivesGained = 0;
 };

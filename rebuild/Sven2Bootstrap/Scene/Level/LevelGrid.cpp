@@ -15,8 +15,7 @@ LevelGrid::LevelGrid(LevelScene& scene)
 void LevelGrid::Load(const LevelFile& file)
 {
 	Reservations.fill(-1);
-	for (auto& group : Spawners)
-		group.clear();
+	Spawners.clear();
 	for (size_t tile = 0; tile < Tiles.size(); ++tile)
 	{
 		const LevelCell& cell = file.GetCells()[tile];
@@ -24,8 +23,8 @@ void LevelGrid::Load(const LevelFile& file)
 		TileDirections[tile] = cell.Direction;
 		ItemCodes[tile] = cell.ItemCode;
 		ItemObjects[tile] = cell.ItemObject;
-		if (cell.Spawner >= 140 && cell.Spawner <= 142)
-			Spawners[cell.Spawner - 140].push_back(static_cast<i32>(tile));
+		if (IsSpawner(cell.Spawner))
+			Spawners[cell.Spawner].push_back(static_cast<i32>(tile));
 	}
 	Puddles = file.GetPuddles();
 }
@@ -43,7 +42,7 @@ bool LevelGrid::Unoccupied(i32 tile, size_t except) const
 {
 	if (tile < 0 || static_cast<size_t>(tile) >= Tiles.size())
 		return false;
-	if (Tiles[tile] != Empty && Tiles[tile] != 100)
+	if (Tiles[tile] != OccupancyCode::Empty && Tiles[tile] != OccupancyCode::Player)
 		return false;
 	if (Reservations[tile] >= 0 && Reservations[tile] != static_cast<i32>(except))
 		return false;

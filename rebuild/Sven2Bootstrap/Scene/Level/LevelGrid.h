@@ -1,5 +1,7 @@
 #pragma once
 #include "Types.h"
+#include "LevelCodes.h"
+#include <map>
 #include "Engine/Structures.h"
 
 class LevelScene;
@@ -23,9 +25,9 @@ private:
 	friend class LevelScene;
 	friend class PlayerCharacter;
 	LevelScene& Scene;
-	std::array<std::vector<i32>, 3> Spawners;
-	std::array<i32, 22 * 17> Tiles{};
-	std::array<u8, 22 * 17> ItemCodes{};
+	std::map<SpawnerCode, std::vector<i32>> Spawners;
+	std::array<OccupancyCode, 22 * 17> Tiles{};
+	std::array<ItemCode, 22 * 17> ItemCodes{};
 	std::array<i32, 22 * 17> ItemObjects{}, Reservations{};
 	std::array<u8, 22 * 17> TileDirections{};
 	std::vector<i32> Puddles;

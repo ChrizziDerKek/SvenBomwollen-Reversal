@@ -29,15 +29,15 @@ void CheckScalingCoordinates()
 
 	auto r = FsrPresenter::ViewPort(1920, 1080);
 	Require(r.left == 240 && r.right == 1680 && r.top == 0 && r.bottom == 1080, "Widescreen scaling must pillarbox to 4:3.");
-	auto p = FsrPresenter::LogicalMouse({960, 540}, 1920, 1080);
+	auto p = FsrPresenter::LogicalMouse({ 960, 540 }, 1920, 1080);
 	Require(p.x == 400 && p.y == 300, "Scaled mouse center must map to the logical game center.");
-	p = FsrPresenter::LogicalMouse({239, 100}, 1920, 1080);
+	p = FsrPresenter::LogicalMouse({ 239, 100 }, 1920, 1080);
 	Require(p.x < 0 && p.y < 0, "Black bars must not activate game UI.");
-	p = FsrPresenter::LogicalMouse({1679, 1079}, 1920, 1080);
+	p = FsrPresenter::LogicalMouse({ 1679, 1079 }, 1920, 1080);
 	Require(p.x == 799 && p.y == 599, "Bottom-right scaled pixel must stay inside logical bounds.");
 	r = FsrPresenter::ViewPort(800, 1000);
 	Require(r.top == 200 && r.bottom == 800, "Tall windows must letterbox without distorting the game.");
-	p = FsrPresenter::LogicalMouse({0, 0}, 0, 0);
+	p = FsrPresenter::LogicalMouse({ 0, 0 }, 0, 0);
 	Require(p.x < 0 && p.y < 0, "Minimized windows must not divide mouse coordinates by zero.");
 }
 std::vector<u32> ReadScaledCapture(cstr path, i32 width, i32 height)
@@ -65,12 +65,11 @@ void CheckUpscalerGpu()
 	presenter.Present(source.data(), "fsr-flat.bmp");
 	auto flat = ReadScaledCapture("fsr-flat.bmp", 1280, 720);
 	Require(flat[360 * 1280] == 0 && flat[360 * 1280 + 1279] == 0, "FSR black bars must be black.");
-	for (i32 x : {160, 640, 1119})
+	for (i32 x : { 160, 640, 1119 })
 	{
 		const auto c = flat[360 * 1280 + x];
-		for (i32 shift : {0, 8, 16})
-			Require(std::abs(static_cast<i32>((c >> shift) & 255) - static_cast<i32>((0x336699 >> shift) & 255)) <= 1,
-			        "FSR must preserve constant colors, channels and edge clamping.");
+		for (i32 shift : { 0, 8, 16 })
+			Require(std::abs(static_cast<i32>((c >> shift) & 255) - static_cast<i32>((0x336699 >> shift) & 255)) <= 1, "FSR must preserve constant colors, channels and edge clamping.");
 	}
 	for (i32 y = 0; y < 600; ++y)
 		for (i32 x = 0; x < 800; ++x)
@@ -88,7 +87,7 @@ void CheckUpscalerGpu()
 	presenter.SetSharpness(2.0f);
 	presenter.Present(source.data(), "fsr-soft.bmp");
 	Require(fsr != ReadScaledCapture("fsr-soft.bmp", 1280, 720), "RCAS sharpening adjustment has no effect.");
-	RECT rect{0, 0, 800, 600};
+	RECT rect{ 0, 0, 800, 600 };
 	AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, FALSE);
 	SetWindowPos(presenter.Window(), nullptr, 0, 0, rect.right - rect.left, rect.bottom - rect.top, SWP_NOMOVE | SWP_NOZORDER);
 	presenter.Present(source.data(), "native-sized.bmp");
@@ -109,8 +108,7 @@ void CheckCapturePixel(cstr path, i32 x, i32 y, u32 expected)
 	BITMAPINFOHEADER info{};
 	file.read(reinterpret_cast<char*>(&header), sizeof(header));
 	file.read(reinterpret_cast<char*>(&info), sizeof(info));
-	Require(file && header.bfType == 0x4d42 && info.biBitCount == 32 && info.biHeight < 0,
-	        "Unexpected native capture format.");
+	Require(file && header.bfType == 0x4d42 && info.biBitCount == 32 && info.biHeight < 0, "Unexpected native capture format.");
 	file.seekg(header.bfOffBits + (static_cast<std::streamoff>(y) * info.biWidth + x) * 4);
 	u32 observed = 0;
 	file.read(reinterpret_cast<char*>(&observed), 4);
@@ -149,8 +147,7 @@ struct FixtureActor
 	f32 Pulse = 1000;
 	i32 AngerTicks = 0;
 };
-LevelInfo FixtureLevel(MudGE& engine, const str& name,
-                       std::initializer_list<FixtureActor> actors, i32 pickup = 0)
+LevelInfo FixtureLevel(MudGE& engine, const str& name, std::initializer_list<FixtureActor> actors, i32 pickup = 0)
 {
 	const auto& getPacks = engine.GetData().GetPacks();
 	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& pack)
@@ -180,8 +177,7 @@ LevelInfo FixtureLevel(MudGE& engine, const str& name,
 		const auto offset = 16 + 9048 + slot * 100;
 		// Inputs locate a 120px actor canvas. Preserve that logical center for
 		// the farmer's 160px canvas and the distractions' 80px canvases.
-		const i32 size = actor.Kind == 5 ? 160 : actor.Kind >= 7 && actor.Kind <= 10 ? 80
-		                                                                             : 120;
+		const i32 size = actor.Kind == 5 ? 160 : (actor.Kind >= 7 && actor.Kind <= 10 ? 80 : 120);
 		const i32 x = actor.X + 60 - size / 2, y = actor.Y + 60 - size / 2;
 		real(offset, static_cast<f32>(x));
 		real(offset + 4, static_cast<f32>(y));
@@ -189,9 +185,7 @@ LevelInfo FixtureLevel(MudGE& engine, const str& name,
 		real(offset + 12, static_cast<f32>(y));
 		integer(offset + 20, size);
 		integer(offset + 24, size);
-		integer(offset + 92, actor.Kind == 5 ? 40 : actor.Kind == 0                   ? 30
-		                                        : actor.Kind >= 7 && actor.Kind <= 10 ? 60
-		                                                                              : 0);
+		integer(offset + 92, actor.Kind == 5 ? 40 : (actor.Kind == 0 ? 30 : (actor.Kind >= 7 && actor.Kind <= 10 ? 60 : 0)));
 		integer(offset + 44, actor.Kind);
 		real(offset + 52, 1000);
 		real(offset + 56, 15);
@@ -204,14 +198,13 @@ LevelInfo FixtureLevel(MudGE& engine, const str& name,
 		real(offset + 88, actor.Pulse);
 		if (actor.Kind >= 7 && actor.Kind <= 10)
 		{
-			constexpr i32 itemCodes[] = {130, 131, 129, 128};
+			constexpr i32 itemCodes[] = { 130, 131, 129, 128 };
 			integer(offset + 68, 1); // Permanent distraction fixture.
 			data[16 + tile * 24 + 12] = static_cast<u8>(itemCodes[actor.Kind - 7]);
 			integer(16 + tile * 24 + 16, slot);
 		}
 		else
-			integer(16 + tile * 24, actor.Kind == 0 ? 100 : actor.Kind >= 11 ? actor.Kind - 4
-			                                                                 : actor.Kind);
+			integer(16 + tile * 24, actor.Kind == 0 ? 100 : (actor.Kind >= 11 ? actor.Kind - 4 : actor.Kind));
 		if (slot == 0 && pickup)
 			data[16 + tile * 24 + 12] = static_cast<u8>(pickup);
 		++slot;
@@ -260,18 +253,17 @@ void CheckDepthOrdering(MudGE& engine, bool capture = false)
 		Require(found != draws.end(), "Depth regression sprite is missing.");
 		return found - draws.begin();
 	};
-	cstr files[] = {"Chicken", "Goat", "Pig"};
+	cstr files[] = { "Chicken", "Goat", "Pig" };
 	for (i32 kind = 11; kind <= 13; ++kind)
 	{
 		const auto* animalSprite = engine.LoadSprite(str("Sven2/gfx/Animals/") + files[kind - 11] + "_Stand.bmp", 4, 1);
-		const auto north = FixtureLevel(engine, "depth-north-" + std::to_string(kind), {{0, 240, 160, 4}, {kind, 240, 200, 1}});
+		const auto north = FixtureLevel(engine, "depth-north-" + std::to_string(kind), { { 0, 240, 160, 4 }, { kind, 240, 200, 1 } });
 		LevelScene approach(engine, *xs, north, 1);
 		const auto& front = approach.Draws();
-		Require(index(front, animalSprite, 240, 200) > index(front, approach.GetPlayerDraw().Sprite, 240, 160),
-		        "Sven approaching from above painted his legs over the animal.");
+		Require(index(front, animalSprite, 240, 200) > index(front, approach.GetPlayerDraw().Sprite, 240, 160), "Sven approaching from above painted his legs over the animal.");
 		if (capture)
 			engine.DrawFrame(front, ("animal-north-" + std::to_string(kind) + ".bmp").c_str());
-		const auto south = addScenery(FixtureLevel(engine, "depth-interaction-" + std::to_string(kind), {{0, 240, 240, 0}, {kind, 240, 200, 0}}), 230);
+		const auto south = addScenery(FixtureLevel(engine, "depth-interaction-" + std::to_string(kind), { { 0, 240, 240, 0 }, { kind, 240, 200, 0 } }), 230);
 		const auto& texture = engine.GetData().TileSet(*xs, south).Tiles.front();
 		const auto* scenery = engine.LoadSprite(texture.File, texture.Frames, 1);
 		LevelScene interacting(engine, *xs, south, 1);
@@ -284,8 +276,7 @@ void CheckDepthOrdering(MudGE& engine, bool capture = false)
 		for (i32 frame = 0; frame < 4; ++frame)
 		{
 			const auto& active = interacting.Draws();
-			Require(index(active, interacting.GetPlayerDraw().Sprite, 240, 200) < index(active, scenery, 240, 230),
-			        "Animal interaction jumped in front of intervening scenery.");
+			Require(index(active, interacting.GetPlayerDraw().Sprite, 240, 200) < index(active, scenery, 240, 230), "Animal interaction jumped in front of intervening scenery.");
 			Require(std::none_of(active.begin(), active.end(), [&](const auto& d)
 			                     { return d.Sprite == animalSprite; }),
 			        "Animal stand sprite was drawn again over its combined interaction.");
@@ -294,7 +285,7 @@ void CheckDepthOrdering(MudGE& engine, bool capture = false)
 			interacting.Update(0.01f, 0, 0, false);
 		}
 	}
-	const auto moving = addScenery(FixtureLevel(engine, "depth-mid-step", {{0, 240, 160, 4}, {11, 480, 400, 0}}), 175);
+	const auto moving = addScenery(FixtureLevel(engine, "depth-mid-step", { { 0, 240, 160, 4 }, { 11, 480, 400, 0 } }), 175);
 	const auto& texture = engine.GetData().TileSet(*xs, moving).Tiles.front();
 	const auto* scenery = engine.LoadSprite(texture.File, texture.Frames, 1);
 	LevelScene walk(engine, *xs, moving, 1);
@@ -303,11 +294,10 @@ void CheckDepthOrdering(MudGE& engine, bool capture = false)
 	walk.Move(0.1f, 0, 1);
 	Require(walk.GetPlayerDraw().Y > 160 && walk.GetPlayerDraw().Y < 200, "Depth fixture did not stop between grid cells.");
 	const auto& after = walk.Draws();
-	Require(index(after, walk.GetPlayerDraw().Sprite, walk.GetPlayerDraw().X, walk.GetPlayerDraw().Y) > index(after, scenery, 240, 175),
-	        "Moving Sven kept the old tile's depth until committing his step.");
+	Require(index(after, walk.GetPlayerDraw().Sprite, walk.GetPlayerDraw().X, walk.GetPlayerDraw().Y) > index(after, scenery, 240, 175), "Moving Sven kept the old tile's depth until committing his step.");
 	const auto xxl = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& p)
 	                              { return p.Name == "XXL"; });
-	auto heapLevel = FixtureLevel(engine, "depth-forest-heap", {{0, 240, 280, 4}, {11, 480, 400, 0}});
+	auto heapLevel = FixtureLevel(engine, "depth-forest-heap", { { 0, 240, 280, 4 }, { 11, 480, 400, 0 } });
 	heapLevel.TileSet = xxl->LevelSets.front().Levels.front().TileSet;
 	heapLevel = addScenery(heapLevel, 379, 2, 19, 20, 284);
 	const auto& heapImage = engine.GetData().TileSet(*xxl, heapLevel).Tiles.at(2);
@@ -315,9 +305,7 @@ void CheckDepthOrdering(MudGE& engine, bool capture = false)
 	LevelScene crossing(engine, *xxl, heapLevel, 1);
 	crossing.Move(0.1f, 0, 1);
 	const auto& crossingDraws = crossing.Draws();
-	Require(crossing.GetPlayerDraw().Y > 280 && crossing.GetPlayerDraw().Y < 320 &&
-	            index(crossingDraws, crossing.GetPlayerDraw().Sprite, crossing.GetPlayerDraw().X, crossing.GetPlayerDraw().Y) > index(crossingDraws, heap, 284, 379),
-	        "Forest dirt heap covered Sven after his rendered depth crossed it mid-step.");
+	Require(crossing.GetPlayerDraw().Y > 280 && crossing.GetPlayerDraw().Y < 320 && index(crossingDraws, crossing.GetPlayerDraw().Sprite, crossing.GetPlayerDraw().X, crossing.GetPlayerDraw().Y) > index(crossingDraws, heap, 284, 379), "Forest dirt heap covered Sven after his rendered depth crossed it mid-step.");
 	if (capture)
 		engine.DrawFrame(crossingDraws, "forest-heap-mid-step.bmp");
 	Log("PASS: interpolated depth, north animal approaches and occluded chicken/goat/pig interactions.");
@@ -329,10 +317,10 @@ void CheckSerializedPowerups(MudGE& engine)
 	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& p)
 	                             { return p.Name == "XS"; });
 	const auto* icons = engine.LoadSprite("Sven2/gfx/icons.bmp", 5, 1);
-	cstr durations[] = {"FireworkTime", "GiftTime", "ImpotentTime", "SmellTime", "FlowerTime"};
+	cstr durations[] = { "FireworkTime", "GiftTime", "ImpotentTime", "SmellTime", "FlowerTime" };
 	for (i32 kind = 14; kind <= 18; ++kind)
 	{
-		auto level = FixtureLevel(engine, "serialized-powerup-" + std::to_string(kind), {{0, 240, 200, 2}, {7, 280, 200, 0}, {2, 640, 400, 0}});
+		auto level = FixtureLevel(engine, "serialized-powerup-" + std::to_string(kind), { { 0, 240, 200, 2 }, { 7, 280, 200, 0 }, { 2, 640, 400, 0 } });
 		auto bytes = engine.ReadAsset(level.Map);
 		const size_t record = 16 + 9048 + 100;
 		auto put = [&](size_t off, i32 value)
@@ -367,10 +355,7 @@ void CheckSerializedPowerups(MudGE& engine)
 	Log("PASS: all five serialized Zwo powerup kinds render, collect and expire.");
 }
 
-void DriveTutorial(MudGE& engine,
-                   const std::function<void(f32, i32, i32, bool)>& update,
-                   const std::function<const std::vector<SpriteDraw>&()>& draws,
-                   const std::function<i32()>& remaining)
+void DriveTutorial(MudGE& engine, const std::function<void(f32, i32, i32, bool)>& update, const std::function<const std::vector<SpriteDraw>&()>& draws, const std::function<i32()>& remaining)
 {
 	auto bytes = engine.ReadAsset("XS/levels/Tutorial01v01.lvl");
 	u32 nameLength = 0;
@@ -385,7 +370,7 @@ void DriveTutorial(MudGE& engine,
 	}
 	const auto* getPlayerDraw = engine.LoadSprite("Sven2/gfx/Sven/sven_stand.bmp", 8, 1);
 	const auto* sheep = engine.LoadSprite("Sven2/gfx/Sheep/Sheep_Stand.bmp", 4, 1);
-	constexpr i32 directions[][2] = {{0, -1}, {1, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}};
+	constexpr i32 directions[][2] = { { 0, -1 }, { 1, -1 }, { 1, 0 }, { 1, 1 }, { 0, 1 }, { -1, 1 }, { -1, 0 }, { -1, -1 } };
 	auto cellAt = [](const SpriteDraw& draw)
 	{
 		const i32 x = (draw.X + 60) / 40, y = (draw.Y + 60) / 40;
@@ -526,7 +511,7 @@ void CheckMenus(MudGE& engine, const fpath& saves)
 	const auto firstEpisode = ui.GetPack().Name + "/" + ui.GetLevelSet().Name;
 	WindowInput::Result nextEpisode;
 	nextEpisode.Click = true;
-	nextEpisode.Mouse = {275, 100};
+	nextEpisode.Mouse = { 275, 100 };
 	ui.Handle(nextEpisode);
 	Require(ui.GetPack().Name + "/" + ui.GetLevelSet().Name != firstEpisode, "Highscore mouse arrow did not change episodes.");
 	WindowInput::Result previousEpisode;
@@ -535,7 +520,7 @@ void CheckMenus(MudGE& engine, const fpath& saves)
 	Require(ui.GetPack().Name + "/" + ui.GetLevelSet().Name == firstEpisode, "Highscore keyboard traversal did not restore the episode.");
 	WindowInput::Result cards;
 	cards.Click = true;
-	cards.Mouse = {510, 40};
+	cards.Mouse = { 510, 40 };
 	ui.Handle(cards);
 	const auto& cardDraws = ui.Draws(0);
 	Require(std::any_of(cardDraws.begin(), cardDraws.end(), [](const auto& draw)
@@ -559,8 +544,7 @@ void CheckMenus(MudGE& engine, const fpath& saves)
 	playCard.Confirm = true;
 	ui.Handle(playCard);
 	const auto cardSounds = ui.TakeSounds();
-	Require(cardSounds.size() == 1 && cardSounds.front() == variants.front().Sound,
-	        "Card playback omitted its original sound.");
+	Require(cardSounds.size() == 1 && cardSounds.front() == variants.front().Sound, "Card playback omitted its original sound.");
 	ui.Handle(playCard);
 	Require(ui.TakeSounds().empty(), "Card input restarted an animation that was already playing.");
 	const auto& playback = ui.Draws(0.11f);
@@ -570,7 +554,7 @@ void CheckMenus(MudGE& engine, const fpath& saves)
 	const auto* arrows = engine.LoadSprite("Sven2/gfx/pijlen.bmp", 8, 1);
 	WindowInput::Result arrowHover;
 	arrowHover.MouseMoved = true;
-	arrowHover.Mouse = {245, 360};
+	arrowHover.Mouse = { 245, 360 };
 	ui.Handle(arrowHover);
 	const auto& hoveredArrow = ui.Draws(0);
 	Require(std::any_of(hoveredArrow.begin(), hoveredArrow.end(), [&](const auto& draw)
@@ -592,7 +576,7 @@ void CheckMenus(MudGE& engine, const fpath& saves)
 	chooseNo.Right = true;
 	ui.Handle(chooseNo);
 	Require(ui.Handle(input) == UiAction::Resume, "Pause No did not resume.");
-	ui.ShowResults({1250, 1, 180, 3, 3, 0, 0, 0, true, false});
+	ui.ShowResults({ 1250, 1, 180, 3, 3, 0, 0, 0, true, false });
 	ui.Handle(input);
 	Require(ui.GetPage() == Page::Name, "A qualifying round did not open name entry.");
 	WindowInput::Result typing;
@@ -612,7 +596,7 @@ void CheckMenus(MudGE& engine, const fpath& saves)
 	hover.Show(Page::GetPacks);
 	WindowInput::Result mouse;
 	mouse.MouseMoved = true;
-	mouse.Mouse = {200, 170};
+	mouse.Mouse = { 200, 170 };
 	hover.Handle(mouse);
 	const auto& hoverDraws = hover.Draws(0);
 	const auto* green = engine.LoadSprite("Sven2/gfx/fontgreen1.bmp", 88, 1);
@@ -624,13 +608,13 @@ void CheckMenus(MudGE& engine, const fpath& saves)
 	GameUi exitMenu(engine, saves / L"exit-menu");
 	WindowInput::Result exitClick;
 	exitClick.Click = true;
-	exitClick.Mouse = {650, 555};
+	exitClick.Mouse = { 650, 555 };
 	exitMenu.Handle(exitClick);
 	Require(exitMenu.GetPage() == Page::Quit, "Exit button did not open confirmation.");
 	const auto* logo = engine.LoadSprite("Sven2/gfx/SvenLogo.bmp", 1, 1);
 	const auto* logoDetail = engine.LoadSprite("Sven2/gfx/SvenLogo_O.bmp", 4, 1);
 	// Model a retained completed session being supplied after returning to title.
-	const std::vector<SpriteDraw> staleLevel = {{logo, -777, -777, 0}};
+	const std::vector<SpriteDraw> staleLevel = { { logo, -777, -777, 0 } };
 	const auto& exitDraws = exitMenu.Draws(0, &staleLevel);
 	Require(!exitMenu.UsesSceneBackground() && std::none_of(exitDraws.begin(), exitDraws.end(), [](const auto& draw)
 	                                                        { return draw.X == -777; }),
@@ -644,12 +628,11 @@ void CheckMenus(MudGE& engine, const fpath& saves)
 	                      { return draw.Y == 545; }) == 4,
 	        "Exit confirmation removed the four menu buttons.");
 	exitMenu.Handle(chooseNo);
-	Require(exitMenu.Handle(input) == UiAction::None && exitMenu.GetPage() == Page::Title,
-	        "Declining exit did not return to the title.");
+	Require(exitMenu.Handle(input) == UiAction::None && exitMenu.GetPage() == Page::Title, "Declining exit did not return to the title.");
 	exitMenu.Show(Page::Pause);
 	const auto& pauseDraws = exitMenu.Draws(0, &staleLevel);
 	Require(exitMenu.UsesSceneBackground() && pauseDraws.front().X == -777, "Pause dialog lost its active level background.");
-	RoundResult completed{1250, 1, 180, 3, 3, 0, 0, 0, false, false, 3, 2};
+	RoundResult completed{ 1250, 1, 180, 3, 3, 0, 0, 0, false, false, 3, 2 };
 	ui.ShowResults(completed);
 	const auto firstDrawCount = ui.Draws(0.1f).size();
 	ui.ShowResults(completed);
@@ -676,7 +659,7 @@ void CheckMenus(MudGE& engine, const fpath& saves)
 void CheckScores(const fpath& saves)
 {
 	const auto file = saves / L"persistence.tsv";
-	Highscores scores(file, {{"A", 1000, 0}, {"B", 900, 0}});
+	Highscores scores(file, { { "A", 1000, 0 }, { "B", 900, 0 } });
 	scores.Submit(u8"J\u00f6rg", 1050, 2, 3);
 	const auto& rows = scores.GetEntries();
 	Require(rows.front().Score == 1050 && rows.front().Level == 2, "Score was not ranked.");
@@ -705,10 +688,9 @@ void CheckScores(const fpath& saves)
 void CheckGlyphs(MudGE& engine)
 {
 	const auto* placeholder = engine.LoadSprite("Sven2/gfx/noanim.bmp", 1, 1);
-	Require((placeholder->Pixels.front() & 0xffffff) == 0xff00ff,
-	        "Original RGB565-equivalent chroma key was not normalized.");
-	const i32 expected[] = {74, 61, 9, 33, 42, 32, 46, 37, 39, 60, 59, 66, 67, 73, 86, 43, 85};
-	for (bool smallFont : {false, true})
+	Require((placeholder->Pixels.front() & 0xffffff) == 0xff00ff, "Original RGB565-equivalent chroma key was not normalized.");
+	const i32 expected[] = { 74, 61, 9, 33, 42, 32, 46, 37, 39, 60, 59, 66, 67, 73, 86, 43, 85 };
+	for (bool smallFont : { false, true })
 	{
 		BitmapFont font(engine, smallFont);
 		std::vector<SpriteDraw> glyphs;
@@ -782,13 +764,13 @@ void CheckReportedGameplay(MudGE& engine)
 	const auto& getPacks = engine.GetData().GetPacks();
 	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& pack)
 	                             { return pack.Name == "XS"; });
-	const auto walking = FixtureLevel(engine, "walking", {{0, 240, 200, 0}, {2, 640, 400, 0}});
+	const auto walking = FixtureLevel(engine, "walking", { { 0, 240, 200, 0 }, { 2, 640, 400, 0 } });
 	LevelScene east(engine, *xs, walking, 1), west(engine, *xs, walking, 1);
 	east.Update(0.05f, 1, 0, false);
 	west.Update(0.05f, -1, 0, false);
 	Require(east.GetPlayerDraw().Mirror && !west.GetPlayerDraw().Mirror, "Sven's side-running sprite faces away from movement.");
 
-	const auto angry = FixtureLevel(engine, "angry", {{0, 240, 200, 0}, {2, 240, 160, 0, 10}, {2, 640, 400, 0}});
+	const auto angry = FixtureLevel(engine, "angry", { { 0, 240, 200, 0 }, { 2, 240, 160, 0, 10 }, { 2, 640, 400, 0 } });
 	LevelScene kicked(engine, *xs, angry, 1);
 	const auto variants = ShagAnimation::Load(engine);
 	std::set<const Sprite*> usedVariants;
@@ -807,7 +789,7 @@ void CheckReportedGameplay(MudGE& engine)
 	Require(kicked.GetRemainingTargets() == 1, "Sheep could not be interacted with after its kick.");
 	Require(usedVariants.size() == 1, "Repeated action switched animation during one sheep interaction.");
 
-	const auto smelly = FixtureLevel(engine, "smelly", {{0, 200, 240, 0}, {2, 240, 160, 0, 6}, {2, 640, 400, 0}}, 135);
+	const auto smelly = FixtureLevel(engine, "smelly", { { 0, 200, 240, 0 }, { 2, 240, 160, 0, 6 }, { 2, 640, 400, 0 } }, 135);
 	LevelScene stink(engine, *xs, smelly, 1);
 	stink.Update(0.01f, 0, 0, false);
 	Step(stink, 0, -1);
@@ -822,7 +804,7 @@ void CheckReportedGameplay(MudGE& engine)
 	                    { return draw.Sprite == mood && draw.Y == 160 && draw.Frame >= 10; }),
 	        "Smell did not anger the neighboring sheep.");
 
-	const auto cold = FixtureLevel(engine, "frigida", {{0, 240, 200, 0}, {2, 240, 160, 0, 6}});
+	const auto cold = FixtureLevel(engine, "frigida", { { 0, 240, 200, 0 }, { 2, 240, 160, 0, 6 } });
 	LevelScene frigida(engine, *xs, cold, 1);
 	for (i32 frame = 0; frame < 90; ++frame)
 		frigida.Update(1.0f / 60, 0, 0, frame % 8 == 0);
@@ -837,7 +819,7 @@ void CheckReportedGameplay(MudGE& engine)
 	                                              { return draw.Sprite == frigida.GetPlayerDraw().Sprite; });
 	Require(kettlePosition > interactionPosition, "Frigida interaction painted over its kettle indicator.");
 
-	const auto enemy = FixtureLevel(engine, "fight", {{0, 240, 200, 0}, {4, 280, 200, 6}, {2, 640, 400, 0}});
+	const auto enemy = FixtureLevel(engine, "fight", { { 0, 240, 200, 0 }, { 4, 280, 200, 6 }, { 2, 640, 400, 0 } });
 	LevelScene fight(engine, *xs, enemy, 1);
 	const auto* cloud = engine.LoadSprite("Sven2/gfx/anim_cloud.bmp", 10, 1);
 	bool fought = false;
@@ -849,7 +831,7 @@ void CheckReportedGameplay(MudGE& engine)
 		                     { return draw.Sprite == cloud; });
 	}
 	Require(fought, "Enemy battle did not render the fight cloud.");
-	const auto animals = FixtureLevel(engine, "animal-meters", {{0, 240, 200, 0}, {12, 240, 160, 0}, {11, 400, 160, 0}, {13, 560, 160, 0}});
+	const auto animals = FixtureLevel(engine, "animal-meters", { { 0, 240, 200, 0 }, { 12, 240, 160, 0 }, { 11, 400, 160, 0 }, { 13, 560, 160, 0 } });
 	LevelScene otherAnimals(engine, *xs, animals, 1);
 	const auto& animalDraws = otherAnimals.Draws();
 	Require(std::count_if(animalDraws.begin(), animalDraws.end(), [&](const auto& draw)
@@ -861,8 +843,7 @@ void CheckReportedGameplay(MudGE& engine)
 	                                    { return draw.Sprite == mood && draw.Y == 150 && draw.X < 320; });
 	const auto goatInteraction = std::find_if(goatDraws.begin(), goatDraws.end(), [&](const auto& draw)
 	                                          { return draw.Sprite == otherAnimals.GetPlayerDraw().Sprite; });
-	Require(goatMeter != goatDraws.end() && goatMeter > goatInteraction,
-	        "Goat interaction covered or omitted its impatience meter.");
+	Require(goatMeter != goatDraws.end() && goatMeter > goatInteraction, "Goat interaction covered or omitted its impatience meter.");
 	Log("PASS: run direction, single kick recovery, stable interaction, smell, Frigida kettle and fight animation.");
 }
 
@@ -876,8 +857,8 @@ void CheckEnemyAcquisition(MudGE& engine)
 		const auto path = engine.GetData().SoundPath(name);
 		return !path.empty() && std::find(sounds.begin(), sounds.end(), path) != sounds.end();
 	};
-	const auto outside = FixtureLevel(engine, "dog-boundary", {{0, 240, 200, 0}, {4, 360, 200, 6}, {2, 640, 400, 0}});
-	const auto reservation = FixtureLevel(engine, "player-reservation", {{0, 240, 200, 0}, {5, 240, 240, 0, 6, 0, 0, 0.15f}, {2, 640, 400, 0}});
+	const auto outside = FixtureLevel(engine, "dog-boundary", { { 0, 240, 200, 0 }, { 4, 360, 200, 6 }, { 2, 640, 400, 0 } });
+	const auto reservation = FixtureLevel(engine, "player-reservation", { { 0, 240, 200, 0 }, { 5, 240, 240, 0, 6, 0, 0, 0.15f }, { 2, 640, 400, 0 } });
 	LevelScene moving(engine, *xs, reservation, 1);
 	moving.Update(0.2f, 1, 0, false);
 	Require(moving.GetPlayerDraw().X > 260 && moving.GetPlayerDraw().X < 280, "Reservation fixture did not cross the half-step point.");
@@ -890,14 +871,14 @@ void CheckEnemyAcquisition(MudGE& engine)
 	LevelScene distant(engine, *xs, outside, 1);
 	distant.Update(0.1f, 0, 0, false);
 	Require(!hasSound(distant.TakeSounds(), "SfxDogFoundSven"), "Dog acquired Sven at the excluded D=3 boundary.");
-	const auto inside = FixtureLevel(engine, "dog-notice", {{0, 240, 200, 0}, {4, 320, 200, 6}, {2, 640, 400, 0}});
+	const auto inside = FixtureLevel(engine, "dog-notice", { { 0, 240, 200, 0 }, { 4, 320, 200, 6 }, { 2, 640, 400, 0 } });
 	LevelScene noticed(engine, *xs, inside, 1);
 	noticed.Update(0.01f, 0, 0, false);
 	Require(hasSound(noticed.TakeSounds(), "SfxDogFoundSven"), "Dog did not bark on acquiring Sven.");
 	noticed.Update(0.2f, 0, 0, false);
 	Require(!hasSound(noticed.TakeSounds(), "SfxDogFoundSven"), "Dog repeated its acquisition bark while walking the same tile.");
 
-	const auto boxed = FixtureLevel(engine, "dog-blocked", {{0, 240, 200, 0}, {4, 320, 200, 6}, {2, 640, 400, 0}});
+	const auto boxed = FixtureLevel(engine, "dog-blocked", { { 0, 240, 200, 0 }, { 4, 320, 200, 6 }, { 2, 640, 400, 0 } });
 	{
 		std::fstream file(engine.GetData().GetRoot() / std::filesystem::u8path(boxed.Map), std::ios::in | std::ios::out | std::ios::binary);
 		const i32 dogTile = ((200 + 60) / 40 + 1) * 22 + (320 + 60) / 40 + 1;
@@ -919,16 +900,15 @@ void CheckEnemyAcquisition(MudGE& engine)
 	blocked.Update(2.0f, 0, 0, false);
 	Require(!hasSound(blocked.TakeSounds(), "SfxDogFoundSven"), "Blocked enemy ignored its retry delay and repeated notice.");
 
-	const auto bone = FixtureLevel(engine, "dog-bone", {{0, 240, 200, 0}, {4, 320, 200, 6}, {9, 320, 240, 0}, {2, 640, 400, 0}});
+	const auto bone = FixtureLevel(engine, "dog-bone", { { 0, 240, 200, 0 }, { 4, 320, 200, 6 }, { 9, 320, 240, 0 }, { 2, 640, 400, 0 } });
 	LevelScene distracted(engine, *xs, bone, 1);
 	distracted.Update(0.01f, 0, 0, false);
 	const auto notice = distracted.TakeSounds();
-	Require(hasSound(notice, "SfxDogFoundBone") && !hasSound(notice, "SfxDogFoundSven"),
-	        "Dog did not prioritize a nearby bone over Sven.");
+	Require(hasSound(notice, "SfxDogFoundBone") && !hasSound(notice, "SfxDogFoundSven"), "Dog did not prioritize a nearby bone over Sven.");
 	distracted.Update(1.0f, 0, 0, false);
 	Require(hasSound(distracted.TakeSounds(), "SfxDogDig"), "Dog failed to consume its bone and start digging.");
 
-	const auto beer = FixtureLevel(engine, "farmer-beer", {{0, 640, 400, 0}, {5, 240, 200, 2}, {7, 280, 200, 0}, {2, 640, 120, 0}});
+	const auto beer = FixtureLevel(engine, "farmer-beer", { { 0, 640, 400, 0 }, { 5, 240, 200, 2 }, { 7, 280, 200, 0 }, { 2, 640, 120, 0 } });
 	LevelScene drinking(engine, *xs, beer, 1);
 	bool foundBeer = false, drank = false;
 	for (i32 frame = 0; frame < 60 * 15 && !drank; ++frame)
@@ -941,26 +921,25 @@ void CheckEnemyAcquisition(MudGE& engine)
 	Require(foundBeer && drank, "Farmer did not notice and drink the bottle with its original sounds.");
 	drinking.Update(12.0f, 0, 0, false);
 	const auto sleepSounds = drinking.TakeSounds();
-	Require(hasSound(sleepSounds, "SfxLarsFall") && hasSound(sleepSounds, "SfxLarsSleep"),
-	        "Farmer's drinking-to-sleep transition omitted its fall or snore sound.");
+	Require(hasSound(sleepSounds, "SfxLarsFall") && hasSound(sleepSounds, "SfxLarsSleep"), "Farmer's drinking-to-sleep transition omitted its fall or snore sound.");
 
-	const auto idle = FixtureLevel(engine, "farmer-idle", {{0, 240, 200, 0}, {5, 320, 200, 6}, {2, 640, 400, 0}});
+	const auto idle = FixtureLevel(engine, "farmer-idle", { { 0, 240, 200, 0 }, { 5, 320, 200, 6 }, { 2, 640, 400, 0 } });
 	LevelScene farmer(engine, *xs, idle, 1);
 	farmer.Update(0.1f, 0, 0, false);
 	Require(!hasSound(farmer.TakeSounds(), "SfxGuyFoundSven"), "Awake farmer used a dog-style proximity acquisition.");
-	const auto active = FixtureLevel(engine, "farmer-activity", {{0, 240, 200, 0}, {2, 240, 160, 0}, {2, 640, 400, 0}, {5, 640, 40, 4}});
+	const auto active = FixtureLevel(engine, "farmer-activity", { { 0, 240, 200, 0 }, { 2, 240, 160, 0 }, { 2, 640, 400, 0 }, { 5, 640, 40, 4 } });
 	LevelScene activity(engine, *xs, active, 1);
 	activity.Update(0.01f, 0, 0, true);
 	activity.Update(0.02f, 0, 0, false);
 	Require(hasSound(activity.TakeSounds(), "SfxGuyFoundSven"), "Farmer ignored Sven's interaction outside proximity range.");
-	for (i32 kind : {3, 6})
+	for (i32 kind : { 3, 6 })
 	{
 		cstr sound = kind == 3 ? "SfxAlienFoundSven" : "SfxBroemseFoundSven";
-		const auto nearby = FixtureLevel(engine, "notice-" + std::to_string(kind), {{0, 240, 200, 0}, {kind, 360, 200, 6}, {2, 640, 400, 0}});
+		const auto nearby = FixtureLevel(engine, "notice-" + std::to_string(kind), { { 0, 240, 200, 0 }, { kind, 360, 200, 6 }, { 2, 640, 400, 0 } });
 		LevelScene acquisition(engine, *xs, nearby, 1);
 		acquisition.Update(0.01f, 0, 0, false);
 		Require(hasSound(acquisition.TakeSounds(), sound), "Alien or girl did not notice Sven inside its original square range.");
-		const auto excluded = FixtureLevel(engine, "boundary-" + std::to_string(kind), {{0, 240, 200, 0}, {kind, 400, 200, 6}, {2, 640, 400, 0}});
+		const auto excluded = FixtureLevel(engine, "boundary-" + std::to_string(kind), { { 0, 240, 200, 0 }, { kind, 400, 200, 6 }, { 2, 640, 400, 0 } });
 		LevelScene boundary(engine, *xs, excluded, 1);
 		boundary.Update(0.01f, 0, 0, false);
 		Require(!hasSound(boundary.TakeSounds(), sound), "Alien or girl noticed Sven at the excluded D=4 boundary.");
@@ -990,7 +969,7 @@ void CheckRound(MudGE& engine)
 	game.Advance();
 	Require(!game.GetResults() && game.LevelNumber() == 2 && game.GetScore() == episodeScore, "Level transition reset the episode score.");
 	Log("PASS: complete tutorial round, result transition and exact time/sheep/lives bonus totals.");
-	LevelSetInfo finalSet{"Single tutorial", {pack->LevelSets.front().Levels.front()}};
+	LevelSetInfo finalSet{ "Single tutorial", { pack->LevelSets.front().Levels.front() } };
 	GameSession finalLevel(engine, *pack, finalSet);
 	DriveTutorial(engine, [&](f32 dt, i32 dx, i32 dy, bool action)
 	              { finalLevel.Update(dt, dx, dy, action); }, [&]() -> const auto&
@@ -1003,9 +982,7 @@ void CheckRound(MudGE& engine)
 	finalLevel.TakeSounds();
 	finalLevel.Advance();
 	const auto sounds = finalLevel.TakeSounds();
-	Require(finalLevel.Finished() && finalLevel.GetResult().EpisodeComplete &&
-	            std::find(sounds.begin(), sounds.end(), engine.GetData().SoundPath("SfxFinishPack")) != sounds.end(),
-	        "Acknowledging the final bonus did not open pack completion with its sound.");
+	Require(finalLevel.Finished() && finalLevel.GetResult().EpisodeComplete && std::find(sounds.begin(), sounds.end(), engine.GetData().SoundPath("SfxFinishPack")) != sounds.end(), "Acknowledging the final bonus did not open pack completion with its sound.");
 	Log("PASS: final level bonus, acknowledgement and separate pack-completion transition.");
 }
 
@@ -1014,11 +991,11 @@ void CheckLifeChanges(MudGE& engine, bool capture = false)
 	const auto& getPacks = engine.GetData().GetPacks();
 	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& pack)
 	                             { return pack.Name == "XS"; });
-	const auto arena = FixtureLevel(engine, "life-alien", {{0, 240, 200, 0}, {3, 280, 200, 6}, {2, 640, 400, 0}});
+	const auto arena = FixtureLevel(engine, "life-alien", { { 0, 240, 200, 0 }, { 3, 280, 200, 6 }, { 2, 640, 400, 0 } });
 	const auto* icon = engine.LoadSprite("Sven2/gfx/Life_icon.bmp", 1, 1);
 	const auto newLife = engine.GetData().SoundPath("SfxNewLife");
 	const auto loseLife = engine.GetData().SoundPath("SfxLoseLife");
-	LevelSetInfo freshSet{"Zero score", {arena}};
+	LevelSetInfo freshSet{ "Zero score", { arena } };
 	GameSession fresh(engine, *xs, freshSet);
 	bool refunded = false;
 	for (i32 frame = 0; frame < 60 * 60 && !refunded; ++frame)
@@ -1051,7 +1028,7 @@ void CheckLifeChanges(MudGE& engine, bool capture = false)
 		file.write(reinterpret_cast<cstr>(bytes.data()), static_cast<std::streamsize>(bytes.size()));
 		Require(static_cast<bool>(file), "Cannot create life-score setup.");
 	}
-	LevelSetInfo campaign{"Lives", {setup, arena}};
+	LevelSetInfo campaign{ "Lives", { setup, arena } };
 	GameSession game(engine, *xs, campaign);
 	DriveTutorial(engine, [&](f32 dt, i32 dx, i32 dy, bool action)
 	              { game.Update(dt, dx, dy, action); }, [&]() -> const auto&
@@ -1113,14 +1090,14 @@ void CheckPlayerItems(MudGE& engine, bool capture = false)
 		i32 Distance;
 	};
 	const Powerup items[] = {
-	    {132, "symbol_power.bmp", 13, "SfxFirework", "FireworkDuration", 22},
-	    {134, "symbol_bubbles_good.bmp", 6, "SfxImpotence", "ImpotentDuration", 9},
-	    {135, "symbol_smell.bmp", 14, "SfxSmell", "SmellDuration", 14},
-	    {136, "symbol_flowers.bmp", 8, "SfxRose", "FlowerDuration", 14},
+		{ 132, "symbol_power.bmp", 13, "SfxFirework", "FireworkDuration", 22 },
+		{ 134, "symbol_bubbles_good.bmp", 6, "SfxImpotence", "ImpotentDuration", 9 },
+		{ 135, "symbol_smell.bmp", 14, "SfxSmell", "SmellDuration", 14 },
+		{ 136, "symbol_flowers.bmp", 8, "SfxRose", "FlowerDuration", 14 },
 	};
 	for (const auto& item : items)
 	{
-		const auto level = FixtureLevel(engine, "pickup-" + std::to_string(item.Code), {{0, 240, 200, 0}, {2, 640, 400, 0}}, item.Code);
+		const auto level = FixtureLevel(engine, "pickup-" + std::to_string(item.Code), { { 0, 240, 200, 0 }, { 2, 640, 400, 0 } }, item.Code);
 		LevelScene scene(engine, *xs, level, 1);
 		scene.Update(0.01f, 0, 0, false);
 		const auto sounds = scene.TakeSounds();
@@ -1135,23 +1112,21 @@ void CheckPlayerItems(MudGE& engine, bool capture = false)
 		if (capture && item.Code == 134)
 			engine.DrawFrame(draws, "slow-motion.bmp");
 		scene.Update(0.1f, 1, 0, false);
-		Require(scene.GetPlayerDraw().X >= 240 + item.Distance && scene.GetPlayerDraw().X <= 241 + item.Distance,
-		        "Player pickup did not apply the original movement-speed modifier.");
+		Require(scene.GetPlayerDraw().X >= 240 + item.Distance && scene.GetPlayerDraw().X <= 241 + item.Distance, "Player pickup did not apply the original movement-speed modifier.");
 		scene.Update(static_cast<f32>(engine.GetData().NumericParam(item.Duration, 20)) + 1, 0, 0, false);
 		const auto& expired = scene.Draws();
 		Require(std::none_of(expired.begin(), expired.end(), [&](const auto& draw)
 		                     { return draw.Sprite == effect; }),
 		        "Player pickup effect outlived its configured duration.");
 	}
-	const auto gift = FixtureLevel(engine, "gift-pickup", {{0, 240, 200, 0}, {2, 640, 400, 0}}, 133);
+	const auto gift = FixtureLevel(engine, "gift-pickup", { { 0, 240, 200, 0 }, { 2, 640, 400, 0 } }, 133);
 	for (u32 seed = 1; seed <= 64; ++seed)
 	{
 		LevelScene scene(engine, *xs, gift, seed);
 		scene.Update(0.01f, 0, 0, false);
 		const i32 lives = scene.TakeLivesGained();
 		const f32 time = scene.TakeTimeDelta();
-		Require((lives == 1 && time == 0) || (lives == 0 && (time == 5 || time == 10 || time == 15 || time == 25)),
-		        "Gift pickup awarded a reward outside the original nested random branches.");
+		Require((lives == 1 && time == 0) || (lives == 0 && (time == 5 || time == 10 || time == 15 || time == 25)), "Gift pickup awarded a reward outside the original nested random branches.");
 		Require(scene.TakeScoreDelta() == 0, "Gift pickup invented a score award.");
 		scene.Update(0.1f, 0, 0, false);
 		Require(scene.TakeLivesGained() == 0 && scene.TakeTimeDelta() == 0, "Gift was consumed more than once.");
@@ -1164,7 +1139,7 @@ void CheckAttackReservations(MudGE& engine)
 	const auto& getPacks = engine.GetData().GetPacks();
 	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& pack)
 	                             { return pack.Name == "XS"; });
-	const auto level = FixtureLevel(engine, "attack-reservation", {{0, 240, 120, 4}, {4, 240, 40, 4}, {2, 640, 400, 0}}, 134);
+	const auto level = FixtureLevel(engine, "attack-reservation", { { 0, 240, 120, 4 }, { 4, 240, 40, 4 }, { 2, 640, 400, 0 } }, 134);
 	bool exercised = false;
 	for (u32 seed = 1; seed <= 32 && !exercised; ++seed)
 	{
@@ -1183,8 +1158,7 @@ void CheckAttackReservations(MudGE& engine)
 				{
 					const auto before = scene.GetPlayerDraw();
 					scene.Update(0.5f, 1, 0, false);
-					Require(scene.GetPlayerDraw().X > before.X + 20,
-					        "An interrupted step left an impassable player reservation after the attack.");
+					Require(scene.GetPlayerDraw().X > before.X + 20, "An interrupted step left an impassable player reservation after the attack.");
 					exercised = true;
 				}
 				break;
@@ -1205,7 +1179,7 @@ void CheckEffectAndAnimationStates(MudGE& engine, bool capture = false)
 		return std::any_of(draws.begin(), draws.end(), [&](const auto& draw)
 		                   { return draw.Sprite == sprite; });
 	};
-	const auto cold = FixtureLevel(engine, "frigida-continuation", {{0, 240, 200, 0}, {2, 240, 160, 0}});
+	const auto cold = FixtureLevel(engine, "frigida-continuation", { { 0, 240, 200, 0 }, { 2, 240, 160, 0 } });
 	LevelScene frigida(engine, *xs, cold, 1);
 	const auto* combined = engine.LoadSprite("Sven2/gfx/Frigida/anim_frigida_final_normal_back.bmp", 3, 1);
 	frigida.Update(0, 0, 0, true);
@@ -1217,7 +1191,7 @@ void CheckEffectAndAnimationStates(MudGE& engine, bool capture = false)
 			Require(frigida.GetPlayerDraw().Sprite == combined, "Queued Frigida continuation flickered to standing Sven.");
 	}
 
-	const auto artifact = FixtureLevel(engine, "artifact-transform", {{0, 240, 200, 0}, {2, 640, 400, 0}}, 128);
+	const auto artifact = FixtureLevel(engine, "artifact-transform", { { 0, 240, 200, 0 }, { 2, 640, 400, 0 } }, 128);
 	LevelScene alienPower(engine, *xs, artifact, 1);
 	Require(!alienPower.UfoActive(), "Artifact UFO was active before pickup.");
 	const auto* alienIcon = engine.LoadSprite("Sven2/gfx/icon_alien.bmp", 13, 1);
@@ -1250,7 +1224,7 @@ void CheckEffectAndAnimationStates(MudGE& engine, bool capture = false)
 	alienPower.Update(16.0f, 0, 0, false);
 	Require(!alienPower.UfoActive(), "UFO lifecycle stayed active after departure.");
 	Require(!contains(alienPower.Draws(), alienIcon), "Alien powerup did not expire.");
-	const auto movingArtifact = FixtureLevel(engine, "artifact-walking", {{0, 240, 240, 0}, {2, 640, 400, 0}});
+	const auto movingArtifact = FixtureLevel(engine, "artifact-walking", { { 0, 240, 240, 0 }, { 2, 640, 400, 0 } });
 	{
 		std::fstream file(engine.GetData().GetRoot() / std::filesystem::u8path(movingArtifact.Map), std::ios::in | std::ios::out | std::ios::binary);
 		const i32 tile = ((200 + 60) / 40 + 1) * 22 + (240 + 60) / 40 + 1;
@@ -1268,10 +1242,9 @@ void CheckEffectAndAnimationStates(MudGE& engine, bool capture = false)
 		movingPower.Update(1.0f / 60, 0, 0, false);
 		movingLanded = contains(movingPower.Draws(), alienIcon);
 	}
-	Require(movingLanded && movingPower.GetPlayerDraw().X == 240 && movingPower.GetPlayerDraw().Y == 200,
-	        "Artifact collected while walking returned Sven to the wrong committed tile.");
+	Require(movingLanded && movingPower.GetPlayerDraw().X == 240 && movingPower.GetPlayerDraw().Y == 200, "Artifact collected while walking returned Sven to the wrong committed tile.");
 
-	const auto bone = FixtureLevel(engine, "dig-particles", {{0, 640, 400, 0}, {4, 240, 200, 2}, {9, 280, 200, 0}, {2, 640, 120, 0}});
+	const auto bone = FixtureLevel(engine, "dig-particles", { { 0, 640, 400, 0 }, { 4, 240, 200, 2 }, { 9, 280, 200, 0 }, { 2, 640, 120, 0 } });
 	LevelScene dog(engine, *xs, bone, 1);
 	const auto* dirt = engine.LoadSprite("Sven2/gfx/Digging.bmp", 18, 1);
 	bool dug = false;
@@ -1292,23 +1265,23 @@ void CheckEffectAndAnimationStates(MudGE& engine, bool capture = false)
 	dog.Update(0.7f, 0, 0, false);
 	Require(!contains(dog.Draws(), dogRest), "Dog remained in the digging state beyond its configured timer.");
 
-	const auto sleeping = FixtureLevel(engine, "farmer-zzz", {{0, 640, 400, 0}, {5, 240, 200, 0, 6, 0, 10, 20}, {2, 640, 120, 0}});
+	const auto sleeping = FixtureLevel(engine, "farmer-zzz", { { 0, 640, 400, 0 }, { 5, 240, 200, 0, 6, 0, 10, 20 }, { 2, 640, 120, 0 } });
 	LevelScene farmer(engine, *xs, sleeping, 1);
 	const auto* zzz = engine.LoadSprite("Sven2/gfx/Guy/anim_guy_gfx_zzz.bmp", 13, 1);
 	farmer.Update(0.1f, 0, 0, false);
 	Require(contains(farmer.Draws(), zzz), "Sleeping farmer omitted the Zzz overlay.");
 	if (capture)
 		engine.DrawFrame(farmer.Draws(), "farmer-sleeping.bmp");
-	const auto sleepingDog = FixtureLevel(engine, "dog-zzz", {{0, 640, 400, 0}, {4, 240, 200, 0, 6, 0, 10, 20}, {2, 640, 120, 0}});
+	const auto sleepingDog = FixtureLevel(engine, "dog-zzz", { { 0, 640, 400, 0 }, { 4, 240, 200, 0, 6, 0, 10, 20 }, { 2, 640, 120, 0 } });
 	LevelScene dogSleep(engine, *xs, sleepingDog, 1);
 	dogSleep.Update(0.1f, 0, 0, false);
 	Require(contains(dogSleep.Draws(), zzz), "Sleeping dog omitted its Zzz overlay.");
-	const auto wakingDog = FixtureLevel(engine, "dog-wake", {{0, 240, 200, 0}, {4, 320, 200, 0, 6, 0, 10, 20}, {2, 640, 120, 0}});
+	const auto wakingDog = FixtureLevel(engine, "dog-wake", { { 0, 240, 200, 0 }, { 4, 320, 200, 0, 6, 0, 10, 20 }, { 2, 640, 120, 0 } });
 	LevelScene dogWake(engine, *xs, wakingDog, 1);
 	dogWake.Update(0.1f, 0, 0, false);
 	Require(!contains(dogWake.Draws(), zzz), "Dog did not wake when Sven entered its original wake range.");
 
-	const auto girlLevel = FixtureLevel(engine, "girl-combined", {{0, 240, 200, 0}, {6, 240, 120, 4}, {2, 640, 400, 0}});
+	const auto girlLevel = FixtureLevel(engine, "girl-combined", { { 0, 240, 200, 0 }, { 6, 240, 120, 4 }, { 2, 640, 400, 0 } });
 	LevelScene girl(engine, *xs, girlLevel, 1);
 	const auto* girlFront = engine.LoadSprite("Sven2/gfx/Broemse/anim_broemse_beating_sven_front.bmp", 35, 1);
 	const auto* svenStand = engine.LoadSprite("Sven2/gfx/Sven/sven_stand.bmp", 8, 1);
@@ -1336,8 +1309,7 @@ void CheckEffectAndAnimationStates(MudGE& engine, bool capture = false)
 		else if (played)
 			break;
 	}
-	Require(played && maximumFrame == 34 && time == -20 && girl.TakeLifeHits() == 0,
-	        "Girl interaction failed its complete 35-frame front sheet or time-only penalty.");
+	Require(played && maximumFrame == 34 && time == -20 && girl.TakeLifeHits() == 0, "Girl interaction failed its complete 35-frame front sheet or time-only penalty.");
 	Log("PASS: Frigida continuity, artifact ground/icon recovery, dig particles, sleep Zzz and complete girl interaction.");
 }
 
@@ -1346,14 +1318,14 @@ void CheckEnemyHeadings(MudGE& engine, bool capture = false)
 	const auto& getPacks = engine.GetData().GetPacks();
 	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& pack)
 	                             { return pack.Name == "XS"; });
-	constexpr i32 directions[][2] = {{0, -1}, {1, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}};
-	constexpr bool mirrors[4][8] = {{0, 1, 1, 1, 0, 0, 0, 0}, {0, 1, 0, 0, 0, 1, 1, 0}, {0, 1, 0, 0, 0, 1, 1, 0}, {0, 1, 1, 1, 0, 0, 0, 0}};
-	cstr family[] = {"Alien", "Dog", "Guy", "Broemse"};
-	cstr lower[] = {"alien", "dog", "guy", "broemse"};
-	cstr headings[] = {"back", "diagonal_back", "side", "diagonal_front", "front", "diagonal_front", "side", "diagonal_back"};
-	constexpr i16 rows[] = {12, 16, 16, 8};
+	constexpr i32 directions[][2] = { { 0, -1 }, { 1, -1 }, { 1, 0 }, { 1, 1 }, { 0, 1 }, { -1, 1 }, { -1, 0 }, { -1, -1 } };
+	constexpr bool mirrors[4][8] = { { 0, 1, 1, 1, 0, 0, 0, 0 }, { 0, 1, 0, 0, 0, 1, 1, 0 }, { 0, 1, 0, 0, 0, 1, 1, 0 }, { 0, 1, 1, 1, 0, 0, 0, 0 } };
+	cstr family[] = { "Alien", "Dog", "Guy", "Broemse" };
+	cstr lower[] = { "alien", "dog", "guy", "broemse" };
+	cstr headings[] = { "back", "diagonal_back", "side", "diagonal_front", "front", "diagonal_front", "side", "diagonal_back" };
+	constexpr i16 rows[] = { 12, 16, 16, 8 };
 	BitmapFont labels(engine, true);
-	cstr directionNames[] = {"N", "NE", "E", "SE", "S", "SW", "W", "NW"};
+	cstr directionNames[] = { "N", "NE", "E", "SE", "S", "SW", "W", "NW" };
 	for (i32 kind = 3; kind <= 6; ++kind)
 	{
 		std::array<const Sprite*, 8> sprites{};
@@ -1365,7 +1337,7 @@ void CheckEnemyHeadings(MudGE& engine, bool capture = false)
 			for (u32 seed = 1; seed <= 4; ++seed)
 			{
 				const auto level = FixtureLevel(engine, "heading-" + std::to_string(kind) + "-" + std::to_string(facing),
-				                                {{0, 640, 400, 0}, {kind, 240, 120, facing, 6, 0, 0, 0}, {2, 640, 480, 0}});
+				                                { { 0, 640, 400, 0 }, { kind, 240, 120, facing, 6, 0, 0, 0 }, { 2, 640, 480, 0 } });
 				LevelScene scene(engine, *xs, level, seed);
 				SpriteDraw before{};
 				bool walking = false;
@@ -1390,8 +1362,7 @@ void CheckEnemyHeadings(MudGE& engine, bool capture = false)
 				i32 direction = 0;
 				while (direction < 8 && (dx != directions[direction][0] || dy != directions[direction][1]))
 					++direction;
-				Require(direction < 8 && after->Sprite == sprites[direction] && after->Mirror == mirrors[kind - 3][direction],
-				        "Enemy walking sprite or mirroring disagreed with its actual movement direction.");
+				Require(direction < 8 && after->Sprite == sprites[direction] && after->Mirror == mirrors[kind - 3][direction], "Enemy walking sprite or mirroring disagreed with its actual movement direction.");
 				if (capture && covered.find(direction) == covered.end())
 				{
 					if (montage.empty())
@@ -1422,7 +1393,7 @@ void CheckEnemyItems(MudGE& engine, bool capture = false)
 		return std::any_of(sounds.begin(), sounds.end(), [&](const auto& sound)
 		                   { return _stricmp(sound.c_str(), path.c_str()) == 0; });
 	};
-	const auto teddy = FixtureLevel(engine, "girl-teddy", {{0, 640, 400, 0}, {6, 240, 200, 2}, {8, 280, 200, 0}, {2, 640, 120, 0}});
+	const auto teddy = FixtureLevel(engine, "girl-teddy", { { 0, 640, 400, 0 }, { 6, 240, 200, 2 }, { 8, 280, 200, 0 }, { 2, 640, 120, 0 } });
 	LevelScene girl(engine, *xs, teddy, 1);
 	bool played = false;
 	for (i32 frame = 0; frame < 1200 && !played; ++frame)
@@ -1438,7 +1409,7 @@ void CheckEnemyItems(MudGE& engine, bool capture = false)
 	Require(std::none_of(recovered.begin(), recovered.end(), [&](const auto& draw)
 	                     { return draw.Sprite == teddyFront || draw.Sprite == teddyBack; }),
 	        "Girl remained in her teddy interaction after the original sequence completed.");
-	const auto playDog = FixtureLevel(engine, "girl-dog", {{0, 640, 400, 0}, {6, 240, 120, 4}, {4, 240, 200, 0}, {2, 640, 480, 0}});
+	const auto playDog = FixtureLevel(engine, "girl-dog", { { 0, 640, 400, 0 }, { 6, 240, 120, 4 }, { 4, 240, 200, 0 }, { 2, 640, 480, 0 } });
 	bool dogInteraction = false;
 	for (u32 seed = 1; seed <= 16 && !dogInteraction; ++seed)
 	{
@@ -1462,7 +1433,7 @@ void CheckEnemyItems(MudGE& engine, bool capture = false)
 	for (i32 kind = 3; kind <= 6; ++kind)
 	{
 		const auto level = FixtureLevel(engine, "artifact-enemy-" + std::to_string(kind),
-		                                {{0, 640, 400, 0}, {kind, 240, 200, 2, 6, 0, 0, 0}, {10, 280, 200, 0}, {2, 640, 120, 0}});
+		                                { { 0, 640, 400, 0 }, { kind, 240, 200, 2, 6, 0, 0, 0 }, { 10, 280, 200, 0 }, { 2, 640, 120, 0 } });
 		bool beamed = false;
 		for (u32 seed = 1; seed <= 16 && !beamed; ++seed)
 		{
@@ -1477,7 +1448,7 @@ void CheckEnemyItems(MudGE& engine, bool capture = false)
 					Require(std::none_of(draws.begin(), draws.end(), [&](const auto& draw)
 					                     { return draw.Sprite == artifactSprite; }),
 					        "Enemy artifact pickup left the collectible behind.");
-					for (const auto* path : {"Sven2/gfx/ufo.bmp", "Sven2/gfx/ufo_shadow.bmp", "Sven2/gfx/anim_beam.bmp"})
+					for (const auto* path : { "Sven2/gfx/ufo.bmp", "Sven2/gfx/ufo_shadow.bmp", "Sven2/gfx/anim_beam.bmp" })
 					{
 						const auto* image = engine.LoadSprite(path, std::strstr(path, "anim_beam") ? 44 : 13, 1);
 						Require(std::any_of(draws.begin(), draws.end(), [&](const auto& draw)
@@ -1514,7 +1485,7 @@ void CheckDemonSheep(MudGE& engine, bool capture = false)
 		return std::any_of(draws.begin(), draws.end(), [&](const auto& draw)
 		                   { return draw.Sprite == sprite; });
 	};
-	const auto natural = FixtureLevel(engine, "demon-natural", {{0, 80, 240, 0}, {2, 480, 160, 0, 10}, {2, 480, 320, 0, 10}});
+	const auto natural = FixtureLevel(engine, "demon-natural", { { 0, 80, 240, 0 }, { 2, 480, 160, 0, 10 }, { 2, 480, 320, 0, 10 } });
 	bool triggered = false;
 	for (u32 seed = 1; seed <= 4 && !triggered; ++seed)
 	{
@@ -1537,7 +1508,7 @@ void CheckDemonSheep(MudGE& engine, bool capture = false)
 		}
 	}
 	Require(triggered, "Maximum impatience never reached the original random demon branch.");
-	const auto chance = FixtureLevel(engine, "demon-chance", {{0, 80, 240, 0}, {2, 480, 160, 0, 10, 0, 0, 0, 40}, {2, 480, 320, 0, 10, 0, 0, 0, 40}});
+	const auto chance = FixtureLevel(engine, "demon-chance", { { 0, 80, 240, 0 }, { 2, 480, 160, 0, 10, 0, 0, 0, 40 }, { 2, 480, 320, 0, 10, 0, 0, 0, 40 } });
 	bool succeeded = false, failed = false;
 	for (u32 seed = 1; seed <= 20; ++seed)
 	{
@@ -1556,15 +1527,15 @@ void CheckDemonSheep(MudGE& engine, bool capture = false)
 		}
 	}
 	Require(succeeded && failed, "Demon chance did not exercise both original random outcomes.");
-	const auto protectedLevel = FixtureLevel(engine, "demon-frigida-protected", {{0, 80, 240, 0}, {2, 480, 160, 0, 10, 2, 0, 0, 40}, {2, 480, 320, 0, 0}});
+	const auto protectedLevel = FixtureLevel(engine, "demon-frigida-protected", { { 0, 80, 240, 0 }, { 2, 480, 160, 0, 10, 2, 0, 0, 40 }, { 2, 480, 320, 0, 0 } });
 	LevelScene protectedSheep(engine, *xs, protectedLevel, 1);
 	protectedSheep.Update(30, 0, 0, false);
 	const auto protectedSounds = protectedSheep.TakeSounds();
 	Require(std::find(protectedSounds.begin(), protectedSounds.end(), devil) == protectedSounds.end(), "Frigida incorrectly entered the ordinary demon branch.");
-	for (bool afterStep : {false, true})
+	for (bool afterStep : { false, true })
 	{
 		const auto level = FixtureLevel(engine, afterStep ? "demon-moving-shock" : "demon-direct-shock",
-		                                {{0, 240, 200, 0}, {2, afterStep ? 160 : 200, afterStep ? 160 : 200, afterStep ? 1 : 0, 12, 0, 11}, {2, 640, 400, 0}}, 132);
+		                                { { 0, 240, 200, 0 }, { 2, afterStep ? 160 : 200, afterStep ? 160 : 200, afterStep ? 1 : 0, 12, 0, 11 }, { 2, 640, 400, 0 } }, 132);
 		LevelScene scene(engine, *xs, level, 1);
 		bool shocked = false, sawRun = false;
 		for (i32 frame = 0; frame < 600 && !shocked; ++frame)
@@ -1592,7 +1563,7 @@ void CheckDemonSheep(MudGE& engine, bool capture = false)
 		Step(scene, 1, 0);
 		Require(scene.GetPlayerDraw().X > stopped.X, "Sven did not regain movement after electric stun.");
 	}
-	const auto walk = FixtureLevel(engine, "demon-three-steps", {{0, 80, 240, 0}, {2, 480, 160, 2, 12, 0, 11}, {2, 640, 400, 0}});
+	const auto walk = FixtureLevel(engine, "demon-three-steps", { { 0, 80, 240, 0 }, { 2, 480, 160, 2, 12, 0, 11 }, { 2, 640, 400, 0 } });
 	LevelScene walker(engine, *xs, walk, 1);
 	bool moved = false, recovered = false;
 	for (i32 frame = 0; frame < 900 && !recovered; ++frame)
@@ -1603,20 +1574,19 @@ void CheckDemonSheep(MudGE& engine, bool capture = false)
 		recovered = moved && !contains(draws, back) && !contains(draws, front) && !contains(draws, run);
 	}
 	Require(moved && recovered, "Demon failed to move and return after its three-step budget.");
-	const auto blocked = FixtureLevel(engine, "demon-blocked", {{0, 80, 240, 0}, {2, 480, 200, 0, 12, 0, 11}, {1, 520, 160, 0}, {1, 520, 240, 0}, {1, 440, 240, 0}, {1, 440, 160, 0}});
+	const auto blocked = FixtureLevel(engine, "demon-blocked", { { 0, 80, 240, 0 }, { 2, 480, 200, 0, 12, 0, 11 }, { 1, 520, 160, 0 }, { 1, 520, 240, 0 }, { 1, 440, 240, 0 }, { 1, 440, 160, 0 } });
 	LevelScene trapped(engine, *xs, blocked, 1);
 	trapped.Update(4, 0, 0, false);
 	const auto& trappedDraws = trapped.Draws();
 	Require(std::any_of(trappedDraws.begin(), trappedDraws.end(), [&](const auto& draw)
 	                    { return draw.Sprite == stand && draw.X == 480 && draw.Y == 200; }),
 	        "Blocked demon failed to recover at its original position.");
-	const auto timeout = FixtureLevel(engine, "demon-timeout", {{0, 80, 240, 0}, {2, 480, 200, 0, 12, 0, 11}});
+	const auto timeout = FixtureLevel(engine, "demon-timeout", { { 0, 80, 240, 0 }, { 2, 480, 200, 0, 12, 0, 11 } });
 	LevelScene expired(engine, *xs, timeout, 1);
 	expired.TimeExpired();
 	for (i32 frame = 0; frame < 60 * 120 && !expired.Completed(); ++frame)
 		expired.Update(1.0f / 60, 0, 0, false);
-	Require(expired.Completed() && expired.GetCompletedSheep() == 0 && expired.TakeLifeHits() == 0,
-	        "Timeout UFO failed to collect a sheep after its busy demon sequence.");
+	Require(expired.Completed() && expired.GetCompletedSheep() == 0 && expired.TakeLifeHits() == 0, "Timeout UFO failed to collect a sheep after its busy demon sequence.");
 	Log("PASS: natural demon trigger, transform/run/recovery, direct and moving shock branches, flash, powerup cancellation and stun release.");
 }
 
@@ -1625,13 +1595,13 @@ void CheckFarmerOccupancy(MudGE& engine)
 	const auto& getPacks = engine.GetData().GetPacks();
 	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& pack)
 	                             { return pack.Name == "XS"; });
-	constexpr i32 directions[8][2] = {{0, -1}, {1, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}};
-	for (i32 state : {0, 10})
+	constexpr i32 directions[8][2] = { { 0, -1 }, { 1, -1 }, { 1, 0 }, { 1, 1 }, { 0, 1 }, { -1, 1 }, { -1, 0 }, { -1, -1 } };
+	for (i32 state : { 0, 10 })
 		for (const auto& direction : directions)
 		{
 			const i32 x = 240 - 40 * direction[0], y = 200 - 40 * direction[1];
 			const auto level = FixtureLevel(engine, "farmer-solid-" + std::to_string(state) + "-" + std::to_string(x) + "-" + std::to_string(y),
-			                                {{0, x, y, 0}, {5, 240, 200, 0, 6, 0, state, 1000}, {2, 640, 400, 0}});
+			                                { { 0, x, y, 0 }, { 5, 240, 200, 0, 6, 0, state, 1000 }, { 2, 640, 400, 0 } });
 			LevelScene scene(engine, *xs, level, 1);
 			scene.Update(0.3f, direction[0], direction[1], false);
 			Require(scene.GetPlayerDraw().X == x && scene.GetPlayerDraw().Y == y, "Player entered the farmer's occupied cell.");
@@ -1651,7 +1621,7 @@ void CheckGirlBeamReturn(MudGE& engine, bool capture = false)
 	for (i32 quadrant = 0; quadrant < 4; ++quadrant)
 	{
 		const auto level = FixtureLevel(engine, "girl-beam-return-" + std::to_string(quadrant),
-		                                {{0, 640, 400, 0}, {6, 240, 200, quadrant * 2, 6, 0, 17}, {2, 640, 120, 0}});
+		                                { { 0, 640, 400, 0 }, { 6, 240, 200, quadrant * 2, 6, 0, 17 }, { 2, 640, 120, 0 } });
 		LevelScene scene(engine, *xs, level, 1);
 		const auto* beam = quadrant == 0 || quadrant == 3 ? back : front;
 		scene.Update(0.5f, 0, 0, false);
@@ -1698,15 +1668,13 @@ void CheckLabFixtures(MudGE& engine)
 				Step(puddles, 1, 0);
 			Step(puddles, 0, 1);
 			Step(puddles, 0, 1);
-			Require(puddles.TakeSplashSound() && puddles.GetPlayerDraw().X == 560 && puddles.GetPlayerDraw().Y == 280,
-			        "Authored lab puddle did not teleport Sven to the other puddle's north exit.");
+			Require(puddles.TakeSplashSound() && puddles.GetPlayerDraw().X == 560 && puddles.GetPlayerDraw().Y == 280, "Authored lab puddle did not teleport Sven to the other puddle's north exit.");
 			LevelScene water(engine, pack, level, 1);
 			for (i32 cell = 0; cell < 7; ++cell)
 				Step(water, 1, 0);
 			for (i32 cell = 0; cell < 5; ++cell)
 				Step(water, 0, 1);
-			Require(water.TakeSplashSound() && (water.GetPlayerDraw().X == 200 || water.GetPlayerDraw().X == 560) && water.GetPlayerDraw().Y == 280,
-			        "Authored lab water did not send Sven to a valid puddle exit.");
+			Require(water.TakeSplashSound() && (water.GetPlayerDraw().X == 200 || water.GetPlayerDraw().X == 560) && water.GetPlayerDraw().Y == 280, "Authored lab water did not send Sven to a valid puddle exit.");
 			LevelScene artifact(engine, pack, level, 1);
 			for (i32 cell = 0; cell < 12; ++cell)
 				Step(artifact, 1, 0);
@@ -1745,8 +1713,7 @@ void CheckTimeout(MudGE& engine)
 	for (i32 frame = 0; frame < 60 * 120 && !scene.Completed(); ++frame)
 		scene.Update(1.0f / 60, 0, 0, false);
 	Require(scene.Completed() && scene.GetCompletedSheep() == 0, "Timeout UFO did not collect the remaining animals.");
-	Require(scene.TakeScoreDelta() == 0 && scene.TakeTimeDelta() == 0 && scene.TakeLifeHits() == 0,
-	        "Timeout collection incorrectly awarded interaction rewards or took a life.");
+	Require(scene.TakeScoreDelta() == 0 && scene.TakeTimeDelta() == 0 && scene.TakeLifeHits() == 0, "Timeout collection incorrectly awarded interaction rewards or took a life.");
 	const auto sounds = scene.TakeSounds();
 	Require(std::find(sounds.begin(), sounds.end(), "Sven2/sfx/beam.ogg") != sounds.end(), "UFO pickup did not emit its beam sound.");
 	Log("PASS: timeout UFO collection, beam events, no interaction reward and no invented life penalty.");
@@ -1761,7 +1728,7 @@ void WriteBehaviorTrace(MudGE& engine, const fpath& path)
 		for (const auto& set : pack.LevelSets)
 			for (const auto& level : set.Levels)
 			{
-				for (u32 seed : {1u, 73u})
+				for (u32 seed : { 1u, 73u })
 				{
 					LevelScene scene(engine, pack, level, seed);
 					output << level.Map << ' ' << seed << '\n';
@@ -1774,8 +1741,8 @@ void WriteBehaviorTrace(MudGE& engine, const fpath& path)
 							for (size_t i = 0; i < sizeof(value); ++i)
 								hash = (hash ^ bytes[i]) * 1099511628211ull;
 						};
-						constexpr i32 direction[8][2] = {{0, -1}, {1, -1}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}};
-						constexpr f32 delta[] = {1.0f / 60, 0.03f, 0.1f, 0.25f};
+						constexpr i32 direction[8][2] = { { 0, -1 }, { 1, -1 }, { 1, 0 }, { 1, 1 }, { 0, 1 }, { -1, 1 }, { -1, 0 }, { -1, -1 } };
+						constexpr f32 delta[] = { 1.0f / 60, 0.03f, 0.1f, 0.25f };
 						const i32 heading = (frame / 30) % 8;
 						scene.Update(delta[frame % 4], direction[heading][0], direction[heading][1], frame % 11 == 0);
 						if (frame == 360)
@@ -1813,7 +1780,7 @@ void WriteBehaviorTrace(MudGE& engine, const fpath& path)
 							// UFO event. Playback now uses the XML resource path.
 							if (sound == engine.GetData().SoundPath("SfxUFO"))
 							{
-								str core = FindCharacterDefinition(Kinds::Player)->SpriteAsset;
+								str core = FindCharacterDefinition(ObjectKind::Player)->SpriteAsset;
 								sound = core.substr(0, core.find('/')) + sound.substr(sound.find('/'));
 							}
 							for (char byte : sound)
@@ -1829,7 +1796,7 @@ void WriteBehaviorTrace(MudGE& engine, const fpath& path)
 
 void CheckObjectOwnership(MudGE& engine)
 {
-	const LevelInfo level = FixtureLevel(engine, "object-ownership", {{0, 80, 80, 0}, {2, 240, 240, 0}, {3, 360, 120, 0}, {4, 440, 240, 0}, {5, 520, 360, 0}, {6, 600, 200, 0}, {11, 120, 400, 0}, {12, 240, 400, 0}, {13, 360, 400, 0}});
+	const LevelInfo level = FixtureLevel(engine, "object-ownership", { { 0, 80, 80, 0 }, { 2, 240, 240, 0 }, { 3, 360, 120, 0 }, { 4, 440, 240, 0 }, { 5, 520, 360, 0 }, { 6, 600, 200, 0 }, { 11, 120, 400, 0 }, { 12, 240, 400, 0 }, { 13, 360, 400, 0 } });
 	const LevelPackInfo& pack = *std::find_if(engine.GetData().GetPacks().begin(), engine.GetData().GetPacks().end(), [](const LevelPackInfo& value)
 	                                          { return value.Name == "XS"; });
 	LevelScene scene(engine, pack, level, 1);
@@ -1845,7 +1812,7 @@ void CheckObjectOwnership(MudGE& engine)
 	Require(dynamic_cast<Pig*>(&objects.Get(8)) != nullptr, "Pig instance is missing.");
 	BaseObject* originalSheep = &objects.Get(1);
 	WorldObject effect = objects[1];
-	effect.Kind = Kinds::CompletionEffect;
+	effect.Kind = ObjectKind::CompletionEffect;
 	objects.Add(effect);
 	Require(&objects.Get(1) == originalSheep, "Adding an object invalidated an existing entity.");
 	Require(objects.Find(ObjectKind::Dog).size() == 1, "Typed manager lookup lost an enemy.");
@@ -1916,8 +1883,7 @@ i32 main(i32 argc, char** argv)
 		wchar_t executable[32768]{};
 		GetModuleFileNameW(nullptr, executable, 32768);
 		const auto getRoot = fpath(executable).parent_path().parent_path().parent_path().parent_path().parent_path();
-		const auto saves = getRoot / L"rebuild" / L"runtime" / L"checks" /
-		                   (std::to_wstring(GetCurrentProcessId()) + L"-" + std::to_wstring(GetTickCount64()));
+		const auto saves = getRoot / L"rebuild" / L"runtime" / L"checks" / (std::to_wstring(GetCurrentProcessId()) + L"-" + std::to_wstring(GetTickCount64()));
 		std::filesystem::create_directories(saves);
 		std::filesystem::current_path(saves);
 		CheckScalingCoordinates();
@@ -2041,7 +2007,7 @@ i32 main(i32 argc, char** argv)
 			engine.DrawFrame(ui.Draws(0), "menu.bmp");
 			WindowInput::Result exitClick;
 			exitClick.Click = true;
-			exitClick.Mouse = {650, 555};
+			exitClick.Mouse = { 650, 555 };
 			ui.Handle(exitClick);
 			engine.DrawFrame(ui.Draws(0), "menu-exit.bmp");
 			ui.Show(Page::GetPacks);
@@ -2062,7 +2028,7 @@ i32 main(i32 argc, char** argv)
 			CheckCapturePixel("highscores.bmp", 110, 65, paper->Pixels[65 * paper->Width + 110]);
 			WindowInput::Result collectionTab;
 			collectionTab.Click = true;
-			collectionTab.Mouse = {510, 40};
+			collectionTab.Mouse = { 510, 40 };
 			ui.Handle(collectionTab);
 			engine.DrawFrame(ui.Draws(0), "cards-first.bmp");
 			WindowInput::Result previousCard;
@@ -2070,9 +2036,9 @@ i32 main(i32 argc, char** argv)
 			ui.Handle(previousCard);
 			engine.DrawFrame(ui.Draws(0), "cards-last.bmp");
 			CheckCapturePixel("cards-last.bmp", 510, 65, paper->Pixels[65 * paper->Width + 510]);
-			ui.ShowResults({1250, 1, 180, 3, 3, 0, 0, 0, false, false});
+			ui.ShowResults({ 1250, 1, 180, 3, 3, 0, 0, 0, false, false });
 			engine.DrawFrame(ui.Draws(0), "results.bmp");
-			ui.ShowResults({1250, 1, 180, 3, 3, 0, 0, 0, true, false, 17, 3});
+			ui.ShowResults({ 1250, 1, 180, 3, 3, 0, 0, 0, true, false, 17, 3 });
 			engine.DrawFrame(ui.Draws(0.1f), "pack-complete.bmp");
 			WindowInput::Result continueResult;
 			continueResult.Confirm = true;
@@ -2091,18 +2057,18 @@ i32 main(i32 argc, char** argv)
 			ui.Show(Page::Title);
 			ui.Handle(exitClick);
 			engine.DrawFrame(ui.Draws(0, &session.Draws()), "menu-exit-after-level.bmp");
-			const auto walking = FixtureLevel(engine, "visual-walk", {{0, 240, 200, 0}, {2, 640, 400, 0}});
+			const auto walking = FixtureLevel(engine, "visual-walk", { { 0, 240, 200, 0 }, { 2, 640, 400, 0 } });
 			LevelScene east(engine, *xs, walking, 1), west(engine, *xs, walking, 1);
 			east.Update(0.1f, 1, 0, false);
 			west.Update(0.1f, -1, 0, false);
 			engine.DrawFrame(east.Draws(), "running-east.bmp");
 			engine.DrawFrame(west.Draws(), "running-west.bmp");
-			const auto cold = FixtureLevel(engine, "visual-frigida", {{0, 240, 200, 0}, {2, 240, 160, 0}});
+			const auto cold = FixtureLevel(engine, "visual-frigida", { { 0, 240, 200, 0 }, { 2, 240, 160, 0 } });
 			LevelScene frigida(engine, *xs, cold, 1);
 			for (i32 frame = 0; frame < 90; ++frame)
 				frigida.Update(1.0f / 60, 0, 0, frame % 8 == 0);
 			engine.DrawFrame(frigida.Draws(), "frigida.bmp");
-			const auto enemy = FixtureLevel(engine, "visual-fight", {{0, 240, 200, 0}, {4, 280, 200, 6}, {2, 640, 400, 0}});
+			const auto enemy = FixtureLevel(engine, "visual-fight", { { 0, 240, 200, 0 }, { 4, 280, 200, 6 }, { 2, 640, 400, 0 } });
 			LevelScene fight(engine, *xs, enemy, 1);
 			const auto* cloud = engine.LoadSprite("Sven2/gfx/anim_cloud.bmp", 10, 1);
 			for (i32 frame = 0; frame < 600; ++frame)
@@ -2116,13 +2082,13 @@ i32 main(i32 argc, char** argv)
 					break;
 				}
 			}
-			const auto animals = FixtureLevel(engine, "visual-meters", {{0, 240, 200, 0}, {12, 240, 160, 0}, {11, 400, 160, 0}, {13, 560, 160, 0}});
+			const auto animals = FixtureLevel(engine, "visual-meters", { { 0, 240, 200, 0 }, { 12, 240, 160, 0 }, { 11, 400, 160, 0 }, { 13, 560, 160, 0 } });
 			LevelScene meters(engine, *xs, animals, 1);
 			engine.DrawFrame(meters.Draws(), "animal-meters.bmp");
 			meters.Update(0.2f, 0, 0, true);
 			engine.DrawFrame(meters.Draws(), "goat-interaction.bmp");
 			Require(engine.StartAudio(), "Native regression audio backend failed to initialize.");
-			for (cstr name : {"SfxDogFoundSven", "SfxGuyFoundBeer", "SfxLarsDrink", "SfxLarsSleep"})
+			for (cstr name : { "SfxDogFoundSven", "SfxGuyFoundBeer", "SfxLarsDrink", "SfxLarsSleep" })
 				Require(engine.PlaySample(engine.GetData().SoundPath(name)), "Native enemy sample playback request failed.");
 			Log("PASS: native enemy notice, drink and sleep sample playback requests.");
 			Require(engine.PlaySample(engine.GetData().SoundPath("SfxUFO"), true), "Native UFO loop failed to start.");

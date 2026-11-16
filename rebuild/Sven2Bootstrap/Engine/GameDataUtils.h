@@ -1,6 +1,9 @@
 #pragma once
 #include "Types.h"
 
+namespace
+{
+
 void Check(HRESULT result, cstr operation)
 {
 	if (FAILED(result))
@@ -82,7 +85,7 @@ bytestream XmlBytes(const bytestream& bytes)
 	str converted = UTF8(wide.data(), static_cast<u32>(wide.size()));
 	if (bom)
 		converted.insert(0, "\xef\xbb\xbf");
-	return {converted.begin(), converted.end()};
+	return { converted.begin(), converted.end() };
 }
 
 Node ReadXml(const bytestream& source)
@@ -100,7 +103,7 @@ Node ReadXml(const bytestream& source)
 	Check(reader->SetProperty(XmlReaderProperty_MaxElementDepth, 64), "Cannot limit XML depth.");
 	Check(reader->SetInput(stream.Get()), "Cannot set XML input.");
 	Node document;
-	std::vector<Node*> stack{&document};
+	std::vector<Node*> stack{ &document };
 	XmlNodeType type;
 	HRESULT result;
 	while ((result = reader->Read(&type)) == S_OK)
@@ -155,19 +158,19 @@ LevelPackInfo ReadPack(const Node& package, str descriptor)
 	LevelPackInfo pack;
 	pack.Name = package.Attribute("name");
 	pack.Descriptor = std::move(descriptor);
-	for (const auto& section : package.Children)
+	for (const Node& section : package.Children)
 	{
-		for (const auto& item : section.Children)
+		for (const Node& item : section.Children)
 		{
 			if (section.Name == "levelsets" && item.Name == "levelset")
 			{
 				LevelSetInfo set;
 				set.Name = item.Attribute("name");
-				for (const auto& level : item.Children)
+				for (const Node& level : item.Children)
 				{
 					if (level.Name != "level")
 						continue;
-					set.Levels.push_back({level.Attribute("name"), level.Attribute("map"), level.Attribute("tileset"), level.Attribute("music")});
+					set.Levels.push_back({ level.Attribute("name"), level.Attribute("map"), level.Attribute("tileset"), level.Attribute("music") });
 				}
 				pack.LevelSets.push_back(std::move(set));
 			}
@@ -176,14 +179,14 @@ LevelPackInfo ReadPack(const Node& package, str descriptor)
 				TileSetInfo set;
 				set.Name = item.Attribute("name");
 				set.Background = item.Attribute("background");
-				for (const auto& tile : item.Children)
+				for (const Node& tile : item.Children)
 				{
 					if (tile.Name != "tile")
 						continue;
 					f64 frames = 0;
 					if (!Number(tile.Attribute("frames"), frames) || frames < 1 || frames > SHRT_MAX || std::floor(frames) != frames)
 						throw std::runtime_error("Invalid tile frame count in " + pack.Descriptor);
-					set.Tiles.push_back({tile.Attribute("file"), static_cast<u16>(frames)});
+					set.Tiles.push_back({ tile.Attribute("file"), static_cast<u16>(frames) });
 				}
 				pack.TileSets.push_back(std::move(set));
 			}
@@ -191,3 +194,4 @@ LevelPackInfo ReadPack(const Node& package, str descriptor)
 	}
 	return pack;
 }
+} // namespace

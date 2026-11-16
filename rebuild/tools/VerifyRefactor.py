@@ -22,8 +22,10 @@ def main():
     frames = sum(bool(re.fullmatch(rb'\d+ \d+', line)) for line in new.read_bytes().splitlines())
     assert frames == 105 * 2 * 480
     fsr = REBUILD/'Sven2Bootstrap/FSR1'
-    provenance = json.loads((fsr/'SOURCE.json').read_text())
-    for name, expected in provenance['files'].items():
+    # The user removed SOURCE.json; the protected snapshot already records
+    # the same upstream hashes, so verification needs no duplicate metadata.
+    for name in ('ffx_a.h', 'ffx_fsr1.h'):
+        expected = manifest[f'rebuild_working_copy/third_party/fsr1/{name}']
         assert digest(fsr/name) == expected, f'AMD header changed: {name}'
     result = {
         'protected_backup_sources': len(manifest),

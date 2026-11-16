@@ -1,5 +1,6 @@
 #pragma once
 #include "ObjectKind.h"
+#include "Scene/Level/LevelCodes.h"
 #include <memory>
 
 class BaseObject;
@@ -19,10 +20,34 @@ struct CharacterDefinition
 	cstr Name;
 	cstr SpriteAsset;
 	u16 Frames;
-	i32 OccupancyCode;
+	::OccupancyCode OccupancyCode;
 	std::unique_ptr<BaseObject> (*Create)(LevelScene&, size_t);
 };
 
 // The registration table is the single mapping from serialized character IDs
 // to their class, classification and standing resources.
-const CharacterDefinition* FindCharacterDefinition(i32 serializedKind);
+const CharacterDefinition* FindCharacterDefinition(ObjectKind serializedKind);
+
+struct ItemDefinition
+{
+	ObjectKind Kind;
+	ItemCode Code;
+	cstr SpriteAsset;
+	u16 Frames;
+	i32 Frame;
+	cstr LifetimeKey;
+	f32 DefaultLifetime;
+	cstr EffectDurationKey;
+	f32 DefaultEffectDuration;
+	cstr PickupSound;
+};
+
+const ItemDefinition* FindItemDefinition(ObjectKind kind);
+const std::vector<ItemDefinition>& GetItemDefinitions();
+const ItemDefinition& GetItemDefinition(ObjectKind kind);
+const ItemDefinition& GetItemDefinition(ItemCode code);
+bool IsItem(ObjectKind kind);
+bool IsPowerup(ObjectKind kind);
+ItemCode DistractionCode(ObjectKind kind);
+size_t EnemyTableIndex(ObjectKind kind);
+size_t AnimalIndicatorIndex(ObjectKind kind);

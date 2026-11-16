@@ -16,7 +16,7 @@ public:
 	void UpdateUfo(f32 seconds);
 	bool Active() const
 	{
-		return Ufo.State >= 0;
+		return Ufo.State != UfoState::Inactive;
 	}
 
 private:

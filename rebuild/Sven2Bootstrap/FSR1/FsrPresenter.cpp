@@ -14,10 +14,7 @@
 
 using Microsoft::WRL::ComPtr;
 
-namespace
-{
 #include "FsrPresenterUtils.h"
-}
 
 RECT FsrPresenter::ViewPort(i32 width, i32 height)
 {
@@ -30,22 +27,22 @@ RECT FsrPresenter::ViewPort(i32 width, i32 height)
 		h = height;
 		w = static_cast<i32>(static_cast<i64>(height) * 4 / 3);
 	}
-	return {(width - w) / 2, (height - h) / 2, (width - w) / 2 + w, (height - h) / 2 + h};
+	return { (width - w) / 2, (height - h) / 2, (width - w) / 2 + w, (height - h) / 2 + h };
 }
 
 POINT FsrPresenter::LogicalMouse(POINT p, i32 width, i32 height)
 {
 	const RECT r = ViewPort(width, height);
 	if (r.right <= r.left || r.bottom <= r.top || p.x < r.left || p.x >= r.right || p.y < r.top || p.y >= r.bottom)
-		return {-1, -1};
-	return {static_cast<LONG>((p.x - r.left) * 800LL / (r.right - r.left)), static_cast<LONG>((p.y - r.top) * 600LL / (r.bottom - r.top))};
+		return { -1, -1 };
+	return { static_cast<LONG>((p.x - r.left) * 800LL / (r.right - r.left)), static_cast<LONG>((p.y - r.top) * 600LL / (r.bottom - r.top)) };
 }
 
 struct FsrPresenter::Impl
 {
 	HWND Window = nullptr;
 	bool Closed = false, Fullscreen = false;
-	WINDOWPLACEMENT Placement{sizeof(WINDOWPLACEMENT)};
+	WINDOWPLACEMENT Placement{ sizeof(WINDOWPLACEMENT) };
 	ScalingFilter Filter;
 	f32 Sharpness;
 	u32 Width = 0, Height = 0, ScaledWidth = 0, ScaledHeight = 0;
@@ -87,8 +84,7 @@ struct FsrPresenter::Impl
 
 	void Title() const
 	{
-		wstr name = Filter == ScalingFilter::FSR1 ? L"FSR1" : Filter == ScalingFilter::Nearest ? L"Nearest"
-		                                                                                       : L"Bilinear";
+		wstr name = Filter == ScalingFilter::FSR1 ? L"FSR1" : (Filter == ScalingFilter::Nearest ? L"Nearest" : L"Bilinear");
 		const wstr text = wstr(L"Sven Zwo - ") + name + L" | sharpness " + std::to_wstring(Sharpness).substr(0, 4) + L" | F6 filter, F7/F8 sharpness, F11 fullscreen";
 		SetWindowTextW(Window, text.c_str());
 	}
@@ -98,7 +94,7 @@ struct FsrPresenter::Impl
 		if (!Fullscreen)
 		{
 			GetWindowPlacement(Window, &Placement);
-			MONITORINFO monitor{sizeof(MONITORINFO)};
+			MONITORINFO monitor{ sizeof(MONITORINFO) };
 			GetMonitorInfoW(MonitorFromWindow(Window, MONITOR_DEFAULTTONEAREST), &monitor);
 			SetWindowLongPtrW(Window, GWL_STYLE, WS_POPUP | WS_VISIBLE);
 			SetWindowPos(Window, HWND_TOP, monitor.rcMonitor.left, monitor.rcMonitor.top, monitor.rcMonitor.right - monitor.rcMonitor.left, monitor.rcMonitor.bottom - monitor.rcMonitor.top, SWP_FRAMECHANGED);
@@ -130,7 +126,7 @@ struct FsrPresenter::Impl
 			}
 			if (message == WM_GETMINMAXINFO)
 			{
-				reinterpret_cast<MINMAXINFO*>(lp)->ptMinTrackSize = {400, 300};
+				reinterpret_cast<MINMAXINFO*>(lp)->ptMinTrackSize = { 400, 300 };
 				return 0;
 			}
 			if (message == WM_KEYDOWN && !(lp & (1LL << 30)))
@@ -160,10 +156,9 @@ struct FsrPresenter::Impl
 		cls.hCursor = LoadCursorW(nullptr, IDC_ARROW);
 		if (!RegisterClassW(&cls) && GetLastError() != ERROR_CLASS_ALREADY_EXISTS)
 			throw std::runtime_error("Cannot register FSR window.");
-		RECT rect{0, 0, requestedWidth, requestedHeight};
+		RECT rect{ 0, 0, requestedWidth, requestedHeight };
 		AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, FALSE);
-		Window = CreateWindowExW(0, cls.lpszClassName, L"Sven Zwo", WS_OVERLAPPEDWINDOW,
-		                         CW_USEDEFAULT, CW_USEDEFAULT, rect.right - rect.left, rect.bottom - rect.top, nullptr, nullptr, cls.hInstance, this);
+		Window = CreateWindowExW(0, cls.lpszClassName, L"Sven Zwo", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, rect.right - rect.left, rect.bottom - rect.top, nullptr, nullptr, cls.hInstance, this);
 		if (!Window)
 			throw std::runtime_error("Cannot create FSR presentation window.");
 		DXGI_SWAP_CHAIN_DESC desc{};
@@ -175,20 +170,17 @@ struct FsrPresenter::Impl
 		desc.Windowed = TRUE;
 		desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 		D3D_FEATURE_LEVEL level = D3D_FEATURE_LEVEL_11_0;
-		HRESULT result = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0, &level, 1,
-		                                               D3D11_SDK_VERSION, &desc, &Swap, &Device, nullptr, &Context);
+		HRESULT result = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0, &level, 1, D3D11_SDK_VERSION, &desc, &Swap, &Device, nullptr, &Context);
 		if (FAILED(result))
-			Check(D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_WARP, nullptr, 0, &level, 1,
-			                                    D3D11_SDK_VERSION, &desc, &Swap, &Device, nullptr, &Context),
-			      "D3D11 initialization (hardware/WARP)");
+			Check(D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_WARP, nullptr, 0, &level, 1, D3D11_SDK_VERSION, &desc, &Swap, &Device, nullptr, &Context), "D3D11 initialization (hardware/WARP)");
 		ComPtr<IDXGIFactory> factory;
 		Check(Swap->GetParent(IID_PPV_ARGS(&factory)), "DXGI factory");
 		Check(factory->MakeWindowAssociation(Window, DXGI_MWA_NO_ALT_ENTER), "Disable DXGI fullscreen shortcut");
-		auto vs = Compile("vertex", "vs_5_0");
+		ComPtr<ID3DBlob> vs = Compile("vertex", "vs_5_0");
 		Check(Device->CreateVertexShader(vs->GetBufferPointer(), vs->GetBufferSize(), nullptr, &Vertex), "Vertex shader");
 		auto makePixel = [&](cstr pass, ComPtr<ID3D11PixelShader>& shader)
 		{
-			auto code = Compile("pixel", "ps_5_0", pass);
+			ComPtr<ID3DBlob> code = Compile("pixel", "ps_5_0", pass);
 			Check(Device->CreatePixelShader(code->GetBufferPointer(), code->GetBufferSize(), nullptr, &shader), "Pixel shader");
 		};
 		makePixel("PASS_EASU", Easu);
@@ -254,9 +246,9 @@ struct FsrPresenter::Impl
 
 	void Draw(ID3D11RenderTargetView* target, ID3D11ShaderResourceView* source, ID3D11PixelShader* shader, f32 left, f32 top) const
 	{
-		Settings settings{{static_cast<f32>(ScaledWidth), static_cast<f32>(ScaledHeight)}, Sharpness, 0, {left, top}, {}};
+		Settings settings{ { static_cast<f32>(ScaledWidth), static_cast<f32>(ScaledHeight) }, Sharpness, 0, { left, top }, {} };
 		Context->UpdateSubresource(Constants.Get(), 0, nullptr, &settings, 0, 0);
-		D3D11_VIEWPORT viewport{left, top, static_cast<f32>(ScaledWidth), static_cast<f32>(ScaledHeight), 0, 1};
+		D3D11_VIEWPORT viewport{ left, top, static_cast<f32>(ScaledWidth), static_cast<f32>(ScaledHeight), 0, 1 };
 		Context->RSSetViewports(1, &viewport);
 		Context->OMSetRenderTargets(1, &target, nullptr);
 		Context->PSSetShaderResources(0, 1, &source);
@@ -294,12 +286,14 @@ struct FsrPresenter::Impl
 		out.write(reinterpret_cast<cstr>(&file), sizeof(file));
 		out.write(reinterpret_cast<cstr>(&info), sizeof(info));
 		for (UINT y = 0; y < Height; ++y)
+		{
 			for (UINT x = 0; x < Width; ++x)
 			{
 				const u32 rgba = reinterpret_cast<const u32*>(static_cast<cstr>(map.pData) + y * map.RowPitch)[x];
 				const u32 bgra = (rgba & 0xff00ff00) | ((rgba & 255) << 16) | ((rgba >> 16) & 255);
 				out.write(reinterpret_cast<cstr>(&bgra), 4);
 			}
+		}
 		Context->Unmap(staging.Get(), 0);
 		if (!out)
 			throw std::runtime_error("Cannot write scaled frame capture.");
@@ -318,7 +312,7 @@ struct FsrPresenter::Impl
 		Context->PSSetConstantBuffers(0, 1, Constants.GetAddressOf());
 		ID3D11SamplerState* sampler = Filter == ScalingFilter::Nearest ? Point.Get() : Linear.Get();
 		Context->PSSetSamplers(0, 1, &sampler);
-		const f32 black[4] = {0, 0, 0, 1};
+		const f32 black[4] = { 0, 0, 0, 1 };
 		Context->ClearRenderTargetView(Backbuffer.Get(), black);
 		RECT rect = FsrPresenter::ViewPort(Width, Height);
 		// FSR1 is an upscaler. At native size or below, use ordinary sampling.
@@ -344,6 +338,8 @@ FsrPresenter::FsrPresenter(i32 width, i32 height, ScalingFilter filter, f32 shar
 		throw std::runtime_error("Invalid scaled window size or sharpness (0..2).");
 	ImplPtr->Initialize(width, height);
 }
+
+FsrPresenter::~FsrPresenter() = default;
 
 HWND FsrPresenter::Window() const
 {
@@ -373,5 +369,3 @@ void FsrPresenter::SetSharpness(f32 sharpness)
 	ImplPtr->Sharpness = sharpness;
 	ImplPtr->Title();
 }
-
-FsrPresenter::~FsrPresenter() = default;
