@@ -1,0 +1,13 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup><SvenRebuildRoot>$(MSBuildThisFileDirectory)</SvenRebuildRoot></PropertyGroup>
+  <ItemGroup>
+    <ClCompile Include="$(SvenRebuildRoot)FSR1/FsrPresenter.cpp"/>
+    <ClInclude Include="$(SvenRebuildRoot)FSR1/FsrPresenter.h"/>
+    <None Include="$(SvenRebuildRoot)FSR1/Fsr1.hlsl"/>
+    <SvenFsrShader Include="$(SvenRebuildRoot)FSR1/Fsr1.hlsl;$(SvenRebuildRoot)FSR1/ffx_a.h;$(SvenRebuildRoot)FSR1/ffx_fsr1.h"/>
+  </ItemGroup>
+  <Target Name="CopyFsrShaders" AfterTargets="Build">
+    <MakeDir Directories="$(OutDir)shaders"/>
+    <Copy SourceFiles="@(SvenFsrShader)" DestinationFolder="$(OutDir)shaders" SkipUnchangedFiles="true"/>
+  </Target>
+</Project>

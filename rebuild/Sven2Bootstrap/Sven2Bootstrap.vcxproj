@@ -1,43 +1,93 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug|Win32"><Configuration>Debug</Configuration><Platform>Win32</Platform></ProjectConfiguration>
-    <ProjectConfiguration Include="Release|Win32"><Configuration>Release</Configuration><Platform>Win32</Platform></ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
   </ItemGroup>
-  <PropertyGroup Label="Globals"><ProjectGuid>{8D73100C-5367-40D2-A1A0-02B001570001}</ProjectGuid><Keyword>Win32Proj</Keyword><RootNamespace>Sven2Bootstrap</RootNamespace><WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion></PropertyGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props"/>
-  <PropertyGroup Label="Configuration"><ConfigurationType>Application</ConfigurationType><PlatformToolset>v143</PlatformToolset><CharacterSet>Unicode</CharacterSet><UseDebugLibraries>false</UseDebugLibraries></PropertyGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props"/>
-  <PropertyGroup><OutDir>$(MSBuildProjectDirectory)\..\bin\$(Platform)\$(Configuration)\</OutDir><IntDir>$(MSBuildProjectDirectory)\..\obj\$(Configuration)\</IntDir><TargetName>Sven2Bootstrap</TargetName><LocalDebuggerWorkingDirectory>$(MSBuildProjectDirectory)\..\runtime\sven2</LocalDebuggerWorkingDirectory></PropertyGroup>
-  <ItemDefinitionGroup><ClCompile><WarningLevel>Level4</WarningLevel><AdditionalIncludeDirectories>$(MSBuildProjectDirectory);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories><AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions><LanguageStandard>stdcpp17</LanguageStandard><ExceptionHandling>Sync</ExceptionHandling><RuntimeLibrary>MultiThreaded</RuntimeLibrary><PreprocessorDefinitions>WIN32;_CONSOLE;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions><DebugInformationFormat>ProgramDatabase</DebugInformationFormat></ClCompile><Link><SubSystem>Console</SubSystem><GenerateDebugInformation>true</GenerateDebugInformation><AdditionalDependencies>user32.lib;ole32.lib;advapi32.lib;xmllite.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies></Link></ItemDefinitionGroup>
-  <ItemGroup><ClCompile Include="main.cpp"/><ClCompile Include="EngineAbi.cpp"/><ClCompile Include="LevelScene.cpp"/><ClCompile Include="InteractionAnimations.cpp"/><ClCompile Include="GameData.cpp"/><ClCompile Include="BitmapFont.cpp"/><ClCompile Include="Highscores.cpp"/><ClCompile Include="GameUi.cpp"/><ClCompile Include="GameSession.cpp"/><ClCompile Include="GameApp.cpp"/><ClCompile Include="platform/WindowInput.cpp"/><ClInclude Include="platform/WindowInput.h"/><ClInclude Include="LevelScene.h"/><ClInclude Include="GameData.h"/><ClInclude Include="BitmapFont.h"/><ClInclude Include="Highscores.h"/><ClInclude Include="GameUi.h"/><ClInclude Include="GameSession.h"/><ClInclude Include="GameApp.h"/><ClInclude Include="EngineAbi.h"/><ClInclude Include="SupportedBuild.h"/></ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{8D73100C-5367-40D2-A1A0-02B001570001}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>Sven2Bootstrap</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup>
+    <OutDir>$(MSBuildProjectDirectory)\..\bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(MSBuildProjectDirectory)\..\obj\$(Configuration)\</IntDir>
+    <TargetName>Sven2Bootstrap</TargetName>
+    <LocalDebuggerWorkingDirectory>$(MSBuildProjectDirectory)\..\runtime\sven2</LocalDebuggerWorkingDirectory>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PreprocessorDefinitions>WIN32;_CONSOLE;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>user32.lib;ole32.lib;advapi32.lib;xmllite.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="level/LevelFile.cpp"/>
-    <ClInclude Include="level/LevelFile.h"/>
-    <ClCompile Include="scene/SceneConstants.cpp"/>
-    <ClCompile Include="level/LevelGrid.cpp"/>
-    <ClCompile Include="scene/SceneResources.cpp"/>
-    <ClCompile Include="characters/PlayerCharacter.cpp"/>
-    <ClCompile Include="characters/EnemyCharacters.cpp"/>
-    <ClCompile Include="characters/AnimalCharacters.cpp"/>
-    <ClCompile Include="level/LevelItems.cpp"/>
-    <ClCompile Include="level/UfoController.cpp"/>
-    <ClCompile Include="level/LevelEffects.cpp"/>
-    <ClCompile Include="scene/SceneRenderer.cpp"/>
-    <ClInclude Include="scene/SceneTypes.h"/>
-    <ClInclude Include="scene/SceneConstants.h"/>
-    <ClInclude Include="level/LevelGrid.h"/>
-    <ClInclude Include="scene/SceneResources.h"/>
-    <ClInclude Include="characters/CharacterController.h"/>
-    <ClInclude Include="characters/PlayerCharacter.h"/>
-    <ClInclude Include="characters/EnemyCharacters.h"/>
-    <ClInclude Include="characters/AnimalCharacters.h"/>
-    <ClInclude Include="level/LevelItems.h"/>
-    <ClInclude Include="level/UfoController.h"/>
-    <ClInclude Include="level/LevelEffects.h"/>
-    <ClInclude Include="scene/SceneRenderer.h"/>
+    <ClCompile Include="Engine\GameData.cpp" />
+    <ClCompile Include="Engine\BitmapFont.cpp" />
+    <ClCompile Include="Engine\MudGE.cpp" />
+    <ClCompile Include="Input\WindowInput.cpp" />
+    <ClCompile Include="Scene\Characters\AnimalCharacters.cpp" />
+    <ClCompile Include="Scene\Characters\EnemyCharacters.cpp" />
+    <ClCompile Include="Scene\Characters\PlayerCharacter.cpp" />
+    <ClCompile Include="Scene\LevelScene.cpp" />
+    <ClCompile Include="Scene\SceneConstants.cpp" />
+    <ClCompile Include="Scene\SceneRenderer.cpp" />
+    <ClCompile Include="Utility\Logger.cpp" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
-  <Import Project="../FsrShaders.targets"/>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/>
+  <ItemGroup>
+    <ClInclude Include="Engine\GameData.h" />
+    <ClInclude Include="Engine\BitmapFont.h" />
+    <ClInclude Include="Engine\GameDataUtils.h" />
+    <ClInclude Include="Engine\MudGE.h" />
+    <ClInclude Include="Engine\Structures.h" />
+    <ClInclude Include="FSR1\ffx_a.h" />
+    <ClInclude Include="FSR1\ffx_fsr1.h" />
+    <ClInclude Include="FSR1\FsrPresenterUtils.h" />
+    <ClInclude Include="Scene\Characters\AnimalCharacters.h" />
+    <ClInclude Include="Scene\Characters\BaseCharacter.h" />
+    <ClInclude Include="Scene\Characters\EnemyCharacters.h" />
+    <ClInclude Include="Scene\Characters\PlayerCharacter.h" />
+    <ClInclude Include="Scene\LevelScene.h" />
+    <ClInclude Include="Scene\SceneRenderer.h" />
+    <ClInclude Include="Scene\ShagAnimation.h" />
+    <ClInclude Include="Scene\SceneConstants.h" />
+    <ClInclude Include="Utility\Exception.h" />
+    <ClInclude Include="Utility\Logger.h" />
+    <ClInclude Include="Input\WindowInput.h" />
+    <ClInclude Include="Types.h" />
+    <ClInclude Include="Utility\SupportedBuild.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="FSR1\README.md" />
+    <None Include="FSR1\SOURCE.json" />
+  </ItemGroup>
+  <Import Project="FsrShaders.targets" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
-

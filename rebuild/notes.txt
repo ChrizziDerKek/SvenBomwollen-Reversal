@@ -1,0 +1,34 @@
+AnimalCharacters.cpp
+EnemyCharacters.cpp
+PlayerCharacter.cpp
+LevelEffects.cpp
+LevelEffects.h
+LevelFile.cpp
+LevelFile.h
+LevelGrid.cpp
+LevelGrid.h
+LevelItems.cpp
+LevelItems.h
+UfoController.cpp
+UfoController.h
+SceneRenderer.cpp
+SceneRenderer.h
+SceneResources.cpp
+SceneResources.h
+GameApp.cpp
+GameApp.h
+GameSession.cpp
+GameSession.h
+GameUi.cpp
+GameUi.h
+Highscores.cpp
+Highscores.h
+LevelScene.cpp
+LevelScene.h
+main.cpp
+
+TODO:
+Introduce enums for "magic values" like animal kind
+Introduce class for single animal object, character, enemy and player instead of handling everything in one class, maybe even expand this to items, the ufo, etc. This makes adding new features much easier later
+Types in Types.h should be preferred, check if I missed to convert any types
+PascalCase should be used everywhere

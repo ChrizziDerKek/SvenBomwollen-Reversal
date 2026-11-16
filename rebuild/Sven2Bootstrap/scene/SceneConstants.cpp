@@ -1,7 +1,6 @@
-#include "scene/SceneConstants.h"
+#include "SceneConstants.h"
 
-namespace sven2::scene_data {
-const std::map<AnimationSequence,std::vector<int>> actorFrameTables={
+const std::map<AnimationSequence, std::vector<i32>> actorFrameTables = {
     {AnimationSequence::ufoBeam,{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43}},
     {AnimationSequence::alienStandingIdle,{0,2,1,2,0}},
     {AnimationSequence::alienVerticalIdle,{0,3,4,3,0}},
@@ -30,7 +29,8 @@ const std::map<AnimationSequence,std::vector<int>> actorFrameTables={
     {AnimationSequence::electricFlash,{0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1}},
     {AnimationSequence::playerElectricShock,{1,1,2,2,1,1,2,2,1,1,2,2,1,1,2,2,1,1,2,2}},
 };
-const int steering[4][8][39]={
+
+const i32 steering[4][8][39] = {
     { // Alien
         {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,7,7,7,7,2,6,3,5,4},
         {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,1,2,2,2,2,7,3,6,4,5},
@@ -72,4 +72,3 @@ const int steering[4][8][39]={
         {7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,0,0,0,0,0,0,6,6,6,6,6,6,1,1,5,5,2,4,3},
     },
 };
-}
