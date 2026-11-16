@@ -8,7 +8,8 @@
 
 PlayerCharacter::PlayerCharacter(LevelScene& scene)
     : BaseCharacter(scene)
-{}
+{
+}
 
 void PlayerCharacter::MarkPlayerCell()
 {
@@ -344,7 +345,7 @@ void PlayerCharacter::AdvancePlayer(f32 dt, i32 dx, i32 dy)
 	{
 		MarkPlayerCell();
 		Scene.Objects[Scene.PlayerIndex].CommittedY = Y;
-		Scene.Items.AffectNearbySheep(); // 0x42BF9E applies smell/flowers at tile arrival.
+		Scene.Items.AffectNearbyAnimals(); // 0x42BF9E applies smell/flowers at tile arrival.
 	}
 	Scene.Items.PickupPlayerItem();
 	AnimationAge += dt;

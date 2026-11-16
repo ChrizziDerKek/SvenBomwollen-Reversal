@@ -48,6 +48,53 @@ void GameSession::Advance()
 	PreviousSheep = total;
 }
 
+void GameSession::DebugNextLevel()
+{
+	if (Lives == 0)
+		return;
+	Results = true;
+	BonusFinished = true;
+	Time = 0;
+	TimeBonus = SheepBonus = LifeBonus = 0;
+	ResultSheep = Scene->GetCompletedSheep();
+	ResultLives = Lives;
+	Advance();
+}
+
+void GameSession::DebugRestartLevel()
+{
+	Load(LevelIndex);
+}
+
+void GameSession::DebugChangeLives(i32 amount)
+{
+	amount = std::clamp(amount, -Lives, 99 - Lives);
+	LifeEffects.clear();
+	VisibleLives = Lives;
+	while (amount > 0)
+	{
+		GainLife();
+		--amount;
+	}
+	while (amount < 0)
+	{
+		--Lives;
+		VisibleLives = std::max(0, VisibleLives - 1);
+		EmitSound("SfxLoseLife");
+		SpawnLifeEffect(Lives, false);
+		++amount;
+	}
+}
+
+bool GameSession::DebugSpawn(ObjectKind kind)
+{
+	if (Results || !Scene->SpawnNearPlayer(kind))
+		return false;
+	CompletionScheduled = false;
+	CompletionRemaining = 0;
+	return true;
+}
+
 void GameSession::AddScore(i32 amount)
 {
 	Score = std::max(0, Score + amount);
@@ -169,7 +216,8 @@ void GameSession::UpdateLifeEffects(f32 seconds)
 				effect.Y = 601;
 			}
 		}
-		LifeEffects.erase(std::remove_if(LifeEffects.begin(), LifeEffects.end(), [&](const LifeEffect& effect) { return effect.Y > 600 || effect.X < -LifeIcon->FrameWidth; }),
+		LifeEffects.erase(std::remove_if(LifeEffects.begin(), LifeEffects.end(), [&](const LifeEffect& effect)
+		                                 { return effect.Y > 600 || effect.X < -LifeIcon->FrameWidth; }),
 		                  LifeEffects.end());
 	}
 }

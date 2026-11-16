@@ -19,6 +19,7 @@ public:
 		bool Down = false;
 		bool Tab = false;
 		bool Erase = false;
+		bool Debug = false;
 		str Text;
 	};
 

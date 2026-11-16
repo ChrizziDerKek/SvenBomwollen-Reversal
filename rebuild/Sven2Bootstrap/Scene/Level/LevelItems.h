@@ -17,7 +17,7 @@ public:
 	void SpawnItems();
 	void UpdateItems(f32 seconds);
 	void UpdateObject(size_t i, f32 seconds);
-	void AffectNearbySheep();
+	void AffectNearbyAnimals();
 	void PickupPlayerItem();
 
 private:

@@ -16,9 +16,9 @@ static i32 Bootstrap(i32 argc, char** argv)
 {
 	wchar_t executable[MAX_PATH]{};
 	GetModuleFileNameW(nullptr, executable, MAX_PATH);
-	fpath root = fpath(executable).parent_path().parent_path().parent_path().parent_path().parent_path();
-	fpath game = root / L"games" / L"sven2";
-	fpath dataDirectory = root / L"assets";
+	const fpath directory = fpath(executable).parent_path();
+	fpath game = directory;
+	fpath dataDirectory = directory / L"assets";
 	bool probe = false, audio = true, nativeInput = false, directTutorial = false;
 	u32 seconds = 0;
 	bool scaled = true;
@@ -70,7 +70,7 @@ static i32 Bootstrap(i32 argc, char** argv)
 		{
 			std::cout << "Sven2Bootstrap [--tutorial] [--data-dir PATH] [--game-dir PATH] [--no-audio]\n"
 			          << "Graphics: --upscaler native|fsr1|nearest|bilinear (default: fsr1) --output-width N --output-height N --sharpness 0..2\n"
-			          << "Scaled mode: F6 filter; F7 softer; F8 sharper; F11 borderless fullscreen. --capture FILE writes the first scaled frame.\n"
+			          << "F2 debug/cheats. Scaled mode: F6 filter; F7 softer; F8 sharper; F11 borderless fullscreen. --capture FILE writes the first scaled frame.\n"
 			          << "Diagnostics: --probe, --seconds N, --native-input\n";
 			return 0;
 		}
@@ -79,10 +79,10 @@ static i32 Bootstrap(i32 argc, char** argv)
 			throw std::runtime_error("Unknown or incomplete option: " + option);
 		}
 	}
-	const fpath runtime = root / L"rebuild" / L"runtime" / L"sven2";
+	const fpath runtime = directory;
 	std::filesystem::create_directories(runtime);
 	std::filesystem::current_path(runtime);
-	InitLogger(runtime, probe);
+	InitLogger(runtime / L"logs", probe);
 	Log("Sven2 rebuild / Win32");
 	HRESULT com = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 	if (FAILED(com))

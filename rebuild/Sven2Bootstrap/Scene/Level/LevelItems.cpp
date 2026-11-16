@@ -9,7 +9,8 @@
 
 LevelItems::LevelItems(LevelScene& scene)
     : Scene(scene)
-{}
+{
+}
 
 i32 LevelItems::FindDistraction(const Object& actor, ItemCode code) const
 {
@@ -67,15 +68,7 @@ void LevelItems::SpawnItem(ObjectKind kind, i32 tile)
 {
 	if (!IsItem(kind) || Scene.Grid.ItemCodes[tile] != ItemCode::None)
 		return;
-	size_t slot = Scene.Objects.Size();
-	for (size_t i = 0; i < Scene.Objects.Size(); ++i)
-	{
-		if (Scene.Objects[i].Freed && i != Scene.PlayerIndex && static_cast<i32>(i) != Scene.Player.ActiveSheep && static_cast<i32>(i) != Scene.UfoController.Ufo.Target)
-		{
-			slot = i;
-			break;
-		}
-	}
+	const size_t slot = Scene.FindAvailableObjectSlot();
 	if (slot >= 256)
 		return; // original object pool also has 256 slots
 	Object object;
@@ -141,7 +134,7 @@ void LevelItems::UpdateItems(f32 seconds)
 	Scene.Objects.UpdatePhase(ObjectPhase::Items, seconds);
 }
 
-void LevelItems::AffectNearbySheep()
+void LevelItems::AffectNearbyAnimals()
 {
 	if (PlayerEffect != ItemCode::StinkMushroom && PlayerEffect != ItemCode::Flower)
 		return;
@@ -149,20 +142,20 @@ void LevelItems::AffectNearbySheep()
 	if (tile < 0)
 		return;
 	const i32 mood = PlayerEffect == ItemCode::StinkMushroom ? 10 : 0;
-	bool changed = false;
+	bool sheepChanged = false;
 	for (WorldObject& animal : Scene.Objects)
 	{
-		if (animal.Freed || animal.Kind != ObjectKind::Sheep || animal.Temperament == 2 || animal.Impatience == mood || animal.Tile < 0)
+		if (animal.Freed || !Scene.IsAnimal(animal.Kind) || (animal.Kind == ObjectKind::Sheep && animal.Temperament == 2) || animal.Impatience == mood || animal.Tile < 0)
 			continue;
 		const i32 dx = std::abs(animal.Tile % Stride - tile % Stride);
 		const i32 dy = std::abs(animal.Tile / Stride - tile / Stride);
 		if (dx <= 1 && dy <= 1 && (dx || dy))
 		{
 			animal.Impatience = mood;
-			changed = true;
+			sheepChanged = sheepChanged || animal.Kind == ObjectKind::Sheep;
 		}
 	}
-	if (changed)
+	if (sheepChanged)
 	{
 		cstr sound = mood == 10 ? (Scene.RandomInt(2) == 0 ? "Sheep_beamup.ogg" : "Sheep_angry2.ogg") : (Scene.RandomInt(2) == 0 ? "Sheep_happy1.ogg" : "Sheep_happy2.ogg");
 		Scene.Sounds.push_back(str("Sven2/sfx/") + sound);

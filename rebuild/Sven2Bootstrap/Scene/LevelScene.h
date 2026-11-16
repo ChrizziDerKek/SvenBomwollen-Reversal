@@ -25,6 +25,8 @@ public:
 	// actionPressed is the current space-key state; edges are buffered during an interaction.
 	void Update(f32 seconds, i32 dx, i32 dy, bool actionPressed);
 	void TimeExpired();
+	bool SpawnNearPlayer(ObjectKind kind);
+	size_t FindAvailableObjectSlot() const;
 	bool Completed() const
 	{
 		return RemainingTargets == 0;

@@ -27,6 +27,7 @@ struct CharacterDefinition
 // The registration table is the single mapping from serialized character IDs
 // to their class, classification and standing resources.
 const CharacterDefinition* FindCharacterDefinition(ObjectKind serializedKind);
+const std::vector<CharacterDefinition>& GetCharacterDefinitions();
 
 struct ItemDefinition
 {
@@ -40,6 +41,7 @@ struct ItemDefinition
 	cstr EffectDurationKey;
 	f32 DefaultEffectDuration;
 	cstr PickupSound;
+	cstr Name;
 };
 
 const ItemDefinition* FindItemDefinition(ObjectKind kind);

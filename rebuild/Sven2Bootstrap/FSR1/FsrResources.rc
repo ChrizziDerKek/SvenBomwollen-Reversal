@@ -1,0 +1,4 @@
+#include "FsrResources.h"
+FsrProgramResource RCDATA "Fsr1.hlsl"
+FsrTypesResource RCDATA "ffx_a.h"
+FsrAlgorithmResource RCDATA "ffx_fsr1.h"

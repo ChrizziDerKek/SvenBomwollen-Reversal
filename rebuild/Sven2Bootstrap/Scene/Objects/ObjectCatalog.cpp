@@ -10,7 +10,7 @@ std::unique_ptr<BaseObject> Create(LevelScene& scene, size_t index)
 	return std::make_unique<T>(scene, index);
 }
 
-const CharacterDefinition Definitions[] = {
+const std::vector<CharacterDefinition> Definitions = {
 	{ ObjectKind::Player, CharacterCategory::Player, "Sven", "Sven2/gfx/Sven/sven_stand.bmp", 8, OccupancyCode::Empty, nullptr },
 	{ ObjectKind::Sheep, CharacterCategory::Animal, "Sheep", "Sven2/gfx/Sheep/Sheep_Stand.bmp", 4, OccupancyCode::Sheep, Create<Sheep> },
 	{ ObjectKind::Alien, CharacterCategory::Enemy, "Alien", "Sven2/gfx/Alien/Alien_Stand.bmp", 8, OccupancyCode::Alien, Create<Alien> },
@@ -22,6 +22,11 @@ const CharacterDefinition Definitions[] = {
 	{ ObjectKind::Pig, CharacterCategory::Animal, "Pig", "Sven2/gfx/Animals/Pig_Stand.bmp", 4, OccupancyCode::Pig, Create<Pig> }
 };
 
+const std::vector<CharacterDefinition>& GetCharacterDefinitions()
+{
+	return Definitions;
+}
+
 const CharacterDefinition* FindCharacterDefinition(ObjectKind serializedKind)
 {
 	for (const CharacterDefinition& definition : Definitions)
@@ -31,15 +36,15 @@ const CharacterDefinition* FindCharacterDefinition(ObjectKind serializedKind)
 }
 
 const std::vector<ItemDefinition> Items = {
-	{ ObjectKind::Beer, ItemCode::Beer, "Sven2/gfx/Beer.bmp", 1, 0, "BeerTime", 16, nullptr, 0, nullptr },
-	{ ObjectKind::Teddy, ItemCode::Teddy, "Sven2/gfx/Teddybear.bmp", 1, 0, "TeddyTime", 16, nullptr, 0, nullptr },
-	{ ObjectKind::Bone, ItemCode::Bone, "Sven2/gfx/Bone.bmp", 1, 0, "BoneTime", 16, nullptr, 0, nullptr },
-	{ ObjectKind::Artifact, ItemCode::Artifact, "Sven2/gfx/Artifact.bmp", 1, 0, "ArtifactTime", 16, nullptr, 0, nullptr },
-	{ ObjectKind::Rocket, ItemCode::Rocket, "Sven2/gfx/icons.bmp", 5, 0, "FireworkTime", 10, "FireworkDuration", 10, "item_firework.ogg" },
-	{ ObjectKind::Gift, ItemCode::Gift, "Sven2/gfx/icons.bmp", 5, 1, "GiftTime", 10, nullptr, 0, "item_gift.ogg" },
-	{ ObjectKind::SlowMushroom, ItemCode::SlowMushroom, "Sven2/gfx/icons.bmp", 5, 2, "ImpotentTime", 10, "ImpotentDuration", 10, "item_impotenz.ogg" },
-	{ ObjectKind::StinkMushroom, ItemCode::StinkMushroom, "Sven2/gfx/icons.bmp", 5, 3, "SmellTime", 10, "SmellDuration", 15, "item_stinky.ogg" },
-	{ ObjectKind::Flower, ItemCode::Flower, "Sven2/gfx/icons.bmp", 5, 4, "FlowerTime", 10, "FlowerDuration", 10, "item_rose.ogg" }
+	{ ObjectKind::Beer, ItemCode::Beer, "Sven2/gfx/Beer.bmp", 1, 0, "BeerTime", 16, nullptr, 0, nullptr, "Wine bottle" },
+	{ ObjectKind::Teddy, ItemCode::Teddy, "Sven2/gfx/Teddybear.bmp", 1, 0, "TeddyTime", 16, nullptr, 0, nullptr, "Teddy bear" },
+	{ ObjectKind::Bone, ItemCode::Bone, "Sven2/gfx/Bone.bmp", 1, 0, "BoneTime", 16, nullptr, 0, nullptr, "Bone" },
+	{ ObjectKind::Artifact, ItemCode::Artifact, "Sven2/gfx/Artifact.bmp", 1, 0, "ArtifactTime", 16, nullptr, 0, nullptr, "Alien plant" },
+	{ ObjectKind::Rocket, ItemCode::Rocket, "Sven2/gfx/icons.bmp", 5, 0, "FireworkTime", 10, "FireworkDuration", 10, "item_firework.ogg", "Rocket" },
+	{ ObjectKind::Gift, ItemCode::Gift, "Sven2/gfx/icons.bmp", 5, 1, "GiftTime", 10, nullptr, 0, "item_gift.ogg", "Present" },
+	{ ObjectKind::SlowMushroom, ItemCode::SlowMushroom, "Sven2/gfx/icons.bmp", 5, 2, "ImpotentTime", 10, "ImpotentDuration", 10, "item_impotenz.ogg", "Slow mushroom" },
+	{ ObjectKind::StinkMushroom, ItemCode::StinkMushroom, "Sven2/gfx/icons.bmp", 5, 3, "SmellTime", 10, "SmellDuration", 15, "item_stinky.ogg", "Stinky mushroom" },
+	{ ObjectKind::Flower, ItemCode::Flower, "Sven2/gfx/icons.bmp", 5, 4, "FlowerTime", 10, "FlowerDuration", 10, "item_rose.ogg", "Flower" }
 };
 
 const ItemDefinition* FindItemDefinition(ObjectKind kind)

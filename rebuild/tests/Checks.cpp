@@ -1,3 +1,5 @@
+#include "Scene/Level/LevelFile.h"
+#include "Game/DebugMenu.h"
 #include "Scene/Objects/ObjectCatalog.h"
 #include "Scene/Characters/Characters.h"
 #include "Utility/Logger.h"
@@ -215,6 +217,95 @@ LevelInfo FixtureLevel(MudGE& engine, const str& name, std::initializer_list<Fix
 	if (!output)
 		throw std::runtime_error("Cannot write isolated regression level.");
 	return level;
+}
+
+void CheckAnimalMoodEffects(MudGE& engine)
+{
+	const auto& packs = engine.GetData().GetPacks();
+	const auto xs = std::find_if(packs.begin(), packs.end(), [](const LevelPackInfo& pack)
+	                             { return pack.Name == "XS"; });
+	for (ItemCode code : { ItemCode::StinkMushroom, ItemCode::Flower })
+	{
+		const LevelInfo level = FixtureLevel(engine, "all-animal-mood-" + std::to_string(static_cast<i32>(code)), { { 0, 240, 200, 0 }, { 11, 280, 200, 0 }, { 12, 240, 240, 0 }, { 13, 200, 200, 0 }, { 2, 240, 160, 0 }, { 12, 600, 400, 0 } }, static_cast<i32>(code));
+		LevelScene scene(engine, *xs, level, 1);
+		scene.GetItems().PickupPlayerItem();
+		scene.GetItems().AffectNearbyAnimals();
+		for (size_t i = 1; i <= 4; ++i)
+			Require(scene.GetObjects()[i].Impatience == (code == ItemCode::StinkMushroom ? 10 : 0), "Mushroom/flower did not update every nearby animal species.");
+		Require(scene.GetObjects()[5].Impatience == 6, "Mood effect reached an animal outside the adjacent ring.");
+	}
+	for (i32 kind : { 11, 12, 13 })
+	{
+		const LevelInfo level = FixtureLevel(engine, "angry-animal-" + std::to_string(kind), { { 0, 240, 160, 4 }, { kind, 240, 200, 1, 10 } });
+		LevelScene scene(engine, *xs, level, 1);
+		scene.Update(0.01f, 0, 0, true);
+		Require(scene.TakeTimeDelta() == 0, "An angry non-sheep animal kicked Sven.");
+		const std::vector<str> sounds = scene.TakeSounds();
+		Require(std::none_of(sounds.begin(), sounds.end(), [](const str& sound)
+		                     { return sound.find("kickSven") != str::npos; }),
+		        "A non-sheep animal played the sheep kick sound.");
+		for (i32 frame = 0; frame < 1000; ++frame)
+			scene.Update(0.02f, 0, 0, false);
+		Require(!IsDemonState(scene.GetObjects()[1].State), "An angry non-sheep animal entered a demon state.");
+	}
+	Log("PASS: smell/flower affect all nearby animals; other animals never kick or become demons.");
+}
+
+void CheckDebugMenu(MudGE& engine, bool capture = false)
+{
+	const auto& packs = engine.GetData().GetPacks();
+	const auto xs = std::find_if(packs.begin(), packs.end(), [](const LevelPackInfo& pack)
+	                             { return pack.Name == "XS"; });
+	const LevelInfo level = FixtureLevel(engine, "debug-tools", { { 0, 240, 200, 0 }, { 2, 640, 400, 0 } });
+	LevelSetInfo set{ "Debug regression", { level, level } };
+	GameSession session(engine, *xs, set);
+	session.DebugChangeLives(-1);
+	Require(session.GetLives() == 2, "Debug remove-life incorrectly applied native life insurance.");
+	session.DebugChangeLives(1);
+	Require(session.GetLives() == 3, "Debug add-life did not change the life count.");
+	i32 remaining = session.GetRemainingTargets();
+	for (ObjectKind kind : { ObjectKind::Sheep, ObjectKind::Chicken, ObjectKind::Goat, ObjectKind::Pig })
+		Require(session.DebugSpawn(kind), "Debug animal spawn failed on an open level.");
+	Require(session.GetRemainingTargets() == remaining + 4, "Spawned animals did not become completion targets.");
+	for (const ItemDefinition& item : GetItemDefinitions())
+		Require(session.DebugSpawn(item.Kind), "Debug item spawn failed on an open level.");
+	Require(!session.DebugSpawn(ObjectKind::Player), "Debug spawner accepted a second player.");
+	DebugMenu menu(engine);
+	menu.Toggle();
+	WindowInput::Result click;
+	click.Click = true;
+	click.Mouse = { 160, 200 };
+	menu.Handle(click, &session);
+	Require(session.GetLives() == 4, "Debug menu mouse action did not add a life.");
+	WindowInput::Result select;
+	select.Down = true;
+	menu.Handle(select, &session);
+	WindowInput::Result confirm;
+	confirm.Confirm = true;
+	menu.Handle(confirm, &session);
+	Require(session.GetLives() == 3, "Debug menu keyboard action did not remove a life.");
+	const size_t base = session.Draws().size();
+	Require(menu.Draws(session.Draws()).size() > base, "Debug overlay did not draw its controls.");
+	if (capture)
+		engine.DrawFrame(menu.Draws(session.Draws()), "debug-menu.bmp");
+	WindowInput::Result back;
+	back.Back = true;
+	menu.Handle(back, &session);
+	Require(!menu.IsOpen(), "Escape did not close the debug menu.");
+	session.DebugRestartLevel();
+	Require(session.GetRemainingTargets() == remaining && session.GetLives() == 3, "Debug restart did not reset the level while retaining campaign lives.");
+	session.DebugNextLevel();
+	Require(session.LevelNumber() == 2 && !session.GetResults(), "Debug next-level did not load the next map.");
+	session.DebugNextLevel();
+	Require(session.Finished() && session.GetResults(), "Debug skip on the last level did not finish the pack.");
+	LevelScene full(engine, *xs, level, 1);
+	while (full.GetObjects().Size() < LevelFile::ObjectCount)
+	{
+		WorldObject object;
+		full.GetObjects().Add(object);
+	}
+	Require(!full.SpawnNearPlayer(ObjectKind::Goat), "Debug spawning overran the native object pool.");
+	Log("PASS: debug menu mouse/keyboard, item/animal spawning, pool limit, lives, restart and final-pack skip.");
 }
 
 void CheckDepthOrdering(MudGE& engine, bool capture = false)
@@ -1969,6 +2060,8 @@ i32 main(i32 argc, char** argv)
 		Require(engine.GetData().GetPacks().size() >= 5, "Original package folders were not discovered.");
 		Require(engine.GetData().Text("SelectPacks") == u8"W\u00c4HLE LEVELPACK", "Legacy XML encoding was not decoded.");
 		CheckObjectOwnership(engine);
+		CheckAnimalMoodEffects(engine);
+		CheckDebugMenu(engine);
 		CheckScores(saves);
 		CheckGlyphs(engine);
 		CheckMenus(engine, saves);
@@ -1993,6 +2086,7 @@ i32 main(i32 argc, char** argv)
 		if (argc == 2 && str(argv[1]) == "--visual")
 		{
 			engine.StartVideo(false);
+			CheckDebugMenu(engine, true);
 			CheckDepthOrdering(engine, true);
 			CheckEnemyItems(engine, true);
 			CheckDemonSheep(engine, true);

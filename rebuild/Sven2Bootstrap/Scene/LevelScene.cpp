@@ -27,11 +27,13 @@ static const LevelInfo& FirstLevel(const MudGE& engine)
 
 LevelScene::LevelScene(MudGE& engine)
     : LevelScene(engine, static_cast<u32>(GetTickCount64()))
-{}
+{
+}
 
 LevelScene::LevelScene(MudGE& engine, u32 seed)
     : LevelScene(engine, FirstPack(engine), FirstLevel(engine), seed)
-{}
+{
+}
 
 LevelScene::LevelScene(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& level, u32 seed, u32* sharedRandomState)
     : Engine(engine), Objects(*this), RandomState(seed), SharedRandomState(sharedRandomState), Grid(*this), Resources(*this), Player(Objects.GetPlayer()), Items(*this), UfoController(*this), Effects(*this), Renderer(*this)
@@ -369,4 +371,61 @@ const std::vector<SpriteDraw>& LevelScene::Draws()
 bool LevelScene::TakeSplashSound()
 {
 	return Effects.TakeSplashSound();
+}
+
+size_t LevelScene::FindAvailableObjectSlot() const
+{
+	for (size_t i = 0; i < Objects.Size(); ++i)
+		if (Objects[i].Freed && i != PlayerIndex && static_cast<i32>(i) != Player.ActiveSheep && static_cast<i32>(i) != UfoController.Ufo.Target)
+			return i;
+	return Objects.Size();
+}
+
+bool LevelScene::SpawnNearPlayer(ObjectKind kind)
+{
+	if ((!IsAnimal(kind) && !IsItem(kind)) || FindAvailableObjectSlot() >= LevelFile::ObjectCount)
+		return false;
+	const i32 origin = Grid.TileAt(Player.X, Player.Y);
+	for (i32 radius = 1; radius <= 4; ++radius)
+		for (i32 dy = -radius; dy <= radius; ++dy)
+			for (i32 dx = -radius; dx <= radius; ++dx)
+			{
+				if (std::max(std::abs(dx), std::abs(dy)) != radius)
+					continue;
+				const i32 x = origin % Stride + dx, y = origin / Stride + dy;
+				const i32 tile = y * Stride + x;
+				if (x < 1 || x > Columns || y < 1 || y > Rows || !Grid.Unoccupied(tile, Objects.Size()) || Grid.ItemCodes[tile] != ItemCode::None)
+					continue;
+				if (IsItem(kind))
+				{
+					Items.SpawnItem(kind, tile);
+					return Grid.ItemCodes[tile] != ItemCode::None;
+				}
+				const CharacterDefinition* definition = FindCharacterDefinition(kind);
+				WorldObject animal;
+				animal.Kind = kind;
+				animal.Tile = tile;
+				const Sprite* sprite = kind == ObjectKind::Sheep ? Resources.SheepStand : Resources.ActorSprites[kind].Stand;
+				if (!definition || !sprite)
+					return false;
+				animal.CenterX = sprite->FrameWidth * 0.5f;
+				animal.CenterY = sprite->FrameHeight * 0.5f;
+				animal.X = animal.TargetX = static_cast<f32>((x - 1) * TileSize + TileSize / 2) - animal.CenterX;
+				animal.Y = animal.TargetY = static_cast<f32>((y - 1) * TileSize + TileSize / 2) - animal.CenterY;
+				animal.CommittedY = animal.Y;
+				animal.DepthOffset = sprite->FrameHeight - (kind == ObjectKind::Sheep ? 0 : TileSize);
+				animal.Facing = Player.Facing / 2;
+				animal.Pulse = 26;
+				animal.Idle = 1000;
+				animal.Draw = { sprite, static_cast<i32>(animal.X), static_cast<i32>(animal.Y), animal.Facing };
+				const size_t slot = FindAvailableObjectSlot();
+				if (slot == Objects.Size())
+					Objects.Add(animal);
+				else
+					Objects.Replace(slot, animal);
+				Grid.Tiles[tile] = GetOccupancyCode(kind);
+				++RemainingTargets;
+				return true;
+			}
+	return false;
 }

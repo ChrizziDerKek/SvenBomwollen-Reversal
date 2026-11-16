@@ -1,6 +1,7 @@
 #include "Game/GameApp.h"
 #include "Game/GameSession.h"
 #include "Game/GameUi.h"
+#include "Game/DebugMenu.h"
 #include "Input/WindowInput.h"
 #include <array>
 #include <chrono>
@@ -11,6 +12,7 @@ void RunGame(MudGE& engine, const fpath& saves, bool audio, u32 seconds, bool di
 {
 	using Page = GameUi::Page;
 	GameUi ui(engine, saves);
+	DebugMenu debug(engine);
 	WindowInput controls(engine.WindowHandle(), engine.ScaledVideo());
 	std::unique_ptr<GameSession> session;
 	bool playing = false;
@@ -52,7 +54,23 @@ void RunGame(MudGE& engine, const fpath& saves, bool audio, u32 seconds, bool di
 		WindowInput::Result input = controls.Poll();
 		if (GetForegroundWindow() == engine.WindowHandle())
 		{
-			if (playing)
+			if (debug.IsOpen() || input.Debug)
+			{
+				if (input.Debug)
+					debug.Toggle();
+				GameSession* target = session && (playing || ui.GetPage() == Page::Pause) ? session.get() : nullptr;
+				if (debug.Handle(input, target) && target)
+				{
+					engine.StopLoopedSound();
+					music(session->Level().Music);
+					if (session->GetResults())
+					{
+						playing = false;
+						ui.ShowResults(session->GetResult());
+					}
+				}
+			}
+			else if (playing)
 			{
 				if (input.Back)
 				{
@@ -140,13 +158,14 @@ void RunGame(MudGE& engine, const fpath& saves, bool audio, u32 seconds, bool di
 		if (playing)
 		{
 			const std::vector<SpriteDraw>& scene = session->Draws();
-			engine.DrawFrame(scene);
+			engine.DrawFrame(debug.IsOpen() ? debug.Draws(scene) : scene);
 		}
 		else
 		{
 			const bool overlay = session && ui.UsesSceneBackground();
 			const std::vector<SpriteDraw>* background = overlay ? &session->Draws() : nullptr;
-			engine.DrawFrame(ui.Draws(elapsed, background));
+			const std::vector<SpriteDraw>& menu = ui.Draws(elapsed, background);
+			engine.DrawFrame(debug.IsOpen() ? debug.Draws(menu) : menu);
 		}
 		Sleep(10);
 	}

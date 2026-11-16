@@ -5,7 +5,7 @@ param([switch]$Probe,[switch]$NoAudio,[switch]$Tutorial,[string]$DataDirectory,[
 $ErrorActionPreference='Stop'
 $taskExecutable=Join-Path $PSScriptRoot "bin/Win32/$Configuration/Sven2Bootstrap.exe"
 if(!(Test-Path -LiteralPath $taskExecutable)) { throw 'Build first: powershell -File rebuild/Build.ps1' }
-$taskArguments=@('--game-dir',(Join-Path (Split-Path $PSScriptRoot -Parent) 'games/sven2'))
+$taskArguments=@()
 if($Probe) { $taskArguments+='--probe' }
 if($Tutorial) { $taskArguments+='--tutorial' }
 if($DataDirectory) { $taskArguments+=@('--data-dir',$DataDirectory) }

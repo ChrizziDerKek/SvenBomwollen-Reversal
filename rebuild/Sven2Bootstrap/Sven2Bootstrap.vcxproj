@@ -28,7 +28,7 @@
     <OutDir>$(MSBuildProjectDirectory)\..\bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(MSBuildProjectDirectory)\..\obj\$(Configuration)\</IntDir>
     <TargetName>Sven2Bootstrap</TargetName>
-    <LocalDebuggerWorkingDirectory>$(MSBuildProjectDirectory)\..\runtime\sven2</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerWorkingDirectory>$(OutDir)</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -81,6 +81,7 @@
     <ClInclude Include="Utility\SupportedBuild.h" />
   </ItemGroup>
   <Import Project="FsrShaders.targets" />
+  <Import Project="RuntimeData.targets" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ItemGroup>
     <ClInclude Include="FSR1/FsrPresenter.h" />
@@ -127,5 +128,9 @@
   <ItemGroup>
     <ClInclude Include="Scene/Objects/ObjectState.h" />
     <ClInclude Include="Scene/Level/LevelCodes.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Game/DebugMenu.cpp" />
+    <ClInclude Include="Game/DebugMenu.h" />
   </ItemGroup>
 </Project>

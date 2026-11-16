@@ -3,7 +3,7 @@ UseTab: ForIndentation
 IndentWidth: 4
 TabWidth: 4
 BreakBeforeBraces: Allman
-AllowShortFunctionsOnASingleLine: None
+AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: Never
 AllowShortLoopsOnASingleLine: false
 AllowShortBlocksOnASingleLine: Never
@@ -18,3 +18,4 @@ BinPackArguments: true
 BinPackParameters: true
 AllowAllArgumentsOnNextLine: false
 AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortLambdasOnASingleLine: All

@@ -8,7 +8,8 @@
 
 LevelEffects::LevelEffects(LevelScene& scene)
     : Scene(scene)
-{}
+{
+}
 
 void LevelEffects::AddTime(i32 amount, f32 x, f32 y)
 {
@@ -19,15 +20,7 @@ void LevelEffects::AddTime(i32 amount, f32 x, f32 y)
 
 void LevelEffects::SpawnCompletionEffect(f32 x, f32 y, bool hearts)
 {
-	size_t slot = Scene.Objects.Size();
-	for (size_t i = 0; i < Scene.Objects.Size(); ++i)
-	{
-		if (Scene.Objects[i].Freed && i != Scene.PlayerIndex && static_cast<i32>(i) != Scene.Player.ActiveSheep && static_cast<i32>(i) != Scene.UfoController.Ufo.Target)
-		{
-			slot = i;
-			break;
-		}
-	}
+	const size_t slot = Scene.FindAvailableObjectSlot();
 	if (slot >= 256)
 		return;
 	Object effect;
@@ -81,14 +74,18 @@ void LevelEffects::UpdateEffects(f32 seconds)
 		}
 		effect.Draw.Frame = std::min(17, static_cast<i32>(effect.Age));
 	}
-	SceneEffects.erase(std::remove_if(SceneEffects.begin(), SceneEffects.end(), [](const Object& effect) { return effect.Freed; }), SceneEffects.end());
+	SceneEffects.erase(std::remove_if(SceneEffects.begin(), SceneEffects.end(), [](const Object& effect)
+	                                  { return effect.Freed; }),
+	                   SceneEffects.end());
 	Scene.Objects.UpdatePhase(ObjectPhase::Effects, seconds);
 	for (auto& popup : TimePopups)
 	{
 		popup.Y -= popup.Speed * seconds;
 		popup.Life -= seconds;
 	}
-	TimePopups.erase(std::remove_if(TimePopups.begin(), TimePopups.end(), [](const auto& popup) { return popup.Life < 0; }), TimePopups.end());
+	TimePopups.erase(std::remove_if(TimePopups.begin(), TimePopups.end(), [](const auto& popup)
+	                                { return popup.Life < 0; }),
+	                 TimePopups.end());
 }
 
 void LevelEffects::SpawnDigEffect(const Object& actor)
@@ -109,7 +106,9 @@ bool LevelEffects::TakeSplashSound()
 {
 	const bool pending = SplashSound;
 	SplashSound = false;
-	Scene.Sounds.erase(std::remove_if(Scene.Sounds.begin(), Scene.Sounds.end(), [](const SoundRequest& request) { return request.Asset == "Sven2/sfx/water_splash22.ogg"; }), Scene.Sounds.end());
+	Scene.Sounds.erase(std::remove_if(Scene.Sounds.begin(), Scene.Sounds.end(), [](const SoundRequest& request)
+	                                  { return request.Asset == "Sven2/sfx/water_splash22.ogg"; }),
+	                   Scene.Sounds.end());
 	return pending;
 }
 

@@ -1,0 +1,17 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <SvenWorkspaceRoot>$(MSBuildThisFileDirectory)..\..\</SvenWorkspaceRoot>
+    <SvenLegacySaveRoot Condition="'$(SvenLegacySaveRoot)' == ''">$(MSBuildThisFileDirectory)..\runtime\sven2\saves\</SvenLegacySaveRoot>
+  </PropertyGroup>
+  <Target Name="DeployRuntimeData" AfterTargets="Build">
+    <MakeDir Directories="$(OutDir)saves;$(OutDir)logs"/>
+    <ItemGroup>
+      <SvenAsset Include="$(SvenWorkspaceRoot)assets\**\*"/>
+      <SvenRuntimeDll Include="$(SvenWorkspaceRoot)games\sven2\*.dll"/>
+      <SvenLegacySave Include="$(SvenLegacySaveRoot)\**\*"/>
+    </ItemGroup>
+    <Copy SourceFiles="@(SvenAsset)" DestinationFiles="@(SvenAsset->'$(OutDir)assets\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" Condition="'$(RefreshRuntimeAssets)' == 'true' Or !Exists('$(OutDir)assets\%(SvenAsset.RecursiveDir)%(SvenAsset.Filename)%(SvenAsset.Extension)')"/>
+    <Copy SourceFiles="@(SvenRuntimeDll)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true"/>
+    <Copy SourceFiles="@(SvenLegacySave)" DestinationFiles="@(SvenLegacySave->'$(OutDir)saves\%(RecursiveDir)%(Filename)%(Extension)')" Condition="!Exists('$(OutDir)saves\%(SvenLegacySave.RecursiveDir)%(SvenLegacySave.Filename)%(SvenLegacySave.Extension)')"/>
+  </Target>
+</Project>

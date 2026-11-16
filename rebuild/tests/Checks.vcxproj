@@ -123,4 +123,8 @@
     <ClInclude Include="../Sven2Bootstrap/Scene/Objects/ObjectState.h" />
     <ClInclude Include="../Sven2Bootstrap/Scene/Level/LevelCodes.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="../Sven2Bootstrap/Game/DebugMenu.cpp" />
+    <ClInclude Include="../Sven2Bootstrap/Game/DebugMenu.h" />
+  </ItemGroup>
 </Project>

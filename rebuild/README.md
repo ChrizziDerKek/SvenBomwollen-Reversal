@@ -8,8 +8,34 @@ powershell -File rebuild/Run-Sven2.ps1
 ```
 
 FSR1 remains the default. F6 cycles filters, F7/F8 adjust sharpening and F11
-toggles fullscreen. `-Upscaler native` selects original presentation. Loose
-content loads from `assets`; supported original DLLs load from `games/sven2`.
+toggles fullscreen. `-Upscaler native` selects original presentation.
+
+Each game build deploys a portable folder in `rebuild/bin/Win32/Debug` (or
+`Release`). Launch `Sven2Bootstrap.exe` directly or copy that entire folder
+elsewhere; the working directory does not matter. The folder contains the EXE,
+the original runtime DLLs, `assets/`, `saves/` for highscores and `logs/`.
+The three FSR source files are embedded in the EXE, including its header
+includes; no loose shader folder is needed. Shaders still compile locally using
+D3DCompiler when the renderer starts.
+
+Source assets remain in the repository for editing. Builds populate missing
+assets and update DLLs without overwriting edited runtime assets or deleting
+additional files in the destination. Use `Build.ps1 -RefreshAssets` explicitly
+to replace runtime copies with the source assets. Existing saves
+from `rebuild/runtime/sven2/saves` are copied only when the destination save does
+not exist. Build deployment leaves source data and the backup unchanged.
+`--data-dir` and `--game-dir` remain explicit overrides for development.
+
+Press **F2** to open the debug/cheat menu. Gameplay and its timer pause while it
+is open; **F2** or **Escape** closes it. Use the mouse or Up/Down and Enter;
+Left/Right cycle item and animal choices. Commands skip/restart a level, add or
+remove a life, and spawn any registered item or animal on a free nearby tile.
+Spawning animals adds completion targets and respects occupied tiles and the
+native object-pool limit. The final level skip opens the pack-completion screen.
+
+An intentional change from Zwo: the stinky mushroom and flower now set nearby
+chickens, goats and pigs' impatience, too. They still never kick Sven or turn
+into demons. Sheep retain their existing sounds and special behavior.
 
 ## Ownership and behavior
 
@@ -83,7 +109,7 @@ powershell -File rebuild/Build.ps1 -Checks
 rebuild/bin/Win32/Debug/Sven2Checks.exe
 rebuild/bin/Win32/Debug/Sven2Checks.exe --visual
 rebuild/bin/Win32/Debug/Sven2Checks.exe --upscaler
-python rebuild/tools/VerifyRefactor.py
+powershell -File rebuild/Test-PortableBuild.ps1
 ```
 
 The suite covers original gameplay/UI and simulation of all 105 Zwo levels.
@@ -97,4 +123,7 @@ render commands/pixels, progression and sound events. The new trace formatter
 retains the legacy UFO event's root-directory casing; actual playback uses the
 XML path. Matching traces are regression evidence, not exhaustive proof of all
 possible interactions. `refactor-validation.json` records the trace comparison
-and protected-backup source hash check.
+and protected-backup source hash check from that migration. The archival
+`tools/VerifyRefactor.py` check requires the old working-copy backup and retained
+baseline/current traces; use the native suite above after clearing those files.
+The animal mood change is an intentional deviation from the original baseline.

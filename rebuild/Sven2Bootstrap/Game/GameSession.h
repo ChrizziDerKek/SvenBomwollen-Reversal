@@ -13,6 +13,10 @@ public:
 	void Update(f32 seconds, i32 dx, i32 dy, bool actionPressed);
 	void Advance();
 	void SkipBonuses();
+	void DebugNextLevel();
+	void DebugRestartLevel();
+	void DebugChangeLives(i32 amount);
+	bool DebugSpawn(ObjectKind kind);
 	const std::vector<SpriteDraw>& Draws();
 	std::vector<str> TakeSounds();
 	std::vector<SoundRequest> TakeAudioEvents();

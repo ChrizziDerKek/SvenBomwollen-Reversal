@@ -3,10 +3,13 @@
   <ItemGroup>
     <ClCompile Include="$(SvenRebuildRoot)FSR1/FsrPresenter.cpp"/>
     <None Include="$(SvenRebuildRoot)FSR1/Fsr1.hlsl"/>
-    <SvenFsrShader Include="$(SvenRebuildRoot)FSR1/Fsr1.hlsl;$(SvenRebuildRoot)FSR1/ffx_a.h;$(SvenRebuildRoot)FSR1/ffx_fsr1.h"/>
+    <ResourceCompile Include="$(SvenRebuildRoot)FSR1/FsrResources.rc">
+      <AdditionalIncludeDirectories>$(SvenRebuildRoot)FSR1;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalInputs>$(SvenRebuildRoot)FSR1/Fsr1.hlsl;$(SvenRebuildRoot)FSR1/ffx_a.h;$(SvenRebuildRoot)FSR1/ffx_fsr1.h;%(AdditionalInputs)</AdditionalInputs>
+    </ResourceCompile>
+    <ClInclude Include="$(SvenRebuildRoot)FSR1/FsrResources.h"/>
   </ItemGroup>
-  <Target Name="CopyFsrShaders" AfterTargets="Build">
-    <MakeDir Directories="$(OutDir)shaders"/>
-    <Copy SourceFiles="@(SvenFsrShader)" DestinationFolder="$(OutDir)shaders" SkipUnchangedFiles="true"/>
+  <Target Name="RemoveLooseFsrShaders" AfterTargets="Build">
+    <Delete Files="$(OutDir)shaders/Fsr1.hlsl;$(OutDir)shaders/ffx_a.h;$(OutDir)shaders/ffx_fsr1.h"/>
   </Target>
 </Project>
