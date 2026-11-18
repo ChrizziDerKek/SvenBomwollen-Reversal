@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<SvenXXX version="1.0">
+
+	<package name="04_Xmas2003">
+
+		<dependencies>
+			<requires file="SvenXXX.dat" key="key" value="value"/>
+		</dependencies>
+
+		<levelsets>
+			<levelset name="Xmas 2003 01">
+				<level name="Xmas 01" tileset="iceworld" music="04_Xmas2003/sfx/atmo_ice.ogg" map="04_Xmas2003/levels/Xmas01.lvl"/>
+				<level name="Xmas 02" tileset="iceworld" music="04_Xmas2003/sfx/atmo_ice.ogg" map="04_Xmas2003/levels/Xmas02.lvl"/>
+				<level name="Xmas 03" tileset="iceworld" music="04_Xmas2003/sfx/atmo_ice.ogg" map="04_Xmas2003/levels/Xmas03.lvl"/>
+				<level name="Bonus 01" 	tileset="iceworld" music="04_Xmas2003/sfx/atmo_jinglebells.ogg" map="04_Xmas2003/levels/Xmas03broemse.lvl"/>
+				<level name="Xmas 04" tileset="iceworld" music="04_Xmas2003/sfx/atmo_jinglebells.ogg" map="04_Xmas2003/levels/Xmas04.lvl"/>
+				<level name="Xmas 05" tileset="iceworld" music="04_Xmas2003/sfx/atmo_jinglebells.ogg" map="04_Xmas2003/levels/Xmas05.lvl"/>
+				<level name="Xmas 06" tileset="iceworld" music="04_Xmas2003/sfx/atmo_jinglebells.ogg" map="04_Xmas2003/levels/Xmas06.lvl"/>
+				<level name="Bonus 02" 	tileset="iceworld" music="04_Xmas2003/sfx/atmo_jinglebells.ogg" map="04_Xmas2003/levels/Xmas06lars.lvl"/>
+				<level name="Xmas 07" tileset="iceworld" music="04_Xmas2003/sfx/atmo_jinglebells.ogg" map="04_Xmas2003/levels/Xmas07.lvl"/>
+				<level name="Xmas 08" tileset="iceworld" music="04_Xmas2003/sfx/atmo_jinglebells.ogg" map="04_Xmas2003/levels/Xmas08.lvl"/>
+				<level name="Xmas 09" tileset="iceworld" music="04_Xmas2003/sfx/atmo_jinglebells.ogg" map="04_Xmas2003/levels/Xmas09.lvl"/>
+			</levelset>
+			<levelset name="Xmas 2003 02">
+				<level name="Xmas 01" tileset="iceworld" music="04_Xmas2003/sfx/atmo_ice.ogg" map="04_Xmas2003/levels/Xmas10.lvl"/>
+				<level name="Xmas 02" tileset="iceworld" music="04_Xmas2003/sfx/atmo_ice.ogg" map="04_Xmas2003/levels/Xmas11.lvl"/>
+				<level name="Xmas 03" tileset="iceworld" music="04_Xmas2003/sfx/atmo_ice.ogg" map="04_Xmas2003/levels/Xmas12.lvl"/>
+				<level name="Bonus 01" 	tileset="iceworld" music="04_Xmas2003/sfx/atmo_jinglebells.ogg" map="04_Xmas2003/levels/Xmas12lars.lvl"/>
+				<level name="Xmas 04" tileset="iceworld" music="04_Xmas2003/sfx/atmo_jinglebells.ogg" map="04_Xmas2003/levels/Xmas13.lvl"/>
+				<level name="Xmas 05" tileset="iceworld" music="04_Xmas2003/sfx/atmo_jinglebells.ogg" map="04_Xmas2003/levels/Xmas14.lvl"/>
+				<level name="Xmas 06" tileset="iceworld" music="04_Xmas2003/sfx/atmo_jinglebells.ogg" map="04_Xmas2003/levels/Xmas15.lvl"/>
+				<level name="Bonus 02" 	tileset="iceworld" music="04_Xmas2003/sfx/atmo_jinglebells.ogg" map="04_Xmas2003/levels/Xmas15broemse.lvl"/>
+				<level name="Xmas 07" tileset="iceworld" music="04_Xmas2003/sfx/atmo_jinglebells.ogg" map="04_Xmas2003/levels/Xmas16.lvl"/>
+				<level name="Xmas 08" tileset="iceworld" music="04_Xmas2003/sfx/atmo_jinglebells.ogg" map="04_Xmas2003/levels/Xmas17.lvl"/>
+				<level name="Xmas 09" tileset="iceworld" music="04_Xmas2003/sfx/atmo_jinglebells.ogg" map="04_Xmas2003/levels/Xmas18.lvl"/>
+			</levelset>
+		</levelsets>
+
+		<tilesets>
+			<tileset name="Iceworld" background="04_Xmas2003/gfx_iceworld/BG_iceworld.jpg">
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_barr1.bmp"			frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_barr2.bmp"			frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_barr3.bmp"			frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_bush1.bmp"			frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_bush2.bmp"			frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_canoe.bmp"			frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_clothesline.bmp"	frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_igloo1.bmp"		frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_igloo2.bmp"		frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_mailbox.bmp"		frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_nest1.bmp"			frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_nest2.bmp"			frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_puddle1.bmp"		frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_racket.bmp"		frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_refrigerator.bmp"	frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_river.bmp"			frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_sign1.bmp"			frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_snowballs.bmp"		frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_snowhump.bmp"		frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_snowman1.bmp"		frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_snowman2.bmp"		frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_snowman3.bmp"		frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_snowman4.bmp"		frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_snowman5.bmp"		frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_snowman6.bmp"		frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_snowman7.bmp"		frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_stump.bmp"			frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_submarine.bmp"		frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_tent.bmp"			frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_tree1.bmp"			frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_tree2.bmp"			frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_tree3.bmp"			frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_tree4.bmp"			frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_tv.bmp"			frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_whale.bmp"			frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_woodpiles.bmp"		frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_barr4.bmp"			frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_christmas_gift01.bmp"		frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_christmas_gift02.bmp"		frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_christmas_gift03.bmp"		frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_christmas_gift04.bmp"		frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_christmas_gift05.bmp"		frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_christmas_gift06.bmp"		frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_christmas_gift07.bmp"		frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_christmas_gift08.bmp"		frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_christmas_gift09.bmp"		frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_christmas_gift10.bmp"		frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_christmas_gift11.bmp"		frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_christmas_rudolph01.bmp"	frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_christmas_rudolph02.bmp"	frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_christmas_rudolph03.bmp"	frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_christmas_rudolph04.bmp"	frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_christmas_santa_claus.bmp"	frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_christmas_sledge01.bmp"		frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_christmas_sledge02.bmp"		frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_christmas_sledge03.bmp"		frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_christmas_sledge04.bmp"		frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_christmas_sledge05.bmp"		frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_christmas_tree01.bmp"		frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_christmas_tree02.bmp"		frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_sign2.bmp"			frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_sign3.bmp"			frames="1"/>
+				<tile file="04_Xmas2003/gfx_iceworld/BG_iceworld_sign4.bmp"			frames="1"/>
+			</tileset>
+		</tilesets>
+	</package>
+</SvenXXX>

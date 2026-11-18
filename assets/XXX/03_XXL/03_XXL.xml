@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<SvenXXX version="1.0">
+
+	<package name="03_XXL">
+
+		<dependencies>
+			<requires file="SvenXXX.dat" key="key" value="value"/>
+		</dependencies>
+
+		<levelsets>
+			<levelset name="Schnee">
+				<level name="Schnee 01" tileset="iceworld" music="03_XXL/sfx/atmo_ice.ogg" map="03_XXL/levels/Ice01.lvl"/>
+				<level name="Schnee 02" tileset="iceworld" music="03_XXL/sfx/atmo_ice.ogg" map="03_XXL/levels/Ice02.lvl"/>
+				<level name="Schnee 03" tileset="iceworld" music="03_XXL/sfx/atmo_ice.ogg" map="03_XXL/levels/Ice03.lvl"/>
+				<level name="Bonus 01" 	tileset="iceworld" music="03_XXL/sfx/atmo_ice.ogg" map="03_XXL/levels/Ice03lars.lvl"/>
+				<level name="Schnee 04" tileset="iceworld" music="03_XXL/sfx/atmo_ice.ogg" map="03_XXL/levels/Ice04.lvl"/>
+				<level name="Schnee 05" tileset="iceworld" music="03_XXL/sfx/atmo_ice.ogg" map="03_XXL/levels/Ice05.lvl"/>
+				<level name="Schnee 06" tileset="iceworld" music="03_XXL/sfx/atmo_ice.ogg" map="03_XXL/levels/Ice06.lvl"/>
+				<level name="Bonus 02" 	tileset="iceworld" music="03_XXL/sfx/atmo_ice.ogg" map="03_XXL/levels/Ice06lars.lvl"/>
+				<level name="Schnee 07" tileset="iceworld" music="03_XXL/sfx/atmo_ice.ogg" map="03_XXL/levels/Ice07.lvl"/>
+				<level name="Schnee 08" tileset="iceworld" music="03_XXL/sfx/atmo_ice.ogg" map="03_XXL/levels/Ice08.lvl"/>
+				<level name="Schnee 09" tileset="iceworld" music="03_XXL/sfx/atmo_ice.ogg" map="03_XXL/levels/Ice09.lvl"/>
+			</levelset>
+			<levelset name="Höhle">
+				<level name="Höhle 01" tileset="cave" music="03_XXL/sfx/atmo_cave.ogg" map="03_XXL/levels/cave01.lvl"/>
+				<level name="Höhle 02" tileset="cave" music="03_XXL/sfx/atmo_cave.ogg" map="03_XXL/levels/cave02.lvl"/>
+				<level name="Höhle 03" tileset="cave" music="03_XXL/sfx/atmo_cave.ogg" map="03_XXL/levels/cave03.lvl"/>
+				<level name="Bonus 01" tileset="cave" music="03_XXL/sfx/atmo_cave.ogg" map="03_XXL/levels/cave03lars.lvl"/>
+				<level name="Höhle 04" tileset="cave" music="03_XXL/sfx/atmo_cave.ogg" map="03_XXL/levels/cave04.lvl"/>
+				<level name="Höhle 05" tileset="cave" music="03_XXL/sfx/atmo_cave.ogg" map="03_XXL/levels/cave05.lvl"/>
+				<level name="Höhle 06" tileset="cave" music="03_XXL/sfx/atmo_cave.ogg" map="03_XXL/levels/cave06.lvl"/>
+				<level name="Bonus 02" tileset="cave" music="03_XXL/sfx/atmo_cave.ogg" map="03_XXL/levels/cave06lars.lvl"/>
+				<level name="Höhle 07" tileset="cave" music="03_XXL/sfx/atmo_cave.ogg" map="03_XXL/levels/cave07.lvl"/>
+				<level name="Höhle 08" tileset="cave" music="03_XXL/sfx/atmo_cave.ogg" map="03_XXL/levels/cave08.lvl"/>
+				<level name="Höhle 09" tileset="cave" music="03_XXL/sfx/atmo_cave.ogg" map="03_XXL/levels/cave09.lvl"/>
+			</levelset>
+			<levelset name="Planet">
+				<level name="Planet 01" tileset="alien" music="03_XXL/sfx/atmo_planet.ogg" map="03_XXL/levels/Planet01.lvl"/>
+				<level name="Planet 02" tileset="alien" music="03_XXL/sfx/atmo_planet.ogg" map="03_XXL/levels/Planet02.lvl"/>
+				<level name="Planet 03" tileset="alien" music="03_XXL/sfx/atmo_planet.ogg" map="03_XXL/levels/Planet03.lvl"/>
+				<level name="Bonus 01" 	tileset="alien" music="03_XXL/sfx/atmo_planet.ogg" map="03_XXL/levels/Planet03alien.lvl"/>
+				<level name="Planet 04" tileset="alien" music="03_XXL/sfx/atmo_planet.ogg" map="03_XXL/levels/Planet04.lvl"/>
+				<level name="Planet 05" tileset="alien" music="03_XXL/sfx/atmo_planet.ogg" map="03_XXL/levels/Planet05.lvl"/>
+				<level name="Planet 06" tileset="alien" music="03_XXL/sfx/atmo_planet.ogg" map="03_XXL/levels/Planet06.lvl"/>
+				<level name="Bonus 02"	tileset="alien" music="03_XXL/sfx/atmo_planet.ogg" map="03_XXL/levels/Planet06alien.lvl"/>
+				<level name="Planet 07" tileset="alien" music="03_XXL/sfx/atmo_planet.ogg" map="03_XXL/levels/Planet07.lvl"/>
+				<level name="Planet 08" tileset="alien" music="03_XXL/sfx/atmo_planet.ogg" map="03_XXL/levels/Planet08.lvl"/>
+				<level name="Planet 09" tileset="alien" music="03_XXL/sfx/atmo_planet.ogg" map="03_XXL/levels/Planet09.lvl"/>
+			</levelset>
+		</levelsets>
+
+		<tilesets>
+			<tileset name="Alien" background="03_XXL/gfx_alienworld/BG_AW.jpg">
+				<tile file="03_XXL/gfx_alienworld/BG_AW_advertising1.bmp"	frames="1"/>
+				<tile file="03_XXL/gfx_alienworld/BG_AW_advertising2.bmp"	frames="1"/>
+				<tile file="03_XXL/gfx_alienworld/BG_AW_advertising3.bmp"	frames="1"/>
+				<tile file="03_XXL/gfx_alienworld/BG_AW_advertising4.bmp"	frames="1"/>
+				<tile file="03_XXL/gfx_alienworld/BG_AW_balustrade.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_alienworld/BG_AW_barr1.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_alienworld/BG_AW_barr2.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_alienworld/BG_AW_barr3.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_alienworld/BG_AW_barr4.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_alienworld/BG_AW_bush1.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_alienworld/BG_AW_bush2.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_alienworld/BG_AW_bush3.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_alienworld/BG_AW_bush4.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_alienworld/BG_AW_car.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_alienworld/BG_AW_house1.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_alienworld/BG_AW_house2.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_alienworld/BG_AW_house3.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_alienworld/BG_AW_house4.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_alienworld/BG_AW_lamp1.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_alienworld/BG_AW_parkingmeter.bmp"	frames="1"/>
+				<tile file="03_XXL/gfx_alienworld/BG_AW_parkingplace.bmp"	frames="1"/>
+				<tile file="03_XXL/gfx_alienworld/BG_AW_puddle_01.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_alienworld/BG_AW_puddle_02.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_alienworld/BG_AW_road1.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_alienworld/BG_AW_road2.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_alienworld/BG_AW_road3.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_alienworld/BG_AW_road4.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_alienworld/BG_AW_road5.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_alienworld/BG_AW_telefonbox.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_alienworld/BG_AW_trafficsign1.bmp"	frames="1"/>
+				<tile file="03_XXL/gfx_alienworld/BG_AW_trafficsign2.bmp"	frames="1"/>
+				<tile file="03_XXL/gfx_alienworld/BG_AW_tree.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_alienworld/BG_AW_ufo.bmp"			frames="1"/>
+			</tileset>
+			<tileset name="Cave" background="03_XXL/gfx_cave/BG_cave.jpg">
+				<tile file="03_XXL/gfx_cave/BG_cave_amber.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_bones01.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_bones02.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_bones03.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_bones04.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_bones05.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_bones06.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_bones07.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_bones08.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_bones09.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_duck.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_mushroom1.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_mushroom2.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_mushroom3.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_platform1.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_platform2.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_platform3.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_platform4.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_platform5.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_puddle1.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_puddle2.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_ramp1.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_ramp2.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_river1.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_rock01.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_rock02.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_rock03.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_rock04.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_rock05.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_rock06.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_rock07.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_rock08.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_stalactite1.bmp"	frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_stalactite2.bmp"	frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_stalactite3.bmp"	frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_stalagmite1.bmp"	frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_stalagmite2.bmp"	frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_stalagmite3.bmp"	frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_stalagmite4.bmp"	frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_wall1.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_wall2.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_wall3.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_cave/BG_cave_platform6.bmp"		frames="1"/>
+			</tileset>
+			<tileset name="Iceworld" background="03_XXL/gfx_iceworld/BG_iceworld.jpg">
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_barr1.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_barr2.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_barr3.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_bush1.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_bush2.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_canoe.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_clothesline.bmp"	frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_igloo1.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_igloo2.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_mailbox.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_nest1.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_nest2.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_puddle1.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_racket.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_refrigerator.bmp"	frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_river.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_sign1.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_snowballs.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_snowhump.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_snowman1.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_snowman2.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_snowman3.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_snowman4.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_snowman5.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_snowman6.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_snowman7.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_stump.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_submarine.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_tent.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_tree1.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_tree2.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_tree3.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_tree4.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_tv.bmp"				frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_whale.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_woodpiles.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_iceworld_barr4.bmp"			frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_christmas_gift01.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_christmas_gift02.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_christmas_gift03.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_christmas_gift04.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_christmas_gift05.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_christmas_gift06.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_christmas_gift07.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_christmas_gift08.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_christmas_gift09.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_christmas_gift10.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_christmas_gift11.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_christmas_rudolph01.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_christmas_rudolph02.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_christmas_rudolph03.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_christmas_rudolph04.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_christmas_santa_claus.bmp"	frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_christmas_sledge01.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_christmas_sledge02.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_christmas_sledge03.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_christmas_sledge04.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_christmas_sledge05.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_christmas_tree01.bmp"		frames="1"/>
+				<tile file="03_XXL/gfx_iceworld/BG_christmas_tree02.bmp"		frames="1"/>
+			</tileset>
+		</tilesets>
+	</package>
+</SvenXXX>

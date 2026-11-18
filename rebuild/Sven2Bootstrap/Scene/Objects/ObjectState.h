@@ -55,3 +55,28 @@ enum class UfoState : i32
 	SelectingAnimal = 3,
 	MovingToAnimal = 4
 };
+
+enum class SmallAnimalState : i32
+{
+	Idle = 0,
+	Turning = 3,
+	Eating = 4,
+	IdleAnimation = 5,
+	ZeroAnimation = 6
+};
+
+inline ActorState ToActorState(SmallAnimalState state)
+{
+	return static_cast<ActorState>(state);
+}
+
+enum class MermaidState : i32
+{
+	Dormant,
+	Emerging,
+	Idle,
+	Submerging,
+	Interacting,
+	Resolved
+};
+

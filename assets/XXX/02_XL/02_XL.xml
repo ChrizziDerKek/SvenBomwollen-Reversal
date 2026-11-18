@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<SvenXXX version="1.0">
+
+	<package name="02_XL">
+
+		<dependencies>
+			<requires file="SvenXXX.dat" key="key" value="value"/>
+		</dependencies>
+
+		<levelsets>
+			<levelset name="Furni">
+				<level name="Furni 01" tileset="furni" music="02_XL/sfx/atmo_furni.ogg" map="02_XL/levels/furni01.lvl"/>
+				<level name="Furni 02" tileset="furni" music="02_XL/sfx/atmo_furni.ogg" map="02_XL/levels/furni02.lvl"/>
+				<level name="Furni 03" tileset="furni" music="02_XL/sfx/atmo_furni.ogg" map="02_XL/levels/furni03.lvl"/>
+				<level name="Bonus 01" tileset="furni" music="02_XL/sfx/atmo_furni.ogg" map="02_XL/levels/furni03broemse.lvl"/>
+				<level name="Furni 04" tileset="furni" music="02_XL/sfx/atmo_furni.ogg" map="02_XL/levels/furni04.lvl"/>
+				<level name="Furni 05" tileset="furni" music="02_XL/sfx/atmo_furni.ogg" map="02_XL/levels/furni05.lvl"/>
+				<level name="Furni 06" tileset="furni" music="02_XL/sfx/atmo_furni.ogg" map="02_XL/levels/furni06.lvl"/>
+				<level name="Bonus 02" tileset="furni" music="02_XL/sfx/atmo_furni.ogg" map="02_XL/levels/furni06broemse.lvl"/>
+				<level name="Furni 07" tileset="furni" music="02_XL/sfx/atmo_furni.ogg" map="02_XL/levels/furni07.lvl"/>
+				<level name="Furni 08" tileset="furni" music="02_XL/sfx/atmo_furni.ogg" map="02_XL/levels/furni08.lvl"/>
+				<level name="Furni 09" tileset="furni" music="02_XL/sfx/atmo_furni.ogg" map="02_XL/levels/furni09.lvl"/>
+			</levelset>
+			<levelset name="Hühnerfarm">
+				<level name="Hühnerfarm 01" tileset="Chickenfarm" music="02_XL/sfx/atmo_chickenfarm.ogg" map="02_XL/levels/jail01.lvl"/>
+				<level name="Hühnerfarm 02" tileset="Chickenfarm" music="02_XL/sfx/atmo_chickenfarm.ogg" map="02_XL/levels/jail02.lvl"/>
+				<level name="Hühnerfarm 03" tileset="Chickenfarm" music="02_XL/sfx/atmo_chickenfarm.ogg" map="02_XL/levels/jail03.lvl"/>
+				<level name="Bonus 01" 		tileset="Chickenfarm" music="02_XL/sfx/atmo_chickenfarm.ogg" map="02_XL/levels/jail03lars.lvl"/>
+				<level name="Hühnerfarm 04" tileset="Chickenfarm" music="02_XL/sfx/atmo_chickenfarm.ogg" map="02_XL/levels/jail04.lvl"/>
+				<level name="Hühnerfarm 05" tileset="Chickenfarm" music="02_XL/sfx/atmo_chickenfarm.ogg" map="02_XL/levels/jail05.lvl"/>
+				<level name="Hühnerfarm 06" tileset="Chickenfarm" music="02_XL/sfx/atmo_chickenfarm.ogg" map="02_XL/levels/jail06.lvl"/>
+				<level name="Bonus 02"		tileset="Chickenfarm" music="02_XL/sfx/atmo_chickenfarm.ogg" map="02_XL/levels/jail06lars.lvl"/>
+				<level name="Hühnerfarm 07" tileset="Chickenfarm" music="02_XL/sfx/atmo_chickenfarm.ogg" map="02_XL/levels/jail07.lvl"/>
+				<level name="Hühnerfarm 08" tileset="Chickenfarm" music="02_XL/sfx/atmo_chickenfarm.ogg" map="02_XL/levels/jail08.lvl"/>
+				<level name="Hühnerfarm 09" tileset="Chickenfarm" music="02_XL/sfx/atmo_chickenfarm.ogg" map="02_XL/levels/jail09.lvl"/>
+			</levelset>
+		</levelsets>
+
+		<tilesets>
+			<tileset name="Furni" background="02_XL/gfx_furni/BG_furni.jpg">
+				<tile file="02_XL/gfx_furni/BG_furni_box01.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_box02.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_box03.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_box04.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_box05.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_box06.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_box07.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_box08.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_box09.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_box10.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_box11.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_box12.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_pallet01.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_pallet02.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_pallet03.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_pallet04.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_pallet05.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_parcel1.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_parcel2.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_parcel3.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_parcel4.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_puddle_01.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_puddle_02.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_shelf1.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_shelf2.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_shelf3.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_shelf4.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_shelf5.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_wall1.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_wall2.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_wall3.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_box13.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_box14.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_colorpot01.bmp"	frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_colorpot02.bmp"	frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_colorpot03.bmp"	frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_mumy.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_pallet6.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_palm.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_pulley.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_furni/BG_furni_shelf6.bmp"		frames="1"/>
+			</tileset>
+			<tileset name="Chickenfarm" background="02_XL/gfx_chickenfarm/BG_chickenfarm.jpg">	
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_barrow.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_box1.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_box2.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_bullhorn.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_dumbbell1.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_dumbbell2.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_dumbbell3.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_eggs1.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_eggs2.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_eggs3.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_feedingdish.bmp"	frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_house1.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_house2.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_lamp.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_nest1.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_nest2.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_nest3.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_nest4.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_nest5.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_puddle1.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_puddle2.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_responder.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_sacks.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_shanty1.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_shanty2.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_sign1.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_stake.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_stool.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_tattoostudio.bmp"	frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_green1.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_green2.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_wall1.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_wall1a.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_wall2.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_wall2a.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_wall3.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_wall3b.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_wall_advertising.bmp"	frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_wall_rope.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_basketball.bmp"	frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_hole.bmp"			frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_poster1.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_poster2.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_ball01.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_ball02.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_wire1a.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_wire1b.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_wire2a.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_wire2b.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_forest-bush01.bmp"				frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_forest-bush02.bmp"				frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_forest-tree01.bmp"				frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_forest-tree03.bmp"				frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_snowpile.bmp"		frames="1"/>
+				<tile file="02_XL/gfx_chickenfarm/BG_chickenfarm_freezer.bmp"		frames="1"/>
+			</tileset>
+		</tilesets>
+	</package>
+</SvenXXX>

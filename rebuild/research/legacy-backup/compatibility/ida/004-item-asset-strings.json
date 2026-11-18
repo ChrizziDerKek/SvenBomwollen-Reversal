@@ -1,0 +1,41 @@
+{
+  "jsonrpc": "2.0",
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"n\":5,\"matches\":[{\"addr\":\"0x47d648\",\"string\":\"Sven004\\\\gfx\\\\icon_exit.bmp\"},{\"addr\":\"0x47d664\",\"string\":\"Sven004\\\\gfx\\\\extras_box.bmp\"},{\"addr\":\"0x47d680\",\"string\":\"Sven004\\\\gfx\\\\ice_thin.bmp\"},{\"addr\":\"0x47dcc8\",\"string\":\"Sven004\\\\gfx\\\\extra_coin.bmp\"},{\"addr\":\"0x47dce4\",\"string\":\"Sven004\\\\gfx\\\\extra_hupe.bmp\"}],\"cursor\":{\"done\":true}}"
+      }
+    ],
+    "structuredContent": {
+      "n": 5,
+      "matches": [
+        {
+          "addr": "0x47d648",
+          "string": "Sven004\\gfx\\icon_exit.bmp"
+        },
+        {
+          "addr": "0x47d664",
+          "string": "Sven004\\gfx\\extras_box.bmp"
+        },
+        {
+          "addr": "0x47d680",
+          "string": "Sven004\\gfx\\ice_thin.bmp"
+        },
+        {
+          "addr": "0x47dcc8",
+          "string": "Sven004\\gfx\\extra_coin.bmp"
+        },
+        {
+          "addr": "0x47dce4",
+          "string": "Sven004\\gfx\\extra_hupe.bmp"
+        }
+      ],
+      "cursor": {
+        "done": true
+      }
+    },
+    "isError": false
+  },
+  "id": 1
+}

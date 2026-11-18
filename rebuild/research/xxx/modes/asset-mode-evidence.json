@@ -1,0 +1,92 @@
+[
+  {
+    "path": "rebuild/data/XXX/SvenXXX/SvenXXX.xml",
+    "sha256": "26b159fcb548f0d011c06c57d1ee3a05695c1c19573e9d4ee3918eda23b94319",
+    "decode": "cp1252 for lossless byte-oriented inspection; declaration may differ",
+    "lines": [
+      {
+        "line": 288,
+        "text": "\t\t<parameter name=\"Player1KeyUp\" \t\tvalue=\"256\"/>"
+      },
+      {
+        "line": 289,
+        "text": "\t\t<parameter name=\"Player1KeyDown\" \tvalue=\"257\"/>"
+      },
+      {
+        "line": 290,
+        "text": "\t\t<parameter name=\"Player1KeyLeft\" \tvalue=\"258\"/>"
+      },
+      {
+        "line": 291,
+        "text": "\t\t<parameter name=\"Player1KeyRight\" \tvalue=\"259\"/>"
+      },
+      {
+        "line": 292,
+        "text": "\t\t<parameter name=\"Player1KeyAction\" \tvalue=\"339\"/>"
+      },
+      {
+        "line": 294,
+        "text": "\t\t<parameter name=\"Player2KeyUp\" \t\tvalue=\"119\"/>"
+      },
+      {
+        "line": 295,
+        "text": "\t\t<parameter name=\"Player2KeyDown\" \tvalue=\"115\"/>"
+      },
+      {
+        "line": 296,
+        "text": "\t\t<parameter name=\"Player2KeyLeft\" \tvalue=\"97\"/>"
+      },
+      {
+        "line": 297,
+        "text": "\t\t<parameter name=\"Player2KeyRight\" \tvalue=\"100\"/>"
+      },
+      {
+        "line": 298,
+        "text": "\t\t<parameter name=\"Player2KeyAction\" \tvalue=\"32\"/>"
+      },
+      {
+        "line": 488,
+        "text": "\t\t<parameter name=\"KeyConvert\"\t\tvalue=\"null0/null1/null2/null3/null4/null5/null6/null7/L\u00f6schen/Tab/null10/null11/null12/Eingabe/null14/null15/null16/null17/null18/null19/null20/null21/null22/null23/null24/null25/null26/Esc/null28/null29/null30/null31/Leertaste/!/null34/#/$/%/&/'/(/)/*/+/,/-/./null47/0/1/2/3/4/5/6/7/8/9/:/;/</=/>/?/@/A/B/C/D/E/F/G/H/I/J/K/L/M/N/O/P/Q/R/S/T/U/V/W/X/Y/Z/[/null92/]/^/_/'/A/B/C/D/E/F/G/H/I/J/K/L/M/N/O/P/Q/R/S/T/U/V/W/X/Y/Z/{/|/}/`/null127/null128/\u00dc/null130/null131/\u00c4/null133/null134/null135/null136/null137/null138/null139/null140/null141/null142/null143/null144/null145/null146/null147/\u00d6/null149/null150/null151/null152/null153/null154/null155/null156/null157/null158/null159/null160/null161/null162/null163/null164/null165/null166/null167/null168/null169/null170/null171/null172/null173/null174/null175/null176/null177/null178/null179/null180/null181/null182/null183/null184/null185/null186/null187/null188/null189/null190/null191/null192/null193/null194/null195/null196/null197/null198/null199/null200/null201/null202/null203/null204/null205/null206/null207/null208/null209/null210/null211/null212/null213/null214/null215/null216/null217/null218/null219/null220/null221/null222/null223/null224/\u00df/null226/null227/null228/null229/null230/null231/null232/null233/null234/null235/null236/null237/null238/null239/null240/null241/null242/null243/null244/null245/null246/null247/null248/null249/null250/null251/null252/null253/null254/null255/Pfeil hoch/Pfeil runter/Pfeil links/Pfeil rechts/Einfg/Entf/Pos 1/Ende/Bild hoch/Bild runter/Pause/break/null268/null269/null270/null271/null272/null273/null274/null275/null276/null277/null278/null279/null280/null281/null282/null283/null284/null285/null286/null287/null288/null289/null290/null291/null292/null293/null294/null295/null296/null297/null298/null299/null300/null301/null302/null303/null304/null305/null306/null307/null308/null309/null310/null311/null312/null313/null314/null315/null316/null317/null318/null319/Num 5/Num 4/Num 6/Num 8/Num 2/Num 7/Num 1/Num 3/Num 9/Num 0/Num ,/null331/null332/null333/null334/null335/Alt (li.)/Alt Gr/Strg (li.)/Strg (re.)/Shift (li.)/Shift (re.)/Windows (li.)/Windows (re.)/Men\u00fc/null345/null346/null347/null348/null349/null350/Feststell/numlock/Rollen/null354/null355/null356/null357/null358/null359/null360/null361/null362/null363/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null/null\"/>"
+      }
+    ]
+  },
+  {
+    "path": "rebuild/data/XXX/SvenXXX/StringTable.xml",
+    "sha256": "c558d6c8c3c71ab49fd66fd89a1a6ddada413e6366f6342e799238c023c36e17",
+    "decode": "cp1252 for lossless byte-oriented inspection; declaration may differ",
+    "lines": [
+      {
+        "line": 8,
+        "text": "\t\t<string name=\"Player1_HeadLine\" value=\"1 SPIELER\"/>"
+      },
+      {
+        "line": 9,
+        "text": "\t\t<string name=\"Player2_HeadLine\" value=\"2 SPIELER\"/>"
+      },
+      {
+        "line": 22,
+        "text": "\t\t<string name=\"AlienBonus\" value=\"Untersuche alle Schafe!\"/>"
+      },
+      {
+        "line": 23,
+        "text": "\t\t<string name=\"BroemseBonus\" value=\"Spiel mit den Sch\u00e4fchen!\"/>"
+      },
+      {
+        "line": 24,
+        "text": "\t\t<string name=\"LarsBonus\" value=\"Rasiere die Schafe!\"/>"
+      },
+      {
+        "line": 52,
+        "text": "\t\t<string name=\"Help01\" value=\"Nutze die 'PFEIL-TASTEN' der Tastatur, um Sven zu steuern.#Mit 'STRG (rechts)' begl\u00fcckst du die Schafe.#Im 2-Spieler Modus wird Svens Klon mit 'W', 'A', 'S', 'D' und der 'Leertaste' gesteuert. Im Men\u00fcpunkt 'STEUERUNG' kannst du die Tastenbelegung \u00e4ndern.##Die ?-Symbole geben dir weitere Tipps.\"/>"
+      },
+      {
+        "line": 90,
+        "text": "\t\t<string name=\"Help18\" value=\"Herzlichen Gl\u00fcckwunsch! Du hast einen Bonus Level freigespielt! #Hier schl\u00fcpfst du in die Rolle von Lars, Br\u00f8mse oder einem Alien. Pass auf, dass du hier kein ALIEN-ARTEFAKT aufhebst, sonst wird der Bonus-Level sofort beendet!\"/>"
+      },
+      {
+        "line": 92,
+        "text": "\t\t<string name=\"Help19\" value=\"In jeder Episode gibt es zwei Bonus-Level. Du kannst diese Level nur dann spielen, wenn du im Level davor Frigida ohne Unterbrechung begl\u00fcckt hast. #Nicht ganz einfach, aber jetzt wei\u00dft du ja, wie es geht!\"/>"
+      }
+    ]
+  }
+]

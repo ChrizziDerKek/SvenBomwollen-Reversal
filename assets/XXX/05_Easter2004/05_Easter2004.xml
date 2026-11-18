@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<SvenXXX version="1.0">
+
+	<package name="05_Easter2004">
+
+		<dependencies>
+			<requires file="SvenXXX.dat" key="key" value="value"/>
+		</dependencies>
+
+		<levelsets>
+			<levelset name="Ostern 2004 01">
+				<level name="Ostern 01" tileset="garden" music="05_Easter2004/sfx/atmo_garden.ogg" map="05_Easter2004/levels/Eastern01.lvl"/>
+				<level name="Ostern 02" tileset="garden" music="05_Easter2004/sfx/atmo_garden.ogg" map="05_Easter2004/levels/Eastern02.lvl"/>
+				<level name="Ostern 03" tileset="garden" music="05_Easter2004/sfx/atmo_garden.ogg" map="05_Easter2004/levels/Eastern03.lvl"/>
+				<level name="Bonus 01" 	tileset="garden" music="05_Easter2004/sfx/atmo_garden.ogg" map="05_Easter2004/levels/Eastern03lars.lvl"/>
+				<level name="Ostern 04" tileset="garden" music="05_Easter2004/sfx/atmo_garden.ogg" map="05_Easter2004/levels/Eastern04.lvl"/>
+				<level name="Ostern 05" tileset="garden" music="05_Easter2004/sfx/atmo_garden.ogg" map="05_Easter2004/levels/Eastern05.lvl"/>
+				<level name="Ostern 06" tileset="garden" music="05_Easter2004/sfx/atmo_garden.ogg" map="05_Easter2004/levels/Eastern06.lvl"/>
+				<level name="Bonus 02" 	tileset="garden" music="05_Easter2004/sfx/atmo_garden.ogg" map="05_Easter2004/levels/Eastern06broemse.lvl"/>
+				<level name="Ostern 07" tileset="garden" music="05_Easter2004/sfx/atmo_garden.ogg" map="05_Easter2004/levels/Eastern07.lvl"/>
+				<level name="Ostern 08" tileset="garden" music="05_Easter2004/sfx/atmo_garden.ogg" map="05_Easter2004/levels/Eastern08.lvl"/>
+				<level name="Ostern 09" tileset="garden" music="05_Easter2004/sfx/atmo_garden.ogg" map="05_Easter2004/levels/Eastern09.lvl"/>
+			</levelset>
+			<levelset name="Ostern 2004 02">
+				<level name="Ostern 01" tileset="garden" music="05_Easter2004/sfx/atmo_garden.ogg" map="05_Easter2004/levels/Eastern10.lvl"/>
+				<level name="Ostern 02" tileset="garden" music="05_Easter2004/sfx/atmo_garden.ogg" map="05_Easter2004/levels/Eastern11.lvl"/>
+				<level name="Ostern 03" tileset="garden" music="05_Easter2004/sfx/atmo_garden.ogg" map="05_Easter2004/levels/Eastern12.lvl"/>
+				<level name="Bonus 01" 	tileset="garden" music="05_Easter2004/sfx/atmo_garden.ogg" map="05_Easter2004/levels/Eastern12broemse.lvl"/>
+				<level name="Ostern 04" tileset="garden" music="05_Easter2004/sfx/atmo_garden.ogg" map="05_Easter2004/levels/Eastern13.lvl"/>
+				<level name="Ostern 05" tileset="garden" music="05_Easter2004/sfx/atmo_garden.ogg" map="05_Easter2004/levels/Eastern14.lvl"/>
+				<level name="Ostern 06" tileset="garden" music="05_Easter2004/sfx/atmo_garden.ogg" map="05_Easter2004/levels/Eastern15.lvl"/>
+				<level name="Bonus 02" 	tileset="garden" music="05_Easter2004/sfx/atmo_garden.ogg" map="05_Easter2004/levels/Eastern15lars.lvl"/>
+				<level name="Ostern 07" tileset="garden" music="05_Easter2004/sfx/atmo_garden.ogg" map="05_Easter2004/levels/Eastern16.lvl"/>
+				<level name="Ostern 08" tileset="garden" music="05_Easter2004/sfx/atmo_garden.ogg" map="05_Easter2004/levels/Eastern17.lvl"/>
+				<level name="Ostern 09" tileset="garden" music="05_Easter2004/sfx/atmo_garden.ogg" map="05_Easter2004/levels/Eastern18.lvl"/>
+			</levelset>
+		</levelsets>
+
+		<tilesets>
+			<tileset name="Garden" background="05_Easter2004/gfx_garden/BG_garden.jpg">
+				<tile file="05_Easter2004/gfx_garden/BG_garden_bench1.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/BG_garden_box1.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/BG_garden_bush1.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/BG_garden_bush2.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/BG_garden_bush3.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/BG_garden_bush4.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/BG_garden_bush5.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/BG_garden_bush6.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/BG_garden_deckchair.bmp"	frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/BG_garden_fence1.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/BG_garden_fence2.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/BG_garden_fence3.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/BG_garden_fence4.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/BG_garden_field1.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/BG_garden_field2.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/BG_garden_field3.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/BG_garden_field4.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/BG_garden_house1.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/BG_garden_house2.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/BG_garden_pond.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/BG_garden_puddle1.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/BG_garden_puddle2.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/BG_garden_road1.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/BG_garden_road2.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/BG_garden_tree1.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/Garden_dwarf01.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/Garden_dwarf02.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/Garden_dwarf03.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/Garden_dwarf04.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/Garden_dwarf05.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/Garden_dwarf06.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/Garden_dwarf07.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/BG_Garden_lawnmower.bmp"	frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/BG_Garden_lawn01.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/BG_Garden_lawn02.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/BG_Garden_lawn03.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/BG_Garden_lawn04.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/BG_garden_fence5.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/BG_garden_fence6.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/BG_garden_bush7.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/help_trigger.bmp"			frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/Bush01.bmp"				frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/Bush02.bmp"				frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/Easter_bush01.bmp"			frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/Easter_bush02.bmp"			frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/Easter_flower01.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/Easter_flower02.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/Easter_flower03.bmp"		frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/Egg01.bmp"				frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/Egg02.bmp"				frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/Egg03.bmp"				frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/Egg04.bmp"				frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/Egg05.bmp"				frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/Egg06.bmp"				frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/Egg07.bmp"				frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/Egg08.bmp"				frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/Egg09.bmp"				frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/Egg10.bmp"				frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/Egg11.bmp"				frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/Goldrabbit.bmp"			frames="1"/>
+				<tile file="05_Easter2004/gfx_garden/Mushroom.bmp"				frames="1"/>
+			</tileset>
+		</tilesets>
+	</package>
+</SvenXXX>
