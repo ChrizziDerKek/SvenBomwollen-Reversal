@@ -44,7 +44,7 @@ const std::vector<SpriteDraw>& SceneRenderer::Draws()
 		static constexpr i32 offsetX[7][4] = { { 40, 40, 20, 20 }, { 40, 24, 30, 16 }, { 50, 50, 5, 5 }, { 50, 50, 5, 5 }, { 20, 20, 20, 20 }, { 40, 24, 30, 16 }, { 40, 24, 30, 16 } };
 		static constexpr i32 offsetY[7][4] = { { 0, 0, 0, 0 }, { -1, -1, -1, -1 }, { -10, 10, 10, -10 }, { -10, 20, 20, -10 }, { -1, -1, -1, -1 }, { -1, -1, -1, -1 }, { -1, -1, -1, -1 } };
 		const size_t family = AnimalIndicatorIndex(animal.Kind);
-		const i32 yOffset = Scene.GetEdition() == GameEdition::XXX && animal.Kind == ObjectKind::Sheep ? -1 : offsetY[family][animal.Facing];
+		const i32 yOffset = Scene.GetGameplayEdition() == GameEdition::XXX && animal.Kind == ObjectKind::Sheep ? -1 : offsetY[family][animal.Facing];
 		DrawCommands.push_back({ animal.Kind == ObjectKind::Sheep && animal.Temperament == 2 ? Scene.Resources.KettleSprite : Scene.Resources.MoodSprite, static_cast<i32>(animal.X) + offsetX[family][animal.Facing], static_cast<i32>(animal.Y + animal.Lift) + yOffset, std::clamp(animal.Impatience + animal.MoodBlink, 0, 11) });
 	};
 	for (const WorldObject& object : Sorted)

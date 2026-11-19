@@ -17,6 +17,8 @@ public:
 	void Load(const LevelFile& file);
 	i32 TileAt(f32 x, f32 y) const;
 	bool Unoccupied(i32 tile, size_t except) const;
+	OccupancyCode GetOccupancy(i32 tile) const;
+	i32 GetReservationOwner(i32 tile) const;
 
 private:
 	friend class AnimalCharacter;
@@ -25,6 +27,7 @@ private:
 	friend class LevelItems;
 	friend class LevelScene;
 	friend class PlayerCharacter;
+	void ClearPlayerCells(size_t owner);
 	LevelScene& Scene;
 	std::map<SpawnerCode, std::vector<i32>> Spawners;
 	std::array<OccupancyCode, 22 * 17> Tiles{};

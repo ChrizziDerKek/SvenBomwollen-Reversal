@@ -26,6 +26,14 @@ public:
 	void AdvancePlayer(f32 dt, i32 dx, i32 dy);
 	void SetInput(const PlayerInput& input);
 	void Update(f32 seconds) override;
+	f32 GetX() const
+	{
+		return X;
+	}
+	f32 GetY() const
+	{
+		return Y;
+	}
 
 private:
 	friend class AnimalCharacter;
@@ -39,8 +47,19 @@ private:
 	friend class SceneResources;
 	friend class UfoController;
 	bool CanRepeatInteraction(const WorldObject& animal) const;
+	const std::vector<i32>& GetActionFrames() const;
+	f32 GetActionRate() const;
+	void DrawActionFrame(size_t frame);
+	void UpdateRequestedMotion();
+	void AdvanceMovement(f32 seconds);
+	void AdvanceLegacyMovement(f32 seconds, i32 dx, i32 dy);
 
 	i32 MovementX = 0;
+	PlayerMotion Motion = PlayerMotion::Stopped;
+	PlayerMotion RequestedMotion = PlayerMotion::Stopped;
+	bool StepFinished = true;
+	f32 OffsetX = 0;
+	f32 OffsetY = 0;
 	size_t Number = 0;
 	PlayerPowerup Powerup;
 	f32 SplashAge = 100;

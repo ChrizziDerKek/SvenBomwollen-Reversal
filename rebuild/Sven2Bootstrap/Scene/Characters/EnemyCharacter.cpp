@@ -591,8 +591,7 @@ void EnemyCharacter::BeginBattle()
 	Scene.GetPlayer().CancelPlayerStep();
 	Scene.Items.GetPowerup().Code = ItemCode::None;
 	Scene.Items.GetPowerup().Remaining = 0;
-	cstr sound = actor.Kind == ObjectKind::Alien ? "alien_analprobe_mix2.ogg" : (actor.Kind == ObjectKind::Dog ? "fightdog.ogg" : (actor.Kind == ObjectKind::Farmer ? "fightguy.ogg" : "broemse_plays_sven.ogg"));
-	Scene.Sounds.push_back(str("Sven2/sfx/") + sound);
+	Scene.EmitNamedSound(actor.Kind == ObjectKind::Alien ? "SfxAlienProbeSven" : (actor.Kind == ObjectKind::Dog ? "SfxFightDog" : (actor.Kind == ObjectKind::Farmer ? "SfxFightGuy" : "SfxBroemsePlaysSven")));
 	if (actor.Kind == ObjectKind::Girl)
 	{
 		actor.State = (actor.Facing >= 2 && actor.Facing <= 5) ? ActorState::FightingFront : ActorState::FightingBack;

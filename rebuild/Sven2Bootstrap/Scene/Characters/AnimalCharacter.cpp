@@ -9,7 +9,7 @@
 AnimalCharacter::AnimalCharacter(LevelScene& scene, size_t index, ObjectPhase phase)
     : BaseCharacter(scene, phase, index)
 {
-	const f64 speed = scene.Engine.GetData().NumericParam("SheepSpeed", 50, scene.GetEdition());
+	const f64 speed = scene.Engine.GetData().NumericParam("SheepSpeed", 50, scene.GetGameplayEdition());
 	SheepSpeed = std::isfinite(speed) && speed > 0 ? static_cast<f32>(speed) : 50;
 }
 
@@ -32,7 +32,7 @@ void Sheep::Update(f32 seconds)
 
 void AnimalCharacter::UpdateOtherAnimal(f32 seconds)
 {
-	if (Scene.GetEdition() == GameEdition::XXX)
+	if (Scene.GetGameplayEdition() == GameEdition::XXX)
 	{
 		UpdateXxxSmallAnimal(seconds);
 		return;
@@ -208,7 +208,7 @@ void AnimalCharacter::ResolveSheep(Object& animal)
 	}
 	if (animal.Kind == ObjectKind::Sheep)
 		++Scene.CompletedSheep;
-	if (Scene.GetEdition() == GameEdition::XXX)
+	if (Scene.GetGameplayEdition() == GameEdition::XXX)
 		Scene.EmitNamedSound("SfxExplode");
 	else
 		Scene.Sounds.push_back("Sven2/sfx/sheep_explode3.ogg");
@@ -229,6 +229,8 @@ void AnimalCharacter::ResolveSheep(Object& animal)
 	Scene.GetPlayer().Facing = 2 * animal.Facing + 1;
 	Scene.Objects[Scene.GetPlayerIndex()].CommittedY = Scene.GetPlayer().Y;
 	Scene.GetPlayer().ActionQueued = false;
+	if (Scene.GetGameplayEdition() == GameEdition::XXX)
+		Scene.GetPlayer().MarkPlayerCell();
 }
 
 bool AnimalCharacter::AgeSheepMood(Object& animal, f32 seconds)
@@ -299,6 +301,8 @@ bool AnimalCharacter::ShockPlayer(Object& animal, i32 timeChange)
 	Scene.Items.GetPowerup().Code = ItemCode::None;
 	Scene.Items.GetPowerup().Remaining = Scene.Items.GetPowerup().Age = 0;
 	Scene.GetPlayer().PlayerShockAge = 0;
+	if (Scene.GetGameplayEdition() == GameEdition::XXX)
+		Scene.GetPlayer().RestorePlayer();
 	animal.State = ActorState::DemonShocking;
 	animal.Age = 0;
 	animal.Steps = 0;
@@ -519,7 +523,7 @@ MermaidState Mermaid::GetMermaidState() const
 
 void Mermaid::Initialize()
 {
-	if (Scene.GetEdition() != GameEdition::XXX)
+	if (Scene.GetGameplayEdition() != GameEdition::XXX)
 		throw std::logic_error("Mermaids require the XXX edition profile.");
 	Scene.Resources.NamedSprite("MermaidJump");
 	Scene.Resources.NamedSprite("MermaidShag");

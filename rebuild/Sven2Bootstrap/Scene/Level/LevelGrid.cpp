@@ -60,3 +60,29 @@ bool LevelGrid::Unoccupied(i32 tile, size_t except) const
 	}
 	return true;
 }
+
+OccupancyCode LevelGrid::GetOccupancy(i32 tile) const
+{
+	return Tiles.at(tile);
+}
+
+i32 LevelGrid::GetReservationOwner(i32 tile) const
+{
+	return Reservations.at(tile);
+}
+
+void LevelGrid::ClearPlayerCells(size_t owner)
+{
+	// XXX 0x417500: restore the directional base wall and clear step reservations.
+	// Track owners explicitly so one interrupted player cannot release another's cell.
+	for (size_t tile = 0; tile < Tiles.size(); ++tile)
+	{
+		if (Reservations[tile] != static_cast<i32>(owner))
+			continue;
+		if (Tiles[tile] == OccupancyCode::Player)
+			Tiles[tile] = TileDirections[tile] ? OccupancyCode::Wall : OccupancyCode::Empty;
+		else if (Tiles[tile] == OccupancyCode::PlayerReservation)
+			Tiles[tile] = OccupancyCode::Empty;
+		Reservations[tile] = -1;
+	}
+}

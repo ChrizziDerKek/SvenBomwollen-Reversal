@@ -49,9 +49,9 @@ public:
 	void Update(f32 seconds, i32 dx, i32 dy, bool actionPressed);
 	void Update(f32 seconds, const std::array<PlayerInput, 2>& inputs);
 	void TimeExpired();
-	GameEdition GetEdition() const
+	GameEdition GetGameplayEdition() const
 	{
-		return Edition;
+		return GameplayEdition;
 	}
 	BonusMode GetBonusMode() const
 	{
@@ -108,6 +108,10 @@ public:
 	{
 		return Objects;
 	}
+	const LevelGrid& GetGrid() const
+	{
+		return Grid;
+	}
 	const ObjectManager& GetObjects() const
 	{
 		return Objects;
@@ -154,7 +158,7 @@ private:
 	void RecordLifeLoss();
 	void RemoveActor(size_t index, bool playerResolved);
 	MudGE& Engine;
-	GameEdition Edition;
+	GameEdition GameplayEdition;
 	BonusMode Mode = BonusMode::Sven;
 	bool BonusUnlocked = false;
 	bool BonusFinished = false;

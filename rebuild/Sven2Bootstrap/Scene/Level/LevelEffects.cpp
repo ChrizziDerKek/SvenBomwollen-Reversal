@@ -124,7 +124,7 @@ ParticleEmitter::ParticleEmitter(LevelScene& scene, size_t index)
 
 void ParticleEmitter::Initialize()
 {
-	if (Scene.GetEdition() != GameEdition::XXX)
+	if (Scene.GetGameplayEdition() != GameEdition::XXX)
 		throw std::logic_error("XXX particle emitters require the XXX edition profile.");
 	const i32 interval = State.Kind == ObjectKind::BubbleEmitter ? 15 : 25;
 	Mirror = State.Draw.Mirror;

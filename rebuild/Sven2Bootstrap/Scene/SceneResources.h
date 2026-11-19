@@ -1,5 +1,6 @@
 #include "Types.h"
 #include "Scene/ShagAnimation.h"
+#include "Scene/Characters/PlayerAction.h"
 #pragma once
 #include "Engine/Structures.h"
 #include <map>
@@ -17,6 +18,7 @@ public:
 	const Sprite* NamedSprite(const str& name);
 	const std::vector<i32>& AnimationFrames(AnimationSequence sequence);
 	const std::vector<i32>& FrameList(const str& name);
+	const std::vector<i32>& PlayerFrames(PlayerAnimation animation);
 	void InitializeActors();
 	void InitializePlayer();
 

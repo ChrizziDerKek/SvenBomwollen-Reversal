@@ -7,6 +7,7 @@
 #include <cstring>
 #include <stdexcept>
 #include <sstream>
+#include <numeric>
 
 SceneResources::SceneResources(LevelScene& scene)
     : Scene(scene)
@@ -22,7 +23,7 @@ const Sprite* SceneResources::GetSprite(const str& path, i32 frames)
 
 void SceneResources::InitializeActors()
 {
-	if (Scene.GetEdition() == GameEdition::XXX)
+	if (Scene.GetGameplayEdition() == GameEdition::XXX)
 	{
 		// Sprite bindings correspond to XXX resource initializer 0x426650.
 		const str headings[] = { "Back", "DiagBack", "Side", "DiagFront", "Front", "DiagFront", "Side", "DiagBack" };
@@ -255,7 +256,7 @@ void SceneResources::InitializeActors()
 
 void SceneResources::InitializePlayer()
 {
-	if (Scene.GetEdition() == GameEdition::XXX)
+	if (Scene.GetGameplayEdition() == GameEdition::XXX)
 	{
 		Stand = NamedSprite("SvenStand");
 		ActorSprites[ObjectKind::Player].Stand = Stand;
@@ -362,7 +363,7 @@ void SceneResources::InitializePlayer()
 
 const Sprite* SceneResources::NamedSprite(const str& name)
 {
-	const GameData::SpriteDefinition& definition = Scene.Engine.GetData().GetSpriteDefinition(name, Scene.GetEdition());
+	const GameData::SpriteDefinition& definition = Scene.Engine.GetData().GetSpriteDefinition(name, Scene.GetGameplayEdition());
 	const str key = "named:" + name;
 	auto found = SpriteCache.find(key);
 	if (found != SpriteCache.end())
@@ -370,12 +371,58 @@ const Sprite* SceneResources::NamedSprite(const str& name)
 	return SpriteCache[key] = Scene.Engine.LoadSprite(definition.File, definition.Rows, definition.Columns);
 }
 
+const std::vector<i32>& SceneResources::PlayerFrames(PlayerAnimation animation)
+{
+	// XXX 0x4311A0 binds these descriptors to XML frame lists.
+	static const std::map<PlayerAnimation, str> names = {
+		{ PlayerAnimation::Walk, "aSvenWalk" },
+		{ PlayerAnimation::Whistle, "aSvenWhistle" },
+		{ PlayerAnimation::WhistleDiagonal, "aSvenWhistleDiagonal" },
+		{ PlayerAnimation::Teleport, "aSvenTeleport" },
+		{ PlayerAnimation::ElectricShock, "aSvenElectro" },
+		{ PlayerAnimation::KickFront, "aSvenKickInBallsFront" },
+		{ PlayerAnimation::KickBack, "aSvenKickInBallsBack" },
+		{ PlayerAnimation::Frigida, "aSvenShagFrigida" }
+	};
+	const str& name = names.at(animation);
+	if (Scene.GetGameplayEdition() == GameEdition::XXX)
+		return FrameList(name);
+	// Resource fallback for archival Zwo-only installations, never selected per map.
+	auto found = FrameLists.find(name);
+	if (found != FrameLists.end())
+		return found->second;
+	std::vector<i32> frames;
+	switch (animation)
+	{
+	case PlayerAnimation::Whistle:
+		frames.assign(std::begin(WhistleStraight), std::end(WhistleStraight));
+		break;
+	case PlayerAnimation::WhistleDiagonal:
+		frames.assign(std::begin(WhistleDiagonal), std::end(WhistleDiagonal));
+		break;
+	case PlayerAnimation::Teleport:
+		frames.assign(std::begin(SplashPlayerFrames), std::end(SplashPlayerFrames));
+		break;
+	case PlayerAnimation::ElectricShock:
+		frames = ActorFrameTables.at(AnimationSequence::PlayerElectricShock);
+		break;
+	case PlayerAnimation::Frigida:
+		frames.assign(std::begin(FrigidaFrames), std::end(FrigidaFrames));
+		break;
+	default:
+		frames.resize(animation == PlayerAnimation::Walk ? Walks[0]->Rows : Kicks[animation == PlayerAnimation::KickBack ? 0 : 1]->Rows);
+		std::iota(frames.begin(), frames.end(), 0);
+		break;
+	}
+	return FrameLists.emplace(name, std::move(frames)).first->second;
+}
+
 const std::vector<i32>& SceneResources::FrameList(const str& name)
 {
 	auto found = FrameLists.find(name);
 	if (found != FrameLists.end())
 		return found->second;
-	const str csv = Scene.Engine.GetData().StringParam(name, "", Scene.GetEdition());
+	const str csv = Scene.Engine.GetData().StringParam(name, "", Scene.GetGameplayEdition());
 	if (csv.empty())
 		throw std::runtime_error("Missing native animation parameter: " + name);
 	std::vector<i32> frames;
@@ -402,7 +449,7 @@ const std::vector<i32>& SceneResources::FrameList(const str& name)
 
 const std::vector<i32>& SceneResources::AnimationFrames(AnimationSequence sequence)
 {
-	if (Scene.GetEdition() == GameEdition::Zwo)
+	if (Scene.GetGameplayEdition() == GameEdition::Zwo)
 		return ActorFrameTables.at(sequence);
 	static const std::map<AnimationSequence, str> parameters = {
 		{ AnimationSequence::UfoBeam, "aBeams" },

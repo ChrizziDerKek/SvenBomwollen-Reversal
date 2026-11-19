@@ -12,10 +12,7 @@ public:
 	GameSession(MudGE& engine, const LevelPackInfo& pack, const LevelSetInfo& levelSet, size_t playerCount = 1);
 	void Update(f32 seconds, i32 dx, i32 dy, bool actionPressed);
 	void Update(f32 seconds, const std::array<PlayerInput, 2>& inputs);
-	GameEdition GetEdition() const
-	{
-		return Pack.Edition;
-	}
+	GameEdition GetGameplayEdition() const;
 	size_t GetPlayerCount() const
 	{
 		return PlayerCount;

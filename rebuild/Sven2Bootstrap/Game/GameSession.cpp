@@ -13,6 +13,11 @@ GameSession::GameSession(MudGE& engine, const LevelPackInfo& pack, const LevelSe
 	Load(0);
 }
 
+GameEdition GameSession::GetGameplayEdition() const
+{
+	return Engine.GetData().GetGameplayEdition();
+}
+
 void GameSession::Load(size_t index)
 {
 	std::unique_ptr<LevelScene> nextScene = std::make_unique<LevelScene>(Engine, Pack, LevelSet.Levels.at(index), RandomState, &RandomState, PlayerCount);
@@ -31,7 +36,7 @@ void GameSession::Load(size_t index)
 	VisibleLives = Lives;
 	InitialRefundUsed = false;
 	LifeInsuranceAge = 0;
-	if (Pack.Edition == GameEdition::XXX)
+	if (GetGameplayEdition() == GameEdition::XXX)
 		EmitSound("SfxStart");
 	else
 		Sounds.push_back("sven2/sfx/start1.ogg");
@@ -192,7 +197,7 @@ i32 GameSession::RandomInt(i32 limit)
 
 void GameSession::EmitSound(cstr name)
 {
-	const str path = Engine.GetData().SoundPath(name, Pack.Edition);
+	const str path = Engine.GetData().SoundPath(name, GetGameplayEdition());
 	if (!path.empty())
 		Sounds.push_back(path);
 }
@@ -345,9 +350,9 @@ const std::vector<SpriteDraw>& GameSession::Draws()
 std::vector<SoundRequest> GameSession::TakeAudioEvents()
 {
 	std::vector<SoundRequest> result = std::exchange(Sounds, {});
-	if (Pack.Edition == GameEdition::XXX)
+	if (GetGameplayEdition() == GameEdition::XXX)
 		for (SoundRequest& request : result)
-			request.Asset = Engine.GetData().EditionAsset(Pack.Edition, request.Asset);
+			request.Asset = Engine.GetData().EditionAsset(GetGameplayEdition(), request.Asset);
 	return result;
 }
 

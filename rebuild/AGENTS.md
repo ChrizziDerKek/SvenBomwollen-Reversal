@@ -13,4 +13,5 @@
 * Objects own their state through `BaseObject`/`BaseCharacter`; `ObjectManager` owns their lifetimes. Register characters through `ObjectCatalog`, not scattered kind numbers.
 * Preserve original phases, stable slots and random-call order. Run gameplay regressions after behavior-sensitive changes.
 * Sound requests explicitly specify looping. Never infer it from an asset filename.
+* In a combined installation, use XXX gameplay, character resources, frame lists and bindings for both v6 Zwo and v7 XXX levels. Select gameplay through GameData.GetGameplayEdition(), never the pack's edition. Keep source-format decoding, scenery, episode identity and spawn-count validation tied to the source pack. Legacy behavior is only an asset-availability fallback when XXX data is absent.
 * Keep binary-layout/vtable constants in documented format/ABI definitions. Do not guess another DLL layout or retune original gameplay merely to remove a literal.

@@ -18,6 +18,7 @@ public:
 	str StringParam(const str& name, const str& defaultValue, GameEdition edition = GameEdition::Zwo) const;
 	bool HasEdition(GameEdition edition) const;
 	GameEdition GetThemeEdition() const;
+	GameEdition GetGameplayEdition() const;
 	str EditionAsset(GameEdition edition, str path) const;
 	str ThemeAsset(const str& path) const;
 	struct SpriteDefinition

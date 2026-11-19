@@ -34,13 +34,13 @@ LevelScene::LevelScene(MudGE& engine, u32 seed)
 {}
 
 LevelScene::LevelScene(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& level, u32 seed, u32* sharedRandomState, size_t playerCount)
-    : Engine(engine), Edition(pack.Edition), PlayerCount(pack.Edition == GameEdition::Zwo ? 1 : std::clamp(playerCount, size_t{ 1 }, size_t{ 2 })), Objects(*this), RandomState(seed), SharedRandomState(sharedRandomState), Grid(*this), Resources(*this), Items(*this), UfoController(*this), Effects(*this), Renderer(*this)
+    : Engine(engine), GameplayEdition(engine.GetData().GetGameplayEdition()), PlayerCount(pack.Edition == GameEdition::Zwo ? 1 : std::clamp(playerCount, size_t{ 1 }, size_t{ 2 })), Objects(*this), RandomState(seed), SharedRandomState(sharedRandomState), Grid(*this), Resources(*this), Items(*this), UfoController(*this), Effects(*this), Renderer(*this)
 {
 	const TileSetInfo& descriptor = engine.GetData().TileSet(pack, level);
 	Log("Read level map: " + level.Map);
 	const LevelFile* file = new LevelFile(engine.ReadAsset(level.Map), level.Map);
 	UfoController.HideUfo = file->GetHidesUfo();
-	if (Edition == GameEdition::XXX)
+	if (pack.Edition == GameEdition::XXX)
 	{
 		for (u32 bit = 1; bit <= 4; ++bit)
 			if ((file->GetFlags() & (u32{ 1 } << bit)) != 0)
@@ -79,7 +79,7 @@ LevelScene::LevelScene(MudGE& engine, const LevelPackInfo& pack, const LevelInfo
 		TileInfo image;
 		if (kind == ObjectKind::Player)
 		{
-			if (pass != 0 || foundPlayers >= (Edition == GameEdition::Zwo ? size_t{ 1 } : size_t{ 2 }))
+			if (pass != 0 || foundPlayers >= (pack.Edition == GameEdition::Zwo ? size_t{ 1 } : size_t{ 2 }))
 				throw std::runtime_error("Invalid world player records for this game edition.");
 			const size_t number = foundPlayers++;
 			if (number >= PlayerCount)
@@ -97,9 +97,9 @@ LevelScene::LevelScene(MudGE& engine, const LevelPackInfo& pack, const LevelInfo
 		const ItemDefinition* item = FindItemDefinition(kind);
 		if (character)
 		{
-			if (character->XxxOnly && Edition != GameEdition::XXX)
-				throw std::runtime_error("XXX object in a Zwo level.");
-			image = { Edition == GameEdition::XXX && character->SpriteName ? engine.GetData().GetSpriteDefinition(character->SpriteName, Edition).File : CoreAsset(character->SpriteAsset), character->GetFrames(engine.GetData(), Edition) };
+			if (character->XxxOnly && GameplayEdition != GameEdition::XXX)
+				throw std::runtime_error("Object requires XXX runtime assets.");
+			image = { GameplayEdition == GameEdition::XXX && character->SpriteName ? engine.GetData().GetSpriteDefinition(character->SpriteName, GameplayEdition).File : CoreAsset(character->SpriteAsset), character->GetFrames(engine.GetData(), GameplayEdition) };
 			++actors;
 		}
 		else if (item)
@@ -237,7 +237,7 @@ OccupancyCode LevelScene::GetOccupancyCode(ObjectKind kind)
 
 f32 LevelScene::Parameter(cstr key, f32 fallback) const
 {
-	f64 value = Engine.GetData().NumericParam(key, fallback, Edition);
+	f64 value = Engine.GetData().NumericParam(key, fallback, GameplayEdition);
 	return std::isfinite(value) && value >= 0 ? static_cast<f32>(value) : fallback;
 }
 
@@ -265,7 +265,7 @@ bool LevelScene::AdvanceActor(Object& actor, AnimationSequence table, f32 rate, 
 
 void LevelScene::EmitNamedSound(cstr name)
 {
-	str path = Engine.GetData().SoundPath(name, Edition);
+	str path = Engine.GetData().SoundPath(name, GameplayEdition);
 	if (!path.empty())
 		Sounds.push_back(path);
 }
@@ -343,11 +343,15 @@ void LevelScene::Update(f32 seconds, const std::array<PlayerInput, 2>& inputs)
 			GetPlayer().MarkPlayerCell();
 		}
 		Items.UpdateItems(dt);
+		// XXX session 0x41DB36..0x41DB82 moves Sven before updating NPCs.
+		if (GameplayEdition == GameEdition::XXX)
+			Objects.UpdatePhase(ObjectPhase::Player, dt);
 		Objects.UpdatePhase(ObjectPhase::Enemies, dt);
 		Objects.UpdatePhase(ObjectPhase::Animals, dt);
 		Objects.UpdatePhase(ObjectPhase::Sheep, dt);
 		UfoController.UpdateUfo(dt);
-		Objects.UpdatePhase(ObjectPhase::Player, dt);
+		if (GameplayEdition != GameEdition::XXX)
+			Objects.UpdatePhase(ObjectPhase::Player, dt);
 	} while (left > 0);
 }
 
@@ -385,7 +389,7 @@ std::vector<SoundRequest> LevelScene::TakeAudioEvents()
 	Effects.SplashSound = false;
 	std::vector<SoundRequest> result;
 	result.swap(Sounds);
-	if (Edition == GameEdition::XXX)
+	if (GameplayEdition == GameEdition::XXX)
 		for (SoundRequest& request : result)
 			request.Asset = CoreAsset(request.Asset);
 	return result;
@@ -427,7 +431,7 @@ size_t LevelScene::FindAvailableObjectSlot() const
 bool LevelScene::SpawnNearPlayer(ObjectKind kind)
 {
 	const CharacterDefinition* character = FindCharacterDefinition(kind);
-	if (character && (character->XxxOnly && Edition != GameEdition::XXX || !character->DebugSpawnable))
+	if (character && (character->XxxOnly && GameplayEdition != GameEdition::XXX || !character->DebugSpawnable))
 		return false;
 	if ((!IsAnimal(kind) && !IsItem(kind)) || FindAvailableObjectSlot() >= LevelFile::ObjectCount)
 		return false;
@@ -482,7 +486,7 @@ bool LevelScene::SpawnNearPlayer(ObjectKind kind)
 
 str LevelScene::CoreAsset(const str& path) const
 {
-	return Engine.GetData().EditionAsset(Edition, path);
+	return Engine.GetData().EditionAsset(GameplayEdition, path);
 }
 
 PlayerCharacter& LevelScene::GetPlayer()
@@ -524,7 +528,7 @@ void LevelScene::FinishBonus()
 
 void LevelScene::RecordAnimalCompletion(const WorldObject& animal)
 {
-	if (Edition == GameEdition::XXX && animal.Kind == ObjectKind::Sheep && animal.Temperament == 2 && animal.Attempts == 1)
+	if (GameplayEdition == GameEdition::XXX && animal.Kind == ObjectKind::Sheep && animal.Temperament == 2 && animal.Attempts == 1)
 		BonusUnlocked = true;
 }
 

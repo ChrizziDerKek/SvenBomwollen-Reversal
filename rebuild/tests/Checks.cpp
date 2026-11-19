@@ -153,7 +153,7 @@ struct FixtureActor
 	f32 Pulse = 1000;
 	i32 AngerTicks = 0;
 };
-LevelInfo FixtureLevel(MudGE& engine, const str& name, std::initializer_list<FixtureActor> actors, i32 pickup = 0)
+LevelInfo FixtureLevel(MudGE& engine, const str& name, std::initializer_list<FixtureActor> actors, i32 pickup = 0, GameEdition edition = GameEdition::Zwo)
 {
 	const auto& getPacks = engine.GetData().GetPacks();
 	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& pack) { return pack.Name == "XS"; });
@@ -162,7 +162,7 @@ LevelInfo FixtureLevel(MudGE& engine, const str& name, std::initializer_list<Fix
 	bytestream data(16 + 9048 + 25600);
 	auto integer = [&](size_t offset, i32 value) { std::memcpy(data.data() + offset, &value, 4); };
 	auto real = [&](size_t offset, f32 value) { std::memcpy(data.data() + offset, &value, 4); };
-	integer(0, 6);
+	integer(0, edition == GameEdition::XXX ? 7 : 6);
 	integer(8, 0); // Render requested UFOs and their shadows, as in visible-UFO levels.
 	for (i32 tile = 0; tile < 22 * 17; ++tile)
 	{
@@ -214,6 +214,14 @@ LevelInfo FixtureLevel(MudGE& engine, const str& name, std::initializer_list<Fix
 		if (slot == 0 && pickup)
 			data[16 + tile * 24 + 12] = static_cast<u8>(pickup);
 		++slot;
+	}
+	if (edition == GameEdition::XXX)
+	{
+		std::array<std::array<i32, 4>, LevelFile::ObjectCount> layouts{};
+		layouts.fill({ 0, 0, 400, 2 });
+		const size_t offset = data.size();
+		data.resize(offset + sizeof(layouts));
+		std::memcpy(data.data() + offset, layouts.data(), sizeof(layouts));
 	}
 	level.Map = engine.GetData().EditionAsset(GameEdition::Zwo, "XS/levels/check-" + name + ".lvl");
 	std::ofstream output(engine.GetData().GetRoot() / std::filesystem::u8path(level.Map), std::ios::binary);
@@ -1993,20 +2001,7 @@ void CheckPresentationCorrections(MudGE& engine, const fpath& saves, bool captur
 	Require(mermaid.Reveal() && !gardenScene.GetObjects().CanOccupy(279, gardenScene.GetPlayerIndex()), "Revealed mermaid must occupy its cell.");
 	if (capture)
 		engine.DrawFrame(gardenScene.Draws(), "garden-mermaid-revealed.bmp");
-	auto fixture = [&](const str& name, std::initializer_list<FixtureActor> actors) {
-		LevelInfo level = FixtureLevel(engine, name, actors);
-		bytestream bytes = data.ReadAsset(level.Map);
-		const i32 version = 7;
-		std::memcpy(bytes.data(), &version, sizeof(version));
-		std::array<std::array<i32, 4>, LevelFile::ObjectCount> layouts{};
-		layouts.fill({ 0, 0, 400, 2 });
-		const size_t offset = bytes.size();
-		bytes.resize(offset + sizeof(layouts));
-		std::memcpy(bytes.data() + offset, layouts.data(), sizeof(layouts));
-		std::ofstream file(data.GetRoot() / std::filesystem::u8path(level.Map), std::ios::binary | std::ios::trunc);
-		file.write(reinterpret_cast<cstr>(bytes.data()), static_cast<std::streamsize>(bytes.size()));
-		return level;
-	};
+	auto fixture = [&](const str& name, std::initializer_list<FixtureActor> actors) { return FixtureLevel(engine, name, actors, 0, GameEdition::XXX); };
 	LevelPackInfo profile = zwo;
 	profile.Edition = GameEdition::XXX;
 	const Sprite* stand = engine.LoadSprite(data.GetSpriteDefinition("SvenStand", GameEdition::XXX).File, 8, 1);
@@ -2146,6 +2141,248 @@ void CheckPresentationCorrections(MudGE& engine, const fpath& saves, bool captur
 	Log("PASS: native font advances/HUD, all new species/facings, compound effect anchors, dormant mermaid collision and keyboard binding capture/persistence.");
 }
 
+void CheckSharedPlayerRuntime(MudGE& engine)
+{
+	const GameData& data = engine.GetData();
+	const Sprite* stand = engine.LoadSprite(data.GetSpriteDefinition("SvenStand", GameEdition::XXX).File, 8, 1);
+	struct ActionCase
+	{
+		PlayerActionState State;
+		i32 Facing;
+		std::vector<i32> Frames;
+		ItemCode Powerup = ItemCode::None;
+	};
+	std::vector<ActionCase> cases;
+	for (i32 facing = 0; facing < 8; ++facing)
+		cases.push_back({ PlayerActionState::Whistle, facing, facing % 2 ? std::vector<i32>{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 10, 11, 12, 13, 13, 14, 15 } : std::vector<i32>{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 } });
+	for (i32 facing = 0; facing < 4; ++facing)
+	{
+		cases.push_back({ PlayerActionState::Kicked, 2 * facing, facing == 0 || facing == 3 ? std::vector<i32>{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 10, 10, 11, 11 } : std::vector<i32>{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 } });
+		cases.push_back({ PlayerActionState::Frigida, 2 * facing, { 0, 0, 1, 2, 2, 0, 0 } });
+	}
+	for (ItemCode powerup : { ItemCode::Rocket, ItemCode::SlowMushroom, ItemCode::AlienPower })
+		cases.push_back({ PlayerActionState::Frigida, 0, { 0, 0, 1, 2, 2, 0, 0 }, powerup });
+	for (GameEdition edition : { GameEdition::Zwo, GameEdition::XXX })
+	{
+		LevelPackInfo pack = *std::find_if(data.GetPacks().begin(), data.GetPacks().end(), [](const LevelPackInfo& candidate) { return candidate.Name == "XS" && candidate.Edition == GameEdition::Zwo; });
+		pack.Edition = edition;
+		for (const ActionCase& test : cases)
+		{
+			const i32 animalFacing = test.State == PlayerActionState::Whistle ? (test.Facing / 2 + 2) % 4 : test.Facing / 2;
+			const LevelInfo level = FixtureLevel(engine, "shared-action-" + std::to_string(static_cast<i32>(edition)) + "-" + std::to_string(static_cast<i32>(test.State)) + "-" + std::to_string(test.Facing), { { 0, 240, 240, test.Facing }, { 2, 240 + Directions[test.Facing][0] * 40, 240 + Directions[test.Facing][1] * 40, animalFacing, test.State == PlayerActionState::Kicked ? 10 : 6 } }, 0, edition);
+			LevelScene scene(engine, pack, level, 1);
+			scene.GetObjects()[1].Temperament = test.State == PlayerActionState::Frigida ? 1 : 0;
+			if (test.Powerup != ItemCode::None)
+				scene.GetItems().GetPowerup() = { test.Powerup, 30, 0 };
+			scene.Update(0, Directions[test.Facing][0], Directions[test.Facing][1], true);
+			Require(scene.GetPlayerDraw().Sprite == stand, "A source format bypassed shared XXX release arming.");
+			scene.Update(0, Directions[test.Facing][0], Directions[test.Facing][1], false);
+			scene.Update(0, 0, 0, true);
+			const Sprite* animation = scene.GetPlayerDraw().Sprite;
+			Require(animation != stand, "Shared action fixture did not start its animation.");
+			const f32 rate = test.State == PlayerActionState::Frigida ? (test.Powerup == ItemCode::Rocket ? 30.0f : (test.Powerup == ItemCode::SlowMushroom ? 12.0f : (test.Powerup == ItemCode::AlienPower ? 40.0f : 20.0f))) : 15.0f;
+			scene.Update(0.5f / rate, 0, 0, true);
+			for (size_t frame = 0; frame < test.Frames.size(); ++frame)
+			{
+				if (frame)
+					scene.Update(1 / rate, 0, 0, true);
+				Require(scene.GetPlayerDraw().Sprite == animation && scene.GetPlayerDraw().Frame == test.Frames[frame], "Shared XXX action frame or duration differs from the native XML sequence.");
+				Require(scene.GetPlayerDraw().Mirror == (test.State == PlayerActionState::Whistle ? SvenMirror[test.Facing] : SheepMirror[animalFacing]), "Shared XXX action lost its native facing/mirroring binding.");
+				for (const SpriteDraw& draw : scene.Draws())
+					Require(draw.Frame >= 0 && draw.Frame < draw.Sprite->Rows * draw.Sprite->Columns, "Shared action emitted an invalid sprite frame.");
+			}
+			scene.Update(1 / rate, 0, 0, true);
+			Require(scene.GetPlayerDraw().Sprite == stand, "Shared XXX action outlived its descriptor or repeated on a held key.");
+		}
+		const LevelInfo level = FixtureLevel(engine, "shared-player-" + std::to_string(static_cast<i32>(edition)), { { 0, 240, 240, 0 }, { 2, 640, 400, 0 } }, 0, edition);
+		LevelScene scene(engine, pack, level, 1);
+		scene.Update(0.5f / 24, 1, 0, false);
+		for (i32 frame = 0; frame < 14; ++frame)
+		{
+			if (frame)
+				scene.Update(1.0f / 24, 1, 0, false);
+			Require(scene.GetPlayerDraw().Frame == frame, "Shared walking sequence/rate depends on the source level format.");
+		}
+		scene.Update(1, 0, 0, false);
+		scene.GetPlayer().Teleport(scene.GetObjects()[scene.GetPlayerIndex()].Tile);
+		constexpr i32 blink[] = { 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1 };
+		scene.Update(0.5f / 15, 0, 0, false);
+		for (size_t frame = 0; frame < std::size(blink); ++frame)
+		{
+			if (frame)
+				scene.Update(1.0f / 15, 0, 0, false);
+			Require(scene.GetPlayerDraw().Frame == blink[frame] && scene.GetPlayerDraw().Sprite != stand, "Shared teleport blink sequence differs between source formats.");
+		}
+		scene.Update(1.0f / 15, 0, 0, false);
+		Require(scene.GetPlayerDraw().Sprite == stand, "Shared teleport blink did not finish at its descriptor boundary.");
+		const LevelInfo shockLevel = FixtureLevel(engine, "shared-shock-" + std::to_string(static_cast<i32>(edition)), { { 0, 240, 200, 0 }, { 2, 200, 200, 0, 12, 0, 11 }, { 2, 640, 400, 0 } }, 0, edition);
+		LevelScene shock(engine, pack, shockLevel, 1);
+		shock.GetObjects()[1].Temperament = 0;
+		const GameData::SpriteDefinition& electric = data.GetSpriteDefinition("SvenElectricBack", GameEdition::XXX);
+		const Sprite* electricSprite = engine.LoadSprite(electric.File, electric.Rows, electric.Columns);
+		for (i32 tick = 0; tick < 3000 && shock.GetPlayerDraw().Sprite != electricSprite; ++tick)
+			shock.Update(0.001f, 0, 0, false);
+		Require(shock.GetPlayerDraw().Sprite == electricSprite, "Demon contact did not enter the shared electric-shock animation.");
+		shock.Update(0.5f / 15, 0, 0, false);
+		for (i32 frame = 0; frame < 20; ++frame)
+		{
+			if (frame)
+				shock.Update(1.0f / 15, 0, 0, false);
+			Require(shock.GetPlayerDraw().Sprite == electricSprite && shock.GetPlayerDraw().Frame == (frame % 4 < 2 ? 1 : 2), "Shared electric-shock sequence/rate differs from XXX.");
+		}
+		shock.Update(1.0f / 15, 0, 0, false);
+		Require(shock.GetPlayerDraw().Sprite == stand, "Shared electric-shock animation did not release Sven at its descriptor boundary.");
+	}
+	Log("PASS: one XXX runtime for v6/v7 maps; complete whistle/kick/Frigida/walk/blink/shock sequences, mirrored directions and action boundaries.");
+}
+
+void CheckPlayerMovement(MudGE& engine)
+{
+	const GameData& data = engine.GetData();
+	const LevelPackInfo& source = *std::find_if(data.GetPacks().begin(), data.GetPacks().end(), [](const LevelPackInfo& pack) { return pack.Name == "XS" && pack.Edition == GameEdition::Zwo; });
+	// Literal transition results from XXX 0x4164C0, mapped to render facings.
+	constexpr i32 transitions[8][8] = {
+		{ 0, 0, 0, 4, 4, 4, 0, 0 },
+		{ 1, 1, 1, 1, 5, 5, 5, 1 },
+		{ 2, 2, 2, 2, 2, 6, 6, 6 },
+		{ 7, 3, 3, 3, 3, 3, 7, 7 },
+		{ 0, 0, 4, 4, 4, 4, 4, 0 },
+		{ 1, 1, 1, 5, 5, 5, 5, 5 },
+		{ 6, 2, 2, 2, 6, 6, 6, 6 },
+		{ 7, 7, 3, 3, 3, 7, 7, 7 }
+	};
+	const str headings[] = { "Back", "02", "Side", "01", "Front", "01", "Side", "02" };
+	auto cell = [&](const LevelInfo& level, i32 tile, OccupancyCode terrain, u8 direction) {
+		bytestream bytes = data.ReadAsset(level.Map);
+		const i32 code = static_cast<i32>(terrain);
+		std::memcpy(bytes.data() + 16 + tile * 24, &code, sizeof(code));
+		bytes[16 + tile * 24 + 4] = direction;
+		std::ofstream output(data.GetRoot() / std::filesystem::u8path(level.Map), std::ios::binary | std::ios::trunc);
+		output.write(reinterpret_cast<cstr>(bytes.data()), static_cast<std::streamsize>(bytes.size()));
+	};
+	for (GameEdition edition : { GameEdition::Zwo, GameEdition::XXX })
+	{
+		LevelPackInfo pack = source;
+		pack.Edition = edition;
+		for (i32 initial = 0; initial < 8; ++initial)
+		{
+			for (i32 requested = 0; requested < 8; ++requested)
+			{
+				const LevelInfo level = FixtureLevel(engine, "motion-" + std::to_string(static_cast<i32>(edition)) + "-" + std::to_string(initial) + "-" + std::to_string(requested), { { 0, 240, 240, 0 }, { 2, 640, 400, 0 } }, 0, edition);
+				LevelScene scene(engine, pack, level, 1);
+				const i32 base = scene.GetObjects()[scene.GetPlayerIndex()].Tile;
+				const i32 destination = base + Directions[initial][0] + 22 * Directions[initial][1];
+				scene.Update(0.04f, Directions[initial][0], Directions[initial][1], false);
+				Require(scene.GetGrid().GetOccupancy(base) == OccupancyCode::Player && scene.GetGrid().GetOccupancy(destination) == OccupancyCode::PlayerReservation, "Movement failed to retain the base cell and reserve its destination.");
+				Require(scene.GetGrid().GetReservationOwner(destination) == static_cast<i32>(scene.GetPlayerIndex()), "Step reservation has no player owner.");
+				const f32 x = scene.GetPlayer().GetX(), y = scene.GetPlayer().GetY();
+				scene.Update(0.02f, Directions[requested][0], Directions[requested][1], false);
+				const i32 resolved = transitions[initial][requested];
+				const f32 distance = 145 * 0.02f * (resolved % 2 ? 0.75f : 1);
+				Require(std::abs(scene.GetPlayer().GetX() - x - Directions[resolved][0] * distance) < 0.001f && std::abs(scene.GetPlayer().GetY() - y - Directions[resolved][1] * distance) < 0.001f, "Mid-step transition differs from native 0x4164C0.");
+				const GameData::SpriteDefinition& sprite = data.GetSpriteDefinition("SvenWalk" + headings[resolved], GameEdition::XXX);
+				Require(scene.GetPlayerDraw().Sprite == engine.LoadSprite(sprite.File, sprite.Rows, sprite.Columns) && scene.GetPlayerDraw().Mirror == SvenMirror[resolved], "Walking sprite follows requested facing instead of actual motion.");
+				scene.Update(1, 0, 0, false);
+				const bool reversed = resolved != initial;
+				Require(scene.GetPlayer().GetX() == 240 + (reversed ? 0 : Directions[initial][0] * 40) && scene.GetPlayer().GetY() == 240 + (reversed ? 0 : Directions[initial][1] * 40), "Key release failed to finish/reverse exactly one tile step.");
+				Require(scene.GetGrid().GetOccupancy(reversed ? destination : base) == OccupancyCode::Empty && scene.GetGrid().GetReservationOwner(reversed ? destination : base) == -1, "A committed/reversed step left an invisible reservation behind.");
+			}
+		}
+		const LevelInfo level = FixtureLevel(engine, "motion-boundaries-" + std::to_string(static_cast<i32>(edition)), { { 0, 240, 240, 0 }, { 2, 640, 400, 0 } }, 0, edition);
+		LevelScene boundary(engine, pack, level, 1);
+		boundary.GetPlayer().SetInput({ 1, 0, false });
+		boundary.GetPlayer().AdvancePlayer(40.0f / 145, 1, 0);
+		Require(boundary.GetPlayer().GetX() == 280 && boundary.GetObjects()[boundary.GetPlayerIndex()].X == 240, "Native strict outward boundary was prematurely committed.");
+		boundary.GetPlayer().AdvancePlayer(0, 1, 0);
+		Require(boundary.GetObjects()[boundary.GetPlayerIndex()].X == 240, "A zero-duration update committed the strict boundary.");
+		boundary.GetPlayer().AdvancePlayer(0.001f, 1, 0);
+		Require(boundary.GetObjects()[boundary.GetPlayerIndex()].X == 280, "Crossing the native outward boundary did not commit the step.");
+		LevelScene corner(engine, pack, level, 1);
+		corner.Update(0.04f, 1, 0, false);
+		corner.Update(0.3f, 0, -1, false);
+		corner.Update(1, 0, 0, false);
+		Require(corner.GetPlayer().GetX() == 280 && corner.GetPlayer().GetY() == 200, "A held corner turn did not start at the next tile boundary.");
+		LevelScene cancelled(engine, pack, level, 1);
+		const i32 base = cancelled.GetObjects()[cancelled.GetPlayerIndex()].Tile;
+		cancelled.Update(0.04f, 1, 0, false);
+		cancelled.GetPlayer().CancelPlayerStep();
+		Require(cancelled.GetPlayer().GetX() == 240 && cancelled.GetGrid().GetOccupancy(base + 1) == OccupancyCode::Empty && cancelled.GetGrid().GetReservationOwner(base + 1) == -1, "Interrupted movement retained its offset or destination collision.");
+		cancelled.Update(0.28f, 0, -1, false);
+		cancelled.Update(1, 0, 0, false);
+		Require(cancelled.GetPlayer().GetX() == 240 && cancelled.GetPlayer().GetY() == 200, "Interrupted movement resumed its stale destination.");
+		const LevelInfo directional = FixtureLevel(engine, "motion-directional-" + std::to_string(static_cast<i32>(edition)), { { 0, 240, 240, 0 }, { 2, 640, 400, 0 } }, 0, edition);
+		cell(directional, base + 1, OccupancyCode::Wall, 1);
+		LevelScene wall(engine, pack, directional, 1);
+		wall.Update(0.28f, 1, 0, false);
+		Require(wall.GetPlayer().GetX() == 280, "Matching directional-wall entry was blocked.");
+		wall.Update(0.1f, 0, -1, false);
+		Require(wall.GetPlayer().GetX() == 280 && wall.GetPlayer().GetY() == 240, "Invalid source direction escaped the directional tile.");
+		wall.Update(0.28f, 1, 0, false);
+		Require(wall.GetGrid().GetOccupancy(base + 1) == OccupancyCode::Wall && wall.GetGrid().GetReservationOwner(base + 1) == -1, "Leaving a directional tile lost its original wall.");
+		constexpr u8 nativeDirections[] = { 2, 3, 1, 4, 2, 3, 1, 4 };
+		for (u8 mask = 1; mask <= 4; ++mask)
+		{
+			for (i32 facing = 0; facing < 8; ++facing)
+			{
+				const LevelInfo masked = FixtureLevel(engine, "motion-mask-" + std::to_string(static_cast<i32>(edition)) + "-" + std::to_string(mask) + "-" + std::to_string(facing), { { 0, 240, 240, 0 }, { 2, 640, 400, 0 } }, 0, edition);
+				cell(masked, base, OccupancyCode::Player, mask);
+				LevelScene filtered(engine, pack, masked, 1);
+				filtered.Update(0.04f, Directions[facing][0], Directions[facing][1], false);
+				const bool moved = filtered.GetPlayer().GetX() != 240 || filtered.GetPlayer().GetY() != 240;
+				Require(moved == (nativeDirections[facing] == mask), "Source direction filtering differs from native 0x417D10.");
+			}
+		}
+		const LevelInfo blockedWall = FixtureLevel(engine, "motion-blocked-wall-" + std::to_string(static_cast<i32>(edition)), { { 0, 240, 240, 0 }, { 2, 640, 400, 0 } }, 0, edition);
+		cell(blockedWall, base + 1, OccupancyCode::Wall, 0);
+		cell(blockedWall, base - 22, OccupancyCode::Wall, 0);
+		LevelScene blockedScene(engine, pack, blockedWall, 1);
+		blockedScene.Update(0.1f, 1, 0, false);
+		Require(blockedScene.GetPlayer().GetX() == 240 && blockedScene.GetGrid().GetOccupancy(base + 1) == OccupancyCode::Wall, "Blocked entry changed a scenery wall or moved Sven.");
+		blockedScene.Update(0.28f, 1, -1, false);
+		blockedScene.Update(1, 0, 0, false);
+		Require(blockedScene.GetPlayer().GetX() == 280 && blockedScene.GetPlayer().GetY() == 200, "Diagonal movement added non-native adjacent-cell corner restrictions.");
+		const LevelInfo blocked = FixtureLevel(engine, "motion-action-" + std::to_string(static_cast<i32>(edition)), { { 0, 240, 240, 0 }, { 2, 280, 240, 0 } }, 0, edition);
+		LevelScene action(engine, pack, blocked, 1);
+		action.GetObjects()[1].Temperament = 0;
+		action.Update(0, 0, 0, false);
+		action.Update(0.01f, 1, 0, true);
+		Require(action.GetPlayer().GetX() == 240 && action.GetPlayerDraw().X == 280 && action.GetGrid().GetOccupancy(base + 1) == OccupancyCode::Sheep, "Blocked movement failed to start the animal action or overwrote animal collision.");
+		const LevelInfo movingAction = FixtureLevel(engine, "moving-action-" + std::to_string(static_cast<i32>(edition)), { { 0, 240, 240, 0 }, { 2, 320, 240, 0 } }, 0, edition);
+		LevelScene moving(engine, pack, movingAction, 1);
+		moving.GetObjects()[1].Temperament = 0;
+		moving.Update(0.1f, 1, 0, false);
+		moving.Update(0.5f, 1, 0, true);
+		Require(moving.GetPlayer().GetX() == 280 && moving.GetPlayerDraw().X == 280, "Action pressed while moving replayed after reaching an animal.");
+		moving.Update(0, 1, 0, false);
+		moving.Update(0.001f, 1, 0, true);
+		Require(moving.GetPlayerDraw().X == 320, "A fresh action at the blocked destination was ignored.");
+		cell(blocked, base, OccupancyCode::Player, 1);
+		LevelScene filteredRepeat(engine, pack, blocked, 1);
+		filteredRepeat.GetObjects()[1].Temperament = 0;
+		filteredRepeat.Update(0, 0, 0, false);
+		filteredRepeat.Update(0.001f, 1, 0, true);
+		const Sprite* interaction = filteredRepeat.GetPlayerDraw().Sprite;
+		filteredRepeat.Update(0, 0, 1, false);
+		filteredRepeat.Update(0, 0, 1, true);
+		bool completed = false;
+		for (i32 tick = 0; tick < 2000 && !completed; ++tick)
+		{
+			filteredRepeat.Update(0.01f, 0, 1, true);
+			completed = filteredRepeat.TakeScoreDelta() > 0;
+		}
+		Require(completed && filteredRepeat.GetPlayerDraw().Sprite == interaction, "Queued repeat used raw input rather than the direction accepted by the source cell.");
+	}
+	LevelPackInfo multiplayer = source;
+	multiplayer.Edition = GameEdition::XXX;
+	const LevelInfo shared = FixtureLevel(engine, "motion-reservation-owners", { { 0, 240, 240, 0 }, { 0, 400, 320, 0 }, { 2, 640, 400, 0 } }, 0, GameEdition::XXX);
+	LevelScene owners(engine, multiplayer, shared, 1, nullptr, 2);
+	const i32 otherBase = owners.GetObjects().GetPlayer(1).GetState().Tile;
+	owners.Update(0.04f, std::array<PlayerInput, 2>{ PlayerInput{ 1, 0, false }, PlayerInput{ 0, -1, false } });
+	owners.GetPlayer().CancelPlayerStep();
+	Require(owners.GetGrid().GetOccupancy(otherBase - 22) == OccupancyCode::PlayerReservation && owners.GetGrid().GetReservationOwner(otherBase - 22) == static_cast<i32>(owners.GetObjects().GetPlayer(1).GetIndex()), "Cancelling one player released the other player's reservation.");
+	Log("PASS: v6/v7 native 64-way movement transitions, motion-facing sprites, key release, strict boundaries, corner turns, cancellation, directional walls, blocked actions and reservation ownership.");
+}
+
 void CheckEditionFoundation(MudGE& engine, const fpath& saves)
 {
 	const GameData& data = engine.GetData();
@@ -2213,6 +2450,7 @@ void CheckEditionFoundation(MudGE& engine, const fpath& saves)
 						Require(rejected, "Truncated v7 extension was accepted.");
 					}
 					LevelScene scene(engine, pack, level, 1);
+					Require(scene.GetGameplayEdition() == GameEdition::XXX, "Source pack selected legacy gameplay instead of the shared XXX runtime.");
 					Require(scene.GetPlayerCount() == 1 && scene.GetObjects().Find(ObjectKind::Player).size() == 1, "Single-player load retained the second actor.");
 					Require(scene.GetRemainingTargets() == static_cast<i32>(targets), "Optional actors changed completion target count.");
 					validateDraws(scene.Draws());
@@ -2369,6 +2607,9 @@ i32 main(i32 argc, char** argv)
 			if (editionVisual)
 				engine.StartVideo(false);
 			CheckPresentationCorrections(engine, saves, editionVisual);
+			CheckSharedPlayerRuntime(engine);
+			CheckPlayerMovement(engine);
+			CheckCatalog(engine, 234);
 			CheckMenuPresentation(engine, saves, editionVisual);
 			engine.Shutdown();
 			return 0;

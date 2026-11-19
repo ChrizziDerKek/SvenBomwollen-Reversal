@@ -79,7 +79,7 @@ void RunGame(MudGE& engine, const fpath& saves, bool audio, u32 seconds, bool di
 				}
 				else
 				{
-					if (session->GetEdition() == GameEdition::XXX || ui.HasCustomControls())
+					if (session->GetGameplayEdition() == GameEdition::XXX || ui.HasCustomControls())
 					{
 						const PlayerInput player = controls.BoundPlayerInput(ui.GetControlBindings()[0]);
 						session->Update(elapsed, player.X, player.Y, player.Action);

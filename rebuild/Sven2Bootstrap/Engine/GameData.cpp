@@ -223,6 +223,12 @@ bool GameData::HasEdition(GameEdition edition) const
 
 GameEdition GameData::GetThemeEdition() const
 {
+	return GetGameplayEdition();
+}
+
+GameEdition GameData::GetGameplayEdition() const
+{
+	// One installed runtime serves all source level formats.
 	return HasEdition(GameEdition::XXX) ? GameEdition::XXX : GameEdition::Zwo;
 }
 
