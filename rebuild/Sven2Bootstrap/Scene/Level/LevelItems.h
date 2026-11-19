@@ -19,6 +19,7 @@ public:
 	void UpdateObject(size_t i, f32 seconds);
 	void AffectNearbyAnimals();
 	void PickupPlayerItem();
+	PlayerPowerup& GetPowerup();
 
 private:
 	friend class AnimalCharacter;
@@ -28,7 +29,6 @@ private:
 	friend class SceneRenderer;
 	friend class UfoController;
 	LevelScene& Scene;
-	f32 SpawnClock = 0, SpawnPeriod = 10, EffectRemaining = 0, EffectAge = 0;
-	ItemCode PlayerEffect = ItemCode::None;
+	f32 SpawnClock = 0, SpawnPeriod = 10;
 	i32 LivesGained = 0;
 };

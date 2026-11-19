@@ -52,7 +52,11 @@ bool LevelGrid::Unoccupied(i32 tile, size_t except) const
 		if (Scene.Objects[i].Tile == tile || TileAt(Scene.Objects[i].TargetX, Scene.Objects[i].TargetY) == tile)
 			return false;
 	}
-	if (except != Scene.PlayerIndex && (TileAt(Scene.Player.X, Scene.Player.Y) == tile || TileAt(Scene.Player.TargetX, Scene.Player.TargetY) == tile))
-		return false;
+	for (size_t number = 0; number < Scene.GetPlayerCount(); ++number)
+	{
+		const PlayerCharacter& player = Scene.Objects.GetPlayer(number);
+		if (except != player.GetIndex() && (TileAt(player.X, player.Y) == tile || TileAt(player.TargetX, player.TargetY) == tile))
+			return false;
+	}
 	return true;
 }

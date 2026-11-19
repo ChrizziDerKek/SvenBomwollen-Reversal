@@ -4,7 +4,7 @@
 #include <array>
 
 DebugMenu::DebugMenu(MudGE& engine)
-    : Font(engine, true), Panel{ std::vector<u32>(640 * 510, 0xFFF0E8D0), 640, 640, 510, 1, 1, false }, Highlight{ std::vector<u32>(600 * 34, 0xFFD0DDC0), 600, 600, 34, 1, 1, false }, Cursor(engine.LoadSprite("Sven2/gfx/mousecursor.bmp", 5, 1))
+    : Font(engine, true, false, engine.GetData().GetThemeEdition()), Panel{ std::vector<u32>(640 * 510, 0xFFF0E8D0), 640, 640, 510, 1, 1, false }, Highlight{ std::vector<u32>(600 * 34, 0xFFD0DDC0), 600, 600, 34, 1, 1, false }, Cursor(engine.LoadSprite("Sven2/gfx/mousecursor.bmp", 5, 1))
 {
 	for (const ItemDefinition& item : GetItemDefinitions())
 	{
@@ -12,11 +12,13 @@ DebugMenu::DebugMenu(MudGE& engine)
 		ItemNames.push_back(item.Name);
 	}
 	for (const CharacterDefinition& character : GetCharacterDefinitions())
+	{
 		if (character.Category == CharacterCategory::Animal)
 		{
 			Animals.push_back(character.Kind);
 			AnimalNames.push_back(character.Name);
 		}
+	}
 }
 
 void DebugMenu::Toggle()

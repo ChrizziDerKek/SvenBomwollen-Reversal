@@ -24,9 +24,17 @@ enum class ObjectKind : i32
 	SlowMushroom = 16,
 	StinkMushroom = 17,
 	Flower = 18,
+	Penguin = 25,
+	Turtle = 26,
+	Rabbit = 27,
+	Mermaid = 28,
 	CompletionEffect = 32,
 	ElectricFlash = 34,
-	Particle = 37
+	Particle = 37,
+	BubbleEmitter = 43,
+	YellowEmitter = 44,
+	BubbleParticle = 543,
+	YellowParticle = 544
 };
 
 enum class ObjectPhase

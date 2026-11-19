@@ -29,61 +29,91 @@ GameData::GameData(fpath root)
 {
 	if (!std::filesystem::is_directory(root))
 		throw std::runtime_error("Data root is not a directory.");
-	const Node core = ReadXml(ReadAsset("Sven2/Sven2.xml"));
+	LoadEdition(GameEdition::Zwo, "Sven2", std::filesystem::is_directory(Root / L"ZWO") ? "ZWO/" : "");
+	if (std::filesystem::is_directory(Root / L"XXX" / L"SvenXXX"))
+		LoadEdition(GameEdition::XXX, "SvenXXX", "XXX/");
+}
+
+void GameData::LoadEdition(GameEdition edition, const str& coreDirectory, const str& prefix)
+{
+	EditionResources& resources = Editions[edition];
+	const Node core = ReadXml(ReadAsset(prefix + coreDirectory + "/" + coreDirectory + ".xml"));
 	for (const Node& section : core.Children)
 	{
-		if (section.Name == "sounds")
-			for (const Node& item : section.Children)
-				if (item.Name == "sound")
-					Sounds[item.Attribute("name")] = item.Attribute("file");
-		if (section.Name != "parameters")
-			continue;
 		for (const Node& item : section.Children)
 		{
-			if (item.Name != "parameter")
-				continue;
-			const str& name = item.Attribute("name");
-			const str& rawValue = item.Attribute("value");
-			StringParams[name] = rawValue;
-			f64 value = 0;
-			// Core also contains nonnumeric parameters (e.g. highscore names).
-			if (Number(rawValue, value))
-				NumericParams[name] = value;
+			if (section.Name == "sounds" && item.Name == "sound")
+				resources.Sounds[item.Attribute("name")] = prefix + item.Attribute("file");
+			else if (section.Name == "parameters" && item.Name == "parameter")
+			{
+				const str& name = item.Attribute("name");
+				const str& rawValue = item.Attribute("value");
+				resources.StringParams[name] = rawValue;
+				f64 value = 0;
+				if (Number(rawValue, value))
+					resources.NumericParams[name] = value;
+			}
+			else if (section.Name == "sprites" && item.Name == "sprite")
+			{
+				str file = prefix + section.Attribute("path") + item.Attribute("file");
+				std::replace(file.begin(), file.end(), '\\', '/');
+				f64 rows = 0, columns = 0;
+				if (!Number(item.Attribute("rows"), rows) || !Number(item.Attribute("cols"), columns) || rows < 1 || columns < 1 || rows > SHRT_MAX || columns > SHRT_MAX || std::floor(rows) != rows || std::floor(columns) != columns)
+					throw std::runtime_error("Invalid core sprite dimensions: " + item.Attribute("name"));
+				resources.Sprites[item.Attribute("name")] = { file, static_cast<i16>(rows), static_cast<i16>(columns) };
+			}
 		}
 	}
-	const Node table = ReadXml(ReadAsset("Sven2/StringTable.xml"));
+	const Node table = ReadXml(ReadAsset(prefix + coreDirectory + "/StringTable.xml"));
 	for (const Node& section : table.Children)
-	{
-		if (section.Name != "stringtable")
-			continue;
-		for (const Node& item : section.Children)
-			if (item.Name == "string")
-				Strings[item.Attribute("name")] = item.Attribute("value");
-	}
+		if (section.Name == "stringtable")
+			for (const Node& item : section.Children)
+				if (item.Name == "string")
+					resources.Strings[item.Attribute("name")] = item.Attribute("value");
+	const fpath catalog = Root / std::filesystem::u8path(prefix);
 	std::vector<fpath> directories;
-	for (const auto& entry : std::filesystem::directory_iterator(root))
-		if (entry.is_directory() && !EqualWindows(entry.path().filename().native(), L"Sven2"))
+	for (const auto& entry : std::filesystem::directory_iterator(catalog))
+		if (entry.is_directory() && !EqualWindows(entry.path().filename().native(), std::filesystem::u8path(coreDirectory).native()))
 			directories.push_back(entry.path().filename());
 	std::sort(directories.begin(), directories.end(), [](const fpath& a, const fpath& b) { const i32 order = CompareStringOrdinal(a.c_str(), -1, b.c_str(), -1, TRUE); return order == CSTR_LESS_THAN || (order == CSTR_EQUAL && a.native() < b.native()); });
 	for (const fpath& directory : directories)
 	{
 		const wstr expected = directory.native() + L".xml";
-		bool found = false;
-		for (const auto& entry : std::filesystem::directory_iterator(root / directory))
+		for (const auto& entry : std::filesystem::directory_iterator(catalog / directory))
 		{
 			if (entry.is_regular_file() && EqualWindows(entry.path().filename().native(), expected))
 			{
-				found = true;
+				const str descriptor = prefix + (directory / fpath(expected)).generic_u8string();
+				const Node document = ReadXml(ReadAsset(descriptor));
+				for (const Node& package : document.Children)
+				{
+					if (package.Name == "package")
+					{
+						LevelPackInfo pack = ReadPack(package, descriptor);
+						pack.Edition = edition;
+						pack.AssetPrefix = prefix;
+						pack.Id = (edition == GameEdition::XXX ? "XXX-" : "") + pack.Name;
+						for (LevelSetInfo& set : pack.LevelSets)
+						{
+							for (LevelInfo& level : set.Levels)
+							{
+								level.Map = prefix + level.Map;
+								if (!level.Music.empty())
+									level.Music = prefix + level.Music;
+							}
+						}
+						for (TileSetInfo& set : pack.TileSets)
+						{
+							set.Background = prefix + set.Background;
+							for (TileInfo& tile : set.Tiles)
+								tile.File = prefix + tile.File;
+						}
+						Packs.push_back(std::move(pack));
+					}
+				}
 				break;
 			}
 		}
-		if (!found)
-			continue;
-		const str descriptor = (directory / fpath(expected)).generic_u8string();
-		const Node document = ReadXml(ReadAsset(descriptor));
-		for (const Node& package : document.Children)
-			if (package.Name == "package")
-				Packs.push_back(ReadPack(package, descriptor));
 	}
 }
 
@@ -96,6 +126,10 @@ fpath GameData::AssetPath(str name) const
 {
 	if (name.empty() || name.find('\0') != str::npos)
 		throw std::invalid_argument("Empty or invalid asset path.");
+	// Legacy Zwo callers and editor fixtures retain paths relative to that edition.
+	std::replace(name.begin(), name.end(), '\\', '/');
+	if (std::filesystem::is_directory(Root / L"ZWO") && name.rfind("ZWO/", 0) != 0 && name.rfind("XXX/", 0) != 0)
+		name = "ZWO/" + name;
 	const fpath relative = std::filesystem::u8path(name);
 	if (relative.has_root_path())
 		throw std::invalid_argument("Asset path must be relative.");
@@ -146,34 +180,70 @@ const std::vector<LevelPackInfo>& GameData::GetPacks() const noexcept
 	return Packs;
 }
 
-str GameData::Text(const str& key) const
+str GameData::Text(const str& key, GameEdition edition) const
 {
-	const auto found = Strings.find(key);
-	return found == Strings.end() ? key : found->second;
+	const auto& values = Editions.at(edition).Strings;
+	const auto found = values.find(key);
+	return found == values.end() ? key : found->second;
 }
 
-str GameData::SoundPath(const str& name) const
+str GameData::SoundPath(const str& name, GameEdition edition) const
 {
-	const auto found = Sounds.find(name);
-	return found == Sounds.end() ? str{} : found->second;
+	const auto& values = Editions.at(edition).Sounds;
+	const auto found = values.find(name);
+	return found == values.end() ? str{} : found->second;
 }
 
-f64 GameData::NumericParam(const str& name, f64 defaultValue) const
+f64 GameData::NumericParam(const str& name, f64 defaultValue, GameEdition edition) const
 {
-	const auto found = NumericParams.find(name);
-	return found == NumericParams.end() ? defaultValue : found->second;
+	const auto& values = Editions.at(edition).NumericParams;
+	const auto found = values.find(name);
+	return found == values.end() ? defaultValue : found->second;
 }
 
-str GameData::StringParam(const str& name, const str& defaultValue) const
+str GameData::StringParam(const str& name, const str& defaultValue, GameEdition edition) const
 {
-	const auto found = StringParams.find(name);
-	return found == StringParams.end() ? defaultValue : found->second;
+	const auto& values = Editions.at(edition).StringParams;
+	const auto found = values.find(name);
+	return found == values.end() ? defaultValue : found->second;
 }
 
 const TileSetInfo& GameData::TileSet(const LevelPackInfo& pack, const LevelInfo& level) const
 {
 	for (const TileSetInfo& set : pack.TileSets)
-		if (set.Name == level.TileSet)
+		if (_stricmp(set.Name.c_str(), level.TileSet.c_str()) == 0)
 			return set;
 	throw std::out_of_range("Unknown tileset '" + level.TileSet + "' in " + pack.Descriptor);
+}
+
+bool GameData::HasEdition(GameEdition edition) const
+{
+	return Editions.find(edition) != Editions.end();
+}
+
+GameEdition GameData::GetThemeEdition() const
+{
+	return HasEdition(GameEdition::XXX) ? GameEdition::XXX : GameEdition::Zwo;
+}
+
+str GameData::EditionAsset(GameEdition edition, str path) const
+{
+	std::replace(path.begin(), path.end(), '\\', '/');
+	if (path.rfind("ZWO/", 0) == 0 || path.rfind("XXX/", 0) == 0)
+		return path;
+	if (edition == GameEdition::Zwo)
+		return (std::filesystem::is_directory(Root / L"ZWO") ? "ZWO/" : "") + path;
+	if (path.size() >= 6 && _strnicmp(path.c_str(), "Sven2/", 6) == 0)
+		path = "SvenXXX/" + path.substr(6);
+	return "XXX/" + path;
+}
+
+str GameData::ThemeAsset(const str& path) const
+{
+	return EditionAsset(GetThemeEdition(), path);
+}
+
+const GameData::SpriteDefinition& GameData::GetSpriteDefinition(const str& name, GameEdition edition) const
+{
+	return Editions.at(edition).Sprites.at(name);
 }

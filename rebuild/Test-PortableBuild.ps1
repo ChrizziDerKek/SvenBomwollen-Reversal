@@ -22,13 +22,13 @@ Deploy-CheckData $false
 Copy-Item -LiteralPath $taskSource -Destination "$taskApplication/Sven2Bootstrap.exe"
 if((Get-Content -LiteralPath "$taskApplication/saves/existing.tsv" -Raw).Trim() -ne 'newer-save') { throw 'Deployment overwrote an existing save.' }
 if((Get-Content -LiteralPath "$taskApplication/saves/nested/copied.tsv" -Raw).Trim() -ne 'migrated-save') { throw 'Nested legacy save was not migrated.' }
-$taskCore=Join-Path $taskApplication 'assets/Sven2/Sven2.xml'
+$taskCore=Join-Path $taskApplication 'assets/ZWO/Sven2/Sven2.xml'
 Add-Content -LiteralPath $taskCore -Value '<!-- Runtime edit retained across builds. -->'
 $taskEditedHash=(Get-FileHash -LiteralPath $taskCore).Hash
 Deploy-CheckData $false
 if((Get-FileHash -LiteralPath $taskCore).Hash -ne $taskEditedHash) { throw 'Deployment overwrote edited runtime assets.' }
 Deploy-CheckData $true
-if((Get-FileHash -LiteralPath $taskCore).Hash -ne (Get-FileHash -LiteralPath "$taskRepository/assets/Sven2/Sven2.xml").Hash) { throw 'Explicit asset refresh did not restore the source asset.' }
+if((Get-FileHash -LiteralPath $taskCore).Hash -ne (Get-FileHash -LiteralPath "$taskRepository/assets/ZWO/Sven2/Sven2.xml").Hash) { throw 'Explicit asset refresh did not restore the source asset.' }
 if((Get-Content -LiteralPath "$taskApplication/saves/existing.tsv" -Raw).Trim() -ne 'newer-save') { throw 'Asset refresh overwrote saves.' }
 $taskCapture=Join-Path $taskTestRoot 'portable-frame.bmp'
 Push-Location $env:TEMP

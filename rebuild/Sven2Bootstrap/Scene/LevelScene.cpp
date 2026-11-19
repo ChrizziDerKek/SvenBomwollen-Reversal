@@ -27,34 +27,40 @@ static const LevelInfo& FirstLevel(const MudGE& engine)
 
 LevelScene::LevelScene(MudGE& engine)
     : LevelScene(engine, static_cast<u32>(GetTickCount64()))
-{
-}
+{}
 
 LevelScene::LevelScene(MudGE& engine, u32 seed)
     : LevelScene(engine, FirstPack(engine), FirstLevel(engine), seed)
-{
-}
+{}
 
-LevelScene::LevelScene(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& level, u32 seed, u32* sharedRandomState)
-    : Engine(engine), Objects(*this), RandomState(seed), SharedRandomState(sharedRandomState), Grid(*this), Resources(*this), Player(Objects.GetPlayer()), Items(*this), UfoController(*this), Effects(*this), Renderer(*this)
+LevelScene::LevelScene(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& level, u32 seed, u32* sharedRandomState, size_t playerCount)
+    : Engine(engine), Edition(pack.Edition), PlayerCount(pack.Edition == GameEdition::Zwo ? 1 : std::clamp(playerCount, size_t{ 1 }, size_t{ 2 })), Objects(*this), RandomState(seed), SharedRandomState(sharedRandomState), Grid(*this), Resources(*this), Items(*this), UfoController(*this), Effects(*this), Renderer(*this)
 {
 	const TileSetInfo& descriptor = engine.GetData().TileSet(pack, level);
 	Log("Read level map: " + level.Map);
 	const LevelFile* file = new LevelFile(engine.ReadAsset(level.Map), level.Map);
 	UfoController.HideUfo = file->GetHidesUfo();
+	if (Edition == GameEdition::XXX)
+	{
+		for (u32 bit = 1; bit <= 4; ++bit)
+			if ((file->GetFlags() & (u32{ 1 } << bit)) != 0)
+				Mode = static_cast<BonusMode>(bit);
+		if (PlayerCount > 1 && Mode != BonusMode::Sven)
+			Mode = BonusMode::Alien;
+	}
 	InitialTime = file->GetTimeLimit();
 	Objects.Reserve(LevelFile::ObjectCount);
 	std::array<i32, LevelFile::ObjectCount> slots{};
 	slots.fill(-1);
 	Grid.Load(*file);
 	Renderer.Background = { engine.LoadSprite(descriptor.Background, 1, 1, true), 0, 0, 0 };
-	Effects.Splashes[0].Sprite = engine.LoadSprite("Sven2/gfx/FX_all_splash.bmp", SplashFrames, 1);
-	Resources.Explosion = engine.LoadSprite("Sven2/gfx/explode.bmp", 14, 1);
-	Resources.Hearts = engine.LoadSprite("Sven2/gfx/anim_clouds_with_hearts.bmp", 21, 1);
+	Effects.Splashes[0].Sprite = engine.LoadSprite(CoreAsset("Sven2/gfx/FX_all_splash.bmp"), SplashFrames, 1);
+	Resources.Explosion = engine.LoadSprite(CoreAsset("Sven2/gfx/explode.bmp"), 14, 1);
+	Resources.Hearts = engine.LoadSprite(CoreAsset("Sven2/gfx/anim_clouds_with_hearts.bmp"), 21, 1);
 	Resources.InitializeActors();
 	std::map<str, const Sprite*> sprites;
 	u32 scenery = 0, actors = 0;
-	bool foundPlayer = false;
+	size_t foundPlayers = 0;
 	for (size_t slot = 0; slot < file->GetObjects().size(); ++slot)
 	{
 		const LevelObjectRecord& record = file->GetObjects()[slot];
@@ -64,29 +70,40 @@ LevelScene::LevelScene(MudGE& engine, const LevelPackInfo& pack, const LevelInfo
 		f32 x = record.X(), y = record.Y();
 		if (!std::isfinite(x) || !std::isfinite(y) || std::abs(x) > 32767 || std::abs(y) > 32767)
 			throw std::runtime_error("Invalid coordinates in level object " + std::to_string(slot));
-		i32 pass = record.RenderPass();
+		// XXX packs species metadata into bytes 17..19 (0x40EE00).
+		// For actors/effects byte 16 is mirroring, not a foreground render pass.
+		i32 pass = kind == ObjectKind::Scenery ? record.RenderPass() : 0;
 		if (pass != 0 && pass != 1)
 			continue;
 		i32 texture = record.TextureOrPermanent(), facing = record.Facing();
 		TileInfo image;
 		if (kind == ObjectKind::Player)
 		{
-			if (foundPlayer || pass != 0)
-				throw std::runtime_error("Expected one world player per level.");
-			foundPlayer = true;
-			PlayerIndex = Objects.Size();
-			Player.X = x;
-			Player.Y = y;
+			if (pass != 0 || foundPlayers >= (Edition == GameEdition::Zwo ? size_t{ 1 } : size_t{ 2 }))
+				throw std::runtime_error("Invalid world player records for this game edition.");
+			const size_t number = foundPlayers++;
+			if (number >= PlayerCount)
+			{
+				const i32 tile = record.Tile();
+				if (tile >= 0 && static_cast<size_t>(tile) < Grid.Tiles.size() && Grid.Tiles[tile] == OccupancyCode::Player)
+					Grid.Tiles[tile] = OccupancyCode::Empty;
+				continue;
+			}
+			ActivePlayer = number;
+			GetPlayer().X = x;
+			GetPlayer().Y = y;
 		}
 		const CharacterDefinition* character = FindCharacterDefinition(kind);
 		const ItemDefinition* item = FindItemDefinition(kind);
 		if (character)
 		{
-			image = { character->SpriteAsset, character->Frames };
+			if (character->XxxOnly && Edition != GameEdition::XXX)
+				throw std::runtime_error("XXX object in a Zwo level.");
+			image = { Edition == GameEdition::XXX && character->SpriteName ? engine.GetData().GetSpriteDefinition(character->SpriteName, Edition).File : CoreAsset(character->SpriteAsset), character->GetFrames(engine.GetData(), Edition) };
 			++actors;
 		}
 		else if (item)
-			image = { item->SpriteAsset, item->Frames };
+			image = { CoreAsset(item->SpriteAsset), item->Frames };
 		else if (kind == ObjectKind::Scenery)
 		{
 			if (texture < 0 || static_cast<size_t>(texture) >= descriptor.Tiles.size())
@@ -101,6 +118,8 @@ LevelScene::LevelScene(MudGE& engine, const LevelPackInfo& pack, const LevelInfo
 			entry->second = engine.LoadSprite(image.File, image.Frames, 1);
 		i32 frame = IsPowerup(kind) ? GetItemDefinition(kind).Frame : (kind == ObjectKind::Scenery ? std::clamp(record.Frame(), 0, static_cast<i32>(image.Frames) - 1) : std::clamp(facing, 0, static_cast<i32>(image.Frames) - 1));
 		SpriteDraw draw{ entry->second, static_cast<i32>(x), static_cast<i32>(y), frame };
+		if (kind != ObjectKind::Scenery)
+			draw.Mirror = record.Mirrored();
 		if (pass == 0)
 		{
 			Object object;
@@ -110,6 +129,7 @@ LevelScene::LevelScene(MudGE& engine, const LevelPackInfo& pack, const LevelInfo
 			object.DepthOffset = record.Height() - record.DepthAdjustment();
 			object.CommittedY = y;
 			object.Kind = kind;
+			object.TargetPlayer = ActivePlayer;
 			object.Tile = (IsAnimal(kind) || IsEnemy(kind) || IsItem(kind)) ? record.Tile() : Grid.TileAt(x, y);
 			object.Facing = IsAnimal(kind) ? std::clamp(facing, 0, 3) : std::clamp(facing, 0, 7);
 			object.Temperament = record.Temperament();
@@ -159,10 +179,12 @@ LevelScene::LevelScene(MudGE& engine, const LevelPackInfo& pack, const LevelInfo
 			}
 			slots[slot] = static_cast<i32>(Objects.Size());
 			Objects.Add(object);
+			ActivePlayer = 0;
 		}
 		else
 			Renderer.Overlays.push_back(draw);
 	}
+	delete file;
 	for (size_t tile = 0; tile < Grid.ItemCodes.size(); ++tile)
 	{
 		const i32 slot = Grid.ItemObjects[tile];
@@ -178,16 +200,19 @@ LevelScene::LevelScene(MudGE& engine, const LevelPackInfo& pack, const LevelInfo
 		Objects[sheep[RandomInt(static_cast<i32>(sheep.size()))]].Temperament = 1; // 0x422C00
 	Items.SpawnPeriod = Parameter("WaitTime", 10);
 	Items.SpawnClock = Items.SpawnPeriod;
-	if (!foundPlayer || Grid.TileAt(Player.X, Player.Y) < 0)
+	if (foundPlayers < PlayerCount || Grid.TileAt(GetPlayer().X, GetPlayer().Y) < 0)
 		throw std::runtime_error("Missing or invalid player spawn.");
-	Player.TargetX = Player.X;
-	Player.TargetY = Player.Y;
-	Resources.InitializePlayer();
-	Objects[PlayerIndex].CommittedY = Player.Y;
+	for (size_t number = 0; number < PlayerCount; ++number)
+	{
+		PlayerScope player(*this, number);
+		GetPlayer().TargetX = GetPlayer().X;
+		GetPlayer().TargetY = GetPlayer().Y;
+		Resources.InitializePlayer();
+		Objects[GetPlayerIndex()].CommittedY = GetPlayer().Y;
+	}
 	Renderer.Sorted.reserve(Objects.Size());
 	Renderer.DrawCommands.reserve(1 + Objects.Size() + Renderer.Overlays.size());
 	Log("Loaded " + level.Map + " with " + std::to_string(scenery) + " scenery objects and " + std::to_string(actors) + " actors from folder data.");
-	delete file;
 }
 
 bool LevelScene::IsAnimal(ObjectKind kind)
@@ -212,7 +237,7 @@ OccupancyCode LevelScene::GetOccupancyCode(ObjectKind kind)
 
 f32 LevelScene::Parameter(cstr key, f32 fallback) const
 {
-	f64 value = Engine.GetData().NumericParam(key, fallback);
+	f64 value = Engine.GetData().NumericParam(key, fallback, Edition);
 	return std::isfinite(value) && value >= 0 ? static_cast<f32>(value) : fallback;
 }
 
@@ -226,7 +251,7 @@ i32 LevelScene::RandomInt(i32 limit)
 
 bool LevelScene::AdvanceActor(Object& actor, AnimationSequence table, f32 rate, f32 seconds)
 {
-	const std::vector<i32>& frames = ActorFrameTables.at(table);
+	const std::vector<i32>& frames = Resources.AnimationFrames(table);
 	actor.Age += seconds * rate;
 	if (static_cast<size_t>(actor.Age) >= frames.size())
 	{
@@ -240,7 +265,7 @@ bool LevelScene::AdvanceActor(Object& actor, AnimationSequence table, f32 rate, 
 
 void LevelScene::EmitNamedSound(cstr name)
 {
-	str path = Engine.GetData().SoundPath(name);
+	str path = Engine.GetData().SoundPath(name, Edition);
 	if (!path.empty())
 		Sounds.push_back(path);
 }
@@ -289,26 +314,40 @@ void LevelScene::Move(f32 seconds, i32 dx, i32 dy)
 
 void LevelScene::Update(f32 seconds, i32 dx, i32 dy, bool actionPressed)
 {
+	std::array<PlayerInput, 2> inputs{};
+	inputs[0] = { dx, dy, actionPressed };
+	Update(seconds, inputs);
+}
+
+void LevelScene::Update(f32 seconds, const std::array<PlayerInput, 2>& inputs)
+{
 	if (!std::isfinite(seconds) || seconds < 0)
 		return;
-	if (Player.PlayerAction == PlayerActionState::Idle)
-		Player.ActionQueued = false; // source clears the edge flag in idle/walking state 0
-	if (actionPressed && !Player.ActionDown && (Player.PlayerAction == PlayerActionState::Idle || Player.PlayerAction == PlayerActionState::Interaction || Player.PlayerAction == PlayerActionState::Frigida))
-		Player.ActionQueued = true;
-	Player.ActionDown = actionPressed;
-	dx = std::clamp(dx, -1, 1);
-	dy = std::clamp(dy, -1, 1);
-	Player.SetMovement(dx, dy);
-	// Substeps preserve occupancy and sequence boundaries across slow frames.
+	for (size_t number = 0; number < PlayerCount; ++number)
+	{
+		PlayerScope player(*this, number);
+		const PlayerInput& input = inputs[number];
+		if (GetPlayer().PlayerAction == PlayerActionState::Idle)
+			GetPlayer().ActionQueued = false;
+		if (input.Action && !GetPlayer().ActionDown && (GetPlayer().PlayerAction == PlayerActionState::Idle || GetPlayer().PlayerAction == PlayerActionState::Interaction || GetPlayer().PlayerAction == PlayerActionState::Frigida))
+			GetPlayer().ActionQueued = true;
+		GetPlayer().ActionDown = input.Action;
+		GetPlayer().SetMovement(std::clamp(input.X, -1, 1), std::clamp(input.Y, -1, 1));
+	}
 	f32 left = seconds;
 	do
 	{
-		f32 dt = std::min(left, 1.0f / 60.0f);
+		const f32 dt = std::min(left, 1.0f / 60.0f);
 		left -= dt;
 		Effects.SplashAge += dt;
-		Effects.SplashPlayerAge += dt;
+		for (size_t number = 0; number < PlayerCount; ++number)
+			Objects.GetPlayer(number).SplashAge += dt;
 		Effects.UpdateEffects(dt);
-		Player.MarkPlayerCell();
+		for (size_t number = 0; number < PlayerCount; ++number)
+		{
+			PlayerScope player(*this, number);
+			GetPlayer().MarkPlayerCell();
+		}
 		Items.UpdateItems(dt);
 		Objects.UpdatePhase(ObjectPhase::Enemies, dt);
 		Objects.UpdatePhase(ObjectPhase::Animals, dt);
@@ -352,6 +391,9 @@ std::vector<SoundRequest> LevelScene::TakeAudioEvents()
 	Effects.SplashSound = false;
 	std::vector<SoundRequest> result;
 	result.swap(Sounds);
+	if (Edition == GameEdition::XXX)
+		for (SoundRequest& request : result)
+			request.Asset = CoreAsset(request.Asset);
 	return result;
 }
 
@@ -376,18 +418,30 @@ bool LevelScene::TakeSplashSound()
 size_t LevelScene::FindAvailableObjectSlot() const
 {
 	for (size_t i = 0; i < Objects.Size(); ++i)
-		if (Objects[i].Freed && i != PlayerIndex && static_cast<i32>(i) != Player.ActiveSheep && static_cast<i32>(i) != UfoController.Ufo.Target)
+	{
+		if (!Objects[i].Freed || static_cast<i32>(i) == UfoController.Ufo.Target)
+			continue;
+		bool referenced = false;
+		for (size_t number = 0; number < PlayerCount; ++number)
+			referenced = referenced || i == Objects.GetPlayer(number).GetIndex() || static_cast<i32>(i) == Objects.GetPlayer(number).ActiveSheep;
+		if (!referenced)
 			return i;
+	}
 	return Objects.Size();
 }
 
 bool LevelScene::SpawnNearPlayer(ObjectKind kind)
 {
+	const CharacterDefinition* character = FindCharacterDefinition(kind);
+	if (character && (character->XxxOnly && Edition != GameEdition::XXX || !character->DebugSpawnable))
+		return false;
 	if ((!IsAnimal(kind) && !IsItem(kind)) || FindAvailableObjectSlot() >= LevelFile::ObjectCount)
 		return false;
-	const i32 origin = Grid.TileAt(Player.X, Player.Y);
+	const i32 origin = Grid.TileAt(GetPlayer().X, GetPlayer().Y);
 	for (i32 radius = 1; radius <= 4; ++radius)
+	{
 		for (i32 dy = -radius; dy <= radius; ++dy)
+		{
 			for (i32 dx = -radius; dx <= radius; ++dx)
 			{
 				if (std::max(std::abs(dx), std::abs(dy)) != radius)
@@ -414,7 +468,7 @@ bool LevelScene::SpawnNearPlayer(ObjectKind kind)
 				animal.Y = animal.TargetY = static_cast<f32>((y - 1) * TileSize + TileSize / 2) - animal.CenterY;
 				animal.CommittedY = animal.Y;
 				animal.DepthOffset = sprite->FrameHeight - (kind == ObjectKind::Sheep ? 0 : TileSize);
-				animal.Facing = Player.Facing / 2;
+				animal.Facing = GetPlayer().Facing / 2;
 				animal.Pulse = 26;
 				animal.Idle = 1000;
 				animal.Draw = { sprite, static_cast<i32>(animal.X), static_cast<i32>(animal.Y), animal.Facing };
@@ -427,5 +481,63 @@ bool LevelScene::SpawnNearPlayer(ObjectKind kind)
 				++RemainingTargets;
 				return true;
 			}
+		}
+	}
 	return false;
+}
+
+str LevelScene::CoreAsset(const str& path) const
+{
+	return Engine.GetData().EditionAsset(Edition, path);
+}
+
+PlayerCharacter& LevelScene::GetPlayer()
+{
+	return Objects.GetPlayer(ActivePlayer);
+}
+
+const PlayerCharacter& LevelScene::GetPlayer() const
+{
+	return Objects.GetPlayer(ActivePlayer);
+}
+
+size_t LevelScene::GetPlayerIndex() const
+{
+	return GetPlayer().GetIndex();
+}
+
+LevelScene::PlayerScope::PlayerScope(LevelScene& scene, size_t number)
+    : Scene(scene), Previous(scene.ActivePlayer)
+{
+	if (number >= scene.PlayerCount)
+		throw std::out_of_range("Inactive player context.");
+	scene.ActivePlayer = number;
+}
+
+LevelScene::PlayerScope::~PlayerScope()
+{
+	Scene.ActivePlayer = Previous;
+}
+
+void LevelScene::FinishBonus()
+{
+	if (Mode != BonusMode::Sven)
+	{
+		BonusFinished = true;
+		RemainingTargets = 0;
+	}
+}
+
+void LevelScene::RecordAnimalCompletion(const WorldObject& animal)
+{
+	if (Edition == GameEdition::XXX && animal.Kind == ObjectKind::Sheep && animal.Temperament == 2 && animal.Attempts == 1)
+		BonusUnlocked = true;
+}
+
+i32 LevelScene::FindInteractingPlayer(size_t slot) const
+{
+	for (size_t number = 0; number < PlayerCount; ++number)
+		if (Objects.GetPlayer(number).ActiveSheep == static_cast<i32>(slot))
+			return static_cast<i32>(number);
+	return -1;
 }

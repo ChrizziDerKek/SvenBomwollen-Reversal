@@ -9,7 +9,7 @@
 AnimalCharacter::AnimalCharacter(LevelScene& scene, size_t index, ObjectPhase phase)
     : BaseCharacter(scene, phase, index)
 {
-	const f64 speed = scene.Engine.GetData().NumericParam("SheepSpeed", 50);
+	const f64 speed = scene.Engine.GetData().NumericParam("SheepSpeed", 50, scene.GetEdition());
 	SheepSpeed = std::isfinite(speed) && speed > 0 ? static_cast<f32>(speed) : 50;
 }
 
@@ -20,6 +20,8 @@ void AnimalCharacter::Update(f32 seconds)
 
 void AnimalCharacter::Resolve()
 {
+	const i32 owner = GetState().InteractionPlayer;
+	LevelScene::PlayerScope scope(Scene, owner >= 0 && static_cast<size_t>(owner) < Scene.GetPlayerCount() ? static_cast<size_t>(owner) : Scene.GetPlayer().GetNumber());
 	ResolveSheep(GetState());
 }
 
@@ -30,11 +32,16 @@ void Sheep::Update(f32 seconds)
 
 void AnimalCharacter::UpdateOtherAnimal(f32 seconds)
 {
+	if (Scene.GetEdition() == GameEdition::XXX)
+	{
+		UpdateXxxSmallAnimal(seconds);
+		return;
+	}
 	const size_t i = GetIndex();
 	WorldObject& actor = GetState();
 	if (actor.Freed || !Scene.IsAnimal(actor.Kind) || actor.Kind == ObjectKind::Sheep)
 		return;
-	if (static_cast<i32>(i) == Scene.Player.ActiveSheep && Scene.Player.PlayerAction != PlayerActionState::Whistle)
+	if (static_cast<i32>(i) == Scene.GetPlayer().ActiveSheep && Scene.GetPlayer().PlayerAction != PlayerActionState::Whistle)
 		return;
 	if (actor.State == ActorState::BeamingUp)
 	{
@@ -65,6 +72,109 @@ void AnimalCharacter::UpdateOtherAnimal(f32 seconds)
 		}
 	}
 	actor.Draw = { Scene.Resources.ActorSprites[actor.Kind].Stand, static_cast<i32>(actor.X), static_cast<i32>(actor.Y + actor.Lift), actor.Facing };
+}
+
+void AnimalCharacter::UpdateXxxSmallAnimal(f32 seconds)
+{
+	WorldObject& actor = GetState();
+	if (actor.Freed || actor.Kind == ObjectKind::Sheep)
+		return;
+	const ActorState initialState = actor.State;
+	for (size_t number = 0; number < Scene.GetPlayerCount(); ++number)
+	{
+		LevelScene::PlayerScope scope(Scene, number);
+		if (Scene.GetPlayer().ActiveSheep == static_cast<i32>(GetIndex()) && Scene.GetPlayer().PlayerAction != PlayerActionState::Whistle)
+			return;
+	}
+	if (actor.State == ActorState::BeamingUp)
+	{
+		actor.Lift -= seconds * 20;
+		if (actor.Lift < -27)
+		{
+			Scene.RemoveActor(GetIndex(), false);
+			return;
+		}
+	}
+	else if (actor.State == ActorState::Turning)
+	{
+		actor.Idle -= seconds * 60;
+		if (actor.Idle < 0)
+		{
+			actor.Facing = actor.TurnTo;
+			actor.TurnTo = -1;
+			actor.State = ActorState::Idle;
+			actor.Idle = 0;
+		}
+	}
+	else if (actor.State == ActorState::Idle)
+	{
+		actor.Idle -= seconds * 60;
+		if (actor.Idle < 0)
+		{
+			bool playerNearby = false;
+			for (size_t number = 0; number < Scene.GetPlayerCount(); ++number)
+			{
+				LevelScene::PlayerScope scope(Scene, number);
+				const i32 tile = Scene.Grid.TileAt(Scene.GetPlayer().X, Scene.GetPlayer().Y);
+				playerNearby = playerNearby || (actor.Tile >= 0 && tile >= 0 && std::abs(tile % Stride - actor.Tile % Stride) < 5 && std::abs(tile / Stride - actor.Tile / Stride) < 5);
+			}
+			if (playerNearby)
+				actor.Idle = static_cast<f32>(Scene.RandomInt(1000) + 450);
+			else
+			{
+				const i32 choice = Scene.RandomInt(15);
+				if (choice == 2)
+				{
+					i32 facing;
+					do
+						facing = Scene.RandomInt(4);
+					while (facing == actor.Facing);
+					actor.Facing = facing;
+				}
+				const SmallAnimalState action = choice == 1 ? SmallAnimalState::Eating : (choice == 5 ? SmallAnimalState::IdleAnimation : SmallAnimalState::ZeroAnimation);
+				if (choice == 1 || choice == 5 || (choice >= 6 && (actor.Facing == 1 || actor.Facing == 2)))
+				{
+					actor.State = ToActorState(action);
+					actor.Age = 0;
+					actor.AnimRate = 15;
+				}
+				else
+					actor.Idle = static_cast<f32>(Scene.RandomInt(1000) + 450);
+			}
+		}
+	}
+	if (initialState == ActorState::Idle || initialState == ActorState::Turning)
+	{
+		actor.Pulse -= seconds * 60;
+		if (actor.Pulse < 0)
+		{
+			actor.Pulse = 25;
+			actor.MoodBlink ^= 1;
+		}
+	}
+	const SmallAnimalState state = static_cast<SmallAnimalState>(actor.State);
+	const ShagAnimation* animation = nullptr;
+	if (state == SmallAnimalState::Eating)
+		animation = &Scene.Resources.AnimalEating.at(actor.Kind).at(actor.Facing);
+	else if (state == SmallAnimalState::IdleAnimation)
+		animation = &Scene.Resources.AnimalIdle.at(actor.Kind).at(actor.Facing);
+	else if (state == SmallAnimalState::ZeroAnimation)
+		animation = &Scene.Resources.AnimalZero.at(actor.Kind);
+	if (animation && actor.State == initialState && !animation->Frames.empty())
+	{
+		actor.Age += seconds * 15;
+		if (actor.Age >= animation->Frames.size())
+		{
+			actor.State = ActorState::Idle;
+			actor.Idle = static_cast<f32>(Scene.RandomInt(1000) + 450);
+		}
+		else
+		{
+			actor.Draw = { animation->Sprite, static_cast<i32>(actor.X), static_cast<i32>(actor.Y + actor.Lift), animation->Frames[static_cast<size_t>(actor.Age)], animation->Mirror };
+			return;
+		}
+	}
+	actor.Draw = { Scene.Resources.ActorSprites.at(actor.Kind).Stand, static_cast<i32>(actor.X), static_cast<i32>(actor.Y + actor.Lift), actor.Facing };
 }
 
 void AnimalCharacter::ResolveSheep(Object& animal)
@@ -98,8 +208,11 @@ void AnimalCharacter::ResolveSheep(Object& animal)
 	}
 	if (animal.Kind == ObjectKind::Sheep)
 		++Scene.CompletedSheep;
-	Scene.Sounds.push_back("Sven2/sfx/sheep_explode3.ogg");
-	i32 oldTile = Scene.Grid.TileAt(Scene.Player.X, Scene.Player.Y);
+	if (Scene.GetEdition() == GameEdition::XXX)
+		Scene.EmitNamedSound("SfxExplode");
+	else
+		Scene.Sounds.push_back("Sven2/sfx/sheep_explode3.ogg");
+	i32 oldTile = Scene.Grid.TileAt(Scene.GetPlayer().X, Scene.GetPlayer().Y);
 	if (oldTile >= 0)
 		Scene.Grid.Tiles[oldTile] = OccupancyCode::Empty;
 	if (animal.Tile >= 0)
@@ -111,11 +224,11 @@ void AnimalCharacter::ResolveSheep(Object& animal)
 	animal.State = ActorState::Resolved;
 	animal.Age = 0;
 	--Scene.RemainingTargets;
-	Scene.Player.X = Scene.Player.TargetX = animal.X;
-	Scene.Player.Y = Scene.Player.TargetY = animal.Y;
-	Scene.Player.Facing = 2 * animal.Facing + 1;
-	Scene.Objects[Scene.PlayerIndex].CommittedY = Scene.Player.Y;
-	Scene.Player.ActionQueued = false;
+	Scene.GetPlayer().X = Scene.GetPlayer().TargetX = animal.X;
+	Scene.GetPlayer().Y = Scene.GetPlayer().TargetY = animal.Y;
+	Scene.GetPlayer().Facing = 2 * animal.Facing + 1;
+	Scene.Objects[Scene.GetPlayerIndex()].CommittedY = Scene.GetPlayer().Y;
+	Scene.GetPlayer().ActionQueued = false;
 }
 
 bool AnimalCharacter::AgeSheepMood(Object& animal, f32 seconds)
@@ -148,7 +261,7 @@ bool AnimalCharacter::MoveDemonSheep()
 {
 	const size_t index = GetIndex();
 	WorldObject& animal = Scene.Objects[index];
-	const i32 playerTile = Scene.Grid.TileAt(Scene.Player.X, Scene.Player.Y);
+	const i32 playerTile = Scene.Grid.TileAt(Scene.GetPlayer().X, Scene.GetPlayer().Y);
 	const i32 preferred = animal.Tile % Stride > playerTile % Stride ? (animal.Tile / Stride > playerTile / Stride ? 3 : 2) : (animal.Tile / Stride <= playerTile / Stride ? 1 : 0);
 	// Literal fallback order in 0x408880. Despite the old analyst name, it
 	// chooses a diagonal toward Sven, then tries the other Directions.
@@ -177,15 +290,15 @@ bool AnimalCharacter::ShockPlayer(Object& animal, i32 timeChange)
 	if (!Scene.Objects.CanCatchPlayer(facing))
 		return false;
 	// 0x42C990 cancels interpolation, the current interaction and powerup.
-	Scene.Player.CancelPlayerStep();
-	Scene.Player.ActiveSheep = -1;
-	Scene.Player.PlayerAction = PlayerActionState::Idle;
-	Scene.Player.Interaction = nullptr;
-	Scene.Player.ActionQueued = false;
-	Scene.Player.SelectedInteraction = -1;
-	Scene.Items.PlayerEffect = ItemCode::None;
-	Scene.Items.EffectRemaining = Scene.Items.EffectAge = 0;
-	Scene.Player.PlayerShockAge = 0;
+	Scene.GetPlayer().CancelPlayerStep();
+	Scene.GetPlayer().ActiveSheep = -1;
+	Scene.GetPlayer().PlayerAction = PlayerActionState::Idle;
+	Scene.GetPlayer().Interaction = nullptr;
+	Scene.GetPlayer().ActionQueued = false;
+	Scene.GetPlayer().SelectedInteraction = -1;
+	Scene.Items.GetPowerup().Code = ItemCode::None;
+	Scene.Items.GetPowerup().Remaining = Scene.Items.GetPowerup().Age = 0;
+	Scene.GetPlayer().PlayerShockAge = 0;
 	animal.State = ActorState::DemonShocking;
 	animal.Age = 0;
 	animal.Steps = 0;
@@ -295,7 +408,7 @@ void AnimalCharacter::UpdateSheep(f32 seconds)
 		animal.Draw.Mirror = SheepMirror[animal.Facing];
 		return;
 	}
-	if (static_cast<i32>(i) == Scene.Player.ActiveSheep && Scene.Player.PlayerAction != PlayerActionState::Whistle)
+	if (static_cast<i32>(i) == Scene.GetPlayer().ActiveSheep && Scene.GetPlayer().PlayerAction != PlayerActionState::Whistle)
 		return;
 	animal.Age += seconds;
 	if (animal.State == ActorState::Turning)
@@ -393,4 +506,170 @@ const ShagAnimation* AnimalCharacter::GetInteraction(i32 facing) const
 	if (found == Scene.Resources.AnimalActions.end() || facing < 0 || facing >= static_cast<i32>(found->second.size()))
 		return nullptr;
 	return &found->second[facing];
+}
+
+Mermaid::Mermaid(LevelScene& scene, size_t index)
+    : BaseCharacter(scene, ObjectPhase::Animals, index)
+{}
+
+MermaidState Mermaid::GetMermaidState() const
+{
+	return static_cast<MermaidState>(State.State);
+}
+
+void Mermaid::Initialize()
+{
+	if (Scene.GetEdition() != GameEdition::XXX)
+		throw std::logic_error("Mermaids require the XXX edition profile.");
+	Scene.Resources.NamedSprite("MermaidJump");
+	Scene.Resources.NamedSprite("MermaidShag");
+	if (GetMermaidState() == MermaidState::Dormant)
+		ClearCell();
+	Draw();
+}
+
+void Mermaid::SetState(MermaidState state)
+{
+	State.State = static_cast<ActorState>(state);
+	State.Age = 0;
+	Draw();
+}
+
+void Mermaid::ClearCell()
+{
+	if (State.Tile < 0 || State.Tile >= static_cast<i32>(Scene.Grid.Tiles.size()))
+		return;
+	if (Scene.Grid.Tiles[State.Tile] == OccupancyCode::Mermaid && (Scene.Grid.Reservations[State.Tile] == -1 || Scene.Grid.Reservations[State.Tile] == static_cast<i32>(GetIndex())))
+	{
+		Scene.Grid.Tiles[State.Tile] = OccupancyCode::Empty;
+		Scene.Grid.Reservations[State.Tile] = -1;
+	}
+}
+
+bool Mermaid::Reveal()
+{
+	if (State.Freed || GetMermaidState() != MermaidState::Dormant || State.Tile < 0 || State.Tile >= static_cast<i32>(Scene.Grid.Tiles.size()) || Scene.Grid.Tiles[State.Tile] != OccupancyCode::Empty)
+		return false;
+	Scene.Grid.Tiles[State.Tile] = OccupancyCode::Mermaid;
+	Scene.Grid.Reservations[State.Tile] = static_cast<i32>(GetIndex());
+	Cycles = 0;
+	SetState(MermaidState::Emerging);
+	return true;
+}
+
+bool Mermaid::BeginInteraction(size_t playerNumber, i32 facing)
+{
+	if (GetMermaidState() != MermaidState::Idle || playerNumber >= Scene.GetPlayerCount() || facing < 2 || facing > 4)
+		return false;
+	LinkedPlayer = static_cast<i32>(playerNumber);
+	State.InteractionPlayer = LinkedPlayer;
+	State.Attempts = 0;
+	State.State = static_cast<ActorState>(MermaidState::Interacting);
+	Scene.EmitNamedSound("SfxShagMermaid");
+	return true;
+}
+
+bool Mermaid::FinishInteraction(bool repeat)
+{
+	if (State.Freed || GetMermaidState() != MermaidState::Interacting || LinkedPlayer < 0)
+		return false;
+	Scene.AddScore(16);
+	if (++State.Attempts > 6)
+	{
+		SetState(MermaidState::Resolved);
+		ReleasedPlayer = LinkedPlayer;
+		LinkedPlayer = -1;
+		State.InteractionPlayer = -1;
+		return false;
+	}
+	if (repeat)
+	{
+		Scene.EmitNamedSound("SfxShagMermaid");
+		return true;
+	}
+	ReleasedPlayer = LinkedPlayer;
+	LinkedPlayer = -1;
+	State.InteractionPlayer = -1;
+	State.State = static_cast<ActorState>(MermaidState::Idle);
+	return false;
+}
+
+i32 Mermaid::TakeReleasedPlayer()
+{
+	const i32 number = ReleasedPlayer;
+	ReleasedPlayer = -1;
+	return number;
+}
+
+bool Mermaid::Advance(cstr sequence, f32 rate, f32 seconds)
+{
+	const std::vector<i32>& frames = Scene.Resources.FrameList(sequence);
+	if (frames.empty())
+		throw std::runtime_error(str("Missing XXX animation: ") + sequence);
+	State.Age += seconds * rate;
+	if (State.Age >= static_cast<f32>(frames.size()))
+	{
+		State.Age = 0;
+		return true;
+	}
+	return false;
+}
+
+void Mermaid::Draw()
+{
+	State.Draw = {};
+	if (State.Freed || GetMermaidState() == MermaidState::Dormant || GetMermaidState() == MermaidState::Resolved)
+		return;
+	cstr sequence = GetMermaidState() == MermaidState::Emerging ? "aMermaidJump" : (GetMermaidState() == MermaidState::Submerging ? "aMermaidJumpBack" : "aMermaidIdle");
+	const std::vector<i32>& frames = Scene.Resources.FrameList(sequence);
+	if (frames.empty())
+		throw std::runtime_error(str("Missing XXX animation: ") + sequence);
+	const size_t frame = std::min(static_cast<size_t>(State.Age), frames.size() - 1);
+	State.Draw = { Scene.Resources.NamedSprite("MermaidJump"), static_cast<i32>(State.X), static_cast<i32>(State.Y), frames[frame] };
+	State.CommittedY = State.Y;
+}
+
+void Mermaid::Update(f32 seconds)
+{
+	if (State.Freed)
+		return;
+	switch (GetMermaidState())
+	{
+	case MermaidState::Dormant:
+		ClearCell();
+		break;
+	case MermaidState::Emerging:
+		if (Advance("aMermaidJump", 15, seconds))
+		{
+			Cycles = 0;
+			SetState(MermaidState::Idle);
+		}
+		break;
+	case MermaidState::Idle:
+	case MermaidState::Interacting:
+		// 0x40BF47..54 and 0x40C020..2D: C0|C3 skips the branch (<=10).
+		if (Advance("aMermaidIdle", 5, seconds) && ++Cycles > 10)
+		{
+			ClearCell();
+			ReleasedPlayer = LinkedPlayer;
+			LinkedPlayer = -1;
+			State.InteractionPlayer = -1;
+			SetState(MermaidState::Submerging);
+		}
+		break;
+	case MermaidState::Submerging:
+		if (Advance("aMermaidJumpBack", 15, seconds))
+			SetState(MermaidState::Dormant);
+		break;
+	case MermaidState::Resolved:
+		ClearCell();
+		Scene.AddScore(30);
+		// Native 0x40AA10 calls 0x41E850(10, slot): this is a time popup, not ten lives.
+		Scene.Effects.AddTime(10, State.X + State.CenterX, State.Y + State.CenterY);
+		Scene.Effects.SpawnCompletionEffect(State.X + State.CenterX, State.Y + State.CenterY, true);
+		Scene.EmitNamedSound("SfxExplode");
+		State.Freed = true;
+		break;
+	}
+	Draw();
 }

@@ -14,7 +14,8 @@ public:
 	~ObjectManager();
 	ObjectManager(const ObjectManager&) = delete;
 	ObjectManager& operator=(const ObjectManager&) = delete;
-	PlayerCharacter& GetPlayer();
+	PlayerCharacter& GetPlayer(size_t number = 0);
+	const PlayerCharacter& GetPlayer(size_t number = 0) const;
 	size_t Size() const
 	{
 		return Objects.size();
@@ -51,7 +52,8 @@ public:
 	{
 		i32 Enemy = -1;
 		f32 Remaining = 0;
-	} Combat;
+	};
+	std::array<CombatState, 2> Combats;
 
 	// Required C++ range-for protocol. Public game operations use PascalCase.
 	class Iterator
@@ -92,6 +94,7 @@ private:
 	std::unique_ptr<BaseObject> Create(const WorldObject& state, size_t index);
 	LevelScene& Scene;
 	std::vector<std::unique_ptr<BaseObject>> Objects;
-	std::unique_ptr<PlayerCharacter> PendingPlayer;
-	PlayerCharacter* Player;
+	std::array<std::unique_ptr<PlayerCharacter>, 2> PendingPlayers;
+	std::array<PlayerCharacter*, 2> Players{};
+	size_t AdoptedPlayers = 0;
 };

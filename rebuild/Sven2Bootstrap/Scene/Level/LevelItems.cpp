@@ -9,8 +9,7 @@
 
 LevelItems::LevelItems(LevelScene& scene)
     : Scene(scene)
-{
-}
+{}
 
 i32 LevelItems::FindDistraction(const Object& actor, ItemCode code) const
 {
@@ -100,7 +99,7 @@ void LevelItems::SpawnItems()
 		const i32 tile = tiles[Scene.RandomInt(static_cast<i32>(tiles.size()))];
 		if (Scene.Grid.ItemCodes[tile] != ItemCode::None)
 			continue;
-		const OccupancyCode occupant = Scene.Grid.TileAt(Scene.Player.X, Scene.Player.Y) == tile ? OccupancyCode::Player : Scene.Grid.Tiles[tile];
+		const OccupancyCode occupant = Scene.Grid.TileAt(Scene.GetPlayer().X, Scene.GetPlayer().Y) == tile ? OccupancyCode::Player : Scene.Grid.Tiles[tile];
 		if (group != SpawnerCode::Powerup && IsEnemyOccupancy(occupant))
 			continue;
 		if (group != SpawnerCode::Distraction && occupant == OccupancyCode::Player)
@@ -115,14 +114,18 @@ void LevelItems::SpawnItems()
 
 void LevelItems::UpdateItems(f32 seconds)
 {
-	EffectAge += seconds;
-	if (PlayerEffect != ItemCode::None)
+	for (size_t number = 0; number < Scene.GetPlayerCount(); ++number)
 	{
-		EffectRemaining -= seconds;
-		if (EffectRemaining < 0)
+		LevelScene::PlayerScope player(Scene, number);
+		GetPowerup().Age += seconds;
+		if (GetPowerup().Code != ItemCode::None)
 		{
-			PlayerEffect = ItemCode::None;
-			EffectRemaining = 0;
+			GetPowerup().Remaining -= seconds;
+			if (GetPowerup().Remaining < 0)
+			{
+				GetPowerup().Code = ItemCode::None;
+				GetPowerup().Remaining = 0;
+			}
 		}
 	}
 	SpawnClock -= seconds;
@@ -136,12 +139,12 @@ void LevelItems::UpdateItems(f32 seconds)
 
 void LevelItems::AffectNearbyAnimals()
 {
-	if (PlayerEffect != ItemCode::StinkMushroom && PlayerEffect != ItemCode::Flower)
+	if (GetPowerup().Code != ItemCode::StinkMushroom && GetPowerup().Code != ItemCode::Flower)
 		return;
-	const i32 tile = Scene.Grid.TileAt(Scene.Player.X, Scene.Player.Y);
+	const i32 tile = Scene.Grid.TileAt(Scene.GetPlayer().X, Scene.GetPlayer().Y);
 	if (tile < 0)
 		return;
-	const i32 mood = PlayerEffect == ItemCode::StinkMushroom ? 10 : 0;
+	const i32 mood = GetPowerup().Code == ItemCode::StinkMushroom ? 10 : 0;
 	bool sheepChanged = false;
 	for (WorldObject& animal : Scene.Objects)
 	{
@@ -164,21 +167,21 @@ void LevelItems::AffectNearbyAnimals()
 
 void LevelItems::PickupPlayerItem()
 {
-	if (Scene.Objects.Combat.Enemy >= 0 || Scene.Player.PlayerBeamState || Scene.Effects.SplashPlayerAge * Scene.Player.DefaultRate < 16)
+	if (Scene.GetCombat().Enemy >= 0 || Scene.GetPlayer().PlayerBeamState || Scene.GetPlayer().SplashAge * Scene.GetPlayer().DefaultRate < 16)
 		return;
-	const i32 tile = Scene.Grid.TileAt(Scene.Player.X, Scene.Player.Y);
+	const i32 tile = Scene.Grid.TileAt(Scene.GetPlayer().X, Scene.GetPlayer().Y);
 	if (tile < 0)
 		return;
 	const ItemCode code = Scene.Grid.ItemCodes[tile];
 	if (code == ItemCode::Artifact)
 	{
-		if (PlayerEffect == ItemCode::AlienPower || Scene.UfoController.Ufo.State != UfoState::Inactive)
+		if (GetPowerup().Code == ItemCode::AlienPower || Scene.UfoController.Ufo.State != UfoState::Inactive)
 			return;
 		RemoveItem(tile);
-		Scene.UfoController.RequestUfo(static_cast<i32>(Scene.PlayerIndex));
+		Scene.UfoController.RequestUfo(static_cast<i32>(Scene.GetPlayerIndex()));
 		return;
 	}
-	if (!IsPlayerPowerup(code) || (code != ItemCode::Gift && PlayerEffect == ItemCode::AlienPower))
+	if (!IsPlayerPowerup(code) || (code != ItemCode::Gift && GetPowerup().Code == ItemCode::AlienPower))
 		return;
 	RemoveItem(tile);
 	if (code == ItemCode::Gift)
@@ -189,20 +192,20 @@ void LevelItems::PickupPlayerItem()
 			++LivesGained;
 		}
 		else if (Scene.RandomInt(25) == 0)
-			Scene.Effects.AddTime(25, Scene.Player.X + 60, Scene.Player.Y + 60);
+			Scene.Effects.AddTime(25, Scene.GetPlayer().X + 60, Scene.GetPlayer().Y + 60);
 		else if (Scene.RandomInt(15) == 0)
-			Scene.Effects.AddTime(15, Scene.Player.X + 60, Scene.Player.Y + 60);
+			Scene.Effects.AddTime(15, Scene.GetPlayer().X + 60, Scene.GetPlayer().Y + 60);
 		else if (Scene.RandomInt(10) == 0)
-			Scene.Effects.AddTime(10, Scene.Player.X + 60, Scene.Player.Y + 60);
+			Scene.Effects.AddTime(10, Scene.GetPlayer().X + 60, Scene.GetPlayer().Y + 60);
 		else
-			Scene.Effects.AddTime(5, Scene.Player.X + 60, Scene.Player.Y + 60);
+			Scene.Effects.AddTime(5, Scene.GetPlayer().X + 60, Scene.GetPlayer().Y + 60);
 		Scene.Sounds.push_back("Sven2/sfx/item_gift.ogg");
 		return;
 	}
-	PlayerEffect = code;
-	EffectAge = 0;
+	GetPowerup().Code = code;
+	GetPowerup().Age = 0;
 	const ItemDefinition& definition = GetItemDefinition(code);
-	EffectRemaining = Scene.Parameter(definition.EffectDurationKey, definition.DefaultEffectDuration);
+	GetPowerup().Remaining = Scene.Parameter(definition.EffectDurationKey, definition.DefaultEffectDuration);
 	Scene.Sounds.push_back(str("Sven2/sfx/") + definition.PickupSound);
 }
 
@@ -230,4 +233,9 @@ void LevelItems::UpdateObject(size_t i, f32 seconds)
 		if (object.Pulse < 0)
 			RemoveItem(object.Tile);
 	}
+}
+
+PlayerPowerup& LevelItems::GetPowerup()
+{
+	return Scene.GetPlayer().Powerup;
 }

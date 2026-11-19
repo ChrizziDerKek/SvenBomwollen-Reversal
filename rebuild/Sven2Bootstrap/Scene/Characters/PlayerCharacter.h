@@ -10,7 +10,11 @@ class PlayerCharacter final : public BaseCharacter
 	using Object = WorldObject;
 
 public:
-	PlayerCharacter(LevelScene& scene);
+	PlayerCharacter(LevelScene& scene, size_t number = 0);
+	size_t GetNumber() const
+	{
+		return Number;
+	}
 	PlayerCharacter(const PlayerCharacter&) = delete;
 	PlayerCharacter& operator=(const PlayerCharacter&) = delete;
 	void MarkPlayerCell();
@@ -25,10 +29,7 @@ public:
 		MovementX = dx;
 		MovementY = dy;
 	}
-	void Update(f32 seconds) override
-	{
-		AdvancePlayer(seconds, MovementX, MovementY);
-	}
+	void Update(f32 seconds) override;
 
 private:
 	friend class AnimalCharacter;
@@ -43,6 +44,9 @@ private:
 	friend class UfoController;
 
 	i32 MovementX = 0;
+	size_t Number = 0;
+	PlayerPowerup Powerup;
+	f32 SplashAge = 100;
 	i32 MovementY = 0;
 	i32 PlayerBeamState = 0;
 	f32 PlayerLift = 0;

@@ -19,11 +19,11 @@ void UfoController::RequestUfo(i32 target)
 	Ufo.State = UfoState::Arriving;
 	Ufo.Target = target;
 	Ufo.TargetTile = actor.Tile;
-	if (static_cast<size_t>(target) == Scene.PlayerIndex)
+	if (static_cast<size_t>(target) == Scene.GetPlayerIndex())
 	{
-		Ufo.X = Scene.Player.X + 60;
-		Ufo.Y = Scene.Player.Y + 60;
-		Ufo.TargetTile = Scene.Grid.TileAt(Scene.Player.X, Scene.Player.Y);
+		Ufo.X = Scene.GetPlayer().X + 60;
+		Ufo.Y = Scene.GetPlayer().Y + 60;
+		Ufo.TargetTile = Scene.Grid.TileAt(Scene.GetPlayer().X, Scene.GetPlayer().Y);
 	}
 	else
 	{
@@ -45,23 +45,23 @@ void UfoController::BeginBeam()
 		return;
 	}
 	WorldObject& actor = Scene.Objects[target];
-	if (actor.Freed || (static_cast<size_t>(target) != Scene.PlayerIndex && actor.Tile != Ufo.TargetTile) || (Scene.IsAnimal(actor.Kind) && (Scene.Player.ActiveSheep == target || actor.State == ActorState::AnimalWalking || actor.State == ActorState::Turning || (actor.Kind == ObjectKind::Sheep && IsDemonState(actor.State)))))
+	if (actor.Freed || (static_cast<size_t>(target) != Scene.GetPlayerIndex() && actor.Tile != Ufo.TargetTile) || (Scene.IsAnimal(actor.Kind) && (Scene.GetPlayer().ActiveSheep == target || actor.State == ActorState::AnimalWalking || actor.State == ActorState::Turning || (actor.Kind == ObjectKind::Sheep && IsDemonState(actor.State)))))
 	{
 		Ufo.Clock = 0;
 		return;
 	}
-	if (static_cast<size_t>(target) == Scene.PlayerIndex)
+	if (static_cast<size_t>(target) == Scene.GetPlayerIndex())
 	{
-		if (Scene.Player.PlayerAction != PlayerActionState::Idle || Scene.Player.PlayerShockAge >= 0 || Scene.Objects.Combat.Enemy >= 0 || Scene.Grid.TileAt(Scene.Player.X, Scene.Player.Y) != Ufo.TargetTile)
+		if (Scene.GetPlayer().PlayerAction != PlayerActionState::Idle || Scene.GetPlayer().PlayerShockAge >= 0 || Scene.GetCombat().Enemy >= 0 || Scene.Grid.TileAt(Scene.GetPlayer().X, Scene.GetPlayer().Y) != Ufo.TargetTile)
 		{
 			Ufo.Clock = 0;
 			return;
 		}
-		Scene.Player.PlayerBeamState = 21;
-		Scene.Player.PlayerBeamClock = 0;
-		Scene.Player.PlayerLift = 0;
-		Scene.Items.PlayerEffect = ItemCode::None;
-		Scene.Player.CancelPlayerStep();
+		Scene.GetPlayer().PlayerBeamState = 21;
+		Scene.GetPlayer().PlayerBeamClock = 0;
+		Scene.GetPlayer().PlayerLift = 0;
+		Scene.Items.GetPowerup().Code = ItemCode::None;
+		Scene.GetPlayer().CancelPlayerStep();
 	}
 	else
 	{
@@ -97,29 +97,29 @@ void UfoController::BeginBeam()
 
 void UfoController::UpdateUfo(f32 seconds)
 {
-	if (Scene.Player.PlayerBeamState)
+	if (Scene.GetPlayer().PlayerBeamState)
 	{
-		Scene.Player.PlayerBeamClock += seconds;
-		if (Scene.Player.PlayerBeamState == 21)
+		Scene.GetPlayer().PlayerBeamClock += seconds;
+		if (Scene.GetPlayer().PlayerBeamState == 21)
 		{
-			Scene.Player.PlayerLift -= seconds * 20;
-			if (Scene.Player.PlayerLift < -27)
+			Scene.GetPlayer().PlayerLift -= seconds * 20;
+			if (Scene.GetPlayer().PlayerLift < -27)
 			{
-				Scene.Player.PlayerLift = -27;
-				Scene.Player.PlayerBeamState = 22;
-				Scene.Player.PlayerBeamClock = 0;
+				Scene.GetPlayer().PlayerLift = -27;
+				Scene.GetPlayer().PlayerBeamState = 22;
+				Scene.GetPlayer().PlayerBeamClock = 0;
 			}
 		}
-		else if (Scene.Player.PlayerBeamClock > 2.5f)
+		else if (Scene.GetPlayer().PlayerBeamClock > 2.5f)
 		{
-			Scene.Player.PlayerLift += seconds * 60;
-			if (Scene.Player.PlayerLift >= 0)
+			Scene.GetPlayer().PlayerLift += seconds * 60;
+			if (Scene.GetPlayer().PlayerLift >= 0)
 			{
-				Scene.Player.PlayerLift = 0;
-				Scene.Player.PlayerBeamState = 0;
-				Scene.Items.PlayerEffect = ItemCode::AlienPower;
-				Scene.Items.EffectRemaining = Scene.Parameter("AlienDuration", 15);
-				Scene.Items.EffectAge = 0;
+				Scene.GetPlayer().PlayerLift = 0;
+				Scene.GetPlayer().PlayerBeamState = 0;
+				Scene.Items.GetPowerup().Code = ItemCode::AlienPower;
+				Scene.Items.GetPowerup().Remaining = Scene.Parameter("AlienDuration", 15);
+				Scene.Items.GetPowerup().Age = 0;
 				Scene.Sounds.push_back("Sven2/sfx/sven_hits_ground.ogg");
 			}
 		}

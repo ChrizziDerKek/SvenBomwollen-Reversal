@@ -9,8 +9,17 @@
 class GameSession
 {
 public:
-	GameSession(MudGE& engine, const LevelPackInfo& pack, const LevelSetInfo& levelSet);
+	GameSession(MudGE& engine, const LevelPackInfo& pack, const LevelSetInfo& levelSet, size_t playerCount = 1);
 	void Update(f32 seconds, i32 dx, i32 dy, bool actionPressed);
+	void Update(f32 seconds, const std::array<PlayerInput, 2>& inputs);
+	GameEdition GetEdition() const
+	{
+		return Pack.Edition;
+	}
+	size_t GetPlayerCount() const
+	{
+		return PlayerCount;
+	}
 	void Advance();
 	void SkipBonuses();
 	void DebugNextLevel();
@@ -85,6 +94,7 @@ private:
 	MudGE& Engine;
 	const LevelPackInfo& Pack;
 	const LevelSetInfo& LevelSet;
+	GameEdition HudTheme;
 	std::unique_ptr<LevelScene> Scene;
 	BitmapFont Font, GreenFont;
 	const Sprite *Clock, *ScoreIcon, *LifeIcon;
@@ -92,13 +102,14 @@ private:
 	std::vector<SoundRequest> Sounds;
 	std::vector<LifeEffect> LifeEffects;
 	size_t LevelIndex = 0;
+	size_t PlayerCount = 1;
 	f32 Time = 0, Ticks = 0, ScoreTick = 0;
 	i32 ScoreChanges = 0;
 	i32 Score = 0, Lives = 3, NextLife = 750, WarningSecond = -1, ScoreFrame = 0;
 	i32 VisibleLives = 3, LastAttackScore = 0;
 	f32 LifeInsuranceAge = 0;
 	bool InitialRefundUsed = false;
-	u32 RandomState = GetTickCount();
+	u32 RandomState = static_cast<u32>(GetTickCount64());
 	i32 TimeBonus = 0, SheepBonus = 0, LifeBonus = 0;
 	i32 ResultSheep = 0, ResultLives = 0;
 	i32 PreviousSheep = 0;

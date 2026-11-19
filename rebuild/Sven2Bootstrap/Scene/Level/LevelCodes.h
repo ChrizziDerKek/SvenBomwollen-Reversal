@@ -16,6 +16,10 @@ enum class OccupancyCode : i32
 	Pig = 9,
 	Puddle = 10,
 	Water = 11,
+	Penguin = 12,
+	Turtle = 13,
+	Rabbit = 14,
+	Mermaid = 15,
 	PlayerReservation = 99,
 	Player = 100
 };

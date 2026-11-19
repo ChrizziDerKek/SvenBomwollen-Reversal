@@ -8,7 +8,7 @@
 #include <stdexcept>
 
 SceneRenderer::SceneRenderer(LevelScene& scene)
-    : Scene(scene), OverlayFont(scene.Engine, true)
+    : Scene(scene), OverlayFont(scene.Engine, true, false, scene.Engine.GetData().GetThemeEdition())
 {}
 
 const std::vector<SpriteDraw>& SceneRenderer::Draws()
@@ -22,13 +22,13 @@ const std::vector<SpriteDraw>& SceneRenderer::Draws()
 		// These animations are placed at the animal's canvas, although the
 		// command is stored on Sven. Keep that compound sprite at its visible
 		// owner's depth instead of promoting it to Sven's approach position.
-		if (object.Kind == ObjectKind::Player && Scene.Player.PlayerAction == PlayerActionState::Interaction && Scene.Player.ActiveSheep >= 0)
+		if (object.Kind == ObjectKind::Player && Scene.GetPlayer().PlayerAction == PlayerActionState::Interaction && Scene.GetPlayer().ActiveSheep >= 0)
 		{
-			const WorldObject& animal = Scene.Objects[Scene.Player.ActiveSheep];
+			const WorldObject& animal = Scene.Objects[Scene.GetPlayer().ActiveSheep];
 			if (Scene.IsAnimal(animal.Kind) && animal.Kind != ObjectKind::Sheep)
 				return static_cast<f32>(animal.Y + animal.DepthOffset);
 		}
-		const f32 y = object.Kind == ObjectKind::Player ? Scene.Player.Y : object.Y;
+		const f32 y = object.Kind == ObjectKind::Player ? Scene.GetPlayer().Y : object.Y;
 		return static_cast<f32>(y + object.DepthOffset);
 	};
 	// Start each frame in file slot order to preserve the original equal-depth behavior.
@@ -40,17 +40,19 @@ const std::vector<SpriteDraw>& SceneRenderer::Draws()
 	DrawCommands.push_back(Background);
 	auto indicator = [&](const Object& animal)
 	{
-		static constexpr i32 offsetX[4][4] = { { 40, 40, 20, 20 }, { 40, 24, 30, 16 }, { 50, 50, 5, 5 }, { 50, 50, 5, 5 } };
-		static constexpr i32 offsetY[4][4] = { { 0, 0, 0, 0 }, { -1, -1, -1, -1 }, { -10, 10, 10, -10 }, { -10, 20, 20, -10 } };
+		// XXX 0x412270: X tables 0x44F388..0x44F408, species Y tables 0x49E950..0x49E990.
+		static constexpr i32 offsetX[7][4] = { { 40, 40, 20, 20 }, { 40, 24, 30, 16 }, { 50, 50, 5, 5 }, { 50, 50, 5, 5 }, { 20, 20, 20, 20 }, { 40, 24, 30, 16 }, { 40, 24, 30, 16 } };
+		static constexpr i32 offsetY[7][4] = { { 0, 0, 0, 0 }, { -1, -1, -1, -1 }, { -10, 10, 10, -10 }, { -10, 20, 20, -10 }, { -1, -1, -1, -1 }, { -1, -1, -1, -1 }, { -1, -1, -1, -1 } };
 		const size_t family = AnimalIndicatorIndex(animal.Kind);
-		DrawCommands.push_back({ animal.Kind == ObjectKind::Sheep && animal.Temperament == 2 ? Scene.Resources.KettleSprite : Scene.Resources.MoodSprite, static_cast<i32>(animal.X) + offsetX[family][animal.Facing], static_cast<i32>(animal.Y + animal.Lift) + offsetY[family][animal.Facing], std::clamp(animal.Impatience + animal.MoodBlink, 0, 11) });
+		const i32 yOffset = Scene.GetEdition() == GameEdition::XXX && animal.Kind == ObjectKind::Sheep ? -1 : offsetY[family][animal.Facing];
+		DrawCommands.push_back({ animal.Kind == ObjectKind::Sheep && animal.Temperament == 2 ? Scene.Resources.KettleSprite : Scene.Resources.MoodSprite, static_cast<i32>(animal.X) + offsetX[family][animal.Facing], static_cast<i32>(animal.Y + animal.Lift) + yOffset, std::clamp(animal.Impatience + animal.MoodBlink, 0, 11) });
 	};
 	for (const WorldObject& object : Sorted)
 	{
 		if (object.Freed)
 			continue;
-		const bool interacting = Scene.IsAnimal(object.Kind) && Scene.Player.ActiveSheep >= 0 && (Scene.Player.PlayerAction == PlayerActionState::Interaction || Scene.Player.PlayerAction == PlayerActionState::Kicked || Scene.Player.PlayerAction == PlayerActionState::Frigida) && object.Tile == Scene.Objects[Scene.Player.ActiveSheep].Tile;
-		if (object.Kind == ObjectKind::Player && Scene.Objects.Combat.Enemy >= 0)
+		const bool interacting = Scene.IsAnimal(object.Kind) && Scene.GetPlayer().ActiveSheep >= 0 && (Scene.GetPlayer().PlayerAction == PlayerActionState::Interaction || Scene.GetPlayer().PlayerAction == PlayerActionState::Kicked || Scene.GetPlayer().PlayerAction == PlayerActionState::Frigida) && object.Tile == Scene.Objects[Scene.GetPlayer().ActiveSheep].Tile;
+		if (object.Kind == ObjectKind::Player && Scene.GetCombat().Enemy >= 0)
 			continue;
 		if (!interacting && object.Draw.Sprite)
 			DrawCommands.push_back(object.Draw);
@@ -69,8 +71,8 @@ const std::vector<SpriteDraw>& SceneRenderer::Draws()
 			indicator(object);
 		// Original player render states 1/2 draw the indicator after the combined
 		// interaction sprite (0x40D977-0x40D9E8), so it cannot be painted over.
-		if (object.Kind == ObjectKind::Player && Scene.Player.ActiveSheep >= 0 && (Scene.Player.PlayerAction == PlayerActionState::Interaction || Scene.Player.PlayerAction == PlayerActionState::Kicked || Scene.Player.PlayerAction == PlayerActionState::Frigida) && Scene.IsAnimal(Scene.Objects[Scene.Player.ActiveSheep].Kind))
-			indicator(Scene.Objects[Scene.Player.ActiveSheep]);
+		if (object.Kind == ObjectKind::Player && Scene.GetPlayer().ActiveSheep >= 0 && (Scene.GetPlayer().PlayerAction == PlayerActionState::Interaction || Scene.GetPlayer().PlayerAction == PlayerActionState::Kicked || Scene.GetPlayer().PlayerAction == PlayerActionState::Frigida) && Scene.IsAnimal(Scene.Objects[Scene.GetPlayer().ActiveSheep].Kind))
+			indicator(Scene.Objects[Scene.GetPlayer().ActiveSheep]);
 	}
 	const i32 frame = static_cast<i32>(Scene.Effects.SplashAge * SplashFrameRate);
 	if (frame < SplashFrames)
@@ -83,11 +85,13 @@ const std::vector<SpriteDraw>& SceneRenderer::Draws()
 			DrawCommands.push_back(splash);
 		}
 	}
-	if (Scene.Items.PlayerEffect != ItemCode::None)
+	if (Scene.Items.GetPowerup().Code != ItemCode::None)
 	{
-		const i32 effect = Scene.Items.PlayerEffect == ItemCode::Rocket ? 0 : (Scene.Items.PlayerEffect == ItemCode::SlowMushroom ? 1 : (Scene.Items.PlayerEffect == ItemCode::StinkMushroom ? 2 : (Scene.Items.PlayerEffect == ItemCode::Flower ? 3 : 4)));
+		const i32 effect = Scene.Items.GetPowerup().Code == ItemCode::Rocket ? 0 : (Scene.Items.GetPowerup().Code == ItemCode::SlowMushroom ? 1 : (Scene.Items.GetPowerup().Code == ItemCode::StinkMushroom ? 2 : (Scene.Items.GetPowerup().Code == ItemCode::Flower ? 3 : 4)));
 		const ::Sprite* image = Scene.Resources.EffectSprites[effect];
-		DrawCommands.push_back({ image, static_cast<i32>(Scene.Player.X) + 28, static_cast<i32>(Scene.Player.Y + Scene.Player.PlayerLift) - 4, static_cast<i32>(Scene.Items.EffectAge * 15) % image->Rows });
+		const SpriteDraw& player = Scene.GetPlayerDraw();
+		if (player.Sprite)
+			DrawCommands.push_back({ image, player.X + 28, player.Y - 4, static_cast<i32>(Scene.Items.GetPowerup().Age * 15) % image->Rows });
 	}
 	if (Scene.UfoController.Ufo.State != UfoState::Inactive)
 	{

@@ -20,6 +20,7 @@ public:
 
 private:
 	friend class AnimalCharacter;
+	friend class Mermaid;
 	friend class EnemyCharacter;
 	friend class LevelItems;
 	friend class LevelScene;

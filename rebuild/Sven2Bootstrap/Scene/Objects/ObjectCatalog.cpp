@@ -1,6 +1,8 @@
 #include "ObjectCatalog.h"
 #include "Scene/Characters/Characters.h"
 #include "Scene/Characters/PlayerCharacter.h"
+#include "Scene/Level/LevelEffects.h"
+#include "Engine/GameData.h"
 #include <array>
 #include <stdexcept>
 
@@ -19,8 +21,24 @@ const std::vector<CharacterDefinition> Definitions = {
 	{ ObjectKind::Girl, CharacterCategory::Enemy, "Girl", "Sven2/gfx/Broemse/Broemse_stand.bmp", 8, OccupancyCode::Girl, Create<Girl> },
 	{ ObjectKind::Chicken, CharacterCategory::Animal, "Chicken", "Sven2/gfx/Animals/Chicken_Stand.bmp", 4, OccupancyCode::Chicken, Create<Chicken> },
 	{ ObjectKind::Goat, CharacterCategory::Animal, "Goat", "Sven2/gfx/Animals/Goat_Stand.bmp", 4, OccupancyCode::Goat, Create<Goat> },
-	{ ObjectKind::Pig, CharacterCategory::Animal, "Pig", "Sven2/gfx/Animals/Pig_Stand.bmp", 4, OccupancyCode::Pig, Create<Pig> }
+	{ ObjectKind::Pig, CharacterCategory::Animal, "Pig", "Sven2/gfx/Animals/Pig_Stand.bmp", 4, OccupancyCode::Pig, Create<Pig> },
+	{ ObjectKind::Penguin, CharacterCategory::Animal, "Penguin", "Sven2/gfx/animals/Penguin_Stand.bmp", 4, OccupancyCode::Penguin, Create<Penguin>, "PenguinStand", true },
+	{ ObjectKind::Turtle, CharacterCategory::Animal, "Turtle", "Sven2/gfx/animals/Turtle_Stand.bmp", 4, OccupancyCode::Turtle, Create<Turtle>, "TurtleStand", true },
+	{ ObjectKind::Rabbit, CharacterCategory::Animal, "Rabbit", "Sven2/gfx/animals/Rabbit_Stand.bmp", 4, OccupancyCode::Rabbit, Create<Rabbit>, "RabbitStand", true },
+	{ ObjectKind::Mermaid, CharacterCategory::Mermaid, "Mermaid", "Sven2/gfx/NF/mermaid_jump.bmp", 12, OccupancyCode::Mermaid, Create<Mermaid>, "MermaidJump", true, false },
+	{ ObjectKind::BubbleEmitter, CharacterCategory::Emitter, "Bubble emitter", "Sven2/gfx/pfx_bubbles.bmp", 16, OccupancyCode::Empty, Create<BubbleEmitter>, nullptr, true, false },
+	{ ObjectKind::YellowEmitter, CharacterCategory::Emitter, "Yellow emitter", "Sven2/gfx/pfx_yellow.bmp", 16, OccupancyCode::Empty, Create<YellowEmitter>, nullptr, true, false },
+	{ ObjectKind::BubbleParticle, CharacterCategory::Effect, "Bubble particle", "Sven2/gfx/pfx_bubbles.bmp", 16, OccupancyCode::Empty, Create<EmitterParticle>, nullptr, true, false },
+	{ ObjectKind::YellowParticle, CharacterCategory::Effect, "Yellow particle", "Sven2/gfx/pfx_yellow.bmp", 16, OccupancyCode::Empty, Create<EmitterParticle>, nullptr, true, false }
 };
+
+u16 CharacterDefinition::GetFrames(const GameData& data, GameEdition edition) const
+{
+	if (edition != GameEdition::XXX || !SpriteName)
+		return Frames;
+	const GameData::SpriteDefinition& sprite = data.GetSpriteDefinition(SpriteName, edition);
+	return static_cast<u16>(sprite.Rows * sprite.Columns);
+}
 
 const std::vector<CharacterDefinition>& GetCharacterDefinitions()
 {
@@ -131,6 +149,12 @@ size_t AnimalIndicatorIndex(ObjectKind kind)
 		return 2;
 	case ObjectKind::Pig:
 		return 3;
+	case ObjectKind::Penguin:
+		return 4;
+	case ObjectKind::Turtle:
+		return 5;
+	case ObjectKind::Rabbit:
+		return 6;
 	default:
 		throw std::invalid_argument("Object kind has no animal indicator.");
 	}

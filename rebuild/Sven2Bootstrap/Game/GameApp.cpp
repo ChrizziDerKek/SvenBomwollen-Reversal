@@ -11,6 +11,9 @@
 void RunGame(MudGE& engine, const fpath& saves, bool audio, u32 seconds, bool directTutorial)
 {
 	using Page = GameUi::Page;
+	const GameData& data = engine.GetData();
+	const str menuMusic = data.SoundPath("Tune01", data.GetThemeEdition());
+	const str scoreMusic = data.SoundPath("Tune02", data.GetThemeEdition());
 	GameUi ui(engine, saves);
 	DebugMenu debug(engine);
 	WindowInput controls(engine.WindowHandle(), engine.ScaledVideo());
@@ -40,7 +43,7 @@ void RunGame(MudGE& engine, const fpath& saves, bool audio, u32 seconds, bool di
 	if (directTutorial)
 		start();
 	else
-		music("sven2/sfx/Sven2_music.ogg");
+		music(menuMusic);
 	const u64 started = GetTickCount64();
 	auto previous = std::chrono::steady_clock::now();
 	while (!engine.ExitRequested() && (!seconds || GetTickCount64() - started < seconds * 1000ULL))
@@ -79,7 +82,13 @@ void RunGame(MudGE& engine, const fpath& saves, bool audio, u32 seconds, bool di
 				}
 				else
 				{
-					session->Update(elapsed, controls.DX(), controls.DY(), controls.ActionHeld());
+					if (session->GetEdition() == GameEdition::XXX || ui.HasCustomControls())
+					{
+						const PlayerInput player = controls.BoundPlayerInput(ui.GetControlBindings()[0]);
+						session->Update(elapsed, player.X, player.Y, player.Action);
+					}
+					else
+						session->Update(elapsed, controls.DX(), controls.DY(), controls.ActionHeld());
 					if (session->GetResults())
 					{
 						playing = false;
@@ -115,7 +124,7 @@ void RunGame(MudGE& engine, const fpath& saves, bool audio, u32 seconds, bool di
 					case UiAction::Abandon:
 						session.reset();
 						ui.Show(Page::Title);
-						music("sven2/sfx/Sven2_music.ogg");
+						music(menuMusic);
 						break;
 					case UiAction::NextLevel:
 						engine.StopLoopedSound();
@@ -140,9 +149,9 @@ void RunGame(MudGE& engine, const fpath& saves, bool audio, u32 seconds, bool di
 				if (!playing && ui.GetPage() != priorPage)
 				{
 					if (ui.GetPage() == Page::Highscores)
-						music("sven2/sfx/Sven2Highscore.ogg");
+						music(scoreMusic);
 					else if (priorPage == Page::Highscores && ui.GetPage() != Page::Name)
-						music("sven2/sfx/Sven2_music.ogg");
+						music(menuMusic);
 				}
 			}
 		}

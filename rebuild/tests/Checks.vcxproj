@@ -127,4 +127,5 @@
     <ClCompile Include="../Sven2Bootstrap/Game/DebugMenu.cpp" />
     <ClInclude Include="../Sven2Bootstrap/Game/DebugMenu.h" />
   </ItemGroup>
+  <ItemGroup><ClInclude Include="../Sven2Bootstrap/Engine/GameEdition.h" /></ItemGroup>
 </Project>

@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cstring>
 #include <stdexcept>
+#include <sstream>
 
 SceneResources::SceneResources(LevelScene& scene)
     : Scene(scene)
@@ -21,6 +22,120 @@ const Sprite* SceneResources::GetSprite(const str& path, i32 frames)
 
 void SceneResources::InitializeActors()
 {
+	if (Scene.GetEdition() == GameEdition::XXX)
+	{
+		// Sprite bindings correspond to XXX resource initializer 0x426650.
+		const str headings[] = { "Back", "DiagBack", "Side", "DiagFront", "Front", "DiagFront", "Side", "DiagBack" };
+		struct EnemyDefinition
+		{
+			ObjectKind Kind;
+			cstr Family;
+		};
+		const EnemyDefinition enemies[] = {
+			{ ObjectKind::Alien, "Alien" },
+			{ ObjectKind::Dog, "Dog" },
+			{ ObjectKind::Farmer, "Guy" },
+			{ ObjectKind::Girl, "Broemse" }
+		};
+		for (const EnemyDefinition& enemy : enemies)
+		{
+			const str family = enemy.Family;
+			::ActorSprites& sprites = ActorSprites[enemy.Kind];
+			sprites.Stand = NamedSprite(family + "Stand");
+			for (i32 direction = 0; direction < 8; ++direction)
+			{
+				sprites.Walk[direction] = NamedSprite(family + "Walk" + headings[direction]);
+				if (enemy.Kind == ObjectKind::Alien)
+					sprites.Idle[direction] = NamedSprite("AlienZero" + headings[direction]);
+			}
+			::EnemyRules& rules = EnemyRules[enemy.Kind];
+			auto setting = [&](cstr suffix, f32 fallback) { return Scene.Parameter((family + suffix).c_str(), fallback); };
+			rules.Speed = setting("Speed", 0);
+			rules.Run = setting("RunMultiplier", 1);
+			rules.Diagonal = setting("AdjustXY", 0.75f);
+			rules.WalkRate = setting("WalkFrameRate", 15);
+			// Native XML spells the alien run-rate key ALien, unlike its other keys.
+			rules.RunRate = enemy.Kind == ObjectKind::Alien ? Scene.Parameter("ALienRunFrameRate", 30) : setting("RunFrameRate", 30);
+			rules.Idle = setting("StandStillTime", 4);
+			rules.IdleRandom = setting("StandStillTimeRandom", 1);
+			rules.Sleep = setting("SleepTime", 15);
+			rules.Range = setting("HuntSvenDistance", 3);
+			rules.WakeRange = setting(enemy.Kind == ObjectKind::Dog ? "WakeUpDistance" : "HuntSvenDistance", rules.Range);
+			rules.HuntSteps = static_cast<i32>(setting("HuntTileLength", 20));
+			rules.WalkSteps = static_cast<i32>(setting("TileLength", 5));
+			rules.WalkRandom = static_cast<i32>(setting("TileLengthRandom", 2));
+			rules.FightTime = setting("FightTime", 1.5f);
+		}
+		for (i32 direction = 0; direction < 4; ++direction)
+		{
+			const str side = direction == 0 || direction == 3 ? "Back" : "Front";
+			PlayerBeamSprites[direction] = NamedSprite("SvenBeamUp" + side);
+			ActorSprites[ObjectKind::Dog].Sleep[direction] = NamedSprite("DogSleep" + side);
+			ActorSprites[ObjectKind::Dog].Beam[direction] = NamedSprite("DogBeamUp" + side);
+			ActorSprites[ObjectKind::Farmer].Sleep[direction] = NamedSprite("GuyLaydown" + side);
+			ActorSprites[ObjectKind::Farmer].Wake[direction] = NamedSprite("GuyStandUp" + side);
+			ActorSprites[ObjectKind::Farmer].Beam[direction] = NamedSprite("GuyBeamUp" + side);
+			ActorSprites[ObjectKind::Farmer].Grumble[direction] = NamedSprite("GuyGrumble" + side);
+			ActorSprites[ObjectKind::Farmer].Distraction[direction] = NamedSprite("GuyDrink" + side);
+			ActorSprites[ObjectKind::Girl].DogPlay[direction] = NamedSprite("BroemseWotan" + side);
+			ActorSprites[ObjectKind::Girl].Beam[direction] = NamedSprite("BroemseBeamUp" + side);
+			ActorSprites[ObjectKind::Girl].Distraction[direction] = NamedSprite("BroemseTeddy" + side);
+			ActorSprites[ObjectKind::Girl].Battle[direction] = NamedSprite("BroemseSven" + side);
+			ActorSprites[ObjectKind::Alien].Battle[direction] = NamedSprite("AlienProbe2");
+			ActorSprites[ObjectKind::Alien].Beam[direction] = NamedSprite("AlienBeamUp");
+			ActorSprites[ObjectKind::Dog].Battle[direction] = ActorSprites[ObjectKind::Farmer].Battle[direction] = GetSprite(Scene.CoreAsset("Sven2/gfx/anim_cloud.bmp"), 10);
+		}
+		struct AnimalDefinition
+		{
+			ObjectKind Kind;
+			cstr Family;
+		};
+		const AnimalDefinition animals[] = {
+			{ ObjectKind::Chicken, "Chicken" },
+			{ ObjectKind::Goat, "Goat" },
+			{ ObjectKind::Pig, "Pig" },
+			{ ObjectKind::Penguin, "Penguin" },
+			{ ObjectKind::Turtle, "Turtle" },
+			{ ObjectKind::Rabbit, "Rabbit" }
+		};
+		for (const AnimalDefinition& animal : animals)
+		{
+			const str family = animal.Family;
+			ActorSprites[animal.Kind].Stand = NamedSprite(family + "Stand");
+			for (i32 direction = 0; direction < 4; ++direction)
+			{
+				const str side = direction == 0 || direction == 3 ? "Back" : "Front";
+				ShagAnimation& action = AnimalActions[animal.Kind][direction];
+				action.Sprite = NamedSprite(family + "Shag" + side);
+				action.Frames = FrameList("aSvenShag" + family + (animal.Kind == ObjectKind::Chicken ? "" : side));
+				action.Sound = Scene.Engine.GetData().SoundPath("SfxFuck" + family, GameEdition::XXX);
+				action.Facing = direction;
+				action.Mirror = animal.Kind == ObjectKind::Chicken ? SheepMirror[direction] : direction >= 2;
+				AnimalEating[animal.Kind][direction] = { NamedSprite(family + "Eat" + side), FrameList("a" + family + "Eat" + side), "", direction, direction >= 2 };
+				AnimalIdle[animal.Kind][direction] = { NamedSprite(family + "Idle" + side), FrameList("a" + family + "Idle" + side), "", direction, direction >= 2 };
+			}
+			AnimalZero[animal.Kind] = { NamedSprite(family + "Zero"), FrameList("a" + family + "ZeroFront"), "", 0, false };
+		}
+		MermaidJump = NamedSprite("MermaidJump");
+		MermaidAction = { NamedSprite("MermaidShag"), FrameList("aMermaidShag"), Scene.Engine.GetData().SoundPath("SfxShagMermaid", GameEdition::XXX), 0, false };
+		ActorSprites[ObjectKind::Mermaid].Stand = MermaidJump;
+		for (const ItemDefinition& item : GetItemDefinitions())
+			ItemSprites[item.Kind] = GetSprite(Scene.CoreAsset(item.SpriteAsset), item.Frames);
+		cstr effects[] = { "symbol_power.bmp", "symbol_bubbles_good.bmp", "symbol_smell.bmp", "symbol_flowers.bmp", "icon_alien.bmp" };
+		const i32 effectFrames[] = { 13, 6, 14, 8, 13 };
+		for (i32 index = 0; index < 5; ++index)
+			EffectSprites[index] = GetSprite(Scene.CoreAsset(str("Sven2/gfx/") + effects[index]), effectFrames[index]);
+		UfoSprite = GetSprite(Scene.CoreAsset("Sven2/gfx/ufo.bmp"), 13);
+		UfoShadow = GetSprite(Scene.CoreAsset("Sven2/gfx/ufo_shadow.bmp"), 13);
+		BeamSprite = GetSprite(Scene.CoreAsset("Sven2/gfx/anim_beam.bmp"), 44);
+		MoodSprite = GetSprite(Scene.CoreAsset("Sven2/gfx/symbols.bmp"), 12);
+		KettleSprite = GetSprite(Scene.CoreAsset("Sven2/gfx/symbol_kettle.bmp"), 12);
+		Digging = GetSprite(Scene.CoreAsset("Sven2/gfx/Digging.bmp"), 18);
+		SleepSymbols = NamedSprite("GuyZzz");
+		Explosion = GetSprite(Scene.CoreAsset("Sven2/gfx/explode.bmp"), 14);
+		Hearts = GetSprite(Scene.CoreAsset("Sven2/gfx/anim_clouds_with_hearts.bmp"), 21);
+		return;
+	}
 	struct EnemyResources
 	{
 		ObjectKind Kind;
@@ -141,6 +256,64 @@ void SceneResources::InitializeActors()
 
 void SceneResources::InitializePlayer()
 {
+	if (Scene.GetEdition() == GameEdition::XXX)
+	{
+		Stand = NamedSprite("SvenStand");
+		ActorSprites[ObjectKind::Player].Stand = Stand;
+		SheepStand = NamedSprite("SheepStand");
+		ActorSprites[ObjectKind::Sheep].Stand = SheepStand;
+		Chewing = NamedSprite("SheepChewing");
+		const str headings[] = { "Back", "DiagBack", "Side", "DiagFront", "Front", "DiagFront", "Side", "DiagBack" };
+		const str walks[] = { "Back", "02", "Side", "01", "Front", "01", "Side", "02" };
+		for (i32 direction = 0; direction < 8; ++direction)
+		{
+			Walks[direction] = NamedSprite("SvenWalk" + walks[direction]);
+			Whistles[direction] = NamedSprite("SvenWhistle" + headings[direction]);
+			Blinks[direction] = NamedSprite("SvenBlink" + headings[direction]);
+			Electric[direction] = NamedSprite("SvenElectric" + headings[direction]);
+		}
+		for (i32 direction = 0; direction < 4; ++direction)
+		{
+			const bool back = direction == 0 || direction == 3;
+			const str side = back ? "Back" : "Front";
+			SheepWalks[direction] = NamedSprite("SheepWalk" + side);
+			DemonSheep[direction] = NamedSprite("SheepDemon" + side);
+			DemonWalks[direction] = NamedSprite("SheepDemonRun" + side);
+			Turns[direction] = NamedSprite("SheepWhistle" + side);
+			Kicks[direction] = NamedSprite(back ? "SheepKick2" : "SheepKick1");
+			Frigida[direction] = NamedSprite("FrigidaNormal" + side);
+		}
+		Flash = GetSprite(Scene.CoreAsset("Sven2/gfx/Flash.bmp"), 2);
+		Scene.GetPlayer().Speed = Scene.Parameter("SvenSpeed", 145);
+		Scene.GetPlayer().Diagonal = Scene.Parameter("SvenDiagonalMultiplier", 0.75f);
+		Scene.GetPlayer().WalkRate = Scene.Parameter("SvenWalkDefaultFrameRate", 24);
+		Scene.GetPlayer().DefaultRate = Scene.Parameter("SvenDefaultFrameRate", 15);
+		Scene.GetPlayer().ActionRate = Scene.Parameter("SvenShagDefaultFrameRate", 20);
+		Scene.GetPlayer().FrigidaRate = Scene.Parameter("SvenShagFrigidaFrameRate", 16);
+		// XXX 0x44F250: the 78 native facing entries, two mirrored variants per interaction.
+		static constexpr i32 facings[] = { 0, 3, 3, 0, 2, 1, 2, 1, 0, 3, 0, 3, 2, 1, 1, 2, 1, 2, 1, 2, 0, 3, 2, 1, 3, 0, 2, 1, 0, 3, 0, 3, 2, 1, 3, 0, 3, 0, 3, 0, 1, 2, 2, 1, 2, 1, 3, 0, 1, 2, 1, 2, 1, 2, 2, 1, 2, 1, 0, 3, 0, 3, 3, 0, 3, 0, 3, 0, 2, 1, 1, 2, 2, 1, 1, 2, 3, 0 };
+		constexpr i32 interactionCount = static_cast<i32>(sizeof(facings) / sizeof(facings[0])) / 2;
+		Interactions.clear();
+		for (i32 variant = 0; variant < interactionCount; ++variant)
+		{
+			const bool original = variant < 13;
+			const i32 number = original ? variant + 2 : variant - 12;
+			const str digits = (number < 10 ? "0" : "") + std::to_string(number);
+			const str spriteName = (original ? "Shag" : "NF") + digits;
+			const str framesName = (original ? "aShagAnimO" : "aShagAnimN") + digits;
+			const str soundName = (original ? "SfxFuck" : "SfxNewFuck") + digits;
+			const Sprite* sprite = NamedSprite(spriteName);
+			const std::vector<i32>& frames = FrameList(framesName);
+			const str sound = Scene.Engine.GetData().SoundPath(soundName, GameEdition::XXX);
+			Interactions.push_back({ sprite, frames, sound, facings[variant * 2], false });
+			Interactions.push_back({ sprite, frames, sound, facings[variant * 2 + 1], true });
+		}
+		const f32 count = Scene.Parameter("ShagAnims", static_cast<f32>(interactionCount));
+		if (!std::isfinite(count) || count < 1 || count > interactionCount || std::floor(count) != count)
+			throw std::runtime_error("Invalid XXX ShagAnims parameter.");
+		Interactions.resize(static_cast<size_t>(count) * 2);
+		return;
+	}
 	Stand = Scene.GetPlayerDraw().Sprite;
 	SheepStand = Scene.Engine.LoadSprite("Sven2/gfx/Sheep/Sheep_Stand.bmp", 4, 1);
 	Chewing = Scene.Engine.LoadSprite("Sven2/gfx/Sheep/Sheep_Chewing.bmp", 20, 1);
@@ -171,12 +344,12 @@ void SceneResources::InitializePlayer()
 		f64 value = Scene.Engine.GetData().NumericParam(key, fallback);
 		return std::isfinite(value) && value > 0 ? static_cast<f32>(value) : fallback;
 	};
-	Scene.Player.Speed = positiveParameter("SvenSpeed", 145);
-	Scene.Player.Diagonal = positiveParameter("SvenDiagonalMultiplier", 0.75f);
-	Scene.Player.WalkRate = positiveParameter("SvenWalkDefaultFrameRate", 24);
-	Scene.Player.DefaultRate = positiveParameter("SvenDefaultFrameRate", 15);
-	Scene.Player.ActionRate = positiveParameter("SvenShagDefaultFrameRate", 20);
-	Scene.Player.FrigidaRate = positiveParameter("SvenShagFrigidaFrameRate", 16);
+	Scene.GetPlayer().Speed = positiveParameter("SvenSpeed", 145);
+	Scene.GetPlayer().Diagonal = positiveParameter("SvenDiagonalMultiplier", 0.75f);
+	Scene.GetPlayer().WalkRate = positiveParameter("SvenWalkDefaultFrameRate", 24);
+	Scene.GetPlayer().DefaultRate = positiveParameter("SvenDefaultFrameRate", 15);
+	Scene.GetPlayer().ActionRate = positiveParameter("SvenShagDefaultFrameRate", 20);
+	Scene.GetPlayer().FrigidaRate = positiveParameter("SvenShagFrigidaFrameRate", 16);
 	for (i32 i = 0; i < 8; ++i)
 		Blinks[i] = Scene.Engine.LoadSprite(str("Sven2/gfx/Sven/anim_sven_blink_") + whistleFiles[i] + ".bmp", 2, 1);
 	const ::Sprite* kickFront = Scene.Engine.LoadSprite("Sven2/gfx/Sheep/Anim_Sven_kick_01.bmp", 20, 1);
@@ -187,4 +360,80 @@ void SceneResources::InitializePlayer()
 	Frigida = { frigidaBack, frigidaFront, frigidaFront, frigidaBack };
 	// 0x40B040 installs two variants per animation; 0x4413DC supplies all 66 Directions.
 	Interactions = ShagAnimation::Load(Scene.Engine);
+}
+
+const Sprite* SceneResources::NamedSprite(const str& name)
+{
+	const GameData::SpriteDefinition& definition = Scene.Engine.GetData().GetSpriteDefinition(name, Scene.GetEdition());
+	const str key = "named:" + name;
+	auto found = SpriteCache.find(key);
+	if (found != SpriteCache.end())
+		return found->second;
+	return SpriteCache[key] = Scene.Engine.LoadSprite(definition.File, definition.Rows, definition.Columns);
+}
+
+const std::vector<i32>& SceneResources::FrameList(const str& name)
+{
+	auto found = FrameLists.find(name);
+	if (found != FrameLists.end())
+		return found->second;
+	const str csv = Scene.Engine.GetData().StringParam(name, "", Scene.GetEdition());
+	if (csv.empty())
+		throw std::runtime_error("Missing native animation parameter: " + name);
+	std::vector<i32> frames;
+	std::istringstream stream(csv);
+	str token;
+	while (std::getline(stream, token, ','))
+	{
+		// The shipped aShagAnimN26 ends in a comma; whitespace-only cells carry no frame.
+		if (token.find_first_not_of(" \t\r\n") == str::npos)
+			continue;
+		std::istringstream value(token);
+		i32 frame = -1;
+		if (!(value >> frame) || frame < 0)
+			throw std::runtime_error("Invalid native animation parameter: " + name);
+		value >> std::ws;
+		if (!value.eof())
+			throw std::runtime_error("Invalid native animation parameter: " + name);
+		frames.push_back(frame);
+	}
+	if (frames.empty())
+		throw std::runtime_error("Empty native animation parameter: " + name);
+	return FrameLists.emplace(name, std::move(frames)).first->second;
+}
+
+const std::vector<i32>& SceneResources::AnimationFrames(AnimationSequence sequence)
+{
+	if (Scene.GetEdition() == GameEdition::Zwo)
+		return ActorFrameTables.at(sequence);
+	static const std::map<AnimationSequence, str> parameters = {
+		{ AnimationSequence::UfoBeam, "aBeams" },
+		{ AnimationSequence::AlienStandingIdle, "aAlienLookEast" },
+		{ AnimationSequence::AlienVerticalIdle, "aAlienLookWest1" },
+		{ AnimationSequence::AlienDiagonalIdle, "aAlienLookWest2" },
+		{ AnimationSequence::AlienProbe, "aAlienProbeSven" },
+		{ AnimationSequence::GirlWalk, "aBroemseWalk" },
+		{ AnimationSequence::GirlTeddyBack, "aBroemseTeddyBack" },
+		{ AnimationSequence::GirlTeddyFront, "aBroemseTeddyFront" },
+		{ AnimationSequence::GirlSvenBack, "aBroemseCuddleSvenBack" },
+		{ AnimationSequence::GirlSvenFront, "aBroemseCuddleSvenFront" },
+		{ AnimationSequence::GirlDogBack, "aBroemseCuddleDogBack" },
+		{ AnimationSequence::GirlDogFront, "aBroemseCuddleDogFront" },
+		{ AnimationSequence::FarmerDrink, "aGuyDrink" },
+		{ AnimationSequence::FarmerLieDown, "aGuyLayDown" },
+		{ AnimationSequence::FarmerStandUp, "aGuyStandUp" },
+		{ AnimationSequence::FarmerGrumbleBack, "aGuyGrumbleBack" },
+		{ AnimationSequence::FarmerGrumbleFront, "aGuyGrumbleFront" },
+		{ AnimationSequence::ChickenInteraction, "aSvenShagChicken" },
+		{ AnimationSequence::GoatInteractionBack, "aSvenShagGoatBack" },
+		{ AnimationSequence::GoatInteractionFront, "aSvenShagGoatFront" },
+		{ AnimationSequence::PigInteractionBack, "aSvenShagPigBack" },
+		{ AnimationSequence::PigInteractionFront, "aSvenShagPigFront" },
+		{ AnimationSequence::DemonTransform, "aSheepTurnIntoDevil" },
+		{ AnimationSequence::DemonRecover, "aDevilTurnIntoSheep" },
+		{ AnimationSequence::DemonShock, "aSheepHeadBang" },
+		{ AnimationSequence::ElectricFlash, "aFlash" },
+		{ AnimationSequence::PlayerElectricShock, "aSvenElectro" }
+	};
+	return FrameList(parameters.at(sequence));
 }

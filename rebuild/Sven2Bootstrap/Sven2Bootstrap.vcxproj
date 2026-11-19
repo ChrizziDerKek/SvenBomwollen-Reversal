@@ -133,4 +133,5 @@
     <ClCompile Include="Game/DebugMenu.cpp" />
     <ClInclude Include="Game/DebugMenu.h" />
   </ItemGroup>
+  <ItemGroup><ClInclude Include="Engine/GameEdition.h" /></ItemGroup>
 </Project>

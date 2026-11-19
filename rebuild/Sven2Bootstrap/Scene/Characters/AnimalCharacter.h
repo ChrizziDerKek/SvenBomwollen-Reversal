@@ -18,6 +18,7 @@ public:
 
 protected:
 	void UpdateOtherAnimal(f32 seconds);
+	void UpdateXxxSmallAnimal(f32 seconds);
 	void ResolveSheep(Object& animal);
 	bool AgeSheepMood(Object& animal, f32 seconds);
 	bool MoveDemonSheep();

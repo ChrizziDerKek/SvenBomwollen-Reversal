@@ -6,9 +6,14 @@
 #include <cstring>
 #include <stdexcept>
 
-PlayerCharacter::PlayerCharacter(LevelScene& scene)
-    : BaseCharacter(scene)
+PlayerCharacter::PlayerCharacter(LevelScene& scene, size_t number)
+    : BaseCharacter(scene), Number(number)
+{}
+
+void PlayerCharacter::Update(f32 seconds)
 {
+	LevelScene::PlayerScope player(Scene, Number);
+	AdvancePlayer(seconds, MovementX, MovementY);
 }
 
 void PlayerCharacter::MarkPlayerCell()
@@ -17,7 +22,7 @@ void PlayerCharacter::MarkPlayerCell()
 	// 0x42C470/0x42BF57 clear it only when the full 40-pixel step commits.
 	if (X != TargetX || Y != TargetY)
 		return;
-	WorldObject& actor = Scene.Objects[Scene.PlayerIndex];
+	WorldObject& actor = Scene.Objects[Scene.GetPlayerIndex()];
 	actor.X = X;
 	actor.Y = Y;
 	const i32 tile = Scene.Grid.TileAt(X, Y);
@@ -37,7 +42,7 @@ void PlayerCharacter::CancelPlayerStep()
 	const i32 destination = Scene.Grid.TileAt(TargetX, TargetY);
 	if (destination >= 0 && Scene.Grid.Tiles[destination] == OccupancyCode::PlayerReservation)
 		Scene.Grid.Tiles[destination] = OccupancyCode::Empty;
-	const WorldObject& getPlayerDraw = Scene.Objects[Scene.PlayerIndex];
+	const WorldObject& getPlayerDraw = Scene.Objects[Scene.GetPlayerIndex()];
 	X = TargetX = getPlayerDraw.X;
 	Y = TargetY = getPlayerDraw.Y;
 	MarkPlayerCell();
@@ -55,7 +60,7 @@ void PlayerCharacter::Teleport(i32 source)
 	Scene.Effects.SplashAge = 0;
 	Scene.Effects.SplashSound = true;
 	Scene.Sounds.push_back("Sven2/sfx/water_splash22.ogg");
-	Scene.Effects.SplashPlayerAge = 0;
+	Scene.GetPlayer().SplashAge = 0;
 	if (Scene.Grid.Puddles.empty())
 		return;
 	std::array<i32, 16> destinations{};
@@ -67,13 +72,13 @@ void PlayerCharacter::Teleport(i32 source)
 	for (const i32* direction : Directions)
 	{
 		i32 cellX = target % Stride - 1 + direction[0], cellY = target / Stride - 1 + direction[1];
-		if (cellX < 0 || cellY < 0 || cellX >= Columns || cellY >= Rows || !Scene.Objects.CanOccupy((cellY + 1) * Stride + cellX + 1, Scene.PlayerIndex))
+		if (cellX < 0 || cellY < 0 || cellX >= Columns || cellY >= Rows || !Scene.Objects.CanOccupy((cellY + 1) * Stride + cellX + 1, Scene.GetPlayerIndex()))
 			continue;
 		X = static_cast<f32>(cellX * TileSize + TileSize / 2) - PlayerCenter;
 		Y = static_cast<f32>(cellY * TileSize + TileSize / 2) - PlayerCenter;
 		TargetX = X;
 		TargetY = Y;
-		Scene.Objects[Scene.PlayerIndex].CommittedY = Y;
+		Scene.Objects[Scene.GetPlayerIndex()].CommittedY = Y;
 		Scene.Effects.Splashes[1] = splashAt(target);
 		Log(str(Scene.Grid.Tiles[source] == OccupancyCode::Water ? "Water entry: " : "Puddle teleport: ") + std::to_string(source) + " -> " + std::to_string(target));
 		return;
@@ -82,7 +87,7 @@ void PlayerCharacter::Teleport(i32 source)
 
 void PlayerCharacter::RestorePlayer()
 {
-	SpriteDraw& draw = Scene.Objects[Scene.PlayerIndex].Draw;
+	SpriteDraw& draw = Scene.Objects[Scene.GetPlayerIndex()].Draw;
 	draw = { Scene.Resources.Stand, static_cast<i32>(X), static_cast<i32>(Y + PlayerLift), Facing };
 	if (PlayerShockAge >= 0)
 	{
@@ -143,7 +148,7 @@ void PlayerCharacter::Act(bool continuation)
 		{
 			PlayerAction = PlayerActionState::Frigida;
 			Scene.Sounds.push_back("Sven2/sfx/Frigida_kettle.ogg");
-			Scene.Objects[Scene.PlayerIndex].Draw = { Scene.Resources.Frigida[animal.Facing], static_cast<i32>(animal.X), static_cast<i32>(animal.Y), FrigidaFrames[0], SheepMirror[animal.Facing] };
+			Scene.Objects[Scene.GetPlayerIndex()].Draw = { Scene.Resources.Frigida[animal.Facing], static_cast<i32>(animal.X), static_cast<i32>(animal.Y), FrigidaFrames[0], SheepMirror[animal.Facing] };
 			return;
 		}
 		if (animal.Kind != ObjectKind::Sheep)
@@ -157,7 +162,7 @@ void PlayerCharacter::Act(bool continuation)
 			}
 			PlayerAction = PlayerActionState::Interaction;
 			Scene.Sounds.push_back(Interaction->Sound);
-			Scene.Objects[Scene.PlayerIndex].Draw = { Interaction->Sprite, static_cast<i32>(animal.X), static_cast<i32>(animal.Y), Interaction->Frames.front(), Interaction->Mirror };
+			Scene.Objects[Scene.GetPlayerIndex()].Draw = { Interaction->Sprite, static_cast<i32>(animal.X), static_cast<i32>(animal.Y), Interaction->Frames.front(), Interaction->Mirror };
 			return;
 		}
 		std::vector<size_t> choices;
@@ -175,7 +180,7 @@ void PlayerCharacter::Act(bool continuation)
 		Interaction = &Scene.Resources.Interactions[SelectedInteraction];
 		PlayerAction = PlayerActionState::Interaction;
 		Scene.Sounds.push_back(Interaction->Sound);
-		Scene.Objects[Scene.PlayerIndex].Draw = { Interaction->Sprite, static_cast<i32>(animal.X), static_cast<i32>(animal.Y), Interaction->Frames.front(), Interaction->Mirror };
+		Scene.Objects[Scene.GetPlayerIndex()].Draw = { Interaction->Sprite, static_cast<i32>(animal.X), static_cast<i32>(animal.Y), Interaction->Frames.front(), Interaction->Mirror };
 		return;
 	}
 }
@@ -183,7 +188,7 @@ void PlayerCharacter::Act(bool continuation)
 void PlayerCharacter::FinishInteraction()
 {
 	WorldObject& animal = Scene.Objects[ActiveSheep];
-	Scene.AddScore(Scene.Items.PlayerEffect == ItemCode::Rocket ? 3 : (Scene.Items.PlayerEffect == ItemCode::SlowMushroom ? 0 : (Scene.Items.PlayerEffect == ItemCode::AlienPower ? 10 : 1))); // 0x429B7E
+	Scene.AddScore(Scene.Items.GetPowerup().Code == ItemCode::Rocket ? 3 : (Scene.Items.GetPowerup().Code == ItemCode::SlowMushroom ? 0 : (Scene.Items.GetPowerup().Code == ItemCode::AlienPower ? 10 : 1))); // 0x429B7E
 	animal.Impatience -= 2;
 	if (animal.Impatience < 0)
 		dynamic_cast<AnimalCharacter&>(Scene.Objects.Get(ActiveSheep)).Resolve();
@@ -213,7 +218,7 @@ void PlayerCharacter::AdvancePlayer(f32 dt, i32 dx, i32 dy)
 		RestorePlayer();
 		return;
 	}
-	if (Scene.Objects.Combat.Enemy >= 0)
+	if (Scene.GetCombat().Enemy >= 0)
 		return;
 	Scene.Items.PickupPlayerItem();
 	if (PlayerAction != PlayerActionState::Idle)
@@ -221,30 +226,30 @@ void PlayerCharacter::AdvancePlayer(f32 dt, i32 dx, i32 dy)
 		ActionAge += dt;
 		if (PlayerAction == PlayerActionState::Interaction && Interaction)
 		{
-			const f32 effectiveActionRate = Scene.Items.PlayerEffect == ItemCode::Rocket ? Scene.Parameter("SvenShagFireworkFrameRate", 30) : (Scene.Items.PlayerEffect == ItemCode::SlowMushroom ? Scene.Parameter("SvenShagImpotentFrameRate", 12) : (Scene.Items.PlayerEffect == ItemCode::AlienPower ? Scene.Parameter("SvenShagAlienFrameRate", 40) : ActionRate));
+			const f32 effectiveActionRate = Scene.Items.GetPowerup().Code == ItemCode::Rocket ? Scene.Parameter("SvenShagFireworkFrameRate", 30) : (Scene.Items.GetPowerup().Code == ItemCode::SlowMushroom ? Scene.Parameter("SvenShagImpotentFrameRate", 12) : (Scene.Items.GetPowerup().Code == ItemCode::AlienPower ? Scene.Parameter("SvenShagAlienFrameRate", 40) : ActionRate));
 			i32 frame = static_cast<i32>(ActionAge * effectiveActionRate);
 			if (frame >= static_cast<i32>(Interaction->Frames.size()))
 				FinishInteraction();
 			else
 			{
 				WorldObject& animal = Scene.Objects[ActiveSheep];
-				Scene.Objects[Scene.PlayerIndex].Draw = { Interaction->Sprite, static_cast<i32>(animal.X), static_cast<i32>(animal.Y), Interaction->Frames[frame], Interaction->Mirror };
+				Scene.Objects[Scene.GetPlayerIndex()].Draw = { Interaction->Sprite, static_cast<i32>(animal.X), static_cast<i32>(animal.Y), Interaction->Frames[frame], Interaction->Mirror };
 			}
 		}
 		else if (PlayerAction == PlayerActionState::Kicked && ActionAge * DefaultRate < Scene.Resources.Kicks[Scene.Objects[ActiveSheep].Facing]->Rows)
 		{
 			const WorldObject& animal = Scene.Objects[ActiveSheep];
-			Scene.Objects[Scene.PlayerIndex].Draw = { Scene.Resources.Kicks[animal.Facing], static_cast<i32>(animal.X), static_cast<i32>(animal.Y), static_cast<i32>(ActionAge * DefaultRate), SheepMirror[animal.Facing] };
+			Scene.Objects[Scene.GetPlayerIndex()].Draw = { Scene.Resources.Kicks[animal.Facing], static_cast<i32>(animal.X), static_cast<i32>(animal.Y), static_cast<i32>(ActionAge * DefaultRate), SheepMirror[animal.Facing] };
 		}
 		else if (PlayerAction == PlayerActionState::Frigida && ActionAge * FrigidaRate < 7)
 		{
 			const WorldObject& animal = Scene.Objects[ActiveSheep];
-			Scene.Objects[Scene.PlayerIndex].Draw = { Scene.Resources.Frigida[animal.Facing], static_cast<i32>(animal.X), static_cast<i32>(animal.Y), FrigidaFrames[static_cast<i32>(ActionAge * FrigidaRate)], SheepMirror[animal.Facing] };
+			Scene.Objects[Scene.GetPlayerIndex()].Draw = { Scene.Resources.Frigida[animal.Facing], static_cast<i32>(animal.X), static_cast<i32>(animal.Y), FrigidaFrames[static_cast<i32>(ActionAge * FrigidaRate)], SheepMirror[animal.Facing] };
 		}
 		else if (PlayerAction == PlayerActionState::Whistle && ActionAge * DefaultRate < 22)
 		{
 			i32 frame = std::min(21, static_cast<i32>(ActionAge * DefaultRate));
-			Scene.Objects[Scene.PlayerIndex].Draw = { Scene.Resources.Whistles[Facing], static_cast<i32>(X), static_cast<i32>(Y), Facing % 2 ? WhistleDiagonal[frame] : WhistleStraight[frame], SvenMirror[Facing] };
+			Scene.Objects[Scene.GetPlayerIndex()].Draw = { Scene.Resources.Whistles[Facing], static_cast<i32>(X), static_cast<i32>(Y), Facing % 2 ? WhistleDiagonal[frame] : WhistleStraight[frame], SvenMirror[Facing] };
 		}
 		else
 		{
@@ -274,9 +279,9 @@ void PlayerCharacter::AdvancePlayer(f32 dt, i32 dx, i32 dy)
 		}
 		return;
 	}
-	if (Scene.Effects.SplashPlayerAge * DefaultRate < 16)
+	if (Scene.GetPlayer().SplashAge * DefaultRate < 16)
 	{
-		Scene.Objects[Scene.PlayerIndex].Draw = { Scene.Resources.Blinks[Facing], static_cast<i32>(X), static_cast<i32>(Y), SplashPlayerFrames[static_cast<i32>(Scene.Effects.SplashPlayerAge * DefaultRate)], SvenMirror[Facing] };
+		Scene.Objects[Scene.GetPlayerIndex()].Draw = { Scene.Resources.Blinks[Facing], static_cast<i32>(X), static_cast<i32>(Y), SplashPlayerFrames[static_cast<i32>(Scene.GetPlayer().SplashAge * DefaultRate)], SvenMirror[Facing] };
 		return;
 	} // 0x409A4C / 0x440158, independently of the splash effect lifetime.
 	RestorePlayer();
@@ -327,7 +332,7 @@ void PlayerCharacter::AdvancePlayer(f32 dt, i32 dx, i32 dy)
 			RestorePlayer();
 			return;
 		}
-		if (!Scene.Objects.CanOccupy(destination, Scene.PlayerIndex) && !(kind == OccupancyCode::Wall && Scene.Grid.TileDirections[destination] == direction))
+		if (!Scene.Objects.CanOccupy(destination, Scene.GetPlayerIndex()) && !(kind == OccupancyCode::Wall && Scene.Grid.TileDirections[destination] == direction))
 			return;
 		if (kind == OccupancyCode::Empty)
 			Scene.Grid.Tiles[destination] = OccupancyCode::PlayerReservation; // 0x42A94B: reserve the proposed destination.
@@ -336,7 +341,7 @@ void PlayerCharacter::AdvancePlayer(f32 dt, i32 dx, i32 dy)
 	}
 	const f32 vx = TargetX - X, vy = TargetY - Y;
 	const f32 distance = std::max(std::abs(vx), std::abs(vy));
-	const f32 currentSpeed = Scene.Items.PlayerEffect == ItemCode::Rocket || Scene.Items.PlayerEffect == ItemCode::AlienPower ? Scene.Parameter("SvenRunSpeed", 220) : (Scene.Items.PlayerEffect == ItemCode::SlowMushroom ? Scene.Parameter("SvenSlowSpeed", 95) : Speed);
+	const f32 currentSpeed = Scene.Items.GetPowerup().Code == ItemCode::Rocket || Scene.Items.GetPowerup().Code == ItemCode::AlienPower ? Scene.Parameter("SvenRunSpeed", 220) : (Scene.Items.GetPowerup().Code == ItemCode::SlowMushroom ? Scene.Parameter("SvenSlowSpeed", 95) : Speed);
 	const f32 rate = currentSpeed * (vx != 0 && vy != 0 ? Diagonal : 1.0f);
 	const f32 fraction = distance > 0 ? std::min(1.0f, dt * rate / distance) : 1;
 	X += vx * fraction;
@@ -344,11 +349,11 @@ void PlayerCharacter::AdvancePlayer(f32 dt, i32 dx, i32 dy)
 	if (X == TargetX && Y == TargetY)
 	{
 		MarkPlayerCell();
-		Scene.Objects[Scene.PlayerIndex].CommittedY = Y;
+		Scene.Objects[Scene.GetPlayerIndex()].CommittedY = Y;
 		Scene.Items.AffectNearbyAnimals(); // 0x42BF9E applies smell/flowers at tile arrival.
 	}
 	Scene.Items.PickupPlayerItem();
 	AnimationAge += dt;
-	SpriteDraw& draw = Scene.Objects[Scene.PlayerIndex].Draw;
-	draw = { Scene.Resources.Walks[Facing], static_cast<i32>(X), static_cast<i32>(Y), static_cast<i32>(AnimationAge * (Scene.Items.PlayerEffect == ItemCode::Rocket ? Scene.Parameter("SvenWalkFireworkFrameRate", 36) : (Scene.Items.PlayerEffect == ItemCode::SlowMushroom ? Scene.Parameter("SvenWalkImpotentFrameRate", 16) : (Scene.Items.PlayerEffect == ItemCode::AlienPower ? Scene.Parameter("SvenWalkAlienFrameRate", 36) : WalkRate)))) % 14, SvenMirror[Facing] };
+	SpriteDraw& draw = Scene.Objects[Scene.GetPlayerIndex()].Draw;
+	draw = { Scene.Resources.Walks[Facing], static_cast<i32>(X), static_cast<i32>(Y), static_cast<i32>(AnimationAge * (Scene.Items.GetPowerup().Code == ItemCode::Rocket ? Scene.Parameter("SvenWalkFireworkFrameRate", 36) : (Scene.Items.GetPowerup().Code == ItemCode::SlowMushroom ? Scene.Parameter("SvenWalkImpotentFrameRate", 16) : (Scene.Items.GetPowerup().Code == ItemCode::AlienPower ? Scene.Parameter("SvenWalkAlienFrameRate", 36) : WalkRate)))) % 14, SvenMirror[Facing] };
 }

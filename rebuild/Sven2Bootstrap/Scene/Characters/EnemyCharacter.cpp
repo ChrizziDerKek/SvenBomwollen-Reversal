@@ -51,10 +51,10 @@ bool EnemyCharacter::ChooseEnemyStep()
 	i32 preferred = actor.Facing;
 	if (actor.Hunting)
 	{
-		i32 target = Scene.Grid.TileAt(Scene.Player.X, Scene.Player.Y);
+		i32 target = Scene.Grid.TileAt(Scene.GetPlayer().X, Scene.GetPlayer().Y);
 		if (actor.ItemTarget >= 0 && !Scene.Objects[actor.ItemTarget].Freed)
 			target = Scene.Objects[actor.ItemTarget].Tile;
-		else if (Scene.Objects.Combat.Enemy >= 0 || Scene.Player.PlayerBeamState || Scene.Effects.SplashPlayerAge * Scene.Player.DefaultRate < 16)
+		else if (Scene.GetCombat().Enemy >= 0 || Scene.GetPlayer().PlayerBeamState || Scene.GetPlayer().SplashAge * Scene.GetPlayer().DefaultRate < 16)
 			actor.Hunting = false;
 		if (actor.Hunting && target >= 0)
 			preferred = EnemyDirection(actor.Tile, target);
@@ -273,11 +273,11 @@ void EnemyCharacter::EnemyArrived()
 		BeginBattle();
 		return;
 	}
-	const bool activity = Scene.Player.PlayerAction == PlayerActionState::Interaction || Scene.Player.PlayerAction == PlayerActionState::Frigida;
+	const bool activity = Scene.GetPlayer().PlayerAction == PlayerActionState::Interaction || Scene.GetPlayer().PlayerAction == PlayerActionState::Frigida;
 	// Lars sometimes gives up with a directional grumble once Sven stops.
 	if (actor.Kind == ObjectKind::Farmer && actor.Hunting && actor.ItemTarget < 0 && !activity && Scene.RandomInt(2) == 0)
 	{
-		const i32 tile = Scene.Grid.TileAt(Scene.Player.X, Scene.Player.Y);
+		const i32 tile = Scene.Grid.TileAt(Scene.GetPlayer().X, Scene.GetPlayer().Y);
 		if (tile >= 0)
 			actor.Facing = EnemyDirection(actor.Tile, tile);
 		actor.Steps = Scene.Resources.EnemyRules[ObjectKind::Farmer].WalkSteps + Scene.RandomInt(Scene.Resources.EnemyRules[ObjectKind::Farmer].WalkRandom);
@@ -379,7 +379,7 @@ void EnemyCharacter::UpdateEnemy(f32 seconds)
 			}
 		}
 		const ItemCode code = DistractionCode(actor.Kind);
-		const bool activity = Scene.Player.PlayerAction == PlayerActionState::Interaction || Scene.Player.PlayerAction == PlayerActionState::Frigida;
+		const bool activity = Scene.GetPlayer().PlayerAction == PlayerActionState::Interaction || Scene.GetPlayer().PlayerAction == PlayerActionState::Frigida;
 		if (!actor.Retry)
 		{
 			if (code != ItemCode::None)
@@ -576,22 +576,22 @@ void EnemyCharacter::BeginBattle()
 {
 	const size_t index = GetIndex();
 	WorldObject& actor = GetState();
-	Scene.Objects.Combat.Enemy = static_cast<i32>(index);
-	Scene.Objects.Combat.Remaining = Scene.Resources.EnemyRules[actor.Kind].FightTime;
+	Scene.GetCombat().Enemy = static_cast<i32>(index);
+	Scene.GetCombat().Remaining = Scene.Resources.EnemyRules[actor.Kind].FightTime;
 	actor.State = ActorState::FightingBack;
-	actor.Pulse = Scene.Objects.Combat.Remaining;
+	actor.Pulse = Scene.GetCombat().Remaining;
 	actor.Age = 0;
 	actor.Hunting = false;
 	actor.Draw.Frame = 0;
 	if (actor.Kind == ObjectKind::Girl)
 		actor.AnimRate = 20;
-	Scene.Player.PlayerAction = PlayerActionState::Idle;
-	Scene.Player.ActiveSheep = -1;
-	Scene.Player.Interaction = nullptr;
-	Scene.Player.ActionQueued = false;
-	Scene.Player.CancelPlayerStep();
-	Scene.Items.PlayerEffect = ItemCode::None;
-	Scene.Items.EffectRemaining = 0;
+	Scene.GetPlayer().PlayerAction = PlayerActionState::Idle;
+	Scene.GetPlayer().ActiveSheep = -1;
+	Scene.GetPlayer().Interaction = nullptr;
+	Scene.GetPlayer().ActionQueued = false;
+	Scene.GetPlayer().CancelPlayerStep();
+	Scene.Items.GetPowerup().Code = ItemCode::None;
+	Scene.Items.GetPowerup().Remaining = 0;
 	cstr sound = actor.Kind == ObjectKind::Alien ? "alien_analprobe_mix2.ogg" : (actor.Kind == ObjectKind::Dog ? "fightdog.ogg" : (actor.Kind == ObjectKind::Farmer ? "fightguy.ogg" : "broemse_plays_sven.ogg"));
 	Scene.Sounds.push_back(str("Sven2/sfx/") + sound);
 	if (actor.Kind == ObjectKind::Girl)
@@ -605,7 +605,7 @@ void EnemyCharacter::FinishBattle(Object& actor)
 {
 	if (actor.Kind != ObjectKind::Girl)
 		Scene.RecordLifeLoss();
-	Scene.Objects.Combat.Enemy = -1;
+	Scene.GetCombat().Enemy = -1;
 	EnemyIdle(actor, true);
-	Scene.Player.RestorePlayer();
+	Scene.GetPlayer().RestorePlayer();
 }

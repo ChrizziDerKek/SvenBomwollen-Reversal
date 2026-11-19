@@ -20,11 +20,59 @@ public:
 	LevelScene(const LevelScene&) = delete;
 	LevelScene& operator=(const LevelScene&) = delete;
 	LevelScene(MudGE& engine, u32 seed);
-	LevelScene(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& level, u32 seed = GetTickCount(), u32* sharedRandomState = nullptr);
+	LevelScene(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& level, u32 seed = GetTickCount(), u32* sharedRandomState = nullptr, size_t playerCount = 1);
+	PlayerCharacter& GetPlayer();
+	const PlayerCharacter& GetPlayer() const;
+	size_t GetPlayerIndex() const;
+	ObjectManager::CombatState& GetCombat()
+	{
+		return Objects.Combats[ActivePlayer];
+	}
+	size_t GetPlayerCount() const
+	{
+		return PlayerCount;
+	}
+	class PlayerScope
+	{
+	public:
+		PlayerScope(LevelScene& scene, size_t number);
+		~PlayerScope();
+		PlayerScope(const PlayerScope&) = delete;
+		PlayerScope& operator=(const PlayerScope&) = delete;
+
+	private:
+		LevelScene& Scene;
+		size_t Previous;
+	};
 	void Move(f32 seconds, i32 dx, i32 dy);
 	// actionPressed is the current space-key state; edges are buffered during an interaction.
 	void Update(f32 seconds, i32 dx, i32 dy, bool actionPressed);
+	void Update(f32 seconds, const std::array<PlayerInput, 2>& inputs);
 	void TimeExpired();
+	GameEdition GetEdition() const
+	{
+		return Edition;
+	}
+	BonusMode GetBonusMode() const
+	{
+		return Mode;
+	}
+	bool IsBonusLevel() const
+	{
+		return Mode != BonusMode::Sven;
+	}
+	bool GetBonusUnlocked() const
+	{
+		return BonusUnlocked;
+	}
+	void UnlockBonus()
+	{
+		BonusUnlocked = true;
+	}
+	void FinishBonus();
+	void RecordAnimalCompletion(const WorldObject& animal);
+	i32 FindInteractingPlayer(size_t slot) const;
+	str CoreAsset(const str& path) const;
 	bool SpawnNearPlayer(ObjectKind kind);
 	size_t FindAvailableObjectSlot() const;
 	bool Completed() const
@@ -66,7 +114,7 @@ public:
 	}
 	const SpriteDraw& GetPlayerDraw() const
 	{
-		return Objects[PlayerIndex].Draw;
+		return Objects[GetPlayerIndex()].Draw;
 	}
 
 public:
@@ -86,6 +134,9 @@ private:
 	friend class PlayerCharacter;
 	friend class EnemyCharacter;
 	friend class AnimalCharacter;
+	friend class Mermaid;
+	friend class ParticleEmitter;
+	friend class EmitterParticle;
 	friend class LevelItems;
 	friend class UfoController;
 	friend class LevelEffects;
@@ -103,6 +154,12 @@ private:
 	void RecordLifeLoss();
 	void RemoveActor(size_t index, bool playerResolved);
 	MudGE& Engine;
+	GameEdition Edition;
+	BonusMode Mode = BonusMode::Sven;
+	bool BonusUnlocked = false;
+	bool BonusFinished = false;
+	size_t PlayerCount = 1;
+	size_t ActivePlayer = 0;
 	i32 PendingLifeHits = 0;
 	ObjectManager Objects;
 	bool Expired = false;
@@ -110,12 +167,10 @@ private:
 	i32 CompletedSheep = 0;
 	f32 InitialTime = 0;
 	std::vector<SoundRequest> Sounds;
-	size_t PlayerIndex{};
 	u32 RandomState = 1;
 	u32* SharedRandomState = nullptr;
 	LevelGrid Grid;
 	SceneResources Resources;
-	PlayerCharacter& Player;
 
 	LevelItems Items;
 	UfoController UfoController;

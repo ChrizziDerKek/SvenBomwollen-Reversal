@@ -14,6 +14,9 @@ public:
 	SceneResources(const SceneResources&) = delete;
 	SceneResources& operator=(const SceneResources&) = delete;
 	const Sprite* GetSprite(const str& path, i32 frames);
+	const Sprite* NamedSprite(const str& name);
+	const std::vector<i32>& AnimationFrames(AnimationSequence sequence);
+	const std::vector<i32>& FrameList(const str& name);
 	void InitializeActors();
 	void InitializePlayer();
 
@@ -26,6 +29,11 @@ private:
 	friend class PlayerCharacter;
 	friend class SceneRenderer;
 	LevelScene& Scene;
+	std::map<str, std::vector<i32>> FrameLists;
+	std::map<ObjectKind, std::array<ShagAnimation, 4>> AnimalEating, AnimalIdle;
+	std::map<ObjectKind, ShagAnimation> AnimalZero;
+	const Sprite* MermaidJump = nullptr;
+	ShagAnimation MermaidAction;
 	const Sprite *Explosion = nullptr, *Hearts = nullptr;
 	const Sprite *Digging = nullptr, *SleepSymbols = nullptr;
 	std::array<const Sprite*, 4> PlayerBeamSprites{};

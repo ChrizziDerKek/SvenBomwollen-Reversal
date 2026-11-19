@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <cmath>
 #include <fstream>
+#include <sstream>
 #include <iostream>
 #include <stdexcept>
 #include <set>
@@ -206,12 +207,15 @@ LevelInfo FixtureLevel(MudGE& engine, const str& name, std::initializer_list<Fix
 			integer(16 + tile * 24 + 16, slot);
 		}
 		else
-			integer(16 + tile * 24, actor.Kind == 0 ? 100 : (actor.Kind >= 11 ? actor.Kind - 4 : actor.Kind));
+		{
+			const CharacterDefinition* character = FindCharacterDefinition(static_cast<ObjectKind>(actor.Kind));
+			integer(16 + tile * 24, actor.Kind == 0 ? 100 : (character ? static_cast<i32>(character->OccupancyCode) : actor.Kind));
+		}
 		if (slot == 0 && pickup)
 			data[16 + tile * 24 + 12] = static_cast<u8>(pickup);
 		++slot;
 	}
-	level.Map = "XS/levels/check-" + name + ".lvl";
+	level.Map = engine.GetData().EditionAsset(GameEdition::Zwo, "XS/levels/check-" + name + ".lvl");
 	std::ofstream output(engine.GetData().GetRoot() / std::filesystem::u8path(level.Map), std::ios::binary);
 	output.write(reinterpret_cast<cstr>(data.data()), static_cast<std::streamsize>(data.size()));
 	if (!output)
@@ -1923,6 +1927,379 @@ void CheckObjectOwnership(MudGE& engine)
 	Log("PASS: individual character ownership, typed factories, stable entities, lookup and slot reuse.");
 }
 
+void CheckMenuPresentation(MudGE& engine, const fpath& saves, bool capture)
+{
+	using Page = GameUi::Page;
+	GameUi ui(engine, saves / L"menu-presentation");
+	std::array<const Sprite*, 5> eyes{};
+	for (size_t eye = 0; eye < eyes.size(); ++eye)
+		eyes[eye] = engine.LoadSprite("XXX/SvenXXX/gfx/Help_BG_eye0" + std::to_string(eye + 1) + ".bmp", 6, 1);
+	auto hasDraw = [](const std::vector<SpriteDraw>& draws, const Sprite* image, i32 x, i32 y, i32 frame)
+	{ return std::any_of(draws.begin(), draws.end(), [&](const SpriteDraw& draw) { return draw.Sprite == image && draw.X == x && draw.Y == y && draw.Frame == frame; }); };
+	for (Page page : { Page::GetPacks, Page::Help, Page::Highscores })
+	{
+		ui.Show(page);
+		WindowInput::Result cursor;
+		cursor.Mouse = { 0, 0 };
+		ui.Handle(cursor);
+		const std::vector<SpriteDraw>& upper = ui.Draws(0);
+		constexpr i32 upperX[] = { -130, -137, 680, 640, 680 }, upperY[] = { 100, 400, -120, 150, 425 };
+		for (size_t eye = 0; eye < eyes.size(); ++eye)
+			Require(hasDraw(upper, eyes[eye], upperX[eye], upperY[eye], 0) && hasDraw(upper, eyes[eye], upperX[eye], upperY[eye], 1), "Upper-left menu eye transform/base layering differs from native.");
+		cursor.Mouse = { 799, 599 };
+		ui.Handle(cursor);
+		const std::vector<SpriteDraw>& lower = ui.Draws(0);
+		constexpr i32 lowerX[] = { 0, -17, 693, 817, 812 }, lowerY[] = { 109, 459, 0, 161, 444 };
+		for (size_t eye = 0; eye < eyes.size(); ++eye)
+			Require(hasDraw(lower, eyes[eye], lowerX[eye], lowerY[eye], 0) && hasDraw(lower, eyes[eye], lowerX[eye], lowerY[eye], 5), "Lower-right menu eyes do not follow the cursor.");
+		for (POINT point : { POINT{ 0, 0 }, POINT{ 200, 150 }, POINT{ 400, 300 }, POINT{ 600, 450 }, POINT{ 799, 599 } })
+		{
+			cursor.Mouse = point;
+			ui.Handle(cursor);
+			for (const SpriteDraw& draw : ui.Draws(0))
+				Require((draw.Sprite != eyes[0] || draw.X <= 0) && (draw.Sprite != eyes[2] || draw.Y <= 0), "Menu tentacle detached from its screen edge.");
+		}
+		if (capture && page == Page::Help)
+			engine.DrawFrame(ui.Draws(0), "menu-eyes-edge.bmp");
+		cursor.Mouse = { 400, 300 };
+		ui.Handle(cursor);
+		if (capture && page == Page::Help)
+			engine.DrawFrame(ui.Draws(0), "menu-eyes.bmp");
+	}
+	const Sprite* sven = engine.LoadSprite(engine.GetData().GetSpriteDefinition("SvenStand", GameEdition::XXX).File, 8, 1);
+	BitmapFont titleFont(engine, false, false, GameEdition::XXX);
+	for (i32 players : { 2, 1 })
+	{
+		ui.Show(Page::Title);
+		WindowInput::Result choose;
+		choose.Click = true;
+		choose.Mouse = { players == 2 ? 210 : 40, 560 };
+		ui.Handle(choose);
+		Require(ui.GetPage() == Page::GetPacks, "Player mode button did not open episode selection.");
+		const std::vector<SpriteDraw>& draws = ui.Draws(0);
+		Require(hasDraw(draws, sven, 460, 65, 5), "Right-facing menu Sven is missing.");
+		Require(hasDraw(draws, sven, 400, 65, 3) == (players == 2), "Menu Sven count differs from requested player mode.");
+		std::vector<SpriteDraw> heading;
+		titleFont.Append(heading, players == 2 ? "2 SPIELER" : "1 SPIELER", 150, 80);
+		Require(std::any_of(draws.begin(), draws.end(), [&](const SpriteDraw& draw) { return draw.X == 150 && draw.Y == 80 && draw.Sprite->Pixels == heading.front().Sprite->Pixels; }), "Player heading incorrectly follows the highlighted pack instead of the requested mode.");
+		if (players == 2)
+			for (cstr name : { "IconPlayer1", "IconPlayer2" })
+			{
+				const GameData::SpriteDefinition& definition = engine.GetData().GetSpriteDefinition(name, GameEdition::XXX);
+				const Sprite* icon = engine.LoadSprite(definition.File, definition.Rows, definition.Columns);
+				Require(hasDraw(draws, icon, name == str("IconPlayer1") ? 390 : 430, 10, 0), "Multiplayer menu identifier is missing.");
+			}
+		Require(ui.GetPlayerCount() == 1, "Zwo gameplay must remain single-player even under the two-player menu.");
+		if (capture)
+			engine.DrawFrame(draws, players == 2 ? "two-player-menu.bmp" : "one-player-menu.bmp");
+	}
+	WindowInput::Result two;
+	two.Click = true;
+	two.Mouse = { 210, 560 };
+	ui.Handle(two);
+	Require(ui.GetPage() == Page::GetPacks, "Switching menu mode incorrectly closes episode selection.");
+	ui.Handle(two);
+	Require(ui.GetPage() == Page::Title, "Repeated selection of the same player mode must close the menu.");
+	ui.Show(Page::Help);
+	WindowInput::Result enemies;
+	enemies.Click = true;
+	enemies.Mouse = { 220, 40 };
+	ui.Handle(enemies);
+	const Sprite* cloud = engine.LoadSprite("XXX/SvenXXX/gfx/anim_cloud.bmp", 10, 1);
+	const std::array<const Sprite*, 4> catches = { cloud, cloud, engine.LoadSprite(engine.GetData().GetSpriteDefinition("BroemseSvenFront", GameEdition::XXX).File, 35, 1), engine.LoadSprite(engine.GetData().GetSpriteDefinition("AlienProbe2", GameEdition::XXX).File, 55, 1) };
+	constexpr i32 frames[] = { 4, 3, 4, 24 };
+	for (size_t enemy = 0; enemy < catches.size(); ++enemy)
+	{
+		const std::vector<SpriteDraw>& draws = ui.Draws(0);
+		const Sprite* image = catches[enemy];
+		Require(hasDraw(draws, image, 630 - image->FrameWidth / 2, 350 - image->FrameHeight / 2, frames[enemy]), "Enemy catch demonstration differs from native help.");
+		Require(std::any_of(draws.begin(), draws.end(), [&](const SpriteDraw& draw) { return draw.Sprite == image && draw.X == 630 - image->FrameWidth / 2 && draw.Mirror == (enemy == 2); }), "Enemy help did not preserve its native mirrored binding.");
+		if (capture)
+			engine.DrawFrame(draws, ("enemy-help-" + std::to_string(enemy) + ".bmp").c_str());
+		WindowInput::Result nextEnemy;
+		nextEnemy.Click = true;
+		nextEnemy.Mouse = { 320, 95 };
+		ui.Handle(nextEnemy);
+	}
+	Log("PASS: cursor-driven menu eyes, requested 1/2-player headers/portraits/identifiers and all four native enemy catch previews.");
+}
+
+void CheckPresentationCorrections(MudGE& engine, const fpath& saves, bool capture)
+{
+	const GameData& data = engine.GetData();
+	const std::vector<LevelPackInfo>& packs = data.GetPacks();
+	const LevelPackInfo& xxx = *std::find_if(packs.begin(), packs.end(), [](const LevelPackInfo& pack)
+	                                         { return pack.Edition == GameEdition::XXX; });
+	const LevelPackInfo& zwo = *std::find_if(packs.begin(), packs.end(), [](const LevelPackInfo& pack)
+	                                         { return pack.Name == "XS" && pack.Edition == GameEdition::Zwo; });
+	BitmapFont smallFont(engine, true, false, GameEdition::XXX);
+	Require(smallFont.Width("00") == 18 && smallFont.Width("11") == 12 && smallFont.Width(":") == 3, "Native FDD exclusive glyph bounds/advance regressed.");
+	for (i32 key : { VK_UP, VK_DOWN, VK_LEFT, VK_RIGHT, VK_RCONTROL, VK_LCONTROL, VK_RSHIFT, VK_LSHIFT, VK_SPACE, VK_RETURN, i32{ 'X' }, i32{ '0' }, VK_NUMPAD4 })
+		Require(WindowInput::VirtualKeyFromNative(WindowInput::NativeKeyFromVirtual(key)) == key, "Native/Windows keyboard mapping is not reversible.");
+	GameUi ui(engine, saves / L"keyboard");
+	ui.Show(GameUi::Page::Help);
+	WindowInput::Result next;
+	next.Right = true;
+	for (i32 tab = 0; tab < 3; ++tab)
+		ui.Handle(next);
+	if (capture)
+	{
+		engine.DrawFrame(ui.Draws(0), "controls.bmp");
+		WindowInput windowInput(engine.WindowHandle());
+		SendMessageW(engine.WindowHandle(), WM_KEYDOWN, VK_CONTROL, LPARAM{ 0x011d0001 });
+		Require(windowInput.Poll().BindingKey == static_cast<i32>(NativeKey::RightControl), "Extended right Control was not captured in the native key domain.");
+		SendMessageW(engine.WindowHandle(), WM_KEYUP, VK_CONTROL, static_cast<LPARAM>(0xc11d0001u));
+		SendMessageW(engine.WindowHandle(), WM_KEYDOWN, 'X', LPARAM{ 0x002d0001 });
+		Require(windowInput.Poll().BindingKey == 'x', "Keyboard rebinding did not capture a real window key message.");
+		SendMessageW(engine.WindowHandle(), WM_KEYUP, 'X', static_cast<LPARAM>(0xc02d0001u));
+	}
+	WindowInput::Result click;
+	click.Click = true;
+	click.Mouse = { 250, 210 };
+	ui.Handle(click);
+	Require(ui.GetControlSelection() == 0, "Native control label click selected the wrong binding.");
+	WindowInput::Result key;
+	key.BindingKey = 'x';
+	ui.Handle(key);
+	Require(ui.GetControlSelection() == -1 && ui.GetControlBindings()[0][0] == 'x' && ui.HasCustomControls(), "Rebinding a control did not complete.");
+	GameUi reloaded(engine, saves / L"keyboard");
+	Require(reloaded.GetControlBindings()[0][0] == 'x', "Keyboard bindings were not persisted.");
+	GameUi secondPlayer(engine, saves / L"keyboard-p2");
+	secondPlayer.SetControlBinding(1, 0, 't');
+	GameUi secondPlayerReloaded(engine, saves / L"keyboard-p2");
+	Require(secondPlayerReloaded.GetControlBindings()[1][0] == 't' && !secondPlayerReloaded.HasCustomControls(), "Editing player 2 controls must not replace Zwo's legacy player 1 controls.");
+	ui.Handle(click);
+	WindowInput::Result cancel;
+	cancel.Back = true;
+	ui.Handle(cancel);
+	Require(ui.GetPage() == GameUi::Page::Help && ui.GetControlSelection() == -1, "Escape must cancel rebinding without leaving the control screen.");
+	// The user's marked collision: Garten 02 episode, first map garden10.lvl.
+	const LevelSetInfo& garden = *std::find_if(xxx.LevelSets.begin(), xxx.LevelSets.end(), [](const LevelSetInfo& set)
+	                                           { return set.Name == "Garten 02"; });
+	LevelScene gardenScene(engine, xxx, garden.Levels.front(), 1);
+	Require(gardenScene.GetObjects().CanOccupy(279, gardenScene.GetPlayerIndex()), "Dormant mermaid leaves invisible collision in Garten 02.");
+	Mermaid& mermaid = dynamic_cast<Mermaid&>(gardenScene.GetObjects().Get(gardenScene.GetObjects().Find(ObjectKind::Mermaid).front()));
+	Require(mermaid.Reveal() && !gardenScene.GetObjects().CanOccupy(279, gardenScene.GetPlayerIndex()), "Revealed mermaid must occupy its cell.");
+	if (capture)
+		engine.DrawFrame(gardenScene.Draws(), "garden-mermaid-revealed.bmp");
+	auto fixture = [&](const str& name, std::initializer_list<FixtureActor> actors)
+	{
+		LevelInfo level = FixtureLevel(engine, name, actors);
+		bytestream bytes = data.ReadAsset(level.Map);
+		const i32 version = 7;
+		std::memcpy(bytes.data(), &version, sizeof(version));
+		std::array<std::array<i32, 4>, LevelFile::ObjectCount> layouts{};
+		layouts.fill({ 0, 0, 400, 2 });
+		const size_t offset = bytes.size();
+		bytes.resize(offset + sizeof(layouts));
+		std::memcpy(bytes.data() + offset, layouts.data(), sizeof(layouts));
+		std::ofstream file(data.GetRoot() / std::filesystem::u8path(level.Map), std::ios::binary | std::ios::trunc);
+		file.write(reinterpret_cast<cstr>(bytes.data()), static_cast<std::streamsize>(bytes.size()));
+		return level;
+	};
+	LevelPackInfo profile = zwo;
+	profile.Edition = GameEdition::XXX;
+	const Sprite* mood = engine.LoadSprite("XXX/SvenXXX/gfx/symbols.bmp", 12, 1);
+	constexpr i32 markerX[3][4] = { { 20, 20, 20, 20 }, { 40, 24, 30, 16 }, { 40, 24, 30, 16 } };
+	for (i32 species = 0; species < 3; ++species)
+		for (i32 facing = 0; facing < 4; ++facing)
+		{
+			const LevelInfo level = fixture("marker-" + std::to_string(species) + "-" + std::to_string(facing), { { 0, 80, 80, 0 }, { 25 + species, 240, 200, facing } });
+			LevelScene scene(engine, profile, level, 1);
+			const std::vector<SpriteDraw>& draws = scene.Draws();
+			Require(std::any_of(draws.begin(), draws.end(), [&](const SpriteDraw& draw)
+			                    { return draw.Sprite == mood && draw.X == 240 + markerX[species][facing] && draw.Y == 199; }),
+			        "New animal marker is not at its native facing offset.");
+			if (capture && facing == 0)
+				engine.DrawFrame(draws, ("animal-marker-" + std::to_string(species) + ".bmp").c_str());
+		}
+	for (GameEdition edition : { GameEdition::Zwo, GameEdition::XXX })
+		for (i32 kind : { 2, 11, 12, 13 })
+		{
+			LevelInfo level = FixtureLevel(engine, "effect-anchor-" + std::to_string(static_cast<i32>(edition)) + "-" + std::to_string(kind), { { 0, 240, 200, 0 }, { kind, 240, 160, 0 } });
+			if (edition == GameEdition::XXX)
+				level = fixture("effect-anchor-xxx-" + std::to_string(kind), { { 0, 240, 200, 0 }, { kind, 240, 160, 0 } });
+			LevelPackInfo pack = zwo;
+			pack.Edition = edition;
+			LevelScene scene(engine, pack, level, 1);
+			scene.Update(0.001f, 0, 0, true);
+			Require(scene.GetPlayerDraw().Y == 160, "Marker regression fixture failed to start a compound interaction.");
+			for (ItemCode code : { ItemCode::StinkMushroom, ItemCode::Flower, ItemCode::AlienPower })
+			{
+				scene.GetItems().GetPowerup() = { code, 10, 0 };
+				const std::vector<SpriteDraw>& draws = scene.Draws();
+				Require(std::any_of(draws.begin(), draws.end(), [](const SpriteDraw& draw)
+				                    { return draw.X == 268 && draw.Y == 156; }),
+				        "Equipped effect detached from the compound interaction canvas.");
+				if (capture && code == ItemCode::StinkMushroom && kind == 2)
+					engine.DrawFrame(draws, (edition == GameEdition::XXX ? "xxx-interaction-effect.bmp" : "zwo-interaction-effect.bmp"));
+			}
+		}
+	for (const LevelPackInfo* pack : { &zwo, &xxx })
+	{
+		GameSession session(engine, *pack, pack->LevelSets.front());
+		const std::vector<SpriteDraw>& draws = session.Draws();
+		const bool modern = data.GetThemeEdition() == GameEdition::XXX;
+		Require(std::any_of(draws.begin(), draws.end(), [&](const SpriteDraw& draw)
+		                    { return draw.X == (modern ? 745 : 733) && draw.Y == 19; }),
+		        "Score HUD does not match the shared UI theme coordinates.");
+		Require(std::any_of(draws.begin(), draws.end(), [&](const SpriteDraw& draw) { return draw.X == (modern ? 26 : 18) && draw.Y == (modern ? 34 : 36); }), "Timer HUD does not match the shared UI theme coordinates.");
+		if (capture)
+			engine.DrawFrame(draws, pack->Edition == GameEdition::XXX ? "xxx-hud.bmp" : "zwo-hud.bmp");
+	}
+	RoundResult result;
+	result.Time = result.TimeRemaining = 180;
+	result.Sheep = result.SheepRemaining = 1;
+	result.Lives = result.LivesRemaining = 3;
+	ui.ShowResults(result);
+	const std::vector<SpriteDraw>& bonus = ui.Draws(0);
+	Require(std::any_of(bonus.begin(), bonus.end(), [](const SpriteDraw& draw) { return draw.X == 304 && draw.Y == 247 && draw.Sprite->FrameWidth == 6; }), "Bonus animal count lost native centered text alignment.");
+	Require(std::any_of(bonus.begin(), bonus.end(), [](const SpriteDraw& draw) { return draw.X == 296 && draw.Y == 172; }), "Bonus timer lost native text alignment.");
+	if (capture)
+	{
+		engine.DrawFrame(bonus, "bonus-layout.bmp");
+		ui.Show(GameUi::Page::GetPacks);
+		engine.DrawFrame(ui.Draws(0), "short-episode-labels.bmp");
+		Log("Presentation correction captures: " + saves.string());
+	}
+	Log("PASS: native font advances/HUD, all new species/facings, compound effect anchors, dormant mermaid collision and keyboard binding capture/persistence.");
+}
+
+void CheckEditionFoundation(MudGE& engine, const fpath& saves)
+{
+	const GameData& data = engine.GetData();
+	Require(data.HasEdition(GameEdition::Zwo) && data.HasEdition(GameEdition::XXX), "Both edition catalogs must be available.");
+	Require(data.GetThemeEdition() == GameEdition::XXX, "Combined catalog must use the XXX theme.");
+	Require(data.EditionAsset(GameEdition::Zwo, "Sven2/Sven2.xml") == "ZWO/Sven2/Sven2.xml", "Zwo namespace was lost.");
+	Require(data.EditionAsset(GameEdition::XXX, "Sven2/Sven2.xml") == "XXX/SvenXXX/Sven2.xml", "XXX core namespace translation changed.");
+	Require(data.AssetPath("Sven2/Sven2.xml") == data.AssetPath("ZWO/Sven2/Sven2.xml"), "Legacy Zwo paths do not resolve in the new asset layout.");
+	for (GameEdition edition : { GameEdition::Zwo, GameEdition::XXX })
+		for (cstr sound : { "Tune01", "Tune02", "SfxUFO" })
+			data.AssetPath(data.SoundPath(sound, edition));
+	std::set<str> ids;
+	std::array<size_t, 2> counts{};
+	size_t helpMarkers = 0;
+	auto validateDraws = [&](const std::vector<SpriteDraw>& draws)
+	{
+		Require(!draws.empty(), "Scene or UI emitted no draw commands.");
+		for (const SpriteDraw& draw : draws)
+			Require(draw.Sprite && draw.Frame >= 0 && draw.Frame < draw.Sprite->Rows * draw.Sprite->Columns, "Initial scene/UI frame exceeds its sheet.");
+	};
+	for (const LevelPackInfo& pack : data.GetPacks())
+	{
+		Require(!pack.Id.empty() && ids.insert(pack.Id).second, "Edition pack save IDs collide.");
+		for (const LevelSetInfo& set : pack.LevelSets)
+			for (const LevelInfo& level : set.Levels)
+			{
+				try
+				{
+					const bytestream bytes = data.ReadAsset(level.Map);
+					const LevelFile file(bytes, level.Map);
+					const bool xxx = pack.Edition == GameEdition::XXX;
+					Require(file.GetVersion() == (xxx ? 7 : 6), "Catalog edition/version mismatch.");
+					size_t players = 0, targets = 0;
+					for (const LevelObjectRecord& record : file.GetObjects())
+					{
+						players += record.Kind() == static_cast<i32>(ObjectKind::Player);
+						const CharacterDefinition* character = FindCharacterDefinition(static_cast<ObjectKind>(record.Kind()));
+						targets += character && character->Category == CharacterCategory::Animal;
+					}
+					Require(players == (xxx ? size_t{ 2 } : size_t{ 1 }), "Unexpected shipped player spawn count.");
+					for (const LevelCell& cell : file.GetCells())
+					{
+						helpMarkers += cell.HelpId != 0;
+						Require(cell.Spawner == SpawnerCode::None || IsSpawner(cell.Spawner), "Help ID contaminated the spawner code.");
+					}
+					if (xxx)
+					{
+						std::array<std::array<i32, 4>, LevelFile::ObjectCount> layouts{};
+						std::memcpy(layouts.data(), bytes.data() + bytes.size() - sizeof(layouts), sizeof(layouts));
+						for (size_t index = 0; index < layouts.size(); ++index)
+							Require(file.GetExtension(index) == layouts[index], "A v7 help layout word was lost.");
+						bytestream truncated = bytes;
+						truncated.pop_back();
+						bool rejected = false;
+						try
+						{
+							LevelFile invalid(truncated, level.Map);
+						}
+						catch (const std::runtime_error&)
+						{
+							rejected = true;
+						}
+						Require(rejected, "Truncated v7 extension was accepted.");
+					}
+					LevelScene scene(engine, pack, level, 1);
+					Require(scene.GetPlayerCount() == 1 && scene.GetObjects().Find(ObjectKind::Player).size() == 1, "Single-player load retained the second actor.");
+					Require(scene.GetRemainingTargets() == static_cast<i32>(targets), "Optional actors changed completion target count.");
+					validateDraws(scene.Draws());
+					++counts[xxx ? 1 : 0];
+				}
+				catch (const std::exception& error)
+				{
+					throw std::runtime_error(level.Map + ": " + error.what());
+				}
+			}
+	}
+	Require(counts[0] >= 105 && counts[1] == 129 && helpMarkers > 0, "Shipped catalog/help coverage is incomplete.");
+	GameUi ui(engine, saves);
+	for (GameUi::Page page : { GameUi::Page::Title, GameUi::Page::GetPacks, GameUi::Page::Pause, GameUi::Page::Quit })
+	{
+		ui.Show(page);
+		validateDraws(ui.Draws(0.2f));
+	}
+	WindowInput::Result next;
+	next.Right = true;
+	ui.Show(GameUi::Page::Help);
+	for (i32 tab = 0; tab < 5; ++tab)
+	{
+		validateDraws(ui.Draws(0.2f));
+		ui.Handle(next);
+	}
+	ui.Show(GameUi::Page::Highscores);
+	validateDraws(ui.Draws(0.2f));
+	WindowInput::Result cards;
+	cards.Click = true;
+	cards.Mouse = { 510, 30 };
+	ui.Handle(cards);
+	Require(ui.CardCount() == 39, "XXX collection must include all 33 Zwo poses and six new poses without duplicates.");
+	const std::vector<ShagAnimation> zwoCards = ShagAnimation::Load(engine);
+	for (size_t card = 0; card < zwoCards.size() / 2; ++card)
+	{
+		const bool original = card < 13;
+		const i32 number = static_cast<i32>(original ? card + 2 : card - 13 + 1);
+		std::ostringstream name;
+		name << (original ? "Shag" : "NF");
+		if (number < 10)
+			name << '0';
+		name << number;
+		const GameData::SpriteDefinition& definition = data.GetSpriteDefinition(name.str(), GameEdition::XXX);
+		const Sprite* modern = engine.LoadSprite(definition.File, definition.Rows, definition.Columns);
+		const Sprite* legacy = zwoCards[card * 2].Sprite;
+		Require(modern->Width == legacy->Width && modern->FrameHeight == legacy->FrameHeight && modern->Pixels == legacy->Pixels, "A Zwo card pose is missing or changed in the XXX collection.");
+	}
+	for (i32 card = 0; card < ui.CardCount(); ++card)
+	{
+		WindowInput::Result play;
+		play.Confirm = true;
+		ui.Handle(play);
+		for (i32 frame = 0; frame < 120; ++frame)
+			validateDraws(ui.Draws(1.0f / 15));
+		const std::vector<str> sounds = ui.TakeSounds();
+		Require(sounds.size() == 1, "A collection card did not emit its own animation sound.");
+		data.AssetPath(sounds.front());
+		ui.Handle(next);
+	}
+	for (bool complete : { false, true })
+	{
+		RoundResult result;
+		result.EpisodeComplete = complete;
+		ui.ShowResults(result);
+		validateDraws(ui.Draws(0.2f));
+	}
+	Log("PASS: edition foundation: " + std::to_string(counts[0]) + " Zwo + 129 XXX maps, separate pack IDs/assets, v7 layouts/help IDs, single-player spawn filtering and XXX UI/fonts/cards. Gameplay parity is not established by this smoke check.");
+}
+
 void CheckCatalog(MudGE& engine, size_t minimum = 105)
 {
 	size_t levels = 0;
@@ -1969,6 +2346,8 @@ i32 main(i32 argc, char** argv)
 	{
 		const bool preview = argc == 3 && str(argv[1]) == "--catalog-preview";
 		const bool catalogAudio = argc == 3 && str(argv[1]) == "--catalog-audio";
+		const bool editionVisual = argc == 2 && str(argv[1]) == "--edition-visual";
+		const bool editions = argc == 2 && (str(argv[1]) == "--editions" || editionVisual);
 		const auto trace = argc == 3 && str(argv[1]) == "--trace" ? std::filesystem::absolute(std::filesystem::u8path(argv[2])) : fpath{};
 		const auto catalog = argc == 3 && (str(argv[1]) == "--catalog" || preview || catalogAudio) ? std::filesystem::absolute(std::filesystem::u8path(argv[2])) : fpath{};
 		wchar_t executable[32768]{};
@@ -1995,11 +2374,21 @@ i32 main(i32 argc, char** argv)
 		} apartment;
 		const auto fixtureData = saves / L"data";
 		if (catalog.empty())
-			LinkFixtureData(getRoot / L"assets", fixtureData);
+			LinkFixtureData(editions ? getRoot / L"assets" : getRoot / L"assets" / L"ZWO", fixtureData);
 		MudGE engine(getRoot / L"games" / L"sven2", catalog.empty() ? fixtureData : catalog);
 		engine.Construct();
 		engine.InitializePlugins();
 		engine.VerifyData();
+		if (editions)
+		{
+			CheckEditionFoundation(engine, saves);
+			if (editionVisual)
+				engine.StartVideo(false);
+			CheckPresentationCorrections(engine, saves, editionVisual);
+			CheckMenuPresentation(engine, saves, editionVisual);
+			engine.Shutdown();
+			return 0;
+		}
 		if (!trace.empty())
 		{
 			WriteBehaviorTrace(engine, trace);

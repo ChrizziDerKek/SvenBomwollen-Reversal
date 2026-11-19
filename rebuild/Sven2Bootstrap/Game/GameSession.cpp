@@ -4,17 +4,18 @@
 #include <cstdio>
 #include <utility>
 
-GameSession::GameSession(MudGE& engine, const LevelPackInfo& pack, const LevelSetInfo& levelSet)
-    : Engine(engine), Pack(pack), LevelSet(levelSet), Font(engine, true), GreenFont(engine, true, true), Clock(engine.LoadSprite("Sven2/gfx/timer.bmp", 1, 1)), ScoreIcon(engine.LoadSprite("Sven2/gfx/score.bmp", 4, 1)), LifeIcon(engine.LoadSprite("Sven2/gfx/Life_icon.bmp", 1, 1))
+GameSession::GameSession(MudGE& engine, const LevelPackInfo& pack, const LevelSetInfo& levelSet, size_t playerCount)
+    : Engine(engine), Pack(pack), LevelSet(levelSet), HudTheme(engine.GetData().GetThemeEdition()), Font(engine, true, false, HudTheme), GreenFont(engine, true, true, HudTheme), Clock(engine.LoadSprite(engine.GetData().EditionAsset(HudTheme, "Sven2/gfx/timer.bmp"), 1, 1)), ScoreIcon(engine.LoadSprite(engine.GetData().EditionAsset(HudTheme, "Sven2/gfx/score.bmp"), 4, 1)), LifeIcon(engine.LoadSprite(engine.GetData().EditionAsset(HudTheme, "Sven2/gfx/Life_icon.bmp"), 1, 1))
 {
 	if (levelSet.Levels.empty())
 		throw std::runtime_error("The selected levelset is Empty.");
+	PlayerCount = pack.Edition == GameEdition::Zwo ? 1 : std::clamp(playerCount, size_t{ 1 }, size_t{ 2 });
 	Load(0);
 }
 
 void GameSession::Load(size_t index)
 {
-	std::unique_ptr<LevelScene> nextScene = std::make_unique<LevelScene>(Engine, Pack, LevelSet.Levels.at(index), RandomState, &RandomState);
+	std::unique_ptr<LevelScene> nextScene = std::make_unique<LevelScene>(Engine, Pack, LevelSet.Levels.at(index), RandomState, &RandomState, PlayerCount);
 	Scene = std::move(nextScene);
 	LevelIndex = index;
 	Time = Scene->GetInitialTime();
@@ -30,7 +31,10 @@ void GameSession::Load(size_t index)
 	VisibleLives = Lives;
 	InitialRefundUsed = false;
 	LifeInsuranceAge = 0;
-	Sounds.push_back("sven2/sfx/start1.ogg");
+	if (Pack.Edition == GameEdition::XXX)
+		EmitSound("SfxStart");
+	else
+		Sounds.push_back("sven2/sfx/start1.ogg");
 }
 
 void GameSession::Advance()
@@ -103,6 +107,13 @@ void GameSession::AddScore(i32 amount)
 
 void GameSession::Update(f32 seconds, i32 dx, i32 dy, bool actionPressed)
 {
+	std::array<PlayerInput, 2> inputs{};
+	inputs[0] = { dx, dy, actionPressed };
+	Update(seconds, inputs);
+}
+
+void GameSession::Update(f32 seconds, const std::array<PlayerInput, 2>& inputs)
+{
 	if (!std::isfinite(seconds) || seconds <= 0)
 		return;
 	UpdateLifeEffects(seconds);
@@ -133,7 +144,7 @@ void GameSession::Update(f32 seconds, i32 dx, i32 dy, bool actionPressed)
 		Scene->TimeExpired();
 		TimedOut = true;
 	}
-	Scene->Update(seconds, dx, dy, actionPressed);
+	Scene->Update(seconds, inputs);
 	AddScore(Scene->TakeScoreDelta());
 	Time = std::max(0.0f, Time + Scene->TakeTimeDelta());
 	if (Time > 0)
@@ -181,7 +192,7 @@ i32 GameSession::RandomInt(i32 limit)
 
 void GameSession::EmitSound(cstr name)
 {
-	const str path = Engine.GetData().SoundPath(name);
+	const str path = Engine.GetData().SoundPath(name, Pack.Edition);
 	if (!path.empty())
 		Sounds.push_back(path);
 }
@@ -216,9 +227,7 @@ void GameSession::UpdateLifeEffects(f32 seconds)
 				effect.Y = 601;
 			}
 		}
-		LifeEffects.erase(std::remove_if(LifeEffects.begin(), LifeEffects.end(), [&](const LifeEffect& effect)
-		                                 { return effect.Y > 600 || effect.X < -LifeIcon->FrameWidth; }),
-		                  LifeEffects.end());
+		LifeEffects.erase(std::remove_if(LifeEffects.begin(), LifeEffects.end(), [&](const LifeEffect& effect) { return effect.Y > 600 || effect.X < -LifeIcon->FrameWidth; }), LifeEffects.end());
 	}
 }
 
@@ -325,17 +334,21 @@ const std::vector<SpriteDraw>& GameSession::Draws()
 		DrawCommands.push_back({ LifeIcon, life * 32, 565, 0 });
 	char text[40]{};
 	std::snprintf(text, sizeof(text), "%5i", Score);
-	Font.Append(DrawCommands, text, 709, 19);
+	Font.Append(DrawCommands, text, HudTheme == GameEdition::XXX ? 729 : 709, 19);
 	const i32 remaining = std::max(0, static_cast<i32>(Time));
 	std::snprintf(text, sizeof(text), "%2i:%02i", remaining / 60, remaining % 60);
 	const BitmapFont& timerFont = remaining < 10 && static_cast<i32>(Ticks) % 2 ? GreenFont : Font;
-	timerFont.Append(DrawCommands, text, 12, 36);
+	timerFont.Append(DrawCommands, text, HudTheme == GameEdition::XXX ? 22 : 12, HudTheme == GameEdition::XXX ? 34 : 36);
 	return DrawCommands;
 }
 
 std::vector<SoundRequest> GameSession::TakeAudioEvents()
 {
-	return std::exchange(Sounds, {});
+	std::vector<SoundRequest> result = std::exchange(Sounds, {});
+	if (Pack.Edition == GameEdition::XXX)
+		for (SoundRequest& request : result)
+			request.Asset = Engine.GetData().EditionAsset(Pack.Edition, request.Asset);
+	return result;
 }
 
 std::vector<str> GameSession::TakeSounds()

@@ -1,5 +1,7 @@
 #pragma once
 #include "Types.h"
+#include "GameEdition.h"
+#include "Scene/Level/LevelCodes.h"
 #include "Scene/Objects/ObjectKind.h"
 #include "Scene/Objects/ObjectState.h"
 #include <array>
@@ -37,6 +39,20 @@ struct SpriteDraw
 	i32 ClipBottom = 0; // Exclusive screen Y; zero uses the full drawing surface.
 };
 
+struct PlayerInput
+{
+	i32 X = 0;
+	i32 Y = 0;
+	bool Action = false;
+};
+
+struct PlayerPowerup
+{
+	ItemCode Code = ItemCode::None;
+	f32 Remaining = 0;
+	f32 Age = 0;
+};
+
 struct LevelInfo
 {
 	str Name;
@@ -70,6 +86,9 @@ struct LevelPackInfo
 	str Descriptor;
 	std::vector<LevelSetInfo> LevelSets;
 	std::vector<TileSetInfo> TileSets;
+	GameEdition Edition = GameEdition::Zwo;
+	str AssetPrefix;
+	str Id;
 };
 
 struct RoundResult
@@ -95,6 +114,8 @@ struct WorldObject
 	SpriteDraw Draw{};
 	f64 DepthOffset = 0;
 	ObjectKind Kind = ObjectKind::Scenery;
+	size_t TargetPlayer = 0;
+	i32 InteractionPlayer = -1;
 	i32 Tile = -1;
 	i32 Facing = 0;
 	i32 Impatience = 6;

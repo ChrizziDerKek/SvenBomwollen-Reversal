@@ -18,7 +18,11 @@ public:
 	}
 	i32 RenderPass() const
 	{
-		return Integer(4);
+		return Byte(16);
+	}
+	bool Mirrored() const
+	{
+		return Byte(16) != 0;
 	}
 	i32 Width() const
 	{
@@ -129,6 +133,7 @@ struct LevelCell
 	::ItemCode ItemCode = ::ItemCode::None;
 	i32 ItemObject = -1;
 	SpawnerCode Spawner = SpawnerCode::None;
+	u16 HelpId = 0;
 };
 
 class LevelFile
@@ -136,6 +141,18 @@ class LevelFile
 public:
 	static constexpr size_t CellCount = 22 * 17, ObjectCount = 256;
 	LevelFile(const bytestream& bytes, const str& path);
+	i32 GetVersion() const
+	{
+		return Version;
+	}
+	u32 GetFlags() const
+	{
+		return Flags;
+	}
+	const std::array<i32, 4>& GetExtension(size_t index) const
+	{
+		return Extensions.at(index);
+	}
 	bool GetHidesUfo() const
 	{
 		return HidesUfo;
@@ -158,6 +175,9 @@ public:
 	}
 
 private:
+	i32 Version = 6;
+	u32 Flags = 0;
+	std::array<std::array<i32, 4>, ObjectCount> Extensions{};
 	bool HidesUfo = false;
 	f32 TimeLimit = 0;
 	std::array<LevelCell, CellCount> Cells{};

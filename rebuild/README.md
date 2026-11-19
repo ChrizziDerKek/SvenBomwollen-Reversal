@@ -1,5 +1,19 @@
 # Sven Zwo rebuild
 
+XXX integration is in progress. The persistent [XXX roadmap and validation status](research/xxx/PROGRESS.md)
+is the continuation entry point; loading an XXX map does not yet establish native gameplay parity.
+Source data uses `assets/ZWO` and `assets/XXX`. Both catalogs are discovered together,
+with Zwo gameplay assets retained and a common XXX menu/HUD/font theme for both
+editions. For Zwo alone with its original presentation, pass
+`-DataDirectory assets/ZWO` to `Run-Sven2.ps1`. Builds copy the existing asset layout
+to the executable directory without moving or changing the sources.
+
+The shared card browser has 39 animations: all 33 Zwo poses plus six new XXX poses. In Help → Steuerung,
+click a character or key label, then press a key; Escape cancels. Overrides are saved
+beside the EXE in `saves/controls.tsv`. XXX uses arrows/right Control by default.
+Zwo keeps its previous controls until player 1 is customized. Player 2 bindings can
+be stored, but multiplayer gameplay remains a later milestone.
+
 Build with Visual Studio v143 C++ tools and a Windows SDK, targeting x86/Win32:
 
 ```powershell
@@ -83,7 +97,8 @@ contaminating one-shot playback. Music releases native stream objects as before.
 `LegacyAudioAbi.h` names verified native slots/flags. These and the v6 layout
 remain fixed contracts of the supported original build. Original animation
 tables, AI defaults and family-specific state transitions retain their behavior.
-This refactor adds neither XXX/004 support nor the removed horse experiment.
+XXX data/resources are being integrated into these same classes. Full XXX gameplay,
+004 support and the removed horse experiment are not implemented by this milestone.
 
 ## Style and verification
 
@@ -108,11 +123,15 @@ records. Actor-state aliases document IDs reused by different native classes.
 powershell -File rebuild/Build.ps1 -Checks
 rebuild/bin/Win32/Debug/Sven2Checks.exe
 rebuild/bin/Win32/Debug/Sven2Checks.exe --visual
+rebuild/bin/Win32/Debug/Sven2Checks.exe --editions
 rebuild/bin/Win32/Debug/Sven2Checks.exe --upscaler
 powershell -File rebuild/Test-PortableBuild.ps1
 ```
 
 The suite covers original gameplay/UI and simulation of all 105 Zwo levels.
+`--editions` checks the combined catalog, v6/v7 loading, single-player actor
+filtering and XXX resource/UI initialization for all 234 shipped maps; it does
+not certify full XXX gameplay parity.
 Ownership checks verify concrete instances, stable references, typed lookup
 and slot replacement. Native visual/audio/FSR checks require a desktop session.
 Generated captures and logs stay in `runtime`.

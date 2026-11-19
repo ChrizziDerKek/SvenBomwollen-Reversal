@@ -15,17 +15,24 @@ T ReadWord(const u8* bytes, size_t offset)
 LevelFile::LevelFile(const bytestream& bytes, const str& path)
 {
 	constexpr size_t headerSize = 16, gridAndStateSize = 9048, objectBytes = 100;
-	if (bytes.size() < headerSize || ReadWord<i32>(bytes.data(), 0) != 6)
-		throw std::runtime_error("Expected a Sven2 v6 level.");
-	HidesUfo = ReadWord<i32>(bytes.data(), 8) != 0;
+	if (bytes.size() < headerSize)
+		throw std::runtime_error("Truncated Sven level header.");
+	Version = ReadWord<i32>(bytes.data(), 0);
+	if (Version != 6 && Version != 7)
+		throw std::runtime_error("Expected a Zwo v6 or XXX v7 level.");
+	Flags = ReadWord<u32>(bytes.data(), 8);
+	HidesUfo = Version == 6 ? Flags != 0 : (Flags & 1) != 0;
 	const u32 nameSize = ReadWord<u32>(bytes.data(), 12);
-	if (nameSize > bytes.size() - headerSize || bytes.size() - headerSize - nameSize != gridAndStateSize + ObjectCount * objectBytes)
-		throw std::runtime_error("Unexpected v6 level length: " + path);
+	const size_t extensionBytes = Version == 7 ? sizeof(Extensions) : 0;
+	if (nameSize > bytes.size() - headerSize || bytes.size() - headerSize - nameSize != gridAndStateSize + ObjectCount * objectBytes + extensionBytes)
+		throw std::runtime_error("Unexpected Sven level length: " + path);
 	const u8* grid = bytes.data() + headerSize + nameSize;
+	Extensions.fill({ 0, 0, 400, 2 }); // XXX default layout initialization, 0x4308E0.
 	for (size_t index = 0; index < Cells.size(); ++index)
 	{
 		const u8* cell = grid + index * 24;
-		Cells[index] = { static_cast<OccupancyCode>(ReadWord<i32>(cell, 0)), cell[4], static_cast<ItemCode>(cell[12]), ReadWord<i32>(cell, 16), static_cast<SpawnerCode>(ReadWord<i32>(cell, 20)) };
+		const u32 spawnerAndHelp = ReadWord<u32>(cell, 20);
+		Cells[index] = { static_cast<OccupancyCode>(ReadWord<i32>(cell, 0)), cell[4], static_cast<ItemCode>(cell[12]), ReadWord<i32>(cell, 16), static_cast<SpawnerCode>(spawnerAndHelp & 0xffff), Version == 7 ? static_cast<u16>(spawnerAndHelp >> 16) : u16{ 0 } };
 	}
 	TimeLimit = ReadWord<f32>(grid, 9044);
 	if (!std::isfinite(TimeLimit) || TimeLimit < 0)
@@ -40,4 +47,6 @@ LevelFile::LevelFile(const bytestream& bytes, const str& path)
 	}
 	for (size_t slot = 0; slot < Objects.size(); ++slot)
 		std::memcpy(Objects[slot].Words.data(), grid + gridAndStateSize + slot * objectBytes, objectBytes);
+	if (Version == 7)
+		std::memcpy(Extensions.data(), grid + gridAndStateSize + ObjectCount * objectBytes, extensionBytes);
 }

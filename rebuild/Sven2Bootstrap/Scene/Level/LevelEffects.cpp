@@ -8,8 +8,7 @@
 
 LevelEffects::LevelEffects(LevelScene& scene)
     : Scene(scene)
-{
-}
+{}
 
 void LevelEffects::AddTime(i32 amount, f32 x, f32 y)
 {
@@ -120,4 +119,100 @@ void LevelEffects::UpdateWorldEffect(size_t index, f32 seconds)
 	effect.Age += seconds * 15;
 	effect.Draw.Frame = static_cast<i32>(effect.Age);
 	effect.Freed = effect.Draw.Frame >= effect.Draw.Sprite->Rows;
+}
+
+ParticleEmitter::ParticleEmitter(LevelScene& scene, size_t index)
+    : BaseObject(scene, ObjectPhase::Animals, index)
+{
+}
+
+void ParticleEmitter::Initialize()
+{
+	if (Scene.GetEdition() != GameEdition::XXX)
+		throw std::logic_error("XXX particle emitters require the XXX edition profile.");
+	const i32 interval = State.Kind == ObjectKind::BubbleEmitter ? 15 : 25;
+	Mirror = State.Draw.Mirror;
+	// Loaded records retain the countdown stored by the original editor.
+	Countdown = State.Original[11] == static_cast<u32>(State.Kind) ? State.Pulse : static_cast<f32>(Scene.RandomInt(interval) + interval);
+	State.Draw = {};
+}
+
+void ParticleEmitter::Update(f32 seconds)
+{
+	Countdown -= seconds * 60;
+	if (Countdown < 0)
+	{
+		const bool bubbles = State.Kind == ObjectKind::BubbleEmitter;
+		EmitterParticle::Spawn(Scene, bubbles ? ObjectKind::BubbleParticle : ObjectKind::YellowParticle, State.X, State.Y, Mirror);
+		const i32 interval = bubbles ? 15 : 25;
+		Countdown = static_cast<f32>(Scene.RandomInt(interval) + interval);
+	}
+	State.Pulse = Countdown;
+	State.Draw = {};
+}
+
+EmitterParticle::EmitterParticle(LevelScene& scene, size_t index)
+    : BaseObject(scene, ObjectPhase::Effects, index)
+{
+}
+
+bool EmitterParticle::Spawn(LevelScene& scene, ObjectKind kind, f32 x, f32 y, bool mirror)
+{
+	if (kind != ObjectKind::BubbleParticle && kind != ObjectKind::YellowParticle)
+		throw std::invalid_argument("Not a native XXX emitter particle.");
+	ObjectManager& objects = scene.GetObjects();
+	size_t slot = 256;
+	while (slot < objects.Size() && slot < 384 && !objects[slot].Freed)
+		++slot;
+	if (slot == 384)
+		return false;
+	while (objects.Size() < slot)
+	{
+		WorldObject empty;
+		empty.Kind = ObjectKind::Inactive;
+		empty.Freed = true;
+		objects.Add(empty);
+	}
+	WorldObject particle;
+	particle.Kind = kind;
+	particle.X = x;
+	particle.Y = y;
+	particle.Draw.Mirror = mirror;
+	if (slot == objects.Size())
+		objects.Add(particle);
+	else
+		objects.Replace(slot, particle);
+	return true;
+}
+
+void EmitterParticle::Initialize()
+{
+	const bool bubbles = State.Kind == ObjectKind::BubbleParticle;
+	const Sprite* sprite = Scene.Resources.GetSprite(Scene.CoreAsset(bubbles ? "Sven2/gfx/pfx_bubbles.bmp" : "Sven2/gfx/pfx_yellow.bmp"), 16);
+	State.X -= sprite->FrameWidth / 2;
+	State.Y -= sprite->FrameHeight / 2;
+	State.Draw = { sprite, static_cast<i32>(State.X), static_cast<i32>(State.Y), Scene.RandomInt(bubbles ? 16 : 3), State.Draw.Mirror };
+	const i32 frame = State.Draw.Frame;
+	VelocityX = static_cast<f32>(bubbles ? 30 - Scene.RandomInt(60) : 20 - Scene.RandomInt(40));
+	VelocityY = static_cast<f32>(bubbles ? frame - Scene.RandomInt(30) - 50 : frame - Scene.RandomInt(15) - 25);
+	Lifetime = static_cast<f32>(bubbles ? Scene.RandomInt(75) + 2 * (50 - frame) : Scene.RandomInt(25) - frame + 25);
+	NativeDepth = 0;
+	State.CommittedY = State.Y;
+}
+
+void EmitterParticle::Update(f32 seconds)
+{
+	State.X += VelocityX * seconds;
+	State.Y += VelocityY * seconds;
+	// 0x40D134..157 / 0x40D243..266: compare vx to zero, then add for vx<0,
+	// subtract otherwise. Native code intentionally does not clamp at zero.
+	const f32 drag = seconds * (State.Kind == ObjectKind::BubbleParticle ? 10 : 5);
+	VelocityX += VelocityX < 0 ? drag : -drag;
+	NativeDepth += VelocityY * seconds;
+	State.DepthOffset = static_cast<i32>(NativeDepth);
+	Lifetime -= seconds * 60;
+	State.Freed = Lifetime < 0;
+	State.CommittedY = State.Y;
+	State.Draw.X = static_cast<i32>(State.X);
+	State.Draw.Y = static_cast<i32>(State.Y);
 }

@@ -1,6 +1,7 @@
 #include "BitmapFont.h"
 #include <algorithm>
 #include <limits>
+#include <sstream>
 
 constexpr i32 LargeWidths[88] = { 24, 14, 17, 18, 15, 15, 19, 18, 5, 10, 19, 14, 25, 20, 22, 15, 23, 17, 14, 19, 20, 20, 28, 19, 18, 18, 23, 21, 22, 11, 15, 14, 14, 14, 14, 14, 13, 6, 6, 15, 5, 24, 14, 18, 14, 15, 10, 11, 13, 13, 15, 21, 15, 16, 14, 17, 12, 14, 5, 5, 5, 5, 20, 20, 10, 20, 5, 6, 20, 20, 20, 20, 20, 5, 10, 17, 15, 18, 14, 15, 16, 16, 14, 19, 22, 19, 20, 20 };
 constexpr i32 SmallWidths[88] = { 10, 8, 9, 10, 9, 9, 10, 10, 5, 6, 10, 8, 12, 10, 10, 8, 10, 9, 7, 9, 10, 10, 12, 10, 9, 10, 10, 10, 10, 6, 7, 7, 7, 7, 7, 8, 7, 4, 5, 7, 3, 11, 7, 8, 8, 8, 5, 6, 7, 7, 7, 10, 8, 8, 8, 8, 7, 8, 4, 5, 5, 4, 7, 6, 6, 8, 4, 4, 8, 8, 8, 8, 8, 3, 8, 10, 9, 10, 10, 10, 10, 10, 9, 10, 11, 9, 11, 11 };
@@ -102,17 +103,76 @@ static i32 Checked(i64 value)
 	return static_cast<i32>(value);
 }
 
-BitmapFont::BitmapFont(MudGE& engine, bool smallFont, bool green)
-    : Sprite(engine.LoadSprite(str("Sven2/gfx/font") + (green ? "green" : "") + (smallFont ? "2.bmp" : "1.bmp"), 88, 1)), Small(smallFont)
+BitmapFont::BitmapFont(MudGE& engine, bool smallFont, bool green, GameEdition edition)
+    : Sprite(edition == GameEdition::XXX ? nullptr : engine.LoadSprite(str("Sven2/gfx/font") + (green ? "green" : "") + (smallFont ? "2.bmp" : "1.bmp"), 88, 1)), Small(smallFont)
 {
+	LineAdvance = Small ? 21 : 35;
+	if (edition == GameEdition::XXX)
+	{
+		LoadNative(engine, green);
+		return;
+	}
 	if (!Sprite)
 		throw std::runtime_error("Cannot load bitmap font");
+}
+
+// XXX uses Unicode rectangle definitions alongside each font atlas, not Zwo's 88-frame strip.
+void BitmapFont::LoadNative(MudGE& engine, bool green)
+{
+	const str path = engine.GetData().EditionAsset(GameEdition::XXX, str("SvenXXX/gfx/font/font") + (Small ? "2" : "1") + (green ? "aktiv" : ""));
+	const ::Sprite* atlas = engine.LoadSprite(path + ".bmp", 1, 1);
+	const bytestream bytes = engine.GetData().ReadAsset(path + ".fdd");
+	std::istringstream definition(str(bytes.begin(), bytes.end()));
+	str line;
+	for (i32 header = 0; header < 4; ++header)
+		if (!std::getline(definition, line))
+			throw std::runtime_error("Incomplete XXX font definition: " + path);
+	std::getline(definition, line);
+	std::istringstream spacing(line);
+	spacing >> SpaceAdvance >> LineAdvance;
+	while (std::getline(definition, line))
+	{
+		std::istringstream record(line);
+		u32 low, high;
+		i32 left, top, right, bottom;
+		if (!(record >> std::hex >> low >> high >> std::dec >> left >> top >> right >> bottom))
+			continue;
+		if (left < 0 || top < 0 || right <= left || bottom <= top || right > atlas->Width || bottom > atlas->FrameHeight)
+			throw std::runtime_error("Invalid XXX font rectangle: " + path);
+		NativeGlyph glyph;
+		// Native cFontDefinition::Open (XXX 0x442F20) uses exclusive bounds.
+		glyph.Image.Width = glyph.Image.FrameWidth = right - left;
+		glyph.Image.FrameHeight = bottom - top;
+		glyph.Image.Rows = glyph.Image.Columns = 1;
+		glyph.Image.Keyed = atlas->Keyed;
+		glyph.Advance = right - left;
+		// FDD rectangles use bottom-left atlas coordinates; decoded WIC pixels are top-down.
+		for (i32 y = top; y < bottom; ++y)
+			glyph.Image.Pixels.insert(glyph.Image.Pixels.end(), atlas->Pixels.begin() + (atlas->FrameHeight - bottom + y - top) * atlas->Width + left, atlas->Pixels.begin() + (atlas->FrameHeight - bottom + y - top) * atlas->Width + right);
+		Glyphs.emplace(static_cast<i32>(low | (high << 8)), std::move(glyph));
+	}
+	if (Glyphs.find('?') == Glyphs.end())
+		throw std::runtime_error("Missing XXX font fallback: " + path);
+	NativeFont = true;
+}
+
+i32 BitmapFont::GetGlyph(wchar_t character) const
+{
+	if (!NativeFont)
+		return Glyph(character);
+	if (character == L' ')
+		return -1;
+	if (character == L'\t')
+		return -2;
+	return Glyphs.find(character) == Glyphs.end() ? '?' : character;
 }
 
 i32 BitmapFont::Advance(i32 g) const
 {
 	if (g < 0)
-		return 6 * (g == -2 ? 4 : 1);
+		return SpaceAdvance * (g == -2 ? 4 : 1);
+	if (NativeFont)
+		return Glyphs.at(g).Advance;
 	return Small ? SmallWidths[g] : LargeWidths[g];
 }
 
@@ -132,7 +192,7 @@ void BitmapFont::Layout(std::vector<SpriteDraw>* draws, const wstr& text, i32 x,
 		{
 			if (c >= 0xd800 && c <= 0xdbff && i + 1 < text.size())
 				++i;
-			glyphs.push_back(Glyph(c));
+			glyphs.push_back(GetGlyph(c));
 		}
 	}
 	i32 offset = 0;
@@ -161,7 +221,7 @@ void BitmapFont::Layout(std::vector<SpriteDraw>* draws, const wstr& text, i32 x,
 				continue;
 		}
 		if (draws && g >= 0)
-			draws->push_back({ Sprite, Checked(static_cast<i64>(x) + offset), y, g });
+			draws->push_back({ NativeFont ? &Glyphs.at(g).Image : Sprite, Checked(static_cast<i64>(x) + offset), y, NativeFont ? 0 : g });
 		offset = Checked(static_cast<i64>(offset) + a);
 	}
 	measured = std::max(measured, offset);
@@ -170,7 +230,7 @@ void BitmapFont::Layout(std::vector<SpriteDraw>* draws, const wstr& text, i32 x,
 void BitmapFont::Append(std::vector<SpriteDraw>& draws, const str& text, i32 x, i32 y) const
 {
 	i32 measured = 0;
-	Layout(&draws, Decode(text), x, y, 0, Small ? 21 : 35, measured);
+	Layout(&draws, Decode(text), x, y, 0, LineAdvance, measured);
 }
 
 void BitmapFont::AppendWrapped(std::vector<SpriteDraw>& draws, const str& text, i32 x, i32 y, i32 width, i32 lineHeight) const

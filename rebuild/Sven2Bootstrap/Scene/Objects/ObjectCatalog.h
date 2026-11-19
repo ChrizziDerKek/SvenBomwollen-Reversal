@@ -1,16 +1,21 @@
 #pragma once
 #include "ObjectKind.h"
+#include "Engine/GameEdition.h"
 #include "Scene/Level/LevelCodes.h"
 #include <memory>
 
 class BaseObject;
 class LevelScene;
+class GameData;
 
 enum class CharacterCategory
 {
 	Player,
 	Enemy,
-	Animal
+	Animal,
+	Mermaid,
+	Emitter,
+	Effect
 };
 
 struct CharacterDefinition
@@ -22,6 +27,10 @@ struct CharacterDefinition
 	u16 Frames;
 	::OccupancyCode OccupancyCode;
 	std::unique_ptr<BaseObject> (*Create)(LevelScene&, size_t);
+	cstr SpriteName = nullptr;
+	bool XxxOnly = false;
+	bool DebugSpawnable = true;
+	u16 GetFrames(const GameData& data, GameEdition edition) const;
 };
 
 // The registration table is the single mapping from serialized character IDs

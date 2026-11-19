@@ -88,9 +88,61 @@ bytestream XmlBytes(const bytestream& bytes)
 	return { converted.begin(), converted.end() };
 }
 
+bytestream LegacyAttributeMarkup(const bytestream& source)
+{
+	if (source.size() >= 2 && ((source[0] == 0xff && source[1] == 0xfe) || (source[0] == 0xfe && source[1] == 0xff)))
+		return source;
+	bytestream output;
+	output.reserve(source.size());
+	bool inTag = false;
+	u8 quote = 0;
+	for (size_t i = 0; i < source.size(); ++i)
+	{
+		const u8 c = source[i];
+		if (!quote && c == '<' && i + 4 <= source.size() && str(source.begin() + i, source.begin() + i + 4) == "<!--")
+		{
+			const str remaining(source.begin() + i, source.end());
+			const size_t end = remaining.find("-->");
+			if (end == str::npos)
+				throw std::runtime_error("Unterminated XML comment.");
+			output.insert(output.end(), source.begin() + i, source.begin() + i + end + 3);
+			i += end + 2;
+			continue;
+		}
+		if (quote)
+		{
+			if (c == quote)
+				quote = 0;
+			else if (c == '<')
+			{
+				output.insert(output.end(), { '&', 'l', 't', ';' });
+				continue;
+			}
+			else if (c == '&')
+			{
+				const str tail(source.begin() + i, source.begin() + std::min(source.size(), i + 16));
+				const bool entity = tail.rfind("&amp;", 0) == 0 || tail.rfind("&lt;", 0) == 0 || tail.rfind("&gt;", 0) == 0 || tail.rfind("&quot;", 0) == 0 || tail.rfind("&apos;", 0) == 0 || (tail.rfind("&#", 0) == 0 && tail.find(';') != str::npos);
+				if (!entity)
+				{
+					output.insert(output.end(), { '&', 'a', 'm', 'p', ';' });
+					continue;
+				}
+			}
+		}
+		else if (c == '<')
+			inTag = true;
+		else if (c == '>')
+			inTag = false;
+		else if (inTag && (c == '\"' || c == '\''))
+			quote = c;
+		output.push_back(c);
+	}
+	return output;
+}
+
 Node ReadXml(const bytestream& source)
 {
-	const bytestream bytes = XmlBytes(source);
+	const bytestream bytes = LegacyAttributeMarkup(XmlBytes(source));
 	if (bytes.size() > UINT_MAX)
 		throw std::runtime_error("XML file is too large.");
 	Microsoft::WRL::ComPtr<IStream> stream;
@@ -138,8 +190,8 @@ Node ReadXml(const bytestream& source)
 		}
 	}
 	Check(result, "Malformed XML or prohibited DTD.");
-	if (stack.size() != 1 || document.Children.size() != 1 || document.Children.front().Name != "sven2")
-		throw std::runtime_error("Expected a single sven2 XML root.");
+	if (stack.size() != 1 || document.Children.size() != 1 || (document.Children.front().Name != "sven2" && document.Children.front().Name != "SvenXXX"))
+		throw std::runtime_error("Expected a single Sven game XML root.");
 	return std::move(document.Children.front());
 }
 

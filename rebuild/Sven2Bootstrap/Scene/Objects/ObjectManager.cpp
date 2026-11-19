@@ -11,7 +11,8 @@ class SceneryObject final : public BaseObject
 public:
 	SceneryObject(LevelScene& scene, size_t index)
 	    : BaseObject(scene, ObjectPhase::Items, index)
-	{}
+	{
+	}
 	void Update(f32 seconds) override;
 };
 
@@ -20,7 +21,8 @@ class ItemObject final : public BaseObject
 public:
 	ItemObject(LevelScene& scene, size_t index)
 	    : BaseObject(scene, ObjectPhase::Items, index)
-	{}
+	{
+	}
 	void Update(f32 seconds) override;
 };
 
@@ -29,19 +31,31 @@ class EffectObject final : public BaseObject
 public:
 	EffectObject(LevelScene& scene, size_t index)
 	    : BaseObject(scene, ObjectPhase::Effects, index)
-	{}
+	{
+	}
 	void Update(f32 seconds) override;
 };
 
 ObjectManager::ObjectManager(LevelScene& scene)
-    : Scene(scene), PendingPlayer(std::make_unique<PlayerCharacter>(scene)), Player(PendingPlayer.get())
-{}
+    : Scene(scene)
+{
+	for (size_t i = 0; i < PendingPlayers.size(); ++i)
+	{
+		PendingPlayers[i] = std::make_unique<PlayerCharacter>(scene, i);
+		Players[i] = PendingPlayers[i].get();
+	}
+}
 
 ObjectManager::~ObjectManager() = default;
 
-PlayerCharacter& ObjectManager::GetPlayer()
+PlayerCharacter& ObjectManager::GetPlayer(size_t number)
 {
-	return *Player;
+	return *Players.at(number);
+}
+
+const PlayerCharacter& ObjectManager::GetPlayer(size_t number) const
+{
+	return *Players.at(number);
 }
 
 std::unique_ptr<BaseObject> ObjectManager::Create(const WorldObject& state, size_t index)
@@ -54,9 +68,9 @@ std::unique_ptr<BaseObject> ObjectManager::Create(const WorldObject& state, size
 		switch (state.Kind)
 		{
 		case ObjectKind::Player:
-			if (!PendingPlayer)
+			if (AdoptedPlayers >= Scene.GetPlayerCount())
 				throw std::runtime_error("Duplicate player object.");
-			object = std::move(PendingPlayer);
+			object = std::move(PendingPlayers[AdoptedPlayers++]);
 			break;
 
 		case ObjectKind::Scenery:
@@ -82,7 +96,7 @@ void ObjectManager::Add(const WorldObject& state)
 
 void ObjectManager::Replace(size_t index, const WorldObject& state)
 {
-	if (Objects.at(index).get() == Player)
+	if (dynamic_cast<PlayerCharacter*>(Objects.at(index).get()))
 		throw std::runtime_error("Cannot replace the player instance.");
 	if (!Objects.at(index)->GetState().Freed)
 		throw std::runtime_error("Cannot reuse a live object slot.");
@@ -136,11 +150,11 @@ void EffectObject::Update(f32 seconds)
 
 bool ObjectManager::PlayerInRange(const WorldObject& actor, f32 distance) const
 {
-	if (Combat.Enemy >= 0 || Scene.Player.PlayerBeamState || Scene.Player.PlayerShockAge >= 0 || Scene.Effects.SplashPlayerAge * Scene.Player.DefaultRate < 16)
+	if (Scene.GetCombat().Enemy >= 0 || Scene.GetPlayer().PlayerBeamState || Scene.GetPlayer().PlayerShockAge >= 0 || Scene.GetPlayer().SplashAge * Scene.GetPlayer().DefaultRate < 16)
 		return false;
 	if (actor.Tile < 0)
 		return false;
-	const i32 playerTile = Scene.Grid.TileAt(Scene.Player.X, Scene.Player.Y);
+	const i32 playerTile = Scene.Grid.TileAt(Scene.GetPlayer().X, Scene.GetPlayer().Y);
 	const i32 dx = actor.Tile % Stride - playerTile % Stride;
 	const i32 dy = actor.Tile / Stride - playerTile / Stride;
 	const i32 bound = static_cast<i32>(distance);
@@ -149,13 +163,13 @@ bool ObjectManager::PlayerInRange(const WorldObject& actor, f32 distance) const
 
 bool ObjectManager::CanCatchPlayer(const WorldObject& actor) const
 {
-	if (Combat.Enemy >= 0 || Scene.Player.PlayerBeamState || Scene.Player.PlayerShockAge >= 0 || Scene.Effects.SplashPlayerAge * Scene.Player.DefaultRate < 16)
+	if (Scene.GetCombat().Enemy >= 0 || Scene.GetPlayer().PlayerBeamState || Scene.GetPlayer().PlayerShockAge >= 0 || Scene.GetPlayer().SplashAge * Scene.GetPlayer().DefaultRate < 16)
 		return false;
-	const f32 dx = Scene.Player.X + 60 - actor.X - actor.CenterX;
-	const f32 dy = Scene.Player.Y + 60 - actor.Y - actor.CenterY;
+	const f32 dx = Scene.GetPlayer().X + 60 - actor.X - actor.CenterX;
+	const f32 dy = Scene.GetPlayer().Y + 60 - actor.Y - actor.CenterY;
 	if (dx * dx + dy * dy > 55 * 55)
 		return false;
-	const i32 playerTile = Scene.Objects[Scene.PlayerIndex].Tile;
+	const i32 playerTile = Scene.Objects[Scene.GetPlayerIndex()].Tile;
 	for (i32 offset = -1; offset <= 1; ++offset)
 	{
 		const i32* d = Directions[(actor.Facing + offset + 8) % 8];
