@@ -1,7 +1,8 @@
 # Rebuild conventions
 
 * Work in `rebuild`. Never modify `rebuild_working_copy`, the user's frozen backup.
-* Follow `.clang-format`: Allman braces, tabs, four-column indentation. Empty constructor bodies use `{}`; separate method definitions with a blank line and keep short lambdas inline.
+* Follow `.clang-format`: Allman braces, tabs, four-column indentation. Empty constructor bodies use `{}`; separate method definitions with a blank line. Lambda opening braces stay on the same line as their signature; keep short lambdas inline.
+* Keep braces around nested loop bodies, including an outer loop whose only statement is another loop.
 * Use PascalCase for project classes, methods and attributes; use camelCase for parameters and local variables.
 * Keep ordinary expressions/calls on one line; parenthesize nested conditional branches so formatting does not split ternary chains. Keep initializer spacing like `{ 1, 1 }`.
 * Use `ObjectKind` directly, classification helpers and catalog mappings; never derive array indices or cell codes by subtracting from a kind. Keep scoped state/cell enums at runtime and convert raw values at serialization boundaries.

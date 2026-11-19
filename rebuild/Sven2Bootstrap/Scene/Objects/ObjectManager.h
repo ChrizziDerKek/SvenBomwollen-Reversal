@@ -61,8 +61,7 @@ public:
 	public:
 		Iterator(ObjectManager& owner, size_t index)
 		    : Owner(owner), Index(index)
-		{
-		}
+		{}
 		WorldObject& operator*() const
 		{
 			return Owner[Index];

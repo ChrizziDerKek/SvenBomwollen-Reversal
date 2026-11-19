@@ -5,6 +5,7 @@
 #include "Utility/Logger.h"
 #include "Engine/MudGE.h"
 #include "Scene/LevelScene.h"
+#include "Scene/SceneConstants.h"
 #include "Game/GameUi.h"
 #include "Game/GameSession.h"
 #include "FSR1/FsrPresenter.h"
@@ -75,8 +76,10 @@ void CheckUpscalerGpu()
 			Require(std::abs(static_cast<i32>((c >> shift) & 255) - static_cast<i32>((0x336699 >> shift) & 255)) <= 1, "FSR must preserve constant colors, channels and edge clamping.");
 	}
 	for (i32 y = 0; y < 600; ++y)
+	{
 		for (i32 x = 0; x < 800; ++x)
 			source[y * 800 + x] = x < 400 ? 0x202020 : (y > x - 400 ? 0xf0c080 : 0x4070c0);
+	}
 	presenter.SetFilter(ScalingFilter::Nearest);
 	presenter.Present(source.data(), "nearest.bmp");
 	auto nearest = ReadScaledCapture("nearest.bmp", 1280, 720);
@@ -153,15 +156,12 @@ struct FixtureActor
 LevelInfo FixtureLevel(MudGE& engine, const str& name, std::initializer_list<FixtureActor> actors, i32 pickup = 0)
 {
 	const auto& getPacks = engine.GetData().GetPacks();
-	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& pack)
-	                             { return pack.Name == "XS"; });
+	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& pack) { return pack.Name == "XS"; });
 	auto level = xs->LevelSets.front().Levels.front();
 	// v6 layout is documented in docs/VERIFIED_FORMAT.md and LevelScene's parser.
 	bytestream data(16 + 9048 + 25600);
-	auto integer = [&](size_t offset, i32 value)
-	{ std::memcpy(data.data() + offset, &value, 4); };
-	auto real = [&](size_t offset, f32 value)
-	{ std::memcpy(data.data() + offset, &value, 4); };
+	auto integer = [&](size_t offset, i32 value) { std::memcpy(data.data() + offset, &value, 4); };
+	auto real = [&](size_t offset, f32 value) { std::memcpy(data.data() + offset, &value, 4); };
 	integer(0, 6);
 	integer(8, 0); // Render requested UFOs and their shadows, as in visible-UFO levels.
 	for (i32 tile = 0; tile < 22 * 17; ++tile)
@@ -226,8 +226,7 @@ LevelInfo FixtureLevel(MudGE& engine, const str& name, std::initializer_list<Fix
 void CheckAnimalMoodEffects(MudGE& engine)
 {
 	const auto& packs = engine.GetData().GetPacks();
-	const auto xs = std::find_if(packs.begin(), packs.end(), [](const LevelPackInfo& pack)
-	                             { return pack.Name == "XS"; });
+	const auto xs = std::find_if(packs.begin(), packs.end(), [](const LevelPackInfo& pack) { return pack.Name == "XS"; });
 	for (ItemCode code : { ItemCode::StinkMushroom, ItemCode::Flower })
 	{
 		const LevelInfo level = FixtureLevel(engine, "all-animal-mood-" + std::to_string(static_cast<i32>(code)), { { 0, 240, 200, 0 }, { 11, 280, 200, 0 }, { 12, 240, 240, 0 }, { 13, 200, 200, 0 }, { 2, 240, 160, 0 }, { 12, 600, 400, 0 } }, static_cast<i32>(code));
@@ -245,8 +244,7 @@ void CheckAnimalMoodEffects(MudGE& engine)
 		scene.Update(0.01f, 0, 0, true);
 		Require(scene.TakeTimeDelta() == 0, "An angry non-sheep animal kicked Sven.");
 		const std::vector<str> sounds = scene.TakeSounds();
-		Require(std::none_of(sounds.begin(), sounds.end(), [](const str& sound)
-		                     { return sound.find("kickSven") != str::npos; }),
+		Require(std::none_of(sounds.begin(), sounds.end(), [](const str& sound) { return sound.find("kickSven") != str::npos; }),
 		        "A non-sheep animal played the sheep kick sound.");
 		for (i32 frame = 0; frame < 1000; ++frame)
 			scene.Update(0.02f, 0, 0, false);
@@ -258,8 +256,7 @@ void CheckAnimalMoodEffects(MudGE& engine)
 void CheckDebugMenu(MudGE& engine, bool capture = false)
 {
 	const auto& packs = engine.GetData().GetPacks();
-	const auto xs = std::find_if(packs.begin(), packs.end(), [](const LevelPackInfo& pack)
-	                             { return pack.Name == "XS"; });
+	const auto xs = std::find_if(packs.begin(), packs.end(), [](const LevelPackInfo& pack) { return pack.Name == "XS"; });
 	const LevelInfo level = FixtureLevel(engine, "debug-tools", { { 0, 240, 200, 0 }, { 2, 640, 400, 0 } });
 	LevelSetInfo set{ "Debug regression", { level, level } };
 	GameSession session(engine, *xs, set);
@@ -315,16 +312,12 @@ void CheckDebugMenu(MudGE& engine, bool capture = false)
 void CheckDepthOrdering(MudGE& engine, bool capture = false)
 {
 	const auto& getPacks = engine.GetData().GetPacks();
-	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& p)
-	                             { return p.Name == "XS"; });
-	auto addScenery = [&](LevelInfo level, i32 y, i32 texture = 0, i32 height = 80, i32 adjustment = 0, i32 x = 240)
-	{
+	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& p) { return p.Name == "XS"; });
+	auto addScenery = [&](LevelInfo level, i32 y, i32 texture = 0, i32 height = 80, i32 adjustment = 0, i32 x = 240) {
 		auto bytes = engine.ReadAsset(level.Map);
 		const size_t record = 16 + 9048 + 2 * 100;
-		auto integer = [&](size_t offset, i32 value)
-		{ std::memcpy(bytes.data() + record + offset, &value, 4); };
-		auto real = [&](size_t offset, f32 value)
-		{ std::memcpy(bytes.data() + record + offset, &value, 4); };
+		auto integer = [&](size_t offset, i32 value) { std::memcpy(bytes.data() + record + offset, &value, 4); };
+		auto real = [&](size_t offset, f32 value) { std::memcpy(bytes.data() + record + offset, &value, 4); };
 		real(0, static_cast<f32>(x));
 		real(4, static_cast<f32>(y));
 		real(8, static_cast<f32>(x));
@@ -341,10 +334,8 @@ void CheckDepthOrdering(MudGE& engine, bool capture = false)
 		Require(static_cast<bool>(file), "Cannot write depth regression scenery.");
 		return level;
 	};
-	auto index = [](const std::vector<SpriteDraw>& draws, const Sprite* sprite, i32 x, i32 y)
-	{
-		const auto found = std::find_if(draws.begin(), draws.end(), [&](const auto& d)
-		                                { return d.Sprite == sprite && d.X == x && d.Y == y; });
+	auto index = [](const std::vector<SpriteDraw>& draws, const Sprite* sprite, i32 x, i32 y) {
+		const auto found = std::find_if(draws.begin(), draws.end(), [&](const auto& d) { return d.Sprite == sprite && d.X == x && d.Y == y; });
 		Require(found != draws.end(), "Depth regression sprite is missing.");
 		return found - draws.begin();
 	};
@@ -372,8 +363,7 @@ void CheckDepthOrdering(MudGE& engine, bool capture = false)
 		{
 			const auto& active = interacting.Draws();
 			Require(index(active, interacting.GetPlayerDraw().Sprite, 240, 200) < index(active, scenery, 240, 230), "Animal interaction jumped in front of intervening scenery.");
-			Require(std::none_of(active.begin(), active.end(), [&](const auto& d)
-			                     { return d.Sprite == animalSprite; }),
+			Require(std::none_of(active.begin(), active.end(), [&](const auto& d) { return d.Sprite == animalSprite; }),
 			        "Animal stand sprite was drawn again over its combined interaction.");
 			if (capture && frame == 0)
 				engine.DrawFrame(active, ("animal-behind-interaction-" + std::to_string(kind) + ".bmp").c_str());
@@ -390,8 +380,7 @@ void CheckDepthOrdering(MudGE& engine, bool capture = false)
 	Require(walk.GetPlayerDraw().Y > 160 && walk.GetPlayerDraw().Y < 200, "Depth fixture did not stop between grid cells.");
 	const auto& after = walk.Draws();
 	Require(index(after, walk.GetPlayerDraw().Sprite, walk.GetPlayerDraw().X, walk.GetPlayerDraw().Y) > index(after, scenery, 240, 175), "Moving Sven kept the old tile's depth until committing his step.");
-	const auto xxl = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& p)
-	                              { return p.Name == "XXL"; });
+	const auto xxl = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& p) { return p.Name == "XXL"; });
 	auto heapLevel = FixtureLevel(engine, "depth-forest-heap", { { 0, 240, 280, 4 }, { 11, 480, 400, 0 } });
 	heapLevel.TileSet = xxl->LevelSets.front().Levels.front().TileSet;
 	heapLevel = addScenery(heapLevel, 379, 2, 19, 20, 284);
@@ -409,8 +398,7 @@ void CheckDepthOrdering(MudGE& engine, bool capture = false)
 void CheckSerializedPowerups(MudGE& engine)
 {
 	const auto& getPacks = engine.GetData().GetPacks();
-	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& p)
-	                             { return p.Name == "XS"; });
+	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& p) { return p.Name == "XS"; });
 	const auto* icons = engine.LoadSprite("Sven2/gfx/icons.bmp", 5, 1);
 	cstr durations[] = { "FireworkTime", "GiftTime", "ImpotentTime", "SmellTime", "FlowerTime" };
 	for (i32 kind = 14; kind <= 18; ++kind)
@@ -418,8 +406,7 @@ void CheckSerializedPowerups(MudGE& engine)
 		auto level = FixtureLevel(engine, "serialized-powerup-" + std::to_string(kind), { { 0, 240, 200, 2 }, { 7, 280, 200, 0 }, { 2, 640, 400, 0 } });
 		auto bytes = engine.ReadAsset(level.Map);
 		const size_t record = 16 + 9048 + 100;
-		auto put = [&](size_t off, i32 value)
-		{ std::memcpy(bytes.data() + off, &value, 4); };
+		auto put = [&](size_t off, i32 value) { std::memcpy(bytes.data() + off, &value, 4); };
 		i32 tile = 0;
 		std::memcpy(&tile, bytes.data() + record + 80, 4);
 		put(record + 44, kind);
@@ -431,20 +418,17 @@ void CheckSerializedPowerups(MudGE& engine)
 		Require(static_cast<bool>(file), "Cannot write serialized powerup fixture.");
 		LevelScene pickup(engine, *xs, level, 1), expiry(engine, *xs, level, 1);
 		const auto& initial = pickup.Draws();
-		Require(std::any_of(initial.begin(), initial.end(), [&](const auto& d)
-		                    { return d.Sprite == icons && d.Frame == kind - 14; }),
+		Require(std::any_of(initial.begin(), initial.end(), [&](const auto& d) { return d.Sprite == icons && d.Frame == kind - 14; }),
 		        "Serialized powerup used the wrong icon frame.");
 		Step(pickup, 1, 0);
 		const auto& collected = pickup.Draws();
-		Require(std::none_of(collected.begin(), collected.end(), [&](const auto& d)
-		                     { return d.Sprite == icons; }),
+		Require(std::none_of(collected.begin(), collected.end(), [&](const auto& d) { return d.Sprite == icons; }),
 		        "Serialized powerup did not disappear on collection.");
 		Require(!pickup.TakeSounds().empty(), "Serialized powerup did not activate on collection.");
 		const f32 duration = static_cast<f32>(engine.GetData().NumericParam(durations[kind - 14], 10));
 		expiry.Update(duration + 0.1f, 0, 0, false);
 		const auto& expired = expiry.Draws();
-		Require(std::none_of(expired.begin(), expired.end(), [&](const auto& d)
-		                     { return d.Sprite == icons; }),
+		Require(std::none_of(expired.begin(), expired.end(), [&](const auto& d) { return d.Sprite == icons; }),
 		        "Serialized powerup did not expire at its native Zwo duration.");
 	}
 	Log("PASS: all five serialized Zwo powerup kinds render, collect and expire.");
@@ -466,22 +450,19 @@ void DriveTutorial(MudGE& engine, const std::function<void(f32, i32, i32, bool)>
 	const auto* getPlayerDraw = engine.LoadSprite("Sven2/gfx/Sven/sven_stand.bmp", 8, 1);
 	const auto* sheep = engine.LoadSprite("Sven2/gfx/Sheep/Sheep_Stand.bmp", 4, 1);
 	constexpr i32 directions[][2] = { { 0, -1 }, { 1, -1 }, { 1, 0 }, { 1, 1 }, { 0, 1 }, { -1, 1 }, { -1, 0 }, { -1, -1 } };
-	auto cellAt = [](const SpriteDraw& draw)
-	{
+	auto cellAt = [](const SpriteDraw& draw) {
 		const i32 x = (draw.X + 60) / 40, y = (draw.Y + 60) / 40;
 		return x >= 0 && x < 20 && y >= 0 && y < 15 ? y * 20 + x : -1;
 	};
 	f32 elapsed = 0;
-	auto tick = [&](f32 seconds, i32 dx, i32 dy, bool action)
-	{
+	auto tick = [&](f32 seconds, i32 dx, i32 dy, bool action) {
 		update(seconds, dx, dy, action);
 		elapsed += seconds;
 	};
 	while (remaining() > 0 && elapsed < 150)
 	{
 		const auto& frame = draws();
-		auto hero = std::find_if(frame.begin(), frame.end(), [&](const auto& draw)
-		                         { return draw.Sprite == getPlayerDraw; });
+		auto hero = std::find_if(frame.begin(), frame.end(), [&](const auto& draw) { return draw.Sprite == getPlayerDraw; });
 		if (hero == frame.end())
 		{
 			tick(0.1f, 0, 0, false);
@@ -595,11 +576,9 @@ void CheckMenus(MudGE& engine, const fpath& saves)
 	}
 	const auto* smallFont = engine.LoadSprite("Sven2/gfx/font2.bmp", 88, 1);
 	const auto& credits = ui.Draws(0);
-	Require(std::any_of(credits.begin(), credits.end(), [&](const auto& draw)
-	                    { return draw.Sprite == smallFont && draw.X == 120 && draw.Y == 220 && draw.Frame == 2; }),
+	Require(std::any_of(credits.begin(), credits.end(), [&](const auto& draw) { return draw.Sprite == smallFont && draw.X == 120 && draw.Y == 220 && draw.Frame == 2; }),
 	        "Credits shifted the Coloration row into subsequent text.");
-	Require(std::any_of(credits.begin(), credits.end(), [&](const auto& draw)
-	                    { return draw.Sprite == smallFont && draw.X == 120 && draw.Y == 380 && draw.Frame == 21; }),
+	Require(std::any_of(credits.begin(), credits.end(), [&](const auto& draw) { return draw.Sprite == smallFont && draw.X == 120 && draw.Y == 380 && draw.Frame == 21; }),
 	        "Credits did not retain the original two-column thanks row.");
 	ui.Show(Page::Highscores);
 	Require(ui.Draws(0).size() > 100, "Original highscore defaults are absent.");
@@ -618,18 +597,15 @@ void CheckMenus(MudGE& engine, const fpath& saves)
 	cards.Mouse = { 510, 40 };
 	ui.Handle(cards);
 	const auto& cardDraws = ui.Draws(0);
-	Require(std::any_of(cardDraws.begin(), cardDraws.end(), [](const auto& draw)
-	                    { return draw.X == 310 && draw.Y == 150; }),
+	Require(std::any_of(cardDraws.begin(), cardDraws.end(), [](const auto& draw) { return draw.X == 310 && draw.Y == 150; }),
 	        "Card omitted its title.");
-	Require(std::any_of(cardDraws.begin(), cardDraws.end(), [](const auto& draw)
-	                    { return draw.X == 310 && draw.Y == 200; }),
+	Require(std::any_of(cardDraws.begin(), cardDraws.end(), [](const auto& draw) { return draw.X == 310 && draw.Y == 200; }),
 	        "Card omitted its description.");
 	const auto variants = ShagAnimation::Load(engine);
 	for (i32 card = 0; card < 33; ++card)
 	{
 		const auto& draws = ui.Draws(0);
-		Require(std::any_of(draws.begin(), draws.end(), [&](const auto& draw)
-		                    { return draw.Sprite == variants[static_cast<size_t>(card) * 2].Sprite; }),
+		Require(std::any_of(draws.begin(), draws.end(), [&](const auto& draw) { return draw.Sprite == variants[static_cast<size_t>(card) * 2].Sprite; }),
 		        "An available original card was incorrectly locked.");
 		WindowInput::Result nextCard;
 		nextCard.Right = true;
@@ -643,8 +619,7 @@ void CheckMenus(MudGE& engine, const fpath& saves)
 	ui.Handle(playCard);
 	Require(ui.TakeSounds().empty(), "Card input restarted an animation that was already playing.");
 	const auto& playback = ui.Draws(0.11f);
-	Require(std::any_of(playback.begin(), playback.end(), [&](const auto& draw)
-	                    { return draw.Sprite == variants.front().Sprite && draw.Frame == variants.front().Frames[1]; }),
+	Require(std::any_of(playback.begin(), playback.end(), [&](const auto& draw) { return draw.Sprite == variants.front().Sprite && draw.Frame == variants.front().Frames[1]; }),
 	        "Card browser did not use the original 15 fps animation clock.");
 	const auto* arrows = engine.LoadSprite("Sven2/gfx/pijlen.bmp", 8, 1);
 	WindowInput::Result arrowHover;
@@ -652,16 +627,13 @@ void CheckMenus(MudGE& engine, const fpath& saves)
 	arrowHover.Mouse = { 245, 360 };
 	ui.Handle(arrowHover);
 	const auto& hoveredArrow = ui.Draws(0);
-	Require(std::any_of(hoveredArrow.begin(), hoveredArrow.end(), [&](const auto& draw)
-	                    { return draw.Sprite == arrows && draw.X == 238 && draw.Y == 350 && draw.Frame == 3; }),
+	Require(std::any_of(hoveredArrow.begin(), hoveredArrow.end(), [&](const auto& draw) { return draw.Sprite == arrows && draw.X == 238 && draw.Y == 350 && draw.Frame == 3; }),
 	        "Card arrow did not change color on hover.");
 	const auto* paper = engine.LoadSprite("Sven2/gfx/Help_BG.jpg", 1, 1);
 	const auto* scoreTabs = engine.LoadSprite("Sven2/gfx/Highsc_file_cards.bmp", 10, 1);
-	Require(std::all_of(hoveredArrow.begin(), hoveredArrow.end(), [&](const auto& draw)
-	                    { return draw.Sprite != scoreTabs || draw.ClipBottom == 60; }),
+	Require(std::all_of(hoveredArrow.begin(), hoveredArrow.end(), [&](const auto& draw) { return draw.Sprite != scoreTabs || draw.ClipBottom == 60; }),
 	        "Highscore tabs extend over the paper body.");
-	Require(std::any_of(hoveredArrow.begin(), hoveredArrow.end(), [&](const auto& draw)
-	                    { return draw.Sprite == paper; }),
+	Require(std::any_of(hoveredArrow.begin(), hoveredArrow.end(), [&](const auto& draw) { return draw.Sprite == paper; }),
 	        "Highscore paper backdrop is absent.");
 	ui.Show(Page::Pause);
 	WindowInput::Result escape;
@@ -680,8 +652,7 @@ void CheckMenus(MudGE& engine, const fpath& saves)
 	BitmapFont nameFont(engine);
 	const auto* largeFont = engine.LoadSprite("Sven2/gfx/font1.bmp", 88, 1);
 	const auto& nameDraws = ui.Draws(0);
-	Require(std::any_of(nameDraws.begin(), nameDraws.end(), [&](const auto& draw)
-	                    { return draw.Sprite == largeFont && draw.X == 150 + nameFont.Width(typing.Text) && draw.Y == 130 && draw.Frame == 8; }),
+	Require(std::any_of(nameDraws.begin(), nameDraws.end(), [&](const auto& draw) { return draw.Sprite == largeFont && draw.X == 150 + nameFont.Width(typing.Text) && draw.Y == 130 && draw.Frame == 8; }),
 	        "Highscore name caret did not use the original I glyph in the ranked row.");
 	ui.Handle(input);
 	Require(ui.GetPage() == Page::Highscores, "Name entry did not return to the score screen.");
@@ -695,8 +666,7 @@ void CheckMenus(MudGE& engine, const fpath& saves)
 	hover.Handle(mouse);
 	const auto& hoverDraws = hover.Draws(0);
 	const auto* green = engine.LoadSprite("Sven2/gfx/fontgreen1.bmp", 88, 1);
-	Require(std::any_of(hoverDraws.begin(), hoverDraws.end(), [&](const auto& draw)
-	                    { return draw.Sprite == green && draw.Y == 158; }),
+	Require(std::any_of(hoverDraws.begin(), hoverDraws.end(), [&](const auto& draw) { return draw.Sprite == green && draw.Y == 158; }),
 	        "Hover did not make the episode text green.");
 	mouse.Click = true;
 	Require(hover.Handle(mouse) == UiAction::Start, "Clicking a hovered episode did not start it.");
@@ -711,16 +681,12 @@ void CheckMenus(MudGE& engine, const fpath& saves)
 	// Model a retained completed session being supplied after returning to title.
 	const std::vector<SpriteDraw> staleLevel = { { logo, -777, -777, 0 } };
 	const auto& exitDraws = exitMenu.Draws(0, &staleLevel);
-	Require(!exitMenu.UsesSceneBackground() && std::none_of(exitDraws.begin(), exitDraws.end(), [](const auto& draw)
-	                                                        { return draw.X == -777; }),
+	Require(!exitMenu.UsesSceneBackground() && std::none_of(exitDraws.begin(), exitDraws.end(), [](const auto& draw) { return draw.X == -777; }),
 	        "Title exit confirmation drew the retained level behind the menu.");
-	Require(std::any_of(exitDraws.begin(), exitDraws.end(), [&](const auto& draw)
-	                    { return draw.Sprite == logo && draw.X == 234 && draw.Y == 180; }) &&
-	            std::any_of(exitDraws.begin(), exitDraws.end(), [&](const auto& draw)
-	                        { return draw.Sprite == logoDetail && draw.X == 429 && draw.Y == 316; }),
+	Require(std::any_of(exitDraws.begin(), exitDraws.end(), [&](const auto& draw) { return draw.Sprite == logo && draw.X == 234 && draw.Y == 180; }) &&
+	            std::any_of(exitDraws.begin(), exitDraws.end(), [&](const auto& draw) { return draw.Sprite == logoDetail && draw.X == 429 && draw.Y == 316; }),
 	        "Exit confirmation removed the title artwork behind it.");
-	Require(std::count_if(exitDraws.begin(), exitDraws.end(), [](const auto& draw)
-	                      { return draw.Y == 545; }) == 4,
+	Require(std::count_if(exitDraws.begin(), exitDraws.end(), [](const auto& draw) { return draw.Y == 545; }) == 4,
 	        "Exit confirmation removed the four menu buttons.");
 	exitMenu.Handle(chooseNo);
 	Require(exitMenu.Handle(input) == UiAction::None && exitMenu.GetPage() == Page::Title, "Declining exit did not return to the title.");
@@ -734,20 +700,17 @@ void CheckMenus(MudGE& engine, const fpath& saves)
 	Require(ui.Draws(0).size() == firstDrawCount, "Updating bonus values restarted the blinking prompt every frame.");
 	const auto* scoreSprite = engine.LoadSprite("Sven2/gfx/score.bmp", 4, 1);
 	const auto& bonusDraws = ui.Draws(0);
-	Require(std::any_of(bonusDraws.begin(), bonusDraws.end(), [&](const auto& draw)
-	                    { return draw.Sprite == scoreSprite && draw.X == 395 && draw.Y == 380 && draw.Frame == 2; }),
+	Require(std::any_of(bonusDraws.begin(), bonusDraws.end(), [&](const auto& draw) { return draw.Sprite == scoreSprite && draw.X == 395 && draw.Y == 380 && draw.Frame == 2; }),
 	        "Bonus screen lost the session's score-icon animation frame.");
 	const auto* sheepSprite = engine.LoadSprite("Sven2/gfx/Sheep/Sheep_Stand.bmp", 4, 1);
-	Require(std::any_of(bonusDraws.begin(), bonusDraws.end(), [&](const auto& draw)
-	                    { return draw.Sprite == sheepSprite && draw.X == 310 - sheepSprite->FrameWidth / 2 && draw.Y == 240 - sheepSprite->FrameHeight / 2; }),
+	Require(std::any_of(bonusDraws.begin(), bonusDraws.end(), [&](const auto& draw) { return draw.Sprite == sheepSprite && draw.X == 310 - sheepSprite->FrameWidth / 2 && draw.Y == 240 - sheepSprite->FrameHeight / 2; }),
 	        "Bonus sheep sprite was not centered at the original coordinates.");
 	completed.EpisodeComplete = true;
 	completed.TotalSheep = 17;
 	ui.ShowResults(completed);
 	const auto* packImage = engine.LoadSprite("Sven2/gfx/ScoreScreen_BG_levelpack.bmp", 1, 1);
 	const auto& finishDraws = ui.Draws(0.1f);
-	Require(std::any_of(finishDraws.begin(), finishDraws.end(), [&](const auto& draw)
-	                    { return draw.Sprite == packImage && draw.X == 315 && draw.Y == 294; }),
+	Require(std::any_of(finishDraws.begin(), finishDraws.end(), [&](const auto& draw) { return draw.Sprite == packImage && draw.X == 315 && draw.Y == 294; }),
 	        "Pack completion screen omitted its original illustration.");
 	Log("PASS: flat episode selection, hover, highscore traversal, pause and four help tabs.");
 }
@@ -846,10 +809,7 @@ void CheckInteraction(MudGE& engine)
 	Require(scene.GetRemainingTargets() == 2 && scene.GetCompletedSheep() == 1, "Repeated action did not resolve the approached sheep.");
 	Require(score > 0 && (bonusTime == 5 || bonusTime == 10), "Sheep score and time bonus did not stay separate.");
 	Require(!scene.TakeSounds().empty(), "Interaction did not emit its original sound events.");
-	DriveTutorial(engine, [&](f32 dt, i32 dx, i32 dy, bool action)
-	              { scene.Update(dt, dx, dy, action); }, [&]() -> const auto&
-	              { return scene.Draws(); }, [&]
-	              { return scene.GetRemainingTargets(); });
+	DriveTutorial(engine, [&](f32 dt, i32 dx, i32 dy, bool action) { scene.Update(dt, dx, dy, action); }, [&]() -> const auto& { return scene.Draws(); }, [&] { return scene.GetRemainingTargets(); });
 	Require(scene.Completed() && scene.GetCompletedSheep() == 3, "Tutorial did not reach completion after resolving its three targets.");
 	Log("PASS: normal-entry sheep interaction, repeated input, target resolution, score and time rewards.");
 }
@@ -857,8 +817,7 @@ void CheckInteraction(MudGE& engine)
 void CheckReportedGameplay(MudGE& engine)
 {
 	const auto& getPacks = engine.GetData().GetPacks();
-	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& pack)
-	                             { return pack.Name == "XS"; });
+	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& pack) { return pack.Name == "XS"; });
 	const auto walking = FixtureLevel(engine, "walking", { { 0, 240, 200, 0 }, { 2, 640, 400, 0 } });
 	LevelScene east(engine, *xs, walking, 1), west(engine, *xs, walking, 1);
 	east.Update(0.05f, 1, 0, false);
@@ -873,8 +832,7 @@ void CheckReportedGameplay(MudGE& engine)
 	for (i32 frame = 0; frame < 60 * 60 && kicked.GetRemainingTargets() == 2; ++frame)
 	{
 		kicked.Update(1.0f / 60, 0, 0, frame % 8 == 0);
-		if (std::any_of(variants.begin(), variants.end(), [&](const auto& variant)
-		                { return variant.Sprite == kicked.GetPlayerDraw().Sprite; }))
+		if (std::any_of(variants.begin(), variants.end(), [&](const auto& variant) { return variant.Sprite == kicked.GetPlayerDraw().Sprite; }))
 			usedVariants.insert(kicked.GetPlayerDraw().Sprite);
 		for (const auto& sound : kicked.TakeSounds())
 			if (sound == "Sven2/sfx/Sheep_kickSven.ogg")
@@ -890,13 +848,11 @@ void CheckReportedGameplay(MudGE& engine)
 	Step(stink, 0, -1);
 	const auto sounds = stink.TakeSounds();
 	Require(std::find(sounds.begin(), sounds.end(), "Sven2/sfx/item_stinky.ogg") != sounds.end(), "Stinky mushroom was not picked up.");
-	Require(std::any_of(sounds.begin(), sounds.end(), [](const auto& sound)
-	                    { return sound == "Sven2/sfx/Sheep_beamup.ogg" || sound == "Sven2/sfx/Sheep_angry2.ogg"; }),
+	Require(std::any_of(sounds.begin(), sounds.end(), [](const auto& sound) { return sound == "Sven2/sfx/Sheep_beamup.ogg" || sound == "Sven2/sfx/Sheep_angry2.ogg"; }),
 	        "Smell did not emit the sheep's anger reaction.");
 	const auto* mood = engine.LoadSprite("Sven2/gfx/symbols.bmp", 12, 1);
 	const auto& stinkDraws = stink.Draws();
-	Require(std::any_of(stinkDraws.begin(), stinkDraws.end(), [&](const auto& draw)
-	                    { return draw.Sprite == mood && draw.Y == 160 && draw.Frame >= 10; }),
+	Require(std::any_of(stinkDraws.begin(), stinkDraws.end(), [&](const auto& draw) { return draw.Sprite == mood && draw.Y == 160 && draw.Frame >= 10; }),
 	        "Smell did not anger the neighboring sheep.");
 
 	const auto cold = FixtureLevel(engine, "frigida", { { 0, 240, 200, 0 }, { 2, 240, 160, 0, 6 } });
@@ -905,13 +861,10 @@ void CheckReportedGameplay(MudGE& engine)
 		frigida.Update(1.0f / 60, 0, 0, frame % 8 == 0);
 	const auto* kettle = engine.LoadSprite("Sven2/gfx/symbol_kettle.bmp", 12, 1);
 	const auto& coldDraws = frigida.Draws();
-	Require(std::any_of(coldDraws.begin(), coldDraws.end(), [&](const auto& draw)
-	                    { return draw.Sprite == kettle && draw.Frame > 0; }),
+	Require(std::any_of(coldDraws.begin(), coldDraws.end(), [&](const auto& draw) { return draw.Sprite == kettle && draw.Frame > 0; }),
 	        "Frigida interaction hid its kettle indicator.");
-	const auto kettlePosition = std::find_if(coldDraws.begin(), coldDraws.end(), [&](const auto& draw)
-	                                         { return draw.Sprite == kettle; });
-	const auto interactionPosition = std::find_if(coldDraws.begin(), coldDraws.end(), [&](const auto& draw)
-	                                              { return draw.Sprite == frigida.GetPlayerDraw().Sprite; });
+	const auto kettlePosition = std::find_if(coldDraws.begin(), coldDraws.end(), [&](const auto& draw) { return draw.Sprite == kettle; });
+	const auto interactionPosition = std::find_if(coldDraws.begin(), coldDraws.end(), [&](const auto& draw) { return draw.Sprite == frigida.GetPlayerDraw().Sprite; });
 	Require(kettlePosition > interactionPosition, "Frigida interaction painted over its kettle indicator.");
 
 	const auto enemy = FixtureLevel(engine, "fight", { { 0, 240, 200, 0 }, { 4, 280, 200, 6 }, { 2, 640, 400, 0 } });
@@ -922,22 +875,18 @@ void CheckReportedGameplay(MudGE& engine)
 	{
 		fight.Update(1.0f / 60, 0, 0, false);
 		const auto& draws = fight.Draws();
-		fought = std::any_of(draws.begin(), draws.end(), [&](const auto& draw)
-		                     { return draw.Sprite == cloud; });
+		fought = std::any_of(draws.begin(), draws.end(), [&](const auto& draw) { return draw.Sprite == cloud; });
 	}
 	Require(fought, "Enemy battle did not render the fight cloud.");
 	const auto animals = FixtureLevel(engine, "animal-meters", { { 0, 240, 200, 0 }, { 12, 240, 160, 0 }, { 11, 400, 160, 0 }, { 13, 560, 160, 0 } });
 	LevelScene otherAnimals(engine, *xs, animals, 1);
 	const auto& animalDraws = otherAnimals.Draws();
-	Require(std::count_if(animalDraws.begin(), animalDraws.end(), [&](const auto& draw)
-	                      { return draw.Sprite == mood; }) == 3,
+	Require(std::count_if(animalDraws.begin(), animalDraws.end(), [&](const auto& draw) { return draw.Sprite == mood; }) == 3,
 	        "Chicken, goat and pig did not all display their impatience meters.");
 	otherAnimals.Update(0.1f, 0, 0, true);
 	const auto& goatDraws = otherAnimals.Draws();
-	const auto goatMeter = std::find_if(goatDraws.begin(), goatDraws.end(), [&](const auto& draw)
-	                                    { return draw.Sprite == mood && draw.Y == 150 && draw.X < 320; });
-	const auto goatInteraction = std::find_if(goatDraws.begin(), goatDraws.end(), [&](const auto& draw)
-	                                          { return draw.Sprite == otherAnimals.GetPlayerDraw().Sprite; });
+	const auto goatMeter = std::find_if(goatDraws.begin(), goatDraws.end(), [&](const auto& draw) { return draw.Sprite == mood && draw.Y == 150 && draw.X < 320; });
+	const auto goatInteraction = std::find_if(goatDraws.begin(), goatDraws.end(), [&](const auto& draw) { return draw.Sprite == otherAnimals.GetPlayerDraw().Sprite; });
 	Require(goatMeter != goatDraws.end() && goatMeter > goatInteraction, "Goat interaction covered or omitted its impatience meter.");
 	Log("PASS: run direction, single kick recovery, stable interaction, smell, Frigida kettle and fight animation.");
 }
@@ -945,10 +894,8 @@ void CheckReportedGameplay(MudGE& engine)
 void CheckEnemyAcquisition(MudGE& engine)
 {
 	const auto& getPacks = engine.GetData().GetPacks();
-	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& pack)
-	                             { return pack.Name == "XS"; });
-	auto hasSound = [&](const std::vector<str>& sounds, cstr name)
-	{
+	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& pack) { return pack.Name == "XS"; });
+	auto hasSound = [&](const std::vector<str>& sounds, cstr name) {
 		const auto path = engine.GetData().SoundPath(name);
 		return !path.empty() && std::find(sounds.begin(), sounds.end(), path) != sounds.end();
 	};
@@ -960,8 +907,7 @@ void CheckEnemyAcquisition(MudGE& engine)
 	const auto* farmerNorth = engine.LoadSprite("Sven2/gfx/Guy/anim_guy_walk_back.bmp", 16, 1);
 	const auto* farmerDiagonal = engine.LoadSprite("Sven2/gfx/Guy/anim_guy_walk_diagonal_back.bmp", 16, 1);
 	const auto& movingDraws = moving.Draws();
-	Require(std::none_of(movingDraws.begin(), movingDraws.end(), [&](const auto& draw)
-	                     { return draw.Sprite == farmerNorth || (draw.Sprite == farmerDiagonal && draw.Mirror); }),
+	Require(std::none_of(movingDraws.begin(), movingDraws.end(), [&](const auto& draw) { return draw.Sprite == farmerNorth || (draw.Sprite == farmerDiagonal && draw.Mirror); }),
 	        "Enemy entered Sven's committed source or reserved destination during a half-finished step.");
 	LevelScene distant(engine, *xs, outside, 1);
 	distant.Update(0.1f, 0, 0, false);
@@ -978,6 +924,7 @@ void CheckEnemyAcquisition(MudGE& engine)
 		std::fstream file(engine.GetData().GetRoot() / std::filesystem::u8path(boxed.Map), std::ios::in | std::ios::out | std::ios::binary);
 		const i32 dogTile = ((200 + 60) / 40 + 1) * 22 + (320 + 60) / 40 + 1;
 		for (i32 dy = -1; dy <= 1; ++dy)
+		{
 			for (i32 dx = -1; dx <= 1; ++dx)
 			{
 				if (!dx && !dy)
@@ -987,6 +934,7 @@ void CheckEnemyAcquisition(MudGE& engine)
 				file.seekp(16 + tile * 24);
 				file.write(reinterpret_cast<cstr>(&wall), 4);
 			}
+		}
 		Require(static_cast<bool>(file), "Cannot author blocked-enemy fixture.");
 	}
 	LevelScene blocked(engine, *xs, boxed, 1);
@@ -1045,14 +993,10 @@ void CheckEnemyAcquisition(MudGE& engine)
 void CheckRound(MudGE& engine)
 {
 	const auto& getPacks = engine.GetData().GetPacks();
-	auto pack = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& item)
-	                         { return item.Name == "XS"; });
+	auto pack = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& item) { return item.Name == "XS"; });
 	Require(pack != getPacks.end(), "XS package missing.");
 	GameSession game(engine, *pack, pack->LevelSets.front());
-	DriveTutorial(engine, [&](f32 dt, i32 dx, i32 dy, bool action)
-	              { game.Update(dt, dx, dy, action); }, [&]() -> const auto&
-	              { return game.Draws(); }, [&]
-	              { return game.GetRemainingTargets(); });
+	DriveTutorial(engine, [&](f32 dt, i32 dx, i32 dy, bool action) { game.Update(dt, dx, dy, action); }, [&]() -> const auto& { return game.Draws(); }, [&] { return game.GetRemainingTargets(); });
 	Require(!game.GetResults(), "Level results appeared before the original completion delay.");
 	game.Update(1.51f, 0, 0, false);
 	Require(game.GetResults() && !game.Ready() && !game.GameOver(), "Completed tutorial did not enter bonus counting.");
@@ -1066,10 +1010,7 @@ void CheckRound(MudGE& engine)
 	Log("PASS: complete tutorial round, result transition and exact time/sheep/lives bonus totals.");
 	LevelSetInfo finalSet{ "Single tutorial", { pack->LevelSets.front().Levels.front() } };
 	GameSession finalLevel(engine, *pack, finalSet);
-	DriveTutorial(engine, [&](f32 dt, i32 dx, i32 dy, bool action)
-	              { finalLevel.Update(dt, dx, dy, action); }, [&]() -> const auto&
-	              { return finalLevel.Draws(); }, [&]
-	              { return finalLevel.GetRemainingTargets(); });
+	DriveTutorial(engine, [&](f32 dt, i32 dx, i32 dy, bool action) { finalLevel.Update(dt, dx, dy, action); }, [&]() -> const auto& { return finalLevel.Draws(); }, [&] { return finalLevel.GetRemainingTargets(); });
 	finalLevel.Update(1.51f, 0, 0, false);
 	Require(finalLevel.GetResults() && !finalLevel.GetResult().EpisodeComplete, "Final level skipped its bonus screen.");
 	finalLevel.SkipBonuses();
@@ -1084,8 +1025,7 @@ void CheckRound(MudGE& engine)
 void CheckLifeChanges(MudGE& engine, bool capture = false)
 {
 	const auto& getPacks = engine.GetData().GetPacks();
-	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& pack)
-	                             { return pack.Name == "XS"; });
+	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& pack) { return pack.Name == "XS"; });
 	const auto arena = FixtureLevel(engine, "life-alien", { { 0, 240, 200, 0 }, { 3, 280, 200, 6 }, { 2, 640, 400, 0 } });
 	const auto* icon = engine.LoadSprite("Sven2/gfx/Life_icon.bmp", 1, 1);
 	const auto newLife = engine.GetData().SoundPath("SfxNewLife");
@@ -1102,11 +1042,9 @@ void CheckLifeChanges(MudGE& engine, bool capture = false)
 	Require(refunded && fresh.GetLives() == 3, "Original zero-score first-hit refund was not preserved.");
 	fresh.Update(0.2f, 0, 0, false);
 	const auto& graceDraws = fresh.Draws();
-	Require(std::count_if(graceDraws.begin(), graceDraws.end(), [&](const auto& draw)
-	                      { return draw.Sprite == icon && draw.Y == 565; }) == 2,
+	Require(std::count_if(graceDraws.begin(), graceDraws.end(), [&](const auto& draw) { return draw.Sprite == icon && draw.Y == 565; }) == 2,
 	        "Refund did not temporarily reduce the displayed life count.");
-	Require(std::any_of(graceDraws.begin(), graceDraws.end(), [&](const auto& draw)
-	                    { return draw.Sprite == icon && draw.Y < 500; }),
+	Require(std::any_of(graceDraws.begin(), graceDraws.end(), [&](const auto& draw) { return draw.Sprite == icon && draw.Y < 500; }),
 	        "Refund did not spawn the incoming life icon.");
 	if (capture)
 		engine.DrawFrame(graceDraws, "life-refund.bmp");
@@ -1125,10 +1063,7 @@ void CheckLifeChanges(MudGE& engine, bool capture = false)
 	}
 	LevelSetInfo campaign{ "Lives", { setup, arena } };
 	GameSession game(engine, *xs, campaign);
-	DriveTutorial(engine, [&](f32 dt, i32 dx, i32 dy, bool action)
-	              { game.Update(dt, dx, dy, action); }, [&]() -> const auto&
-	              { return game.Draws(); }, [&]
-	              { return game.GetRemainingTargets(); });
+	DriveTutorial(engine, [&](f32 dt, i32 dx, i32 dy, bool action) { game.Update(dt, dx, dy, action); }, [&]() -> const auto& { return game.Draws(); }, [&] { return game.GetRemainingTargets(); });
 	Require(game.GetRemainingTargets() == 0, "Life setup tutorial did not finish.");
 	game.Update(1.51f, 0, 0, false);
 	game.SkipBonuses();
@@ -1137,19 +1072,16 @@ void CheckLifeChanges(MudGE& engine, bool capture = false)
 	game.Update(1.0f / 60, 0, 0, false);
 	Require(game.GetLives() == 4, "Campaign score did not grant the next level's extra life.");
 	const auto& gainDraws = game.Draws();
-	Require(std::count_if(gainDraws.begin(), gainDraws.end(), [&](const auto& draw)
-	                      { return draw.Sprite == icon && draw.Y == 565; }) == 3,
+	Require(std::count_if(gainDraws.begin(), gainDraws.end(), [&](const auto& draw) { return draw.Sprite == icon && draw.Y == 565; }) == 3,
 	        "Extra life appeared in the HUD before its animation arrived.");
-	Require(std::any_of(gainDraws.begin(), gainDraws.end(), [&](const auto& draw)
-	                    { return draw.Sprite == icon && draw.X == 96 && draw.Y < 0; }),
+	Require(std::any_of(gainDraws.begin(), gainDraws.end(), [&](const auto& draw) { return draw.Sprite == icon && draw.X == 96 && draw.Y < 0; }),
 	        "Extra life did not start falling from above the screen.");
 	game.Update(0.35f, 0, 0, false);
 	if (capture)
 		engine.DrawFrame(game.Draws(), "life-gain.bmp");
 	game.Update(2.0f, 0, 0, false);
 	const auto& landed = game.Draws();
-	Require(std::count_if(landed.begin(), landed.end(), [&](const auto& draw)
-	                      { return draw.Sprite == icon && draw.Y == 565; }) == 4,
+	Require(std::count_if(landed.begin(), landed.end(), [&](const auto& draw) { return draw.Sprite == icon && draw.Y == 565; }) == 4,
 	        "Incoming life did not join the HUD on landing.");
 	game.TakeSounds();
 	bool lost = false;
@@ -1162,8 +1094,7 @@ void CheckLifeChanges(MudGE& engine, bool capture = false)
 	Require(lost && game.GetLives() == 3, "Alien attack failed to take a logical life after campaign score carried over.");
 	game.Update(0.2f, 0, 0, false);
 	const auto& lossDraws = game.Draws();
-	Require(std::count_if(lossDraws.begin(), lossDraws.end(), [&](const auto& draw)
-	                      { return draw.Sprite == icon && draw.Y == 565; }) == 3,
+	Require(std::count_if(lossDraws.begin(), lossDraws.end(), [&](const auto& draw) { return draw.Sprite == icon && draw.Y == 565; }) == 3,
 	        "Alien life loss did not reduce the stationary HUD icons.");
 	if (capture)
 		engine.DrawFrame(lossDraws, "life-loss.bmp");
@@ -1173,8 +1104,7 @@ void CheckLifeChanges(MudGE& engine, bool capture = false)
 void CheckPlayerItems(MudGE& engine, bool capture = false)
 {
 	const auto& getPacks = engine.GetData().GetPacks();
-	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& pack)
-	                             { return pack.Name == "XS"; });
+	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& pack) { return pack.Name == "XS"; });
 	struct Powerup
 	{
 		i32 Code;
@@ -1196,13 +1126,11 @@ void CheckPlayerItems(MudGE& engine, bool capture = false)
 		LevelScene scene(engine, *xs, level, 1);
 		scene.Update(0.01f, 0, 0, false);
 		const auto sounds = scene.TakeSounds();
-		Require(std::any_of(sounds.begin(), sounds.end(), [&](const auto& sound)
-		                    { return _stricmp(sound.c_str(), engine.GetData().SoundPath(item.Sound).c_str()) == 0; }),
+		Require(std::any_of(sounds.begin(), sounds.end(), [&](const auto& sound) { return _stricmp(sound.c_str(), engine.GetData().SoundPath(item.Sound).c_str()) == 0; }),
 		        "Player pickup omitted its original sound.");
 		const auto* effect = engine.LoadSprite(str("Sven2/gfx/") + item.Effect, static_cast<i16>(item.Frames), 1);
 		const auto& draws = scene.Draws();
-		Require(std::any_of(draws.begin(), draws.end(), [&](const auto& draw)
-		                    { return draw.Sprite == effect; }),
+		Require(std::any_of(draws.begin(), draws.end(), [&](const auto& draw) { return draw.Sprite == effect; }),
 		        "Player pickup omitted its visual effect.");
 		if (capture && item.Code == 134)
 			engine.DrawFrame(draws, "slow-motion.bmp");
@@ -1210,8 +1138,7 @@ void CheckPlayerItems(MudGE& engine, bool capture = false)
 		Require(scene.GetPlayerDraw().X >= 240 + item.Distance && scene.GetPlayerDraw().X <= 241 + item.Distance, "Player pickup did not apply the original movement-speed modifier.");
 		scene.Update(static_cast<f32>(engine.GetData().NumericParam(item.Duration, 20)) + 1, 0, 0, false);
 		const auto& expired = scene.Draws();
-		Require(std::none_of(expired.begin(), expired.end(), [&](const auto& draw)
-		                     { return draw.Sprite == effect; }),
+		Require(std::none_of(expired.begin(), expired.end(), [&](const auto& draw) { return draw.Sprite == effect; }),
 		        "Player pickup effect outlived its configured duration.");
 	}
 	const auto gift = FixtureLevel(engine, "gift-pickup", { { 0, 240, 200, 0 }, { 2, 640, 400, 0 } }, 133);
@@ -1232,8 +1159,7 @@ void CheckPlayerItems(MudGE& engine, bool capture = false)
 void CheckAttackReservations(MudGE& engine)
 {
 	const auto& getPacks = engine.GetData().GetPacks();
-	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& pack)
-	                             { return pack.Name == "XS"; });
+	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& pack) { return pack.Name == "XS"; });
 	const auto level = FixtureLevel(engine, "attack-reservation", { { 0, 240, 120, 4 }, { 4, 240, 40, 4 }, { 2, 640, 400, 0 } }, 134);
 	bool exercised = false;
 	for (u32 seed = 1; seed <= 32 && !exercised; ++seed)
@@ -1267,12 +1193,9 @@ void CheckAttackReservations(MudGE& engine)
 void CheckEffectAndAnimationStates(MudGE& engine, bool capture = false)
 {
 	const auto& getPacks = engine.GetData().GetPacks();
-	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& pack)
-	                             { return pack.Name == "XS"; });
-	auto contains = [](const std::vector<SpriteDraw>& draws, const Sprite* sprite)
-	{
-		return std::any_of(draws.begin(), draws.end(), [&](const auto& draw)
-		                   { return draw.Sprite == sprite; });
+	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& pack) { return pack.Name == "XS"; });
+	auto contains = [](const std::vector<SpriteDraw>& draws, const Sprite* sprite) {
+		return std::any_of(draws.begin(), draws.end(), [&](const auto& draw) { return draw.Sprite == sprite; });
 	};
 	const auto cold = FixtureLevel(engine, "frigida-continuation", { { 0, 240, 200, 0 }, { 2, 240, 160, 0 } });
 	LevelScene frigida(engine, *xs, cold, 1);
@@ -1300,14 +1223,12 @@ void CheckEffectAndAnimationStates(MudGE& engine, bool capture = false)
 		ascended = ascended || (hero.Sprite && hero.Y < 200);
 		hidden = hidden || !hero.Sprite;
 		const auto& draws = alienPower.Draws();
-		Require(std::all_of(draws.begin(), draws.end(), [](const auto& draw)
-		                    { return draw.Sprite != nullptr; }),
+		Require(std::all_of(draws.begin(), draws.end(), [](const auto& draw) { return draw.Sprite != nullptr; }),
 		        "Hidden artifact phase published a null drawing sprite.");
 		if (contains(draws, alienIcon))
 		{
 			Require(hero.X == 240 && hero.Y == 200, "Artifact beam moved Sven's ground position to another tile.");
-			Require(std::any_of(draws.begin(), draws.end(), [&](const auto& draw)
-			                    { return draw.Sprite == alienIcon && draw.X == 268 && draw.Y == 196; }),
+			Require(std::any_of(draws.begin(), draws.end(), [&](const auto& draw) { return draw.Sprite == alienIcon && draw.X == 268 && draw.Y == 196; }),
 			        "Alien powerup used the wrong icon geometry or following position.");
 			landed = true;
 			if (capture)
@@ -1411,8 +1332,7 @@ void CheckEffectAndAnimationStates(MudGE& engine, bool capture = false)
 void CheckEnemyHeadings(MudGE& engine, bool capture = false)
 {
 	const auto& getPacks = engine.GetData().GetPacks();
-	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& pack)
-	                             { return pack.Name == "XS"; });
+	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& pack) { return pack.Name == "XS"; });
 	constexpr i32 directions[][2] = { { 0, -1 }, { 1, -1 }, { 1, 0 }, { 1, 1 }, { 0, 1 }, { -1, 1 }, { -1, 0 }, { -1, -1 } };
 	constexpr bool mirrors[4][8] = { { 0, 1, 1, 1, 0, 0, 0, 0 }, { 0, 1, 0, 0, 0, 1, 1, 0 }, { 0, 1, 0, 0, 0, 1, 1, 0 }, { 0, 1, 1, 1, 0, 0, 0, 0 } };
 	cstr family[] = { "Alien", "Dog", "Guy", "Broemse" };
@@ -1429,6 +1349,7 @@ void CheckEnemyHeadings(MudGE& engine, bool capture = false)
 		std::set<i32> covered;
 		std::vector<SpriteDraw> montage;
 		for (i32 facing = 0; facing < 8; ++facing)
+		{
 			for (u32 seed = 1; seed <= 4; ++seed)
 			{
 				const auto level = FixtureLevel(engine, "heading-" + std::to_string(kind) + "-" + std::to_string(facing),
@@ -1450,8 +1371,7 @@ void CheckEnemyHeadings(MudGE& engine, bool capture = false)
 				Require(walking, "Heading fixture never entered its first walking tile.");
 				scene.Update(0.05f, 0, 0, false);
 				const auto& draws = scene.Draws();
-				const auto after = std::find_if(draws.begin(), draws.end(), [&](const auto& draw)
-				                                { return std::find(sprites.begin(), sprites.end(), draw.Sprite) != sprites.end(); });
+				const auto after = std::find_if(draws.begin(), draws.end(), [&](const auto& draw) { return std::find(sprites.begin(), sprites.end(), draw.Sprite) != sprites.end(); });
 				Require(after != draws.end(), "Heading fixture left walking before its first short step.");
 				const i32 dx = (after->X > before.X) - (after->X < before.X), dy = (after->Y > before.Y) - (after->Y < before.Y);
 				i32 direction = 0;
@@ -1470,6 +1390,7 @@ void CheckEnemyHeadings(MudGE& engine, bool capture = false)
 				}
 				covered.insert(direction);
 			}
+		}
 		Require(covered.size() == 8, "Heading regression did not cover all eight movement directions.");
 		if (capture)
 			engine.DrawFrame(montage, (str("directions-") + lower[kind - 3] + ".bmp").c_str());
@@ -1480,13 +1401,10 @@ void CheckEnemyHeadings(MudGE& engine, bool capture = false)
 void CheckEnemyItems(MudGE& engine, bool capture = false)
 {
 	const auto& getPacks = engine.GetData().GetPacks();
-	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& pack)
-	                             { return pack.Name == "XS"; });
-	auto heard = [&](const std::vector<str>& sounds, cstr name)
-	{
+	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& pack) { return pack.Name == "XS"; });
+	auto heard = [&](const std::vector<str>& sounds, cstr name) {
 		const auto path = engine.GetData().SoundPath(name);
-		return std::any_of(sounds.begin(), sounds.end(), [&](const auto& sound)
-		                   { return _stricmp(sound.c_str(), path.c_str()) == 0; });
+		return std::any_of(sounds.begin(), sounds.end(), [&](const auto& sound) { return _stricmp(sound.c_str(), path.c_str()) == 0; });
 	};
 	const auto teddy = FixtureLevel(engine, "girl-teddy", { { 0, 640, 400, 0 }, { 6, 240, 200, 2 }, { 8, 280, 200, 0 }, { 2, 640, 120, 0 } });
 	LevelScene girl(engine, *xs, teddy, 1);
@@ -1501,8 +1419,7 @@ void CheckEnemyItems(MudGE& engine, bool capture = false)
 	const auto* teddyFront = engine.LoadSprite("Sven2/gfx/Broemse/anim_broemse_beating_teddybear_diagonal_front.bmp", 14, 1);
 	const auto* teddyBack = engine.LoadSprite("Sven2/gfx/Broemse/anim_broemse_beating_teddybear_diagonal_back.bmp", 9, 1);
 	const auto& recovered = girl.Draws();
-	Require(std::none_of(recovered.begin(), recovered.end(), [&](const auto& draw)
-	                     { return draw.Sprite == teddyFront || draw.Sprite == teddyBack; }),
+	Require(std::none_of(recovered.begin(), recovered.end(), [&](const auto& draw) { return draw.Sprite == teddyFront || draw.Sprite == teddyBack; }),
 	        "Girl remained in her teddy interaction after the original sequence completed.");
 	const auto playDog = FixtureLevel(engine, "girl-dog", { { 0, 640, 400, 0 }, { 6, 240, 120, 4 }, { 4, 240, 200, 0 }, { 2, 640, 480, 0 } });
 	bool dogInteraction = false;
@@ -1517,8 +1434,7 @@ void CheckEnemyItems(MudGE& engine, bool capture = false)
 			{
 				const auto* dogStand = engine.LoadSprite("Sven2/gfx/Dog/Dog_Stand.bmp", 8, 1);
 				const auto& draws = pair.Draws();
-				Require(std::none_of(draws.begin(), draws.end(), [&](const auto& draw)
-				                     { return draw.Sprite == dogStand; }),
+				Require(std::none_of(draws.begin(), draws.end(), [&](const auto& draw) { return draw.Sprite == dogStand; }),
 				        "Girl-dog interaction retained a separate standing dog.");
 			}
 		}
@@ -1540,14 +1456,12 @@ void CheckEnemyItems(MudGE& engine, bool capture = false)
 				if (beamed)
 				{
 					const auto& draws = scene.Draws();
-					Require(std::none_of(draws.begin(), draws.end(), [&](const auto& draw)
-					                     { return draw.Sprite == artifactSprite; }),
+					Require(std::none_of(draws.begin(), draws.end(), [&](const auto& draw) { return draw.Sprite == artifactSprite; }),
 					        "Enemy artifact pickup left the collectible behind.");
 					for (const auto* path : { "Sven2/gfx/ufo.bmp", "Sven2/gfx/ufo_shadow.bmp", "Sven2/gfx/anim_beam.bmp" })
 					{
 						const auto* image = engine.LoadSprite(path, std::strstr(path, "anim_beam") ? 44 : 13, 1);
-						Require(std::any_of(draws.begin(), draws.end(), [&](const auto& draw)
-						                    { return draw.Sprite == image; }),
+						Require(std::any_of(draws.begin(), draws.end(), [&](const auto& draw) { return draw.Sprite == image; }),
 						        "Enemy artifact sequence omitted visible UFO, shadow or beam.");
 					}
 					Require(scene.TakeLifeHits() == 0, "Enemy artifact pickup caused a player life hit.");
@@ -1564,8 +1478,7 @@ void CheckEnemyItems(MudGE& engine, bool capture = false)
 void CheckDemonSheep(MudGE& engine, bool capture = false)
 {
 	const auto& getPacks = engine.GetData().GetPacks();
-	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& pack)
-	                             { return pack.Name == "XS"; });
+	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& pack) { return pack.Name == "XS"; });
 	const auto* back = engine.LoadSprite("Sven2/gfx/Sheep/anim_sheep_demon_back.bmp", 23, 1);
 	const auto* front = engine.LoadSprite("Sven2/gfx/Sheep/anim_sheep_demon_front.bmp", 23, 1);
 	const auto* run = engine.LoadSprite("Sven2/gfx/Sheep/anim_sheep_demon_run_front.bmp", 8, 1);
@@ -1575,10 +1488,8 @@ void CheckDemonSheep(MudGE& engine, bool capture = false)
 	const auto* power = engine.LoadSprite("Sven2/gfx/symbol_power.bmp", 13, 1);
 	const auto devil = engine.GetData().SoundPath("SfxDevil");
 	const auto electro = engine.GetData().SoundPath("SfxDevilElectro");
-	auto contains = [](const auto& draws, const auto* sprite)
-	{
-		return std::any_of(draws.begin(), draws.end(), [&](const auto& draw)
-		                   { return draw.Sprite == sprite; });
+	auto contains = [](const auto& draws, const auto* sprite) {
+		return std::any_of(draws.begin(), draws.end(), [&](const auto& draw) { return draw.Sprite == sprite; });
 	};
 	const auto natural = FixtureLevel(engine, "demon-natural", { { 0, 80, 240, 0 }, { 2, 480, 160, 0, 10 }, { 2, 480, 320, 0, 10 } });
 	bool triggered = false;
@@ -1616,8 +1527,7 @@ void CheckDemonSheep(MudGE& engine, bool capture = false)
 		if (!devilSound)
 		{
 			const auto& draws = scene.Draws();
-			Require(std::all_of(draws.begin(), draws.end(), [&](const auto& draw)
-			                    { return draw.Sprite != mood || draw.Frame == 11; }),
+			Require(std::all_of(draws.begin(), draws.end(), [&](const auto& draw) { return draw.Sprite != mood || draw.Frame == 11; }),
 			        "Failed demon attempt did not cap impatience back to 10.");
 		}
 	}
@@ -1673,8 +1583,7 @@ void CheckDemonSheep(MudGE& engine, bool capture = false)
 	LevelScene trapped(engine, *xs, blocked, 1);
 	trapped.Update(4, 0, 0, false);
 	const auto& trappedDraws = trapped.Draws();
-	Require(std::any_of(trappedDraws.begin(), trappedDraws.end(), [&](const auto& draw)
-	                    { return draw.Sprite == stand && draw.X == 480 && draw.Y == 200; }),
+	Require(std::any_of(trappedDraws.begin(), trappedDraws.end(), [&](const auto& draw) { return draw.Sprite == stand && draw.X == 480 && draw.Y == 200; }),
 	        "Blocked demon failed to recover at its original position.");
 	const auto timeout = FixtureLevel(engine, "demon-timeout", { { 0, 80, 240, 0 }, { 2, 480, 200, 0, 12, 0, 11 } });
 	LevelScene expired(engine, *xs, timeout, 1);
@@ -1688,10 +1597,10 @@ void CheckDemonSheep(MudGE& engine, bool capture = false)
 void CheckFarmerOccupancy(MudGE& engine)
 {
 	const auto& getPacks = engine.GetData().GetPacks();
-	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& pack)
-	                             { return pack.Name == "XS"; });
+	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& pack) { return pack.Name == "XS"; });
 	constexpr i32 directions[8][2] = { { 0, -1 }, { 1, -1 }, { 1, 0 }, { 1, 1 }, { 0, 1 }, { -1, 1 }, { -1, 0 }, { -1, -1 } };
 	for (i32 state : { 0, 10 })
+	{
 		for (const auto& direction : directions)
 		{
 			const i32 x = 240 - 40 * direction[0], y = 200 - 40 * direction[1];
@@ -1701,14 +1610,14 @@ void CheckFarmerOccupancy(MudGE& engine)
 			scene.Update(0.3f, direction[0], direction[1], false);
 			Require(scene.GetPlayerDraw().X == x && scene.GetPlayerDraw().Y == y, "Player entered the farmer's occupied cell.");
 		}
+	}
 	Log("PASS: correctly centered 160px farmer blocks his logical cell from eight directions, awake and sleeping.");
 }
 
 void CheckGirlBeamReturn(MudGE& engine, bool capture = false)
 {
 	const auto& getPacks = engine.GetData().GetPacks();
-	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& pack)
-	                             { return pack.Name == "XS"; });
+	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& pack) { return pack.Name == "XS"; });
 	const auto* stand = engine.LoadSprite("Sven2/gfx/Broemse/Broemse_stand.bmp", 8, 1);
 	const auto* back = engine.LoadSprite("Sven2/gfx/Broemse/anim_broemse_beam_up_diagonal_back.bmp", 5, 1);
 	const auto* front = engine.LoadSprite("Sven2/gfx/Broemse/anim_broemse_beam_up_diagonal_front.bmp", 5, 1);
@@ -1721,27 +1630,23 @@ void CheckGirlBeamReturn(MudGE& engine, bool capture = false)
 		const auto* beam = quadrant == 0 || quadrant == 3 ? back : front;
 		scene.Update(0.5f, 0, 0, false);
 		const auto& rising = scene.Draws();
-		Require(std::any_of(rising.begin(), rising.end(), [&](const auto& draw)
-		                    { return draw.Sprite == beam && draw.Mirror == (quadrant < 2) && draw.X == 240 && draw.Y == 190; }),
+		Require(std::any_of(rising.begin(), rising.end(), [&](const auto& draw) { return draw.Sprite == beam && draw.Mirror == (quadrant < 2) && draw.X == 240 && draw.Y == 190; }),
 		        "Girl beam-up body used the wrong anchor or mirrored direction.");
 		if (capture && quadrant == 0)
 			engine.DrawFrame(rising, "girl-beam-up.bmp");
 		scene.Update(1.0f, 0, 0, false);
 		const auto& hidden = scene.Draws();
-		Require(std::none_of(hidden.begin(), hidden.end(), [&](const auto& draw)
-		                     { return draw.Sprite == stand || draw.Sprite == back || draw.Sprite == front; }),
+		Require(std::none_of(hidden.begin(), hidden.end(), [&](const auto& draw) { return draw.Sprite == stand || draw.Sprite == back || draw.Sprite == front; }),
 		        "Girl remained visible during the artifact's hidden wait.");
 		scene.Update(4.5f, 0, 0, false);
 		const auto& falling = scene.Draws();
-		Require(std::any_of(falling.begin(), falling.end(), [&](const auto& draw)
-		                    { return draw.Sprite == stand && draw.X == 240 && draw.Y < 200; }),
+		Require(std::any_of(falling.begin(), falling.end(), [&](const auto& draw) { return draw.Sprite == stand && draw.X == 240 && draw.Y < 200; }),
 		        "Girl did not descend using her original standing body.");
 		if (capture && quadrant == 0)
 			engine.DrawFrame(falling, "girl-beam-return.bmp");
 		scene.Update(1.5f, 0, 0, false);
 		const auto& landed = scene.Draws();
-		Require(std::any_of(landed.begin(), landed.end(), [&](const auto& draw)
-		                    { return draw.Sprite == stand && draw.X == 240 && draw.Y == 200; }),
+		Require(std::any_of(landed.begin(), landed.end(), [&](const auto& draw) { return draw.Sprite == stand && draw.X == 240 && draw.Y == 200; }),
 		        "Girl did not return to her unchanged ground position.");
 		const auto sounds = scene.TakeSounds();
 		Require(std::find(sounds.begin(), sounds.end(), fall) != sounds.end(), "Girl landing omitted its fall sound.");
@@ -1754,8 +1659,7 @@ void CheckLabFixtures(MudGE& engine)
 	for (const auto& pack : engine.GetData().GetPacks())
 		if (pack.Name == "ParityLab")
 		{
-			const auto episode = std::find_if(pack.LevelSets.begin(), pack.LevelSets.end(), [](const auto& set)
-			                                  { return set.Name == "Items and teleports"; });
+			const auto episode = std::find_if(pack.LevelSets.begin(), pack.LevelSets.end(), [](const auto& set) { return set.Name == "Items and teleports"; });
 			Require(episode != pack.LevelSets.end(), "ParityLab items/teleports episode is missing.");
 			const auto& level = episode->Levels.front();
 			LevelScene puddles(engine, pack, level, 1);
@@ -1777,8 +1681,7 @@ void CheckLabFixtures(MudGE& engine)
 				Step(artifact, 0, -1);
 			const auto* sprite = engine.LoadSprite("Sven2/gfx/Artifact.bmp", 1, 1);
 			const auto& consumed = artifact.Draws();
-			Require(std::none_of(consumed.begin(), consumed.end(), [&](const auto& draw)
-			                     { return draw.Sprite == sprite; }),
+			Require(std::none_of(consumed.begin(), consumed.end(), [&](const auto& draw) { return draw.Sprite == sprite; }),
 			        "Authored lab artifact failed to disappear when Sven entered its cell.");
 			const auto* icon = engine.LoadSprite("Sven2/gfx/icon_alien.bmp", 13, 1);
 			const auto* ship = engine.LoadSprite("Sven2/gfx/ufo.bmp", 13, 1);
@@ -1788,12 +1691,9 @@ void CheckLabFixtures(MudGE& engine)
 			{
 				artifact.Update(1.0f / 60, 0, 0, false);
 				const auto& draws = artifact.Draws();
-				visibleUfo = visibleUfo || (std::any_of(draws.begin(), draws.end(), [&](const auto& draw)
-				                                        { return draw.Sprite == ship; }) &&
-				                            std::any_of(draws.begin(), draws.end(), [&](const auto& draw)
-				                                        { return draw.Sprite == shadow; }));
-				powered = std::any_of(draws.begin(), draws.end(), [&](const auto& draw)
-				                      { return draw.Sprite == icon; });
+				visibleUfo = visibleUfo || (std::any_of(draws.begin(), draws.end(), [&](const auto& draw) { return draw.Sprite == ship; }) &&
+				                            std::any_of(draws.begin(), draws.end(), [&](const auto& draw) { return draw.Sprite == shadow; }));
+				powered = std::any_of(draws.begin(), draws.end(), [&](const auto& draw) { return draw.Sprite == icon; });
 			}
 			Require(powered, "Authored lab artifact never completed Sven's UFO powerup sequence.");
 			Require(visibleUfo, "Authored lab artifact sequence hid the UFO and its shadow.");
@@ -1820,7 +1720,9 @@ void WriteBehaviorTrace(MudGE& engine, const fpath& path)
 	Require(static_cast<bool>(output), "Cannot create behavior trace.");
 	std::map<const Sprite*, u64> spriteHashes;
 	for (const auto& pack : engine.GetData().GetPacks())
+	{
 		for (const auto& set : pack.LevelSets)
+		{
 			for (const auto& level : set.Levels)
 			{
 				for (u32 seed : { 1u, 73u })
@@ -1830,8 +1732,7 @@ void WriteBehaviorTrace(MudGE& engine, const fpath& path)
 					for (i32 frame = 0; frame < 480; ++frame)
 					{
 						u64 hash = 14695981039346656037ull;
-						auto mix = [&](const auto& value)
-						{
+						auto mix = [&](const auto& value) {
 							const auto* bytes = reinterpret_cast<const u8*>(&value);
 							for (size_t i = 0; i < sizeof(value); ++i)
 								hash = (hash ^ bytes[i]) * 1099511628211ull;
@@ -1849,8 +1750,10 @@ void WriteBehaviorTrace(MudGE& engine, const fpath& path)
 							{
 								u64 pixels = 14695981039346656037ull;
 								for (auto pixel : draw.Sprite->Pixels)
+								{
 									for (i32 byte = 0; byte < 4; ++byte)
 										pixels = (pixels ^ ((pixel >> (8 * byte)) & 255)) * 1099511628211ull;
+								}
 								entry = spriteHashes.emplace(draw.Sprite, pixels).first;
 							}
 							mix(entry->second);
@@ -1885,6 +1788,8 @@ void WriteBehaviorTrace(MudGE& engine, const fpath& path)
 					}
 				}
 			}
+		}
+	}
 	Require(static_cast<bool>(output), "Cannot finish behavior trace.");
 	Log("PASS: deterministic behavior trace written.");
 }
@@ -1892,8 +1797,7 @@ void WriteBehaviorTrace(MudGE& engine, const fpath& path)
 void CheckObjectOwnership(MudGE& engine)
 {
 	const LevelInfo level = FixtureLevel(engine, "object-ownership", { { 0, 80, 80, 0 }, { 2, 240, 240, 0 }, { 3, 360, 120, 0 }, { 4, 440, 240, 0 }, { 5, 520, 360, 0 }, { 6, 600, 200, 0 }, { 11, 120, 400, 0 }, { 12, 240, 400, 0 }, { 13, 360, 400, 0 } });
-	const LevelPackInfo& pack = *std::find_if(engine.GetData().GetPacks().begin(), engine.GetData().GetPacks().end(), [](const LevelPackInfo& value)
-	                                          { return value.Name == "XS"; });
+	const LevelPackInfo& pack = *std::find_if(engine.GetData().GetPacks().begin(), engine.GetData().GetPacks().end(), [](const LevelPackInfo& value) { return value.Name == "XS"; });
 	LevelScene scene(engine, pack, level, 1);
 	ObjectManager& objects = scene.GetObjects();
 	Require(dynamic_cast<PlayerCharacter*>(&objects.Get(0)) != nullptr, "Player must be manager-owned.");
@@ -1934,8 +1838,7 @@ void CheckMenuPresentation(MudGE& engine, const fpath& saves, bool capture)
 	std::array<const Sprite*, 5> eyes{};
 	for (size_t eye = 0; eye < eyes.size(); ++eye)
 		eyes[eye] = engine.LoadSprite("XXX/SvenXXX/gfx/Help_BG_eye0" + std::to_string(eye + 1) + ".bmp", 6, 1);
-	auto hasDraw = [](const std::vector<SpriteDraw>& draws, const Sprite* image, i32 x, i32 y, i32 frame)
-	{ return std::any_of(draws.begin(), draws.end(), [&](const SpriteDraw& draw) { return draw.Sprite == image && draw.X == x && draw.Y == y && draw.Frame == frame; }); };
+	auto hasDraw = [](const std::vector<SpriteDraw>& draws, const Sprite* image, i32 x, i32 y, i32 frame) { return std::any_of(draws.begin(), draws.end(), [&](const SpriteDraw& draw) { return draw.Sprite == image && draw.X == x && draw.Y == y && draw.Frame == frame; }); };
 	for (Page page : { Page::GetPacks, Page::Help, Page::Highscores })
 	{
 		ui.Show(page);
@@ -1952,6 +1855,17 @@ void CheckMenuPresentation(MudGE& engine, const fpath& saves, bool capture)
 		constexpr i32 lowerX[] = { 0, -17, 693, 817, 812 }, lowerY[] = { 109, 459, 0, 161, 444 };
 		for (size_t eye = 0; eye < eyes.size(); ++eye)
 			Require(hasDraw(lower, eyes[eye], lowerX[eye], lowerY[eye], 0) && hasDraw(lower, eyes[eye], lowerX[eye], lowerY[eye], 5), "Lower-right menu eyes do not follow the cursor.");
+		for (POINT outside : { POINT{ -1, -1 }, POINT{ -200, 300 }, POINT{ 800, 600 }, POINT{ 1200, 900 } })
+		{
+			cursor.Mouse = outside;
+			cursor.Click = true;
+			ui.Handle(cursor);
+			const std::vector<SpriteDraw>& held = ui.Draws(0);
+			for (size_t eye = 0; eye < eyes.size(); ++eye)
+				Require(hasDraw(held, eyes[eye], lowerX[eye], lowerY[eye], 0) && hasDraw(held, eyes[eye], lowerX[eye], lowerY[eye], 5), "Leaving the viewport changed the menu eye pose.");
+			Require(ui.GetPage() == page, "Out-of-window input activated a menu.");
+		}
+		cursor.Click = false;
 		for (POINT point : { POINT{ 0, 0 }, POINT{ 200, 150 }, POINT{ 400, 300 }, POINT{ 600, 450 }, POINT{ 799, 599 } })
 		{
 			cursor.Mouse = point;
@@ -2028,10 +1942,8 @@ void CheckPresentationCorrections(MudGE& engine, const fpath& saves, bool captur
 {
 	const GameData& data = engine.GetData();
 	const std::vector<LevelPackInfo>& packs = data.GetPacks();
-	const LevelPackInfo& xxx = *std::find_if(packs.begin(), packs.end(), [](const LevelPackInfo& pack)
-	                                         { return pack.Edition == GameEdition::XXX; });
-	const LevelPackInfo& zwo = *std::find_if(packs.begin(), packs.end(), [](const LevelPackInfo& pack)
-	                                         { return pack.Name == "XS" && pack.Edition == GameEdition::Zwo; });
+	const LevelPackInfo& xxx = *std::find_if(packs.begin(), packs.end(), [](const LevelPackInfo& pack) { return pack.Edition == GameEdition::XXX; });
+	const LevelPackInfo& zwo = *std::find_if(packs.begin(), packs.end(), [](const LevelPackInfo& pack) { return pack.Name == "XS" && pack.Edition == GameEdition::Zwo; });
 	BitmapFont smallFont(engine, true, false, GameEdition::XXX);
 	Require(smallFont.Width("00") == 18 && smallFont.Width("11") == 12 && smallFont.Width(":") == 3, "Native FDD exclusive glyph bounds/advance regressed.");
 	for (i32 key : { VK_UP, VK_DOWN, VK_LEFT, VK_RIGHT, VK_RCONTROL, VK_LCONTROL, VK_RSHIFT, VK_LSHIFT, VK_SPACE, VK_RETURN, i32{ 'X' }, i32{ '0' }, VK_NUMPAD4 })
@@ -2074,16 +1986,14 @@ void CheckPresentationCorrections(MudGE& engine, const fpath& saves, bool captur
 	ui.Handle(cancel);
 	Require(ui.GetPage() == GameUi::Page::Help && ui.GetControlSelection() == -1, "Escape must cancel rebinding without leaving the control screen.");
 	// The user's marked collision: Garten 02 episode, first map garden10.lvl.
-	const LevelSetInfo& garden = *std::find_if(xxx.LevelSets.begin(), xxx.LevelSets.end(), [](const LevelSetInfo& set)
-	                                           { return set.Name == "Garten 02"; });
+	const LevelSetInfo& garden = *std::find_if(xxx.LevelSets.begin(), xxx.LevelSets.end(), [](const LevelSetInfo& set) { return set.Name == "Garten 02"; });
 	LevelScene gardenScene(engine, xxx, garden.Levels.front(), 1);
 	Require(gardenScene.GetObjects().CanOccupy(279, gardenScene.GetPlayerIndex()), "Dormant mermaid leaves invisible collision in Garten 02.");
 	Mermaid& mermaid = dynamic_cast<Mermaid&>(gardenScene.GetObjects().Get(gardenScene.GetObjects().Find(ObjectKind::Mermaid).front()));
 	Require(mermaid.Reveal() && !gardenScene.GetObjects().CanOccupy(279, gardenScene.GetPlayerIndex()), "Revealed mermaid must occupy its cell.");
 	if (capture)
 		engine.DrawFrame(gardenScene.Draws(), "garden-mermaid-revealed.bmp");
-	auto fixture = [&](const str& name, std::initializer_list<FixtureActor> actors)
-	{
+	auto fixture = [&](const str& name, std::initializer_list<FixtureActor> actors) {
 		LevelInfo level = FixtureLevel(engine, name, actors);
 		bytestream bytes = data.ReadAsset(level.Map);
 		const i32 version = 7;
@@ -2099,21 +2009,92 @@ void CheckPresentationCorrections(MudGE& engine, const fpath& saves, bool captur
 	};
 	LevelPackInfo profile = zwo;
 	profile.Edition = GameEdition::XXX;
+	const Sprite* stand = engine.LoadSprite(data.GetSpriteDefinition("SvenStand", GameEdition::XXX).File, 8, 1);
+	for (ObjectKind kind : { ObjectKind::Sheep, ObjectKind::Chicken, ObjectKind::Goat, ObjectKind::Pig, ObjectKind::Penguin, ObjectKind::Turtle, ObjectKind::Rabbit })
+	{
+		for (i32 facing = 0; facing < 4; ++facing)
+		{
+			const i32 playerFacing = 2 * facing;
+			for (i32 requested = -1; requested < 8; ++requested)
+			{
+				const i32 dx = requested < 0 ? 0 : Directions[requested][0], dy = requested < 0 ? 0 : Directions[requested][1];
+				const LevelInfo level = fixture("action-boundary-" + std::to_string(static_cast<i32>(kind)) + "-" + std::to_string(facing) + "-" + std::to_string(requested), { { 0, 240 - Directions[playerFacing][0] * 40, 200 - Directions[playerFacing][1] * 40, playerFacing }, { static_cast<i32>(kind), 240, 200, facing } });
+				LevelScene scene(engine, profile, level, 1);
+				// Level initialization randomly assigns Frigida; this fixture tests ordinary animals.
+				scene.GetObjects()[1].Temperament = 0;
+				scene.Update(0, 0, 0, true);
+				Require(scene.GetPlayerDraw().Sprite == stand, "XXX accepted an action held across level entry.");
+				scene.Update(0, Directions[playerFacing][0], Directions[playerFacing][1], false);
+				scene.Update(0.001f, 0, 0, true);
+				Require(scene.GetPlayerDraw().Sprite != stand, "Release/press did not start the XXX animal interaction.");
+				const Sprite* interaction = scene.GetPlayerDraw().Sprite;
+				scene.Update(0, dx, dy, false);
+				scene.Update(0, dx, dy, true);
+				bool finished = false;
+				for (i32 tick = 0; tick < 2000 && !finished; ++tick)
+				{
+					scene.Update(0.01f, dx, dy, true);
+					finished = scene.TakeScoreDelta() > 0;
+				}
+				if (!finished)
+					throw std::runtime_error("XXX ordinary interaction never finished: " + level.Map + "; frame=" + std::to_string(scene.GetPlayerDraw().Frame) + "; rows=" + std::to_string(interaction->Rows) + "; same=" + std::to_string(scene.GetPlayerDraw().Sprite == interaction));
+				const bool compatible = requested < 0 || (requested - 2 * facing + 8) % 8 <= 2;
+				Require((scene.GetPlayerDraw().Sprite == interaction) == compatible, "XXX queued repeat ignored the requested direction at completion.");
+			}
+		}
+	}
+	const LevelInfo heldLevel = fixture("held-action-no-repeat", { { 0, 240, 240, 0 }, { 2, 240, 200, 0 } });
+	LevelScene heldScene(engine, profile, heldLevel, 1);
+	heldScene.GetObjects()[1].Temperament = 0;
+	heldScene.Update(0, 0, 0, false);
+	heldScene.Update(0.001f, 0, 0, true);
+	i32 completed = 0;
+	for (i32 tick = 0; tick < 1200; ++tick)
+	{
+		heldScene.Update(0.01f, 0, 0, true);
+		completed += heldScene.TakeScoreDelta();
+	}
+	Require(completed == 1 && heldScene.GetPlayerDraw().Sprite == stand, "Holding action automatically repeated a XXX interaction.");
+	for (i32 facing = 0; facing < 4; ++facing)
+	{
+		const i32 playerFacing = 2 * facing;
+		for (i32 requested = -1; requested < 8; ++requested)
+		{
+			const i32 dx = requested < 0 ? 0 : Directions[requested][0], dy = requested < 0 ? 0 : Directions[requested][1];
+			const LevelInfo level = fixture("frigida-repeat-" + std::to_string(facing) + "-" + std::to_string(requested), { { 0, 240 - Directions[playerFacing][0] * 40, 200 - Directions[playerFacing][1] * 40, playerFacing }, { 2, 240, 200, facing } });
+			LevelScene scene(engine, profile, level, 1);
+			scene.GetObjects()[1].Temperament = 1;
+			scene.Update(0, Directions[playerFacing][0], Directions[playerFacing][1], false);
+			scene.Update(0.001f, 0, 0, true);
+			const Sprite* frigida = scene.GetPlayerDraw().Sprite;
+			Require(frigida != stand && scene.GetObjects()[1].Temperament == 2, "Frigida repeat fixture did not start.");
+			scene.Update(0, dx, dy, false);
+			scene.Update(0, dx, dy, true);
+			for (i32 tick = 0; tick < 200 && scene.GetObjects()[1].Impatience == 0; ++tick)
+				scene.Update(0.01f, dx, dy, true);
+			Require(scene.GetObjects()[1].Impatience == 1, "Frigida cycle failed to advance its impatience meter.");
+			const bool compatible = requested < 0 || (requested - 2 * facing + 8) % 8 <= 2;
+			Require((scene.GetPlayerDraw().Sprite == frigida) == compatible, "XXX Frigida repeat ignored the requested direction at completion.");
+		}
+	}
+	Log("PASS: XXX release arming, held-key suppression and all nine repeat directions for all seven animal kinds/four facings, including Frigida.");
 	const Sprite* mood = engine.LoadSprite("XXX/SvenXXX/gfx/symbols.bmp", 12, 1);
 	constexpr i32 markerX[3][4] = { { 20, 20, 20, 20 }, { 40, 24, 30, 16 }, { 40, 24, 30, 16 } };
 	for (i32 species = 0; species < 3; ++species)
+	{
 		for (i32 facing = 0; facing < 4; ++facing)
 		{
 			const LevelInfo level = fixture("marker-" + std::to_string(species) + "-" + std::to_string(facing), { { 0, 80, 80, 0 }, { 25 + species, 240, 200, facing } });
 			LevelScene scene(engine, profile, level, 1);
 			const std::vector<SpriteDraw>& draws = scene.Draws();
-			Require(std::any_of(draws.begin(), draws.end(), [&](const SpriteDraw& draw)
-			                    { return draw.Sprite == mood && draw.X == 240 + markerX[species][facing] && draw.Y == 199; }),
+			Require(std::any_of(draws.begin(), draws.end(), [&](const SpriteDraw& draw) { return draw.Sprite == mood && draw.X == 240 + markerX[species][facing] && draw.Y == 199; }),
 			        "New animal marker is not at its native facing offset.");
 			if (capture && facing == 0)
 				engine.DrawFrame(draws, ("animal-marker-" + std::to_string(species) + ".bmp").c_str());
 		}
+	}
 	for (GameEdition edition : { GameEdition::Zwo, GameEdition::XXX })
+	{
 		for (i32 kind : { 2, 11, 12, 13 })
 		{
 			LevelInfo level = FixtureLevel(engine, "effect-anchor-" + std::to_string(static_cast<i32>(edition)) + "-" + std::to_string(kind), { { 0, 240, 200, 0 }, { kind, 240, 160, 0 } });
@@ -2122,26 +2103,26 @@ void CheckPresentationCorrections(MudGE& engine, const fpath& saves, bool captur
 			LevelPackInfo pack = zwo;
 			pack.Edition = edition;
 			LevelScene scene(engine, pack, level, 1);
+			scene.Update(0, 0, 0, false);
 			scene.Update(0.001f, 0, 0, true);
 			Require(scene.GetPlayerDraw().Y == 160, "Marker regression fixture failed to start a compound interaction.");
 			for (ItemCode code : { ItemCode::StinkMushroom, ItemCode::Flower, ItemCode::AlienPower })
 			{
 				scene.GetItems().GetPowerup() = { code, 10, 0 };
 				const std::vector<SpriteDraw>& draws = scene.Draws();
-				Require(std::any_of(draws.begin(), draws.end(), [](const SpriteDraw& draw)
-				                    { return draw.X == 268 && draw.Y == 156; }),
+				Require(std::any_of(draws.begin(), draws.end(), [](const SpriteDraw& draw) { return draw.X == 268 && draw.Y == 156; }),
 				        "Equipped effect detached from the compound interaction canvas.");
 				if (capture && code == ItemCode::StinkMushroom && kind == 2)
 					engine.DrawFrame(draws, (edition == GameEdition::XXX ? "xxx-interaction-effect.bmp" : "zwo-interaction-effect.bmp"));
 			}
 		}
+	}
 	for (const LevelPackInfo* pack : { &zwo, &xxx })
 	{
 		GameSession session(engine, *pack, pack->LevelSets.front());
 		const std::vector<SpriteDraw>& draws = session.Draws();
 		const bool modern = data.GetThemeEdition() == GameEdition::XXX;
-		Require(std::any_of(draws.begin(), draws.end(), [&](const SpriteDraw& draw)
-		                    { return draw.X == (modern ? 745 : 733) && draw.Y == 19; }),
+		Require(std::any_of(draws.begin(), draws.end(), [&](const SpriteDraw& draw) { return draw.X == (modern ? 745 : 733) && draw.Y == 19; }),
 		        "Score HUD does not match the shared UI theme coordinates.");
 		Require(std::any_of(draws.begin(), draws.end(), [&](const SpriteDraw& draw) { return draw.X == (modern ? 26 : 18) && draw.Y == (modern ? 34 : 36); }), "Timer HUD does not match the shared UI theme coordinates.");
 		if (capture)
@@ -2174,13 +2155,14 @@ void CheckEditionFoundation(MudGE& engine, const fpath& saves)
 	Require(data.EditionAsset(GameEdition::XXX, "Sven2/Sven2.xml") == "XXX/SvenXXX/Sven2.xml", "XXX core namespace translation changed.");
 	Require(data.AssetPath("Sven2/Sven2.xml") == data.AssetPath("ZWO/Sven2/Sven2.xml"), "Legacy Zwo paths do not resolve in the new asset layout.");
 	for (GameEdition edition : { GameEdition::Zwo, GameEdition::XXX })
+	{
 		for (cstr sound : { "Tune01", "Tune02", "SfxUFO" })
 			data.AssetPath(data.SoundPath(sound, edition));
+	}
 	std::set<str> ids;
 	std::array<size_t, 2> counts{};
 	size_t helpMarkers = 0;
-	auto validateDraws = [&](const std::vector<SpriteDraw>& draws)
-	{
+	auto validateDraws = [&](const std::vector<SpriteDraw>& draws) {
 		Require(!draws.empty(), "Scene or UI emitted no draw commands.");
 		for (const SpriteDraw& draw : draws)
 			Require(draw.Sprite && draw.Frame >= 0 && draw.Frame < draw.Sprite->Rows * draw.Sprite->Columns, "Initial scene/UI frame exceeds its sheet.");
@@ -2189,6 +2171,7 @@ void CheckEditionFoundation(MudGE& engine, const fpath& saves)
 	{
 		Require(!pack.Id.empty() && ids.insert(pack.Id).second, "Edition pack save IDs collide.");
 		for (const LevelSetInfo& set : pack.LevelSets)
+		{
 			for (const LevelInfo& level : set.Levels)
 			{
 				try
@@ -2240,6 +2223,7 @@ void CheckEditionFoundation(MudGE& engine, const fpath& saves)
 					throw std::runtime_error(level.Map + ": " + error.what());
 				}
 			}
+		}
 	}
 	Require(counts[0] >= 105 && counts[1] == 129 && helpMarkers > 0, "Shipped catalog/help coverage is incomplete.");
 	GameUi ui(engine, saves);
@@ -2403,8 +2387,11 @@ i32 main(i32 argc, char** argv)
 				Require(engine.StartAudio(), "Catalog audio backend failed to initialize.");
 				Require(engine.PlayMusic("Sven2/sfx/Sven2_music.ogg"), "Menu music failed.");
 				for (i32 pass = 0; pass < 3; ++pass)
+				{
 					for (const auto& pack : engine.GetData().GetPacks())
+					{
 						for (const auto& set : pack.LevelSets)
+						{
 							for (const auto& level : set.Levels)
 							{
 								LevelScene scene(engine, pack, level, 1);
@@ -2420,6 +2407,9 @@ i32 main(i32 argc, char** argv)
 								}
 								engine.DrawFrame(scene.Draws());
 							}
+						}
+					}
+				}
 				engine.StopMusic();
 				engine.StopMusic(); // Repeated cleanup must be harmless.
 				Require(engine.PlayMusic("Sven2/sfx/Sven2Highscore.ogg"), "Highscore music failed after campaign streams.");
@@ -2434,12 +2424,16 @@ i32 main(i32 argc, char** argv)
 				engine.StartVideo(false);
 				size_t index = 0;
 				for (const auto& pack : engine.GetData().GetPacks())
+				{
 					for (const auto& set : pack.LevelSets)
+					{
 						for (const auto& level : set.Levels)
 						{
 							LevelScene scene(engine, pack, level, 1);
 							engine.DrawFrame(scene.Draws(), ("pack-level-" + std::to_string(++index) + ".bmp").c_str());
 						}
+					}
+				}
 				Log("PASS: package previews in " + saves.string());
 			}
 			engine.Shutdown();
@@ -2531,8 +2525,7 @@ i32 main(i32 argc, char** argv)
 			ui.Handle(enterName);
 			engine.DrawFrame(ui.Draws(0), "name-entry.bmp");
 			const auto& getPacks = engine.GetData().GetPacks();
-			const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& pack)
-			                             { return pack.Name == "XS"; });
+			const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& pack) { return pack.Name == "XS"; });
 			GameSession session(engine, *xs, xs->LevelSets.front());
 			engine.DrawFrame(session.Draws(), "level.bmp");
 			ui.Show(Page::Pause);
@@ -2558,8 +2551,7 @@ i32 main(i32 argc, char** argv)
 			{
 				fight.Update(1.0f / 60, 0, 0, false);
 				const auto& draws = fight.Draws();
-				if (std::any_of(draws.begin(), draws.end(), [&](const auto& draw)
-				                { return draw.Sprite == cloud; }))
+				if (std::any_of(draws.begin(), draws.end(), [&](const auto& draw) { return draw.Sprite == cloud; }))
 				{
 					engine.DrawFrame(draws, "fight.bmp");
 					break;

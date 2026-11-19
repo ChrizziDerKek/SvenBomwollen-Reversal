@@ -197,8 +197,7 @@ void UfoController::UpdateUfo(f32 seconds)
 	}
 	else if (Ufo.State == UfoState::MovingToAnimal)
 	{
-		auto advance = [seconds](f32 current, f32 target, f32 velocity)
-		{
+		auto advance = [seconds](f32 current, f32 target, f32 velocity) {
 			const f32 next = current + velocity * seconds;
 			return velocity >= 0 ? std::min(next, target) : std::max(next, target);
 		};

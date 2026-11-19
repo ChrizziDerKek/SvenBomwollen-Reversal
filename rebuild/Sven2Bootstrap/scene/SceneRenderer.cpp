@@ -17,8 +17,7 @@ const std::vector<SpriteDraw>& SceneRenderer::Draws()
 	Sorted.insert(Sorted.end(), Scene.Effects.SceneEffects.begin(), Scene.Effects.SceneEffects.end());
 	// Original 0x40D72C sorts rendered Y + height - adjustment. Player grid
 	// ownership stays at the committed cell while the sprite moves between cells.
-	auto depth = [&](const Object& object)
-	{
+	auto depth = [&](const Object& object) {
 		// These animations are placed at the animal's canvas, although the
 		// command is stored on Sven. Keep that compound sprite at its visible
 		// owner's depth instead of promoting it to Sven's approach position.
@@ -33,13 +32,14 @@ const std::vector<SpriteDraw>& SceneRenderer::Draws()
 	};
 	// Start each frame in file slot order to preserve the original equal-depth behavior.
 	for (size_t i = 0; i < Sorted.size(); ++i)
+	{
 		for (size_t j = i + 1; j < Sorted.size(); ++j)
 			if (depth(Sorted[i]) > depth(Sorted[j]))
 				std::swap(Sorted[i], Sorted[j]);
+	}
 	DrawCommands.clear();
 	DrawCommands.push_back(Background);
-	auto indicator = [&](const Object& animal)
-	{
+	auto indicator = [&](const Object& animal) {
 		// XXX 0x412270: X tables 0x44F388..0x44F408, species Y tables 0x49E950..0x49E990.
 		static constexpr i32 offsetX[7][4] = { { 40, 40, 20, 20 }, { 40, 24, 30, 16 }, { 50, 50, 5, 5 }, { 50, 50, 5, 5 }, { 20, 20, 20, 20 }, { 40, 24, 30, 16 }, { 40, 24, 30, 16 } };
 		static constexpr i32 offsetY[7][4] = { { 0, 0, 0, 0 }, { -1, -1, -1, -1 }, { -10, 10, 10, -10 }, { -10, 20, 20, -10 }, { -1, -1, -1, -1 }, { -1, -1, -1, -1 }, { -1, -1, -1, -1 } };

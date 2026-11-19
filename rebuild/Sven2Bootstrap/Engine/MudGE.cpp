@@ -299,8 +299,7 @@ void MudGE::DrawFrame(const std::vector<SpriteDraw>& scene, cstr captureOverride
 	// Original game at 0x410DD0 asks video slot +0x1C for surface 2.
 	// Slot +0x50 is pixel-format metadata, not a drawing surface.
 	any surface = Presenter ? nullptr : Method<any(__thiscall*)(any, i32)>(device, 0x1c)(device, 2);
-	auto get = [&](cstr name)
-	{ return Symbol<i32(__thiscall*)(any)>(Engine, name)(surface); };
+	auto get = [&](cstr name) { return Symbol<i32(__thiscall*)(any)>(Engine, name)(surface); };
 	i32 width = Presenter ? 800 : get("?GetWidth@cBitmap@@QBEHXZ");
 	i32 height = Presenter ? 600 : get("?GetHeight@cBitmap@@QBEHXZ");
 	i32 bpp = Presenter ? 32 : get("?GetBPP@cBitmap@@QBEHXZ");

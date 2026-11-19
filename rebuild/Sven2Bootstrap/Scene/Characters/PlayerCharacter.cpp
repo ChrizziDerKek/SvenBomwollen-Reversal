@@ -7,8 +7,31 @@
 #include <stdexcept>
 
 PlayerCharacter::PlayerCharacter(LevelScene& scene, size_t number)
-    : BaseCharacter(scene), Number(number)
+    : BaseCharacter(scene), Number(number), ActionArmed(scene.GetEdition() != GameEdition::XXX)
 {}
+
+void PlayerCharacter::SetInput(const PlayerInput& input)
+{
+	if (PlayerAction == PlayerActionState::Idle)
+		ActionQueued = false;
+	if (input.Action && ActionArmed && (PlayerAction == PlayerActionState::Idle || PlayerAction == PlayerActionState::Interaction || PlayerAction == PlayerActionState::Frigida))
+		ActionQueued = true;
+	// XXX 0x41947C starts unarmed; 0x41810A..0x41812B arms on release.
+	ActionArmed = !input.Action;
+	MovementX = std::clamp(input.X, -1, 1);
+	MovementY = std::clamp(input.Y, -1, 1);
+}
+
+bool PlayerCharacter::CanRepeatInteraction(const WorldObject& animal) const
+{
+	if (Scene.GetEdition() != GameEdition::XXX || (MovementX == 0 && MovementY == 0))
+		return true;
+	// XXX 0x417000 accepts three requested directions for each animal facing.
+	for (i32 facing = 0; facing < 8; ++facing)
+		if (Directions[facing][0] == MovementX && Directions[facing][1] == MovementY)
+			return (facing - 2 * animal.Facing + 8) % 8 <= 2;
+	return false;
+}
 
 void PlayerCharacter::Update(f32 seconds)
 {
@@ -51,8 +74,7 @@ void PlayerCharacter::CancelPlayerStep()
 void PlayerCharacter::Teleport(i32 source)
 {
 	const ::Sprite* sprite = Scene.Effects.Splashes[0].Sprite;
-	auto splashAt = [sprite](i32 tile)
-	{
+	auto splashAt = [sprite](i32 tile) {
 		return SpriteDraw{ sprite, tile % Stride * TileSize - 70, tile / Stride * TileSize - 65, 0 };
 	};
 	Scene.Effects.Splashes[0] = splashAt(source);
@@ -196,9 +218,10 @@ void PlayerCharacter::FinishInteraction()
 	ActiveSheep = -1;
 	Interaction = nullptr;
 	RestorePlayer();
-	if (ActionQueued && !animal.Freed)
+	const bool repeat = ActionQueued && !animal.Freed && CanRepeatInteraction(animal);
+	ActionQueued = false;
+	if (repeat)
 	{
-		ActionQueued = false;
 		Act(true);
 	}
 }
@@ -253,6 +276,7 @@ void PlayerCharacter::AdvancePlayer(f32 dt, i32 dx, i32 dy)
 		}
 		else
 		{
+			const bool repeat = ActionQueued && (Scene.GetEdition() != GameEdition::XXX || (PlayerAction == PlayerActionState::Frigida && CanRepeatInteraction(Scene.Objects[ActiveSheep])));
 			if (PlayerAction == PlayerActionState::Kicked)
 			{
 				// Player state 13 at 0x42A283 releases the sheep at mood 6.
@@ -271,11 +295,12 @@ void PlayerCharacter::AdvancePlayer(f32 dt, i32 dx, i32 dy)
 			PlayerAction = PlayerActionState::Idle;
 			ActiveSheep = -1;
 			RestorePlayer();
-			if (ActionQueued)
+			if (repeat && ActionQueued)
 			{
 				ActionQueued = false;
 				Act(true);
 			}
+			ActionQueued = false;
 		}
 		return;
 	}

@@ -59,8 +59,7 @@ bool EnemyCharacter::ChooseEnemyStep()
 		if (actor.Hunting && target >= 0)
 			preferred = EnemyDirection(actor.Tile, target);
 	}
-	auto attempt = [&](i32 direction)
-	{
+	auto attempt = [&](i32 direction) {
 		const i32* d = Directions[direction];
 		i32 x = actor.Tile % Stride + d[0], y = actor.Tile / Stride + d[1];
 		// Original helpers allow column 21 / row 16 if their border cell is OccupancyCode::Empty.

@@ -11,8 +11,7 @@ class SceneryObject final : public BaseObject
 public:
 	SceneryObject(LevelScene& scene, size_t index)
 	    : BaseObject(scene, ObjectPhase::Items, index)
-	{
-	}
+	{}
 	void Update(f32 seconds) override;
 };
 
@@ -21,8 +20,7 @@ class ItemObject final : public BaseObject
 public:
 	ItemObject(LevelScene& scene, size_t index)
 	    : BaseObject(scene, ObjectPhase::Items, index)
-	{
-	}
+	{}
 	void Update(f32 seconds) override;
 };
 
@@ -31,8 +29,7 @@ class EffectObject final : public BaseObject
 public:
 	EffectObject(LevelScene& scene, size_t index)
 	    : BaseObject(scene, ObjectPhase::Effects, index)
-	{
-	}
+	{}
 	void Update(f32 seconds) override;
 };
 

@@ -68,8 +68,7 @@ struct FsrPresenter::Impl
 
 	Impl(ScalingFilter f, f32 s)
 	    : Filter(f), Sharpness(s)
-	{
-	}
+	{}
 
 	~Impl()
 	{
@@ -178,8 +177,7 @@ struct FsrPresenter::Impl
 		Check(factory->MakeWindowAssociation(Window, DXGI_MWA_NO_ALT_ENTER), "Disable DXGI fullscreen shortcut");
 		ComPtr<ID3DBlob> vs = Compile("vertex", "vs_5_0");
 		Check(Device->CreateVertexShader(vs->GetBufferPointer(), vs->GetBufferSize(), nullptr, &Vertex), "Vertex shader");
-		auto makePixel = [&](cstr pass, ComPtr<ID3D11PixelShader>& shader)
-		{
+		auto makePixel = [&](cstr pass, ComPtr<ID3D11PixelShader>& shader) {
 			ComPtr<ID3DBlob> code = Compile("pixel", "ps_5_0", pass);
 			Check(Device->CreatePixelShader(code->GetBufferPointer(), code->GetBufferSize(), nullptr, &shader), "Pixel shader");
 		};

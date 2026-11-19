@@ -168,8 +168,7 @@ void SceneResources::InitializeActors()
 			if (kind == ObjectKind::Alien)
 				images.Idle[d] = GetSprite(folder + "anim_alien_zero_" + headings[d] + ".bmp", d == 0 || d == 4 ? 5 : 4);
 		}
-		auto setting = [&](cstr suffix, f32 fallback)
-		{
+		auto setting = [&](cstr suffix, f32 fallback) {
 			const str key = str(enemy.Family) + suffix;
 			return Scene.Parameter(key.c_str(), fallback);
 		};
@@ -339,8 +338,7 @@ void SceneResources::InitializePlayer()
 	cstr whistleFiles[8] = { "back", "diagonal_back", "side", "diagonal_front", "front", "diagonal_front", "side", "diagonal_back" };
 	for (i32 i = 0; i < 8; ++i)
 		Whistles[i] = Scene.Engine.LoadSprite(str("Sven2/gfx/Sven/anim_sven_whistle_") + whistleFiles[i] + ".bmp", i % 2 ? 16 : 19, 1);
-	auto positiveParameter = [&](cstr key, f32 fallback)
-	{
+	auto positiveParameter = [&](cstr key, f32 fallback) {
 		f64 value = Scene.Engine.GetData().NumericParam(key, fallback);
 		return std::isfinite(value) && value > 0 ? static_cast<f32>(value) : fallback;
 	};

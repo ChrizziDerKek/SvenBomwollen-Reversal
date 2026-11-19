@@ -24,11 +24,7 @@ public:
 	void Act(bool continuation = false);
 	void FinishInteraction();
 	void AdvancePlayer(f32 dt, i32 dx, i32 dy);
-	void SetMovement(i32 dx, i32 dy)
-	{
-		MovementX = dx;
-		MovementY = dy;
-	}
+	void SetInput(const PlayerInput& input);
 	void Update(f32 seconds) override;
 
 private:
@@ -42,6 +38,7 @@ private:
 	friend class SceneRenderer;
 	friend class SceneResources;
 	friend class UfoController;
+	bool CanRepeatInteraction(const WorldObject& animal) const;
 
 	i32 MovementX = 0;
 	size_t Number = 0;
@@ -61,7 +58,7 @@ private:
 	f32 WalkRate = 24;
 	f32 DefaultRate = 15;
 	f32 ActionRate = 20;
-	bool ActionDown = false;
+	bool ActionArmed;
 	bool ActionQueued = false;
 	i32 Facing = 0;
 	i32 ActiveSheep = -1;

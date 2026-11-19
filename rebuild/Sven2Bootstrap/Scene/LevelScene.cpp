@@ -326,13 +326,7 @@ void LevelScene::Update(f32 seconds, const std::array<PlayerInput, 2>& inputs)
 	for (size_t number = 0; number < PlayerCount; ++number)
 	{
 		PlayerScope player(*this, number);
-		const PlayerInput& input = inputs[number];
-		if (GetPlayer().PlayerAction == PlayerActionState::Idle)
-			GetPlayer().ActionQueued = false;
-		if (input.Action && !GetPlayer().ActionDown && (GetPlayer().PlayerAction == PlayerActionState::Idle || GetPlayer().PlayerAction == PlayerActionState::Interaction || GetPlayer().PlayerAction == PlayerActionState::Frigida))
-			GetPlayer().ActionQueued = true;
-		GetPlayer().ActionDown = input.Action;
-		GetPlayer().SetMovement(std::clamp(input.X, -1, 1), std::clamp(input.Y, -1, 1));
+		GetPlayer().SetInput(inputs[number]);
 	}
 	f32 left = seconds;
 	do

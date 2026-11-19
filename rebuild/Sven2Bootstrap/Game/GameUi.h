@@ -125,4 +125,5 @@ private:
 	f32 Scroll = 0, UiAge = 0;
 	str EnteredName, Notice;
 	POINT Mouse{ 400, 300 };
+	POINT EyeMouse{ 400, 300 };
 };

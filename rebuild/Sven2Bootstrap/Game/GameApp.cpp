@@ -19,20 +19,17 @@ void RunGame(MudGE& engine, const fpath& saves, bool audio, u32 seconds, bool di
 	WindowInput controls(engine.WindowHandle(), engine.ScaledVideo());
 	std::unique_ptr<GameSession> session;
 	bool playing = false;
-	auto play = [&](const str& path, bool looped = false)
-	{
+	auto play = [&](const str& path, bool looped = false) {
 		if (audio && engine.PlaySample(path, looped))
 			Log("Played sound sample: " + path);
 	};
-	auto music = [&](const str& path)
-	{
+	auto music = [&](const str& path) {
 		if (audio && !path.empty())
 			engine.PlayMusic(path);
 		else
 			engine.StopMusic();
 	};
-	auto start = [&]
-	{
+	auto start = [&] {
 		auto next = std::make_unique<GameSession>(engine, ui.GetPack(), ui.GetLevelSet());
 		engine.StopLoopedSound();
 		session = std::move(next);

@@ -73,8 +73,7 @@ void LevelEffects::UpdateEffects(f32 seconds)
 		}
 		effect.Draw.Frame = std::min(17, static_cast<i32>(effect.Age));
 	}
-	SceneEffects.erase(std::remove_if(SceneEffects.begin(), SceneEffects.end(), [](const Object& effect)
-	                                  { return effect.Freed; }),
+	SceneEffects.erase(std::remove_if(SceneEffects.begin(), SceneEffects.end(), [](const Object& effect) { return effect.Freed; }),
 	                   SceneEffects.end());
 	Scene.Objects.UpdatePhase(ObjectPhase::Effects, seconds);
 	for (auto& popup : TimePopups)
@@ -82,8 +81,7 @@ void LevelEffects::UpdateEffects(f32 seconds)
 		popup.Y -= popup.Speed * seconds;
 		popup.Life -= seconds;
 	}
-	TimePopups.erase(std::remove_if(TimePopups.begin(), TimePopups.end(), [](const auto& popup)
-	                                { return popup.Life < 0; }),
+	TimePopups.erase(std::remove_if(TimePopups.begin(), TimePopups.end(), [](const auto& popup) { return popup.Life < 0; }),
 	                 TimePopups.end());
 }
 
@@ -105,8 +103,7 @@ bool LevelEffects::TakeSplashSound()
 {
 	const bool pending = SplashSound;
 	SplashSound = false;
-	Scene.Sounds.erase(std::remove_if(Scene.Sounds.begin(), Scene.Sounds.end(), [](const SoundRequest& request)
-	                                  { return request.Asset == "Sven2/sfx/water_splash22.ogg"; }),
+	Scene.Sounds.erase(std::remove_if(Scene.Sounds.begin(), Scene.Sounds.end(), [](const SoundRequest& request) { return request.Asset == "Sven2/sfx/water_splash22.ogg"; }),
 	                   Scene.Sounds.end());
 	return pending;
 }
@@ -123,8 +120,7 @@ void LevelEffects::UpdateWorldEffect(size_t index, f32 seconds)
 
 ParticleEmitter::ParticleEmitter(LevelScene& scene, size_t index)
     : BaseObject(scene, ObjectPhase::Animals, index)
-{
-}
+{}
 
 void ParticleEmitter::Initialize()
 {
@@ -153,8 +149,7 @@ void ParticleEmitter::Update(f32 seconds)
 
 EmitterParticle::EmitterParticle(LevelScene& scene, size_t index)
     : BaseObject(scene, ObjectPhase::Effects, index)
-{
-}
+{}
 
 bool EmitterParticle::Spawn(LevelScene& scene, ObjectKind kind, f32 x, f32 y, bool mirror)
 {

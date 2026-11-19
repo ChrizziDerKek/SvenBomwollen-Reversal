@@ -55,8 +55,10 @@ GameUi::GameUi(MudGE& engine, fpath saves)
 		TitleActors = { LoadTheme("SvenXXX/gfx/Mainmenu/mainmenu_broemse.bmp", 4), LoadTheme("SvenXXX/gfx/Mainmenu/mainmenu_lars_zzz.bmp", 6), LoadTheme("SvenXXX/gfx/Mainmenu/mainmenu_wotan_zzz.bmp", 6), LoadTheme("SvenXXX/gfx/Mainmenu/mainmenu_sven2_jump.bmp", 5) };
 		constexpr cstr actions[] = { "Up", "Down", "Left", "Right", "Action" };
 		for (i32 player = 0; player < 2; ++player)
+		{
 			for (i32 action = 0; action < 5; ++action)
 				ControlBindings[player][action] = static_cast<i32>(Data.NumericParam("Player" + std::to_string(player + 1) + "Key" + actions[action], 0, Theme));
+		}
 		std::istringstream names(Data.StringParam("KeyConvert", "", Theme));
 		str name;
 		while (std::getline(names, name, '/'))
@@ -182,7 +184,7 @@ void GameUi::AppendMenuEyes()
 	if (Theme != GameEdition::XXX)
 		return;
 	// Native XXX 0x423020: instant cursor transforms, not time-based animation.
-	const f32 x = static_cast<f32>(std::clamp(Mouse.x, 0L, 799L)), y = static_cast<f32>(std::clamp(Mouse.y, 0L, 599L));
+	const f32 x = static_cast<f32>(EyeMouse.x), y = static_cast<f32>(EyeMouse.y);
 	// 0x423052/0x4230FA keep negative values and clear positive values to zero.
 	const std::array<f32, 5> eyeX = { std::min(x * 0.33333334f - 130, 0.0f), x * 0.15015015f - 137, x * 0.016666668f + 680, x * 0.22222222f + 640, std::max(x - 600, 0.0f) * 0.66666669f + 680 };
 	const std::array<f32, 5> eyeY = { y * 0.016666668f + 100, y * 0.1f + 400, std::min(y * 0.40000001f - 120, 0.0f), y * 0.02f + 150, y * 0.033333335f + 425 };
@@ -257,9 +259,11 @@ void GameUi::SaveControlSettings() const
 	std::filesystem::create_directories(Saves);
 	std::ofstream file(Saves / L"controls.tsv", std::ios::trunc);
 	for (size_t player = 0; player < ControlBindings.size(); ++player)
+	{
 		for (size_t action = 0; action < ControlBindings[player].size(); ++action)
 			if (CustomBindings[player][action])
 				file << player << '\t' << action << '\t' << ControlBindings[player][action] << '\n';
+	}
 	if (!file)
 		throw std::runtime_error("Cannot save keyboard settings.");
 }
@@ -330,8 +334,10 @@ std::vector<std::pair<size_t, size_t>> GameUi::Episodes() const
 {
 	std::vector<std::pair<size_t, size_t>> entries;
 	for (size_t p = 0; p < Data.GetPacks().size(); ++p)
+	{
 		for (size_t e = 0; e < Data.GetPacks()[p].LevelSets.size(); ++e)
 			entries.emplace_back(p, e);
+	}
 	return entries;
 }
 
@@ -391,6 +397,10 @@ void GameUi::ShowResults(const RoundResult& summary)
 UiAction GameUi::Handle(const WindowInput::Result& input)
 {
 	Mouse = input.Mouse;
+	// Scaled input uses (-1, -1) outside the viewport. Keep hit testing inactive,
+	// but retain the last eye pose rather than jumping to the upper-left corner.
+	if (Mouse.x >= 0 && Mouse.x < 800 && Mouse.y >= 0 && Mouse.y < 600)
+		EyeMouse = Mouse;
 	if (Theme == GameEdition::XXX && CurrentPage == Page::Help && HelpTab == 3)
 	{
 		if (ControlSelection >= 0)
