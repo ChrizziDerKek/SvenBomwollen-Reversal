@@ -26,6 +26,7 @@ public:
 	}
 	void Add(const WorldObject& state);
 	void Replace(size_t index, const WorldObject& state);
+	bool AddTransient(const WorldObject& state);
 	BaseObject& Get(size_t index)
 	{
 		return *Objects.at(index);
@@ -48,6 +49,9 @@ public:
 	bool PlayerInRange(const WorldObject& actor, f32 distance) const;
 	bool CanCatchPlayer(const WorldObject& actor) const;
 	bool CanOccupy(i32 tile, size_t except) const;
+	i32 FindNearbyPlayer(const WorldObject& actor, i32 radius) const;
+	i32 FindActiveInteractionPlayer(const WorldObject& actor) const;
+	i32 FindCaughtPlayer(const WorldObject& actor) const;
 	struct CombatState
 	{
 		i32 Enemy = -1;

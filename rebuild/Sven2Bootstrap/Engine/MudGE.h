@@ -39,7 +39,7 @@ public:
 		CaptureNext = path;
 	}
 	bool StartAudio();
-	bool PlaySample(const str& path, bool looped = false);
+	bool PlaySample(const str& path, bool looped = false, i32 frequency = 0);
 	void StopLoopedSound();
 	bool LoopedSoundPlaying() const;
 	bool PlayMusic(const str& path);

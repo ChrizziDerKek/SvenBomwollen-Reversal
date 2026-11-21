@@ -114,6 +114,18 @@ void LevelItems::SpawnItems()
 
 void LevelItems::UpdateItems(f32 seconds)
 {
+	if (SharedRocket)
+	{
+		SharedRocketRemaining -= seconds;
+		if (SharedRocketRemaining < 0)
+			SharedRocket = false;
+	}
+	if (SharedSlow)
+	{
+		SharedSlowRemaining -= seconds;
+		if (SharedSlowRemaining < 0)
+			SharedSlow = false;
+	}
 	for (size_t number = 0; number < Scene.GetPlayerCount(); ++number)
 	{
 		LevelScene::PlayerScope player(Scene, number);
@@ -173,9 +185,17 @@ void LevelItems::PickupPlayerItem()
 	if (tile < 0)
 		return;
 	const ItemCode code = Scene.Grid.ItemCodes[tile];
+	if (Scene.IsBonusLevel() && code != ItemCode::Gift)
+	{
+		Scene.GetPlayer().PickupBonusItem(code, tile);
+		return;
+	}
 	if (code == ItemCode::Artifact)
 	{
-		if (GetPowerup().Code == ItemCode::AlienPower || Scene.UfoController.Ufo.State != UfoState::Inactive)
+		if (GetPowerup().Code == ItemCode::AlienPower)
+			return;
+		GiftIndex = 0;
+		if (Scene.UfoController.Ufo.State != UfoState::Inactive)
 			return;
 		RemoveItem(tile);
 		Scene.UfoController.RequestUfo(static_cast<i32>(Scene.GetPlayerIndex()));
@@ -186,6 +206,15 @@ void LevelItems::PickupPlayerItem()
 	RemoveItem(tile);
 	if (code == ItemCode::Gift)
 	{
+		if (Scene.GetGameplayEdition() == GameEdition::XXX)
+		{
+			static constexpr i32 bonuses[] = { 5, 10, 15, 20, 25 };
+			Scene.Effects.AddTime(bonuses[GiftIndex], Scene.GetPlayer().X + 60, Scene.GetPlayer().Y + 60);
+			static constexpr i32 frequencies[] = { 0, 47100, 50100, 53100, 56100 };
+			Scene.EmitNamedSound("SfxPositive", frequencies[GiftIndex]);
+			GiftIndex = (GiftIndex + 1) % std::size(bonuses);
+			return;
+		}
 		// Nested independent rand tests at 0x42AA71, not a flat weighted draw.
 		if (Scene.RandomInt(50) == 0)
 		{
@@ -201,6 +230,46 @@ void LevelItems::PickupPlayerItem()
 			Scene.Effects.AddTime(5, Scene.GetPlayer().X + 60, Scene.GetPlayer().Y + 60);
 		Scene.Sounds.push_back("Sven2/sfx/item_gift.ogg");
 		return;
+	}
+	if (Scene.GetGameplayEdition() == GameEdition::XXX)
+	{
+		GiftIndex = 0;
+		if (GetPowerup().Code == code)
+		{
+			if (code == ItemCode::Rocket)
+			{
+				SharedRocket = true;
+				SharedRocketRemaining = DoubleRocketDuration;
+				PowerupEffect::Spawn(Scene, ObjectKind::RocketBurst, Scene.GetPlayerIndex());
+				GetPowerup().Remaining = DoubleRocketDuration;
+				Scene.EmitNamedSound("SfxFirework", 54100);
+			}
+			else if (code == ItemCode::SlowMushroom)
+			{
+				SharedSlow = true;
+				SharedSlowRemaining = DoubleSlowDuration;
+				// Native 0x41A545 re-rolls the loop bound on each test.
+				const size_t count = Scene.Objects.Size();
+				for (size_t target = 0; target < count; ++target)
+				{
+					if (Scene.Objects[target].Freed || !Scene.IsEnemy(Scene.Objects[target].Kind))
+						continue;
+					PowerupEffect::Spawn(Scene, ObjectKind::SlowNotice, target);
+					for (i32 bubble = 0; bubble < Scene.RandomInt(8) + 4; ++bubble)
+						PowerupEffect::Spawn(Scene, ObjectKind::SlowBubble, target);
+				}
+				GetPowerup() = {}; // 0x417A70 consumes the personal effect first.
+				Scene.EmitNamedSound("SfxImpotence", 54100);
+			}
+			else if (code == ItemCode::StinkMushroom || code == ItemCode::Flower)
+			{
+				const ItemDefinition& definition = GetItemDefinition(code);
+				GetPowerup().Remaining = Scene.Parameter(definition.EffectDurationKey, definition.DefaultEffectDuration);
+				ApplyGlobalMood(code == ItemCode::StinkMushroom ? 10 : 0);
+				Scene.EmitNamedSound(code == ItemCode::StinkMushroom ? "SfxSmell" : "SfxRose", 54100);
+			}
+			return;
+		}
 	}
 	GetPowerup().Code = code;
 	GetPowerup().Age = 0;
@@ -238,4 +307,44 @@ void LevelItems::UpdateObject(size_t i, f32 seconds)
 PlayerPowerup& LevelItems::GetPowerup()
 {
 	return Scene.GetPlayer().Powerup;
+}
+
+void LevelItems::ApplyGlobalMood(i32 mood)
+{
+	const size_t count = Scene.Objects.Size();
+	for (size_t target = 0; target < count; ++target)
+	{
+		WorldObject& animal = Scene.Objects[target];
+		// Extend the native sheep-only effect to other animals, as requested.
+		if (!animal.Freed && Scene.IsAnimal(animal.Kind) && (animal.Kind != ObjectKind::Sheep || animal.Temperament == 0))
+		{
+			animal.Impatience = mood;
+			PowerupEffect::Spawn(Scene, mood ? ObjectKind::SmellBurst : ObjectKind::FlowerBurst, target);
+		}
+	}
+}
+
+i32 LevelItems::GetInteractionMultiplier() const
+{
+	return SharedRocket ? 2 : 1;
+}
+
+f32 LevelItems::GetEnemyMotionScale() const
+{
+	return SharedSlow ? SlowMotionScale : 1;
+}
+
+f32 LevelItems::GetSharedRocketRemaining() const
+{
+	return SharedRocket ? SharedRocketRemaining : 0;
+}
+
+f32 LevelItems::GetSharedSlowRemaining() const
+{
+	return SharedSlow ? SharedSlowRemaining : 0;
+}
+
+void LevelItems::ResetGiftChain()
+{
+	GiftIndex = 0;
 }

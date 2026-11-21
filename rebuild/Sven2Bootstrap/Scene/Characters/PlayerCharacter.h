@@ -23,6 +23,7 @@ public:
 	void RestorePlayer();
 	void Act(bool continuation = false);
 	void FinishInteraction();
+	void InterruptInteraction();
 	void AdvancePlayer(f32 dt, i32 dx, i32 dy);
 	void SetInput(const PlayerInput& input);
 	void Update(f32 seconds) override;
@@ -50,6 +51,16 @@ private:
 	const std::vector<i32>& GetActionFrames() const;
 	f32 GetActionRate() const;
 	void DrawActionFrame(size_t frame);
+	void ReleaseInteraction();
+	void FinishAction();
+	void AdvanceActionAnimation(f32 seconds);
+	void AdvanceBonusPlayer(f32 seconds);
+	void ActBonus(bool continuation);
+	void DrawInteractionFrame(i32 frame);
+	void DrawBonusPlayer();
+	void PickupBonusItem(ItemCode code, i32 tile);
+	ShagAnimation BonusAnimation;
+	f32 GetInteractionRate() const;
 	void UpdateRequestedMotion();
 	void AdvanceMovement(f32 seconds);
 	void AdvanceLegacyMovement(f32 seconds, i32 dx, i32 dy);
@@ -71,7 +82,11 @@ private:
 	f32 FrigidaRate = 16;
 	const ShagAnimation* Interaction = nullptr;
 	f32 AnimationAge = 0;
+	f32 IconAge = 0;
 	f32 ActionAge = 0;
+	f32 CurrentActionRate = 15;
+	bool ActionComplete = false;
+	static constexpr f32 InterruptedTurnIdle = 250; // XXX 0x4178B5, native ticks.
 	f32 Speed = 145;
 	f32 Diagonal = 0.75f;
 	f32 WalkRate = 24;

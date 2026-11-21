@@ -105,6 +105,9 @@ struct RoundResult
 	bool GameOver = false;
 	i32 TotalSheep = 0;
 	i32 ScoreFrame = 0;
+	size_t PlayerCount = 1;
+	std::array<i32, 2> PlayerSheep{}, PlayerRemaining{};
+	BonusMode Mode = BonusMode::Sven;
 };
 
 enum class AnimationSequence : u32;

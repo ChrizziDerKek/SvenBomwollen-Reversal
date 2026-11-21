@@ -61,6 +61,11 @@ public:
 	{
 		return Mode != BonusMode::Sven;
 	}
+	ObjectKind GetPlayerKind() const;
+	const std::array<i32, 2>& GetPlayerCompletions() const
+	{
+		return PlayerCompletions;
+	}
 	bool GetBonusUnlocked() const
 	{
 		return BonusUnlocked;
@@ -77,7 +82,7 @@ public:
 	size_t FindAvailableObjectSlot() const;
 	bool Completed() const
 	{
-		return RemainingTargets == 0;
+		return RemainingTargets == 0 || BonusFinished;
 	}
 	i32 GetRemainingTargets() const
 	{
@@ -133,6 +138,7 @@ public:
 
 private:
 	friend class LevelGrid;
+	friend class PowerupEffect;
 	friend class ObjectManager;
 	friend class SceneResources;
 	friend class PlayerCharacter;
@@ -153,10 +159,11 @@ private:
 	f32 Parameter(cstr key, f32 fallback) const;
 	i32 RandomInt(i32 limit);
 	bool AdvanceActor(Object& actor, AnimationSequence table, f32 rate, f32 seconds);
-	void EmitNamedSound(cstr name);
+	void EmitNamedSound(cstr name, i32 frequency = 0);
 	void AddScore(i32 amount);
 	void RecordLifeLoss();
 	void RemoveActor(size_t index, bool playerResolved);
+	void SpawnCoopPlayer();
 	MudGE& Engine;
 	GameEdition GameplayEdition;
 	BonusMode Mode = BonusMode::Sven;
@@ -169,6 +176,7 @@ private:
 	bool Expired = false;
 	i32 RemainingTargets = 0, ScoreDelta = 0;
 	i32 CompletedSheep = 0;
+	std::array<i32, 2> PlayerCompletions{};
 	f32 InitialTime = 0;
 	std::vector<SoundRequest> Sounds;
 	u32 RandomState = 1;

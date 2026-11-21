@@ -7,7 +7,9 @@ enum class PlayerActionState : i32
 	Interaction = 1,
 	Whistle = 2,
 	Kicked = 3,
-	Frigida = 4
+	Frigida = 4,
+	Distraction,
+	BonusExit
 };
 
 enum class PlayerAnimation
@@ -19,7 +21,9 @@ enum class PlayerAnimation
 	ElectricShock,
 	KickFront,
 	KickBack,
-	Frigida
+	Frigida,
+	BeamUp,
+	BeamDown
 };
 
 // Render-facing order; native motion codes are mapped in player/README.md.

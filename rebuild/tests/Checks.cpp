@@ -153,7 +153,7 @@ struct FixtureActor
 	f32 Pulse = 1000;
 	i32 AngerTicks = 0;
 };
-LevelInfo FixtureLevel(MudGE& engine, const str& name, std::initializer_list<FixtureActor> actors, i32 pickup = 0, GameEdition edition = GameEdition::Zwo)
+LevelInfo FixtureLevel(MudGE& engine, const str& name, std::initializer_list<FixtureActor> actors, i32 pickup = 0, GameEdition edition = GameEdition::Zwo, u32 flags = 0)
 {
 	const auto& getPacks = engine.GetData().GetPacks();
 	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& pack) { return pack.Name == "XS"; });
@@ -163,7 +163,7 @@ LevelInfo FixtureLevel(MudGE& engine, const str& name, std::initializer_list<Fix
 	auto integer = [&](size_t offset, i32 value) { std::memcpy(data.data() + offset, &value, 4); };
 	auto real = [&](size_t offset, f32 value) { std::memcpy(data.data() + offset, &value, 4); };
 	integer(0, edition == GameEdition::XXX ? 7 : 6);
-	integer(8, 0); // Render requested UFOs and their shadows, as in visible-UFO levels.
+	integer(8, static_cast<i32>(flags | (edition == GameEdition::XXX ? 1u : 0u))); // UFO visibility has opposite flag polarity in v6 and v7.
 	for (i32 tile = 0; tile < 22 * 17; ++tile)
 	{
 		const auto offset = 16 + tile * 24;
@@ -1036,6 +1036,13 @@ void CheckLifeChanges(MudGE& engine, bool capture = false)
 	const auto xs = std::find_if(getPacks.begin(), getPacks.end(), [](const auto& pack) { return pack.Name == "XS"; });
 	const auto arena = FixtureLevel(engine, "life-alien", { { 0, 240, 200, 0 }, { 3, 280, 200, 6 }, { 2, 640, 400, 0 } });
 	const auto* icon = engine.LoadSprite("Sven2/gfx/Life_icon.bmp", 1, 1);
+	const Sprite* clock = engine.LoadSprite("Sven2/gfx/timer.bmp", 1, 1);
+	auto hudLives = [&](const std::vector<SpriteDraw>& draws) {
+		// Animated icons precede the HUD and can round to its exact Y coordinate.
+		const auto hud = std::find_if(draws.begin(), draws.end(), [&](const SpriteDraw& draw) { return draw.Sprite == clock; });
+		Require(hud != draws.end(), "Life display is missing its HUD layer.");
+		return std::count_if(hud, draws.end(), [&](const SpriteDraw& draw) { return draw.Sprite == icon && draw.Y == 565; });
+	};
 	const auto newLife = engine.GetData().SoundPath("SfxNewLife");
 	const auto loseLife = engine.GetData().SoundPath("SfxLoseLife");
 	LevelSetInfo freshSet{ "Zero score", { arena } };
@@ -1050,7 +1057,7 @@ void CheckLifeChanges(MudGE& engine, bool capture = false)
 	Require(refunded && fresh.GetLives() == 3, "Original zero-score first-hit refund was not preserved.");
 	fresh.Update(0.2f, 0, 0, false);
 	const auto& graceDraws = fresh.Draws();
-	Require(std::count_if(graceDraws.begin(), graceDraws.end(), [&](const auto& draw) { return draw.Sprite == icon && draw.Y == 565; }) == 2,
+	Require(hudLives(graceDraws) == 2,
 	        "Refund did not temporarily reduce the displayed life count.");
 	Require(std::any_of(graceDraws.begin(), graceDraws.end(), [&](const auto& draw) { return draw.Sprite == icon && draw.Y < 500; }),
 	        "Refund did not spawn the incoming life icon.");
@@ -1080,7 +1087,7 @@ void CheckLifeChanges(MudGE& engine, bool capture = false)
 	game.Update(1.0f / 60, 0, 0, false);
 	Require(game.GetLives() == 4, "Campaign score did not grant the next level's extra life.");
 	const auto& gainDraws = game.Draws();
-	Require(std::count_if(gainDraws.begin(), gainDraws.end(), [&](const auto& draw) { return draw.Sprite == icon && draw.Y == 565; }) == 3,
+	Require(hudLives(gainDraws) == 3,
 	        "Extra life appeared in the HUD before its animation arrived.");
 	Require(std::any_of(gainDraws.begin(), gainDraws.end(), [&](const auto& draw) { return draw.Sprite == icon && draw.X == 96 && draw.Y < 0; }),
 	        "Extra life did not start falling from above the screen.");
@@ -1089,7 +1096,7 @@ void CheckLifeChanges(MudGE& engine, bool capture = false)
 		engine.DrawFrame(game.Draws(), "life-gain.bmp");
 	game.Update(2.0f, 0, 0, false);
 	const auto& landed = game.Draws();
-	Require(std::count_if(landed.begin(), landed.end(), [&](const auto& draw) { return draw.Sprite == icon && draw.Y == 565; }) == 4,
+	Require(hudLives(landed) == 4,
 	        "Incoming life did not join the HUD on landing.");
 	game.TakeSounds();
 	bool lost = false;
@@ -1102,7 +1109,7 @@ void CheckLifeChanges(MudGE& engine, bool capture = false)
 	Require(lost && game.GetLives() == 3, "Alien attack failed to take a logical life after campaign score carried over.");
 	game.Update(0.2f, 0, 0, false);
 	const auto& lossDraws = game.Draws();
-	Require(std::count_if(lossDraws.begin(), lossDraws.end(), [&](const auto& draw) { return draw.Sprite == icon && draw.Y == 565; }) == 3,
+	Require(hudLives(lossDraws) == 3,
 	        "Alien life loss did not reduce the stationary HUD icons.");
 	if (capture)
 		engine.DrawFrame(lossDraws, "life-loss.bmp");
@@ -1911,7 +1918,7 @@ void CheckMenuPresentation(MudGE& engine, const fpath& saves, bool capture)
 				const Sprite* icon = engine.LoadSprite(definition.File, definition.Rows, definition.Columns);
 				Require(hasDraw(draws, icon, name == str("IconPlayer1") ? 390 : 430, 10, 0), "Multiplayer menu identifier is missing.");
 			}
-		Require(ui.GetPlayerCount() == 1, "Zwo gameplay must remain single-player even under the two-player menu.");
+		Require(ui.GetPlayerCount() == players, "Selected player mode was lost while browsing a Zwo episode.");
 		if (capture)
 			engine.DrawFrame(draws, players == 2 ? "two-player-menu.bmp" : "one-player-menu.bmp");
 	}
@@ -2049,7 +2056,7 @@ void CheckPresentationCorrections(MudGE& engine, const fpath& saves, bool captur
 		heldScene.Update(0.01f, 0, 0, true);
 		completed += heldScene.TakeScoreDelta();
 	}
-	Require(completed == 1 && heldScene.GetPlayerDraw().Sprite == stand, "Holding action automatically repeated a XXX interaction.");
+	Require(completed == 2 && heldScene.GetPlayerDraw().Sprite == stand, "Holding action automatically repeated a XXX interaction.");
 	for (i32 facing = 0; facing < 4; ++facing)
 	{
 		const i32 playerFacing = 2 * facing;
@@ -2383,6 +2390,815 @@ void CheckPlayerMovement(MudGE& engine)
 	Log("PASS: v6/v7 native 64-way movement transitions, motion-facing sprites, key release, strict boundaries, corner turns, cancellation, directional walls, blocked actions and reservation ownership.");
 }
 
+void CheckInteractionOwnership(MudGE& engine)
+{
+	const GameData& data = engine.GetData();
+	const LevelPackInfo& source = *std::find_if(data.GetPacks().begin(), data.GetPacks().end(), [](const LevelPackInfo& pack) { return pack.Name == "XS" && pack.Edition == GameEdition::Zwo; });
+	for (GameEdition edition : { GameEdition::Zwo, GameEdition::XXX })
+	{
+		LevelPackInfo pack = source;
+		pack.Edition = edition;
+		const LevelInfo level = FixtureLevel(engine, "interaction-phase-" + std::to_string(static_cast<i32>(edition)), { { 0, 240, 240, 0 }, { 12, 280, 240, 0 } }, 0, edition);
+		LevelScene entry(engine, pack, level, 1);
+		entry.GetPlayer().SetInput({ 1, 0, false });
+		entry.GetPlayer().AdvancePlayer(0, 1, 0);
+		entry.GetPlayer().SetInput({ 1, 0, true });
+		entry.GetPlayer().AdvancePlayer(0.1f, 1, 0);
+		Require(entry.GetPlayerDraw().Frame == 2 && entry.TakeScoreDelta() == 0, "A newly accepted action did not advance in the same native animation phase.");
+		LevelScene scene(engine, pack, level, 1);
+		PlayerCharacter& player = scene.GetPlayer();
+		player.SetInput({ 1, 0, false });
+		player.AdvancePlayer(0, 1, 0);
+		player.SetInput({ 1, 0, true });
+		player.AdvancePlayer(0, 1, 0);
+		Require(scene.GetObjects()[1].InteractionPlayer == 0, "Animal interaction did not claim its target.");
+		scene.GetItems().GetPowerup() = { ItemCode::Rocket, 10, 0 };
+		player.AdvancePlayer(0.3f, 0, 0);
+		Require(scene.TakeScoreDelta() == 0 && scene.GetObjects()[1].InteractionPlayer == 0, "A mid-animation powerup changed the latched frame rate.");
+		scene.GetItems().GetPowerup() = {};
+		player.AdvancePlayer(0.26f, 0, 0);
+		Require(scene.TakeScoreDelta() == 0 && scene.GetObjects()[1].InteractionPlayer == 0, "Completion was applied in the animation phase instead of the next controller phase.");
+		player.AdvancePlayer(0, 0, 0);
+		Require(scene.TakeScoreDelta() == 2 && scene.GetObjects()[1].Impatience == 4 && scene.GetObjects()[1].InteractionPlayer == -1, "Native ordinary completion score/mood/release differs from XXX.");
+		player.SetInput({ 1, 0, false });
+		player.AdvancePlayer(0, 1, 0);
+		player.SetInput({ 1, 0, true });
+		player.AdvancePlayer(1, 1, 0);
+		player.InterruptInteraction();
+		player.AdvancePlayer(0, 0, 0);
+		Require(scene.TakeScoreDelta() == 0 && scene.GetObjects()[1].InteractionPlayer == -1, "Interrupting a completed pending animation left a lock or awarded stale score.");
+		const LevelInfo turning = FixtureLevel(engine, "interaction-turn-abort-" + std::to_string(static_cast<i32>(edition)), { { 0, 240, 240, 0 }, { 12, 280, 240, 2 } }, 0, edition);
+		LevelScene whistle(engine, pack, turning, 1);
+		whistle.Update(0, 1, 0, false);
+		whistle.Update(0.001f, 1, 0, true);
+		Require(whistle.GetObjects()[1].State == ActorState::Turning, "Whistle interruption fixture did not start its turn.");
+		whistle.GetPlayer().InterruptInteraction();
+		Require(whistle.GetObjects()[1].State == ActorState::Idle && whistle.GetObjects()[1].TurnTo == -1 && whistle.GetObjects()[1].Idle == 250, "Interrupted whistle retained its target's turn animation.");
+	}
+	LevelPackInfo pack = source;
+	pack.Edition = GameEdition::XXX;
+	const LevelInfo level = FixtureLevel(engine, "interaction-contention", { { 0, 240, 240, 0 }, { 0, 280, 280, 0 }, { 12, 280, 240, 0 } }, 0, GameEdition::XXX);
+	LevelScene scene(engine, pack, level, 1, nullptr, 2);
+	std::array<PlayerInput, 2> input = { PlayerInput{ 1, 0, false }, PlayerInput{ 0, -1, false } };
+	scene.Update(0, input);
+	input[0].Action = input[1].Action = true;
+	scene.Update(0.001f, input);
+	Require(scene.GetObjects()[2].InteractionPlayer == 0, "Two players claimed one animal simultaneously.");
+	scene.GetPlayer().InterruptInteraction();
+	input[0] = {};
+	input[1].Action = false;
+	scene.Update(0, input);
+	input[1].Action = true;
+	scene.Update(0.001f, input);
+	Require(scene.GetObjects()[2].InteractionPlayer == 1, "Released animal could not be claimed by the other player.");
+	Log("PASS: animal ownership/contention, latched interaction rate, native completion phase/score and interrupted pending completion.");
+}
+
+void CheckSharedItems(MudGE& engine, bool capture)
+{
+	const GameData& data = engine.GetData();
+	const LevelPackInfo& source = *std::find_if(data.GetPacks().begin(), data.GetPacks().end(), [](const LevelPackInfo& pack) { return pack.Name == "XS" && pack.Edition == GameEdition::Zwo; });
+	for (GameEdition edition : { GameEdition::Zwo, GameEdition::XXX })
+	{
+		LevelPackInfo pack = source;
+		pack.Edition = edition;
+		const LevelInfo level = FixtureLevel(engine, "shared-items-" + std::to_string(static_cast<i32>(edition)), { { 0, 240, 240, 0 }, { 12, 640, 400, 0 }, { 2, 560, 400, 0 }, { 2, 480, 400, 0 } }, 0, edition);
+		LevelScene scene(engine, pack, level, 1);
+		const i32 tile = scene.GetObjects()[scene.GetPlayerIndex()].Tile;
+		auto pickup = [&](ObjectKind kind) { scene.GetItems().SpawnItem(kind, tile); scene.Update(0, 0, 0, false); };
+		constexpr i32 bonuses[] = { 5, 10, 15, 20, 25, 5 };
+		constexpr i32 pitches[] = { 0, 47100, 50100, 53100, 56100, 0 };
+		for (size_t gift = 0; gift < std::size(bonuses); ++gift)
+		{
+			pickup(ObjectKind::Gift);
+			Require(scene.TakeTimeDelta() == bonuses[gift] && scene.TakeLivesGained() == 0 && scene.TakeScoreDelta() == 0, "XXX gift chain used the legacy random rewards.");
+			const std::vector<SoundRequest> audio = scene.TakeAudioEvents();
+			Require(std::any_of(audio.begin(), audio.end(), [&](const SoundRequest& event) { return event.Asset == data.SoundPath("SfxPositive", GameEdition::XXX) && event.Frequency == pitches[gift]; }), "Gift-chain playback rate did not follow native XXX pitches.");
+		}
+		pickup(ObjectKind::Rocket);
+		pickup(ObjectKind::Gift);
+		Require(scene.TakeTimeDelta() == 5 && scene.GetItems().GetPowerup().Code == ItemCode::Rocket, "Accepted non-gift did not reset the chain, or gift replaced the equipped effect.");
+		pickup(ObjectKind::Rocket);
+		Require(scene.GetItems().GetInteractionMultiplier() == 2 && scene.GetItems().GetPowerup().Code == ItemCode::Rocket && scene.GetItems().GetSharedRocketRemaining() == 10, "Second rocket failed to set the shared multiplier/private duration.");
+		Require(!scene.GetObjects().Find(ObjectKind::RocketBurst).empty(), "Second rocket omitted its native launch effect.");
+		const Sprite* rocket = engine.LoadSprite(data.EditionAsset(GameEdition::XXX, "Sven2/gfx/icons.bmp"), 5, 1);
+		for (size_t burst : scene.GetObjects().Find(ObjectKind::RocketBurst))
+			Require(scene.GetObjects()[burst].Draw.Sprite == rocket && scene.GetObjects()[burst].Draw.Frame == 0, "Second rocket launched a speed marker instead of the rocket.");
+		if (capture)
+			engine.DrawFrame(scene.Draws(), edition == GameEdition::Zwo ? "rocket-launch-zwo.bmp" : "rocket-launch-xxx.bmp");
+		scene.GetItems().GetPowerup() = {};
+		Require(scene.GetItems().GetInteractionMultiplier() == 2, "Replacing a personal effect cancelled the shared rocket multiplier.");
+		scene.GetItems().UpdateItems(10);
+		Require(scene.GetItems().GetInteractionMultiplier() == 2, "Shared rocket expired at zero instead of below zero.");
+		scene.GetItems().UpdateItems(0.001f);
+		Require(scene.GetItems().GetInteractionMultiplier() == 1, "Shared rocket multiplier did not expire.");
+		for (size_t target = 1; target < 4; ++target)
+		{
+			scene.GetObjects()[target].Impatience = 3;
+			scene.GetObjects()[target].Temperament = target == 3 ? 1 : 0;
+		}
+		pickup(ObjectKind::Flower);
+		pickup(ObjectKind::Flower);
+		Require(scene.GetObjects()[1].Impatience == 0 && scene.GetObjects()[2].Impatience == 0 && scene.GetObjects()[3].Impatience == 3, "Double flower missed distant animals or changed Frigida.");
+		Require(scene.GetObjects().Find(ObjectKind::FlowerBurst).size() == 2, "Double flower omitted its attached mood effects.");
+		pickup(ObjectKind::StinkMushroom);
+		pickup(ObjectKind::StinkMushroom);
+		Require(scene.GetObjects()[1].Impatience == 10 && scene.GetObjects()[2].Impatience == 10 && scene.GetObjects()[3].Impatience == 3, "Double stink missed distant animals or changed Frigida.");
+		pickup(ObjectKind::Gift);
+		Require(scene.TakeTimeDelta() == 5, "Repeated non-gift did not reset the shared gift chain.");
+		scene.GetItems().GetPowerup() = { ItemCode::AlienPower, 15, 0 };
+		scene.GetItems().SpawnItem(ObjectKind::Rocket, tile);
+		scene.Update(0, 0, 0, false);
+		Require(scene.GetItems().GetPowerup().Code == ItemCode::AlienPower && scene.GetObjects().Find(ObjectKind::Rocket).size() == 1, "Alien power consumed/replaced an incompatible pickup.");
+		scene.GetItems().RemoveItem(tile);
+		pickup(ObjectKind::Gift);
+		Require(scene.TakeTimeDelta() == 10, "Rejected pickup reset the gift chain protected by alien power.");
+		scene.GetItems().ResetGiftChain();
+		pickup(ObjectKind::Gift);
+		Require(scene.TakeTimeDelta() == 5, "Damage-chain reset did not restart gifts at five seconds.");
+		scene.Update(4, 0, 0, false);
+		Require(scene.GetObjects().Find(ObjectKind::RocketBurst).empty() && scene.GetObjects().Find(ObjectKind::FlowerBurst).empty() && scene.GetObjects().Find(ObjectKind::SmellBurst).empty(), "Repeated-pickup particles outlived their native lifetime.");
+		const LevelInfo enemies = FixtureLevel(engine, "shared-slow-" + std::to_string(static_cast<i32>(edition)), { { 0, 80, 80, 0 }, { 4, 320, 320, 2 }, { 5, 400, 320, 2 }, { 6, 480, 320, 2 }, { 3, 560, 320, 2 }, { 12, 640, 400, 0 } }, 0, edition);
+		LevelScene slow(engine, pack, enemies, 1), normal(engine, pack, enemies, 1);
+		const i32 playerTile = slow.GetObjects()[slow.GetPlayerIndex()].Tile;
+		for (i32 pickupCount = 0; pickupCount < 2; ++pickupCount)
+		{
+			slow.GetItems().SpawnItem(ObjectKind::SlowMushroom, playerTile);
+			slow.Update(0, 0, 0, false);
+		}
+		Require(slow.GetItems().GetPowerup().Code == ItemCode::None && slow.GetItems().GetEnemyMotionScale() == 0.5f && slow.GetItems().GetSharedSlowRemaining() == 30, "Second slow mushroom did not consume its private effect and start shared slowdown.");
+		Require(slow.GetObjects().Find(ObjectKind::SlowNotice).size() == 4 && !slow.GetObjects().Find(ObjectKind::SlowBubble).empty(), "Shared slowdown omitted enemy notices/bubbles.");
+		std::array<f32, 4> positions{};
+		for (size_t target = 1; target <= 4; ++target)
+		{
+			for (LevelScene* test : { &slow, &normal })
+			{
+				WorldObject& actor = test->GetObjects()[target];
+				actor.State = ActorState::Walking;
+				actor.TargetX = actor.X + 40;
+				actor.TargetY = actor.Y;
+				actor.Hunting = false;
+				actor.Age = 0;
+			}
+			positions[target - 1] = slow.GetObjects()[target].X;
+		}
+		slow.Update(0.01f, 1, 0, false);
+		normal.Update(0.01f, 1, 0, false);
+		for (size_t target = 1; target <= 4; ++target)
+		{
+			Require(std::abs((slow.GetObjects()[target].X - positions[target - 1]) * 2 - (normal.GetObjects()[target].X - positions[target - 1])) < 0.001f, "Shared slowdown did not halve an enemy's movement.");
+			Require(std::abs(slow.GetObjects()[target].Age * 2 - normal.GetObjects()[target].Age) < 0.001f, "Shared slowdown did not halve an enemy's walk animation.");
+		}
+		Require(slow.GetPlayer().GetX() == normal.GetPlayer().GetX(), "Shared enemy slowdown incorrectly slowed Sven.");
+		slow.GetItems().UpdateItems(30);
+		Require(slow.GetItems().GetEnemyMotionScale() == 1, "Shared enemy slowdown did not expire.");
+	}
+	Log("PASS: v6/v7 XXX gift rewards/pitches/reset/immunity, shared repeat pickups, distant animal moods/particles, all enemy slowdown rates and independent expiry.");
+}
+
+void CheckArtifactAndMultiplier(MudGE& engine, bool capture)
+{
+	const GameData& data = engine.GetData();
+	const LevelPackInfo& source = *std::find_if(data.GetPacks().begin(), data.GetPacks().end(), [](const LevelPackInfo& pack) { return pack.Name == "XS" && pack.Edition == GameEdition::Zwo; });
+	for (GameEdition edition : { GameEdition::Zwo, GameEdition::XXX })
+	{
+		LevelPackInfo pack = source;
+		pack.Edition = edition;
+		for (bool frigida : { false, true })
+		{
+			const LevelInfo level = FixtureLevel(engine, "shared-multiplier-" + std::to_string(static_cast<i32>(edition)) + "-" + std::to_string(frigida), { { 0, 240, 240, 0 }, { frigida ? 2 : 12, 280, 240, 0 } }, 0, edition);
+			LevelScene scene(engine, pack, level, 1);
+			const i32 tile = scene.GetObjects()[scene.GetPlayerIndex()].Tile;
+			for (i32 pickup = 0; pickup < 2; ++pickup)
+			{
+				scene.GetItems().SpawnItem(ObjectKind::Rocket, tile);
+				scene.Update(0, 0, 0, false);
+			}
+			scene.GetItems().GetPowerup() = {};
+			scene.GetObjects()[1].Temperament = frigida ? 2 : 0;
+			scene.GetObjects()[1].Impatience = frigida ? 10 : 6;
+			scene.Update(0.001f, 1, 0, true);
+			i32 score = 0;
+			for (i32 tick = 0; tick < 500 && !score; ++tick)
+			{
+				scene.Update(0.01f, 0, 0, false);
+				score += scene.TakeScoreDelta();
+			}
+			if (frigida)
+				Require(scene.GetObjects()[1].Freed && score == 30, "Shared rocket skipped Frigida's >=11 completion or native first-attempt reward.");
+			else
+				Require(score == 4 && scene.GetObjects()[1].Impatience == 2, "Shared rocket did not multiply ordinary mood drain and unequipped interaction score.");
+		}
+		const LevelInfo artifact = FixtureLevel(engine, "artifact-native-" + std::to_string(static_cast<i32>(edition)), { { 0, 240, 240, 0 }, { 12, 640, 400, 0 } }, static_cast<i32>(ItemCode::Artifact), edition);
+		for (u32 flags : { 0u, 1u })
+		{
+			bytestream bytes = data.ReadAsset(artifact.Map);
+			std::memcpy(bytes.data() + 8, &flags, sizeof(flags));
+			Require(LevelFile(bytes, artifact.Map).GetHidesUfo() == (edition == GameEdition::XXX ? flags == 0 : flags != 0), "Level UFO visibility used the wrong source-format flag polarity.");
+		}
+		LevelScene scene(engine, pack, artifact, 1);
+		bool returned = false, sawUp = false, sawDown = false, sawShip = false, sawShadow = false;
+		const Sprite* ship = engine.LoadSprite(data.EditionAsset(GameEdition::XXX, "Sven2/gfx/ufo.bmp"), 13, 1);
+		const Sprite* shadow = engine.LoadSprite(data.EditionAsset(GameEdition::XXX, "Sven2/gfx/ufo_shadow.bmp"), 13, 1);
+		const GameData::SpriteDefinition& definition = data.GetSpriteDefinition("SvenBeamUpBack", GameEdition::XXX);
+		const Sprite* beam = engine.LoadSprite(definition.File, definition.Rows, definition.Columns);
+		for (i32 tick = 0; tick < 3000 && (!returned || scene.UfoActive()); ++tick)
+		{
+			scene.Update(0.01f, 0, 0, false);
+			returned = returned || scene.GetItems().GetPowerup().Code == ItemCode::AlienPower;
+			const SpriteDraw& player = scene.GetPlayerDraw();
+			if (player.Sprite == beam)
+			{
+				sawUp = sawUp || player.Frame < 14;
+				sawDown = sawDown || player.Frame == 21;
+			}
+			for (const SpriteDraw& draw : scene.Draws())
+			{
+				Require(draw.Sprite && draw.Frame >= 0 && draw.Frame < draw.Sprite->Rows * draw.Sprite->Columns, "Artifact/beam lifecycle emitted an invalid frame.");
+				sawShip = sawShip || draw.Sprite == ship;
+				sawShadow = sawShadow || draw.Sprite == shadow;
+			}
+			if (capture && tick == 850)
+				engine.DrawFrame(scene.Draws(), edition == GameEdition::Zwo ? "artifact-shared-zwo.bmp" : "artifact-shared-xxx.bmp");
+		}
+		Require(returned && sawUp && sawDown && !scene.UfoActive(), "Shared XXX artifact did not complete its UFO/up/down/return lifecycle.");
+		Require(sawShip && sawShadow, "Artifact beamed Sven without drawing the UFO and its shadow.");
+	}
+	LevelPackInfo pack = source;
+	pack.Edition = GameEdition::XXX;
+	const LevelInfo artifact = FixtureLevel(engine, "artifact-owner-two", { { 0, 80, 80, 0 }, { 0, 400, 240, 0 }, { 12, 640, 400, 0 } }, 0, GameEdition::XXX);
+	LevelScene owners(engine, pack, artifact, 1, nullptr, 2);
+	owners.GetItems().SpawnItem(ObjectKind::Artifact, owners.GetObjects().GetPlayer(1).GetState().Tile);
+	bool returned = false;
+	for (i32 tick = 0; tick < 3000 && (!returned || owners.UfoActive()); ++tick)
+	{
+		owners.Update(0.01f, 0, 0, false);
+		LevelScene::PlayerScope owner(owners, 1);
+		returned = returned || owners.GetItems().GetPowerup().Code == ItemCode::AlienPower;
+	}
+	Require(returned && !owners.UfoActive() && owners.GetItems().GetPowerup().Code == ItemCode::None, "Player-two artifact returned its effect to player one or got stuck.");
+	if (capture)
+	{
+		Require(engine.StartAudio(), "Cannot validate the native pitched-sound channel.");
+		Require(engine.PlaySample(data.SoundPath("SfxPositive", GameEdition::XXX), false, 56100), "Native pitched gift sample failed to play.");
+	}
+	Log("PASS: shared rocket scores/moods and Frigida threshold; full v6/v7 artifact frame lifecycle and second-player UFO ownership.");
+}
+
+void CheckMultiplayerFoundations(MudGE& engine, bool capture)
+{
+	const GameData& data = engine.GetData();
+	LevelPackInfo pack = *std::find_if(data.GetPacks().begin(), data.GetPacks().end(), [](const LevelPackInfo& candidate) { return candidate.Name == "XS" && candidate.Edition == GameEdition::Zwo; });
+	pack.Edition = GameEdition::XXX;
+	const LevelInfo level = FixtureLevel(engine, "multiplayer-foundations", { { 0, 240, 240, 0 }, { 0, 400, 240, 0 }, { 12, 280, 240, 0 }, { 12, 400, 200, 0 }, { 4, 320, 320, 0 } }, 0, GameEdition::XXX);
+	LevelScene scene(engine, pack, level, 1, nullptr, 2);
+	Require(scene.GetObjects().FindNearbyPlayer(scene.GetObjects()[4], 2) == -1, "Native selector included the strict radius boundary.");
+	Require(scene.GetObjects().FindNearbyPlayer(scene.GetObjects()[4], 3) == 1, "Equal native cell-distance ties did not prefer player two.");
+	Require(scene.GetObjects().FindActiveInteractionPlayer(scene.GetObjects()[4]) == -1, "Idle players qualified for the active-interaction selector.");
+	std::array<PlayerInput, 2> inputs = { PlayerInput{ 1, 0, false }, PlayerInput{ 0, -1, false } };
+	scene.Update(0, inputs);
+	inputs[0].Action = true;
+	scene.Update(0.001f, inputs);
+	Require(scene.GetObjects().FindActiveInteractionPlayer(scene.GetObjects()[4]) == 0, "Sole active interaction was replaced by the nearest idle player.");
+	inputs[1].Action = true;
+	scene.Update(0.001f, inputs);
+	Require(scene.GetObjects().FindActiveInteractionPlayer(scene.GetObjects()[4]) == 1, "Two active players did not use the native nearest/tie selector.");
+	scene.GetItems().GetPowerup() = { ItemCode::Rocket, 10, 0 };
+	{
+		LevelScene::PlayerScope owner(scene, 1);
+		scene.GetItems().GetPowerup() = { ItemCode::Flower, 10, 0 };
+	}
+	const SpriteDraw first = scene.GetObjects().GetPlayer(0).GetState().Draw;
+	const SpriteDraw second = scene.GetObjects().GetPlayer(1).GetState().Draw;
+	const std::vector<SpriteDraw>& draws = scene.Draws();
+	for (const SpriteDraw& actor : { first, second })
+		Require(std::any_of(draws.begin(), draws.end(), [&](const SpriteDraw& draw) { return draw.Sprite == actor.Sprite && draw.X == actor.X && draw.Y == actor.Y; }), "A player's compound animation was omitted by the renderer.");
+	const Sprite* power = engine.LoadSprite(data.EditionAsset(GameEdition::XXX, "Sven2/gfx/symbol_power.bmp"), 13, 1);
+	const Sprite* flower = engine.LoadSprite(data.EditionAsset(GameEdition::XXX, "Sven2/gfx/symbol_flowers.bmp"), 8, 1);
+	Require(std::any_of(draws.begin(), draws.end(), [&](const SpriteDraw& draw) { return draw.Sprite == power && draw.X == first.X + 28 && draw.Y == first.Y - 4; }), "Player one's effect detached from its own animation.");
+	Require(std::any_of(draws.begin(), draws.end(), [&](const SpriteDraw& draw) { return draw.Sprite == flower && draw.X == second.X + 28 && draw.Y == second.Y - 4; }), "Player two's effect was omitted or attached to player one.");
+	Require(scene.GetPlayer().GetNumber() == 0, "Rendering leaked an active-player scope.");
+	if (capture)
+		engine.DrawFrame(draws, "two-player-interactions.bmp");
+	scene.Update(1, inputs);
+	Require(scene.TakeScoreDelta() == 6 && scene.GetObjects()[2].InteractionPlayer == -1 && scene.GetObjects()[3].InteractionPlayer == -1, "Concurrent interactions did not release ownership and add private effect rewards to one shared score.");
+	const LevelInfo moving = FixtureLevel(engine, "multiplayer-selector-offsets", { { 0, 240, 240, 0 }, { 0, 400, 240, 0 }, { 4, 320, 320, 0 }, { 12, 640, 400, 0 } }, 0, GameEdition::XXX);
+	LevelScene offset(engine, pack, moving, 1, nullptr, 2);
+	offset.Update(0.2f, 1, 0, false);
+	Require(offset.GetObjects().FindNearbyPlayer(offset.GetObjects()[2], 4) == 0, "Native target selection ignored a player's fractional movement position.");
+	bytestream bonusBytes = data.ReadAsset(moving.Map);
+	const u32 flags = 0x02;
+	std::memcpy(bonusBytes.data() + 8, &flags, sizeof(flags));
+	{
+		std::ofstream output(data.GetRoot() / std::filesystem::u8path(moving.Map), std::ios::binary | std::ios::trunc);
+		output.write(reinterpret_cast<cstr>(bonusBytes.data()), static_cast<std::streamsize>(bonusBytes.size()));
+	}
+	LevelScene bonus(engine, pack, moving, 1, nullptr, 2);
+	Require(bonus.GetBonusMode() == BonusMode::Alien && bonus.GetObjects().FindNearbyPlayer(bonus.GetObjects()[2], 500) == -1, "Normal native target selector remained active in multiplayer bonus mode.");
+	Log("PASS: multiplayer foundation selectors, independent compound/effect rendering, concurrent ownership and shared score; menu/AI integration remains pending.");
+}
+
+void CheckMultiplayerEnemies(MudGE& engine)
+{
+	LevelPackInfo pack = *std::find_if(engine.GetData().GetPacks().begin(), engine.GetData().GetPacks().end(), [](const LevelPackInfo& candidate) { return candidate.Name == "XS" && candidate.Edition == GameEdition::Zwo; });
+	pack.Edition = GameEdition::XXX;
+	for (ObjectKind kind : { ObjectKind::Dog, ObjectKind::Farmer, ObjectKind::Girl, ObjectKind::Alien })
+	{
+		const str name = std::to_string(static_cast<i32>(kind));
+		const LevelInfo notice = FixtureLevel(engine, "multiplayer-notice-" + name, { { 0, 80, 80, 0 }, { 0, 400, 240, 0 }, { static_cast<i32>(kind), 480, 320, 0 }, { 12, 400, 200, 0 }, { 2, 640, 400, 0 } }, 0, GameEdition::XXX);
+		LevelScene scene(engine, pack, notice, 1, nullptr, 2);
+		std::array<PlayerInput, 2> inputs{};
+		if (kind == ObjectKind::Farmer)
+		{
+			inputs[1] = { 0, -1, false };
+			scene.Update(0, inputs);
+			inputs[1].Action = true;
+		}
+		scene.Update(0.001f, inputs);
+		Require(scene.GetObjects()[2].Hunting && scene.GetObjects()[2].TargetPlayer == 1, "Enemy ignored player two's native notice/activity selection.");
+		WorldObject& enemy = scene.GetObjects()[2];
+		enemy.State = ActorState::Walking;
+		enemy.Hunting = true;
+		enemy.TargetPlayer = 0;
+		enemy.TargetX = enemy.X + 40;
+		enemy.TargetY = enemy.Y;
+		scene.GetObjects().Get(2).Update(0.001f);
+		Require(enemy.TargetPlayer == 0, "Enemy retargeted during an unfinished step.");
+
+		const LevelInfo catchLevel = FixtureLevel(engine, "multiplayer-catch-" + name, { { 0, 80, 80, 0 }, { 0, 440, 240, 0 }, { static_cast<i32>(kind), 360, 240, 2 }, { 2, 640, 400, 0 } }, 0, GameEdition::XXX);
+		LevelScene caught(engine, pack, catchLevel, 1, nullptr, 2);
+		caught.Update(0, 0, 0, false);
+		caught.GetItems().GetPowerup() = { ItemCode::Flower, 10, 0 };
+		{
+			LevelScene::PlayerScope owner(caught, 1);
+			caught.GetItems().GetPowerup() = { ItemCode::Rocket, 10, 0 };
+		}
+		WorldObject& attacker = caught.GetObjects()[2];
+		attacker.State = ActorState::Walking;
+		attacker.TargetPlayer = 0;
+		attacker.Hunting = true;
+		attacker.Facing = 2;
+		attacker.TargetX = attacker.X + 40;
+		attacker.TargetY = attacker.Y;
+		caught.GetObjects().Get(2).Update(1);
+		Require(attacker.TargetPlayer == 1 && caught.GetCombat().Enemy == -1 && caught.GetItems().GetPowerup().Code == ItemCode::Flower, "Enemy catch interrupted the wrong player's combat/effect.");
+		{
+			LevelScene::PlayerScope owner(caught, 1);
+			Require(caught.GetCombat().Enemy == 2 && caught.GetItems().GetPowerup().Code == ItemCode::None, "Caught player two did not enter its own combat or lose its effect.");
+		}
+		caught.GetObjects().Get(2).Update(20);
+		{
+			LevelScene::PlayerScope owner(caught, 1);
+			Require(caught.GetCombat().Enemy == -1, "Player-two combat did not release its owner on completion.");
+		}
+		Require(caught.TakeLifeHits() == (kind == ObjectKind::Girl ? 0 : 1), "Player-two combat applied the wrong shared life consequence.");
+		Require(caught.GetPlayer().GetNumber() == 0, "Enemy update leaked its target-player scope.");
+	}
+	const LevelInfo priority = FixtureLevel(engine, "multiplayer-catch-priority", { { 0, 240, 200, 0 }, { 0, 280, 200, 0 }, { 5, 240, 240, 1 }, { 2, 640, 400, 0 } }, 0, GameEdition::XXX);
+	LevelScene scene(engine, pack, priority, 1, nullptr, 2);
+	scene.Update(0, 0, 0, false);
+	Require(scene.GetObjects().FindCaughtPlayer(scene.GetObjects()[2]) == 1, "Catch selector preferred player index over the native facing-cell order.");
+	scene.GetObjects().Combats[1].Enemy = 2;
+	Require(scene.GetObjects().FindCaughtPlayer(scene.GetObjects()[2]) == -1, "Catch selector skipped an unavailable first occupied neighbor to catch another player.");
+	const LevelInfo concurrent = FixtureLevel(engine, "multiplayer-concurrent-catches", { { 0, 240, 240, 0 }, { 0, 480, 240, 0 }, { 4, 160, 240, 2 }, { 4, 560, 240, 6 }, { 2, 640, 400, 0 } }, 0, GameEdition::XXX);
+	LevelScene battles(engine, pack, concurrent, 1, nullptr, 2);
+	battles.Update(0, 0, 0, false);
+	for (size_t index : { size_t{ 2 }, size_t{ 3 } })
+	{
+		WorldObject& enemy = battles.GetObjects()[index];
+		enemy.State = ActorState::Walking;
+		enemy.Facing = index == 2 ? 2 : 6;
+		enemy.TargetX = enemy.X + (index == 2 ? 40 : -40);
+		enemy.TargetY = enemy.Y;
+		battles.GetObjects().Get(index).Update(1);
+	}
+	Require(battles.GetObjects().Combats[0].Enemy == 2 && battles.GetObjects().Combats[1].Enemy == 3, "Concurrent catches overwrote another player's combat.");
+	battles.GetObjects().Get(2).Update(20);
+	battles.GetObjects().Get(3).Update(20);
+	Require(battles.TakeLifeHits() == 2 && battles.GetObjects().Combats[0].Enemy == -1 && battles.GetObjects().Combats[1].Enemy == -1, "Concurrent fights did not independently finish and report shared life hits.");
+	Log("PASS: all four enemies notice/catch player two, retain mid-step targets, scope combat/effects, preserve facing-cell priority and finish simultaneous fights.");
+}
+
+void CheckBonusControllers(MudGE& engine, const fpath& saves, bool capture)
+{
+	const GameData& data = engine.GetData();
+	LevelPackInfo pack = *std::find_if(data.GetPacks().begin(), data.GetPacks().end(), [](const LevelPackInfo& candidate) { return candidate.Name == "XS" && candidate.Edition == GameEdition::Zwo; });
+	pack.Edition = GameEdition::XXX;
+	const i32 directions[4][2] = { { 1, -1 }, { 1, 1 }, { -1, 1 }, { -1, -1 } };
+	for (BonusMode mode : { BonusMode::Farmer, BonusMode::Girl, BonusMode::Alien })
+	{
+		const str family = mode == BonusMode::Farmer ? "Guy" : (mode == BonusMode::Girl ? "Broemse" : "Alien");
+		const u32 flags = u32{ 1 } << static_cast<u32>(mode);
+		for (i32 facing = 0; facing < 4; ++facing)
+		{
+			const str name = family + "-" + std::to_string(facing);
+			const i32 dx = directions[facing][0], dy = directions[facing][1];
+			const LevelInfo level = FixtureLevel(engine, "bonus-action-" + name, { { 0, 280 - dx * 40, 240 - dy * 40, 2 * facing + 1 }, { 2, 280, 240, facing, 8 } }, 0, GameEdition::XXX, flags);
+			LevelScene scene(engine, pack, level, 1);
+			const GameData::SpriteDefinition& stand = data.GetSpriteDefinition(family + "Stand", GameEdition::XXX);
+			Require(scene.GetBonusMode() == mode && scene.GetPlayerDraw().Sprite == engine.LoadSprite(stand.File, stand.Rows, stand.Columns), "Bonus spawn did not draw its controlled character immediately.");
+			i32 score = 0;
+			for (i32 cycle = 0; cycle < 2; ++cycle)
+			{
+				scene.Update(0, dx, dy, false);
+				scene.Update(0.001f, dx, dy, true);
+				Require(scene.GetObjects()[1].InteractionPlayer == 0, "Bonus controller failed to claim the neighboring sheep.");
+				if (capture && facing == 0 && cycle == 0)
+					engine.DrawFrame(scene.Draws(), ("bonus-action-" + family + ".bmp").c_str());
+				f32 elapsed = 0.001f;
+				for (i32 tick = 0; tick < 500 && scene.GetObjects()[1].InteractionPlayer >= 0; ++tick)
+				{
+					elapsed += 0.01f;
+					scene.Update(0.01f, 0, 0, false);
+					for (const SpriteDraw& draw : scene.Draws())
+						Require(draw.Sprite && draw.Frame >= 0 && draw.Frame < draw.Sprite->Rows * draw.Sprite->Columns, "Bonus action emitted an invalid sprite frame.");
+				}
+				const str descriptor = data.StringParam("a" + (mode == BonusMode::Farmer ? str("Lars") : family) + "Shave" + (facing == 0 || facing == 3 ? "Back" : "Front") + "Bonus", "", GameEdition::XXX);
+				const f32 duration = static_cast<f32>(std::count(descriptor.begin(), descriptor.end(), ',') + 1) / (mode == BonusMode::Alien ? 20.0f : 15.0f);
+				Require(elapsed >= duration && elapsed < duration + 0.04f, "Bonus action completed at an incorrect native frame rate or phase.");
+				score += scene.TakeScoreDelta();
+				if (cycle == 0)
+					Require(scene.GetObjects()[1].Impatience == 10 && !scene.GetObjects()[1].Freed && score == 2, "Bonus cycle did not raise mood by two with the native two-point reward.");
+			}
+			Require(scene.Completed() && scene.GetObjects()[1].Freed && score == 14 && scene.GetPlayerCompletions()[0] == 1 && !scene.GetBonusUnlocked(), "Bonus sheep completion/reward/contribution/unlock bookkeeping was incorrect.");
+			const Sprite* flash = engine.LoadSprite(data.EditionAsset(GameEdition::XXX, "Sven2/gfx/anim_clouds_with_flash1.bmp"), 16, 1);
+			const std::vector<size_t> clouds = scene.GetObjects().Find(ObjectKind::CompletionEffect);
+			Require(!clouds.empty() && scene.GetObjects()[clouds.back()].Draw.Sprite == flash, "Bonus completion used a heart cloud instead of lightning.");
+			const std::vector<SoundRequest> sounds = scene.TakeAudioEvents();
+			Require(std::any_of(sounds.begin(), sounds.end(), [&](const SoundRequest& sound) { return sound.Asset == data.SoundPath("SfxExplodeFlash", GameEdition::XXX); }), "Bonus lightning completion omitted its native sound.");
+			if (capture && facing == 0)
+				engine.DrawFrame(scene.Draws(), ("bonus-lightning-" + family + ".bmp").c_str());
+		}
+		const LevelInfo moving = FixtureLevel(engine, "bonus-motion-" + family, { { 0, 240, 240, 2 }, { 2, 640, 400, 0 } }, 0, GameEdition::XXX, flags);
+		LevelScene motion(engine, pack, moving, 1);
+		motion.Update(0.1f, 1, 0, false);
+		const f32 speed = static_cast<f32>(data.NumericParam(family + "Speed", 0, GameEdition::XXX) * data.NumericParam(family + "RunMultiplier", 1, GameEdition::XXX)) * (mode == BonusMode::Farmer ? 1.2f : 1);
+		Require(std::abs(motion.GetPlayer().GetX() - 240 - speed * 0.1f) < 0.01f, "Bonus movement used Sven's speed instead of its native character parameters.");
+		if (mode != BonusMode::Alien)
+		{
+			const ItemCode code = mode == BonusMode::Farmer ? ItemCode::Beer : ItemCode::Teddy;
+			const LevelInfo distraction = FixtureLevel(engine, "bonus-distraction-" + family, { { 0, 240, 240, 2 }, { 2, 640, 400, 0 } }, static_cast<i32>(code), GameEdition::XXX, flags);
+			LevelScene distracted(engine, pack, distraction, 1);
+			distracted.Update(0.01f, 0, 0, false);
+			Require(distracted.TakeTimeDelta() == -5 && !distracted.UfoActive(), "Bonus distraction omitted its five-second cost or started a UFO.");
+			const f32 x = distracted.GetPlayer().GetX();
+			distracted.Update(0.1f, 1, 0, false);
+			Require(distracted.GetPlayer().GetX() == x, "Bonus distraction allowed movement during its animation.");
+			distracted.Update(10, 0, 0, false);
+			distracted.Update(0.1f, 1, 0, false);
+			Require(distracted.GetPlayer().GetX() > x, "Bonus distraction never released control.");
+		}
+		const LevelInfo artifact = FixtureLevel(engine, "bonus-artifact-" + family, { { 0, 240, 240, 2 }, { 2, 640, 400, 0 } }, static_cast<i32>(ItemCode::Artifact), GameEdition::XXX, flags);
+		LevelScene exit(engine, pack, artifact, 1);
+		exit.Update(0.01f, 0, 0, false);
+		Require(exit.Completed() && !exit.UfoActive() && !exit.GetObjects()[1].Freed, "Bonus artifact ran the ordinary UFO collection instead of ending the round.");
+		if (capture)
+			engine.DrawFrame(exit.Draws(), ("bonus-artifact-" + family + ".bmp").c_str());
+		LevelScene timeout(engine, pack, moving, 1);
+		timeout.TimeExpired();
+		timeout.Update(0.1f, 0, 0, false);
+		Require(timeout.Completed() && !timeout.UfoActive(), "Bonus timeout waited for ordinary UFO cleanup.");
+		GameUi ui(engine, saves);
+		ui.ShowBonus(mode);
+		const std::vector<SpriteDraw>& intro = ui.Draws(0.1f);
+		const GameData::SpriteDefinition& portrait = data.GetSpriteDefinition(family + "Stand", GameEdition::XXX);
+		const Sprite* portraitSprite = engine.LoadSprite(portrait.File, portrait.Rows, portrait.Columns);
+		const auto portraitDraw = std::find_if(intro.begin(), intro.end(), [&](const SpriteDraw& draw) { return draw.Sprite == portraitSprite; });
+		Require(portraitDraw != intro.end() && std::any_of(portraitDraw + 1, intro.end(), [](const SpriteDraw& draw) { return draw.Y >= 260 && draw.Y < 280; }), "Bonus instruction text was painted before its overlapping portrait.");
+		if (capture)
+			engine.DrawFrame(intro, ("bonus-intro-" + family + ".bmp").c_str());
+		WindowInput::Result confirm;
+		confirm.Confirm = true;
+		Require(ui.GetPage() == GameUi::Page::Bonus && ui.Handle(confirm) == UiAction::Resume, "Bonus instruction screen did not acknowledge correctly.");
+	}
+	const LevelInfo normal = FixtureLevel(engine, "bonus-campaign-normal", { { 0, 240, 240, 2 }, { 2, 280, 240, 1, 0 } }, 0, GameEdition::XXX);
+	const LevelInfo bonus = FixtureLevel(engine, "bonus-campaign-bonus", { { 0, 240, 240, 2 }, { 0, 480, 240, 6 }, { 2, 640, 400, 0 } }, static_cast<i32>(ItemCode::Artifact), GameEdition::XXX, 2);
+	LevelSetInfo set = pack.LevelSets.front();
+	set.Levels = { normal, bonus, normal };
+	GameSession locked(engine, pack, set);
+	locked.DebugNextLevel();
+	Require(locked.LevelNumber() == 3 && locked.GetBonusMode() == BonusMode::Sven, "Locked bonus map was not skipped.");
+	GameSession unlocked(engine, pack, set);
+	for (i32 tick = 0; tick < 5000 && !unlocked.GetResults(); ++tick)
+		unlocked.Update(0.01f, 1, 0, tick % 2 != 0);
+	Require(unlocked.GetResults() && unlocked.GetResult().Sheep == 1, "First-attempt Frigida campaign fixture never completed.");
+	unlocked.SkipBonuses();
+	unlocked.Advance();
+	Require(unlocked.LevelNumber() == 2 && unlocked.GetBonusMode() == BonusMode::Farmer, "Uninterrupted Frigida failed to unlock the following bonus.");
+	for (i32 tick = 0; tick < 200 && !unlocked.GetResults(); ++tick)
+		unlocked.Update(0.01f, 0, 0, false);
+	Require(unlocked.GetResults() && unlocked.GetResult().Lives == 0 && unlocked.GetResult().TimeRemaining == 0 && unlocked.GetLives() == 3 && !unlocked.UfoActive(), "Bonus artifact result timing or time/life-bonus policy was incorrect.");
+	unlocked.SkipBonuses();
+	unlocked.Advance();
+	Require(unlocked.LevelNumber() == 3 && unlocked.GetBonusMode() == BonusMode::Sven, "Bonus completion did not return to normal play.");
+	set.Levels = { bonus };
+	GameSession multiplayer(engine, pack, set, 2);
+	Require(multiplayer.GetPlayerCount() == 2 && multiplayer.GetBonusMode() == BonusMode::Alien, "Two-player bonus did not force both players into alien mode.");
+	for (i32 tick = 0; tick < 200 && !multiplayer.GetResults(); ++tick)
+		multiplayer.Update(0.01f, std::array<PlayerInput, 2>{});
+	Require(multiplayer.GetResults() && multiplayer.GetResult().PlayerCount == 2 && multiplayer.GetResult().TimeRemaining == 0, "Two-player artifact exit did not produce multiplayer results without an unearned time bonus.");
+	if (capture)
+	{
+		GameUi ui(engine, saves);
+		ui.ShowResults(multiplayer.GetResult());
+		engine.DrawFrame(ui.Draws(0.1f), "multiplayer-bonus-results.bmp");
+	}
+	Log("PASS: all bonus roles/facings, native cycle/movement/distraction/artifact/timeout rules, intro, unlock/skip/return campaign flow and two-player alien mode.");
+}
+
+void CheckMultiplayerPlay(MudGE& engine, const fpath& saves, bool capture)
+{
+	const GameData& data = engine.GetData();
+	LevelPackInfo pack = *std::find_if(data.GetPacks().begin(), data.GetPacks().end(), [](const LevelPackInfo& candidate) { return candidate.Name == "XS" && candidate.Edition == GameEdition::Zwo; });
+	pack.Edition = GameEdition::XXX;
+	const LevelInfo collision = FixtureLevel(engine, "multiplayer-shared-cell", { { 0, 240, 240, 2 }, { 0, 320, 240, 6 }, { 2, 640, 400, 0 } }, 0, GameEdition::XXX);
+	LevelScene bodies(engine, pack, collision, 1, nullptr, 2);
+	std::array<PlayerInput, 2> inputs = { PlayerInput{ 1, 0, false }, PlayerInput{ -1, 0, false } };
+	bodies.Update(0.4f, inputs);
+	Require(std::abs(bodies.GetObjects().GetPlayer(0).GetX() - 280) < 0.01f && bodies.GetObjects().GetPlayer(1).GetX() == 320, "Two players overlapped or overwrote the shared destination reservation.");
+	const Sprite* icon1 = engine.LoadSprite(data.GetSpriteDefinition("IconPlayer1", GameEdition::XXX).File, 13, 1);
+	const Sprite* icon2 = engine.LoadSprite(data.GetSpriteDefinition("IconPlayer2", GameEdition::XXX).File, 13, 1);
+	const std::vector<SpriteDraw>& draws = bodies.Draws();
+	Require(std::any_of(draws.begin(), draws.end(), [&](const SpriteDraw& draw) { return draw.Sprite == icon1 && draw.X == 265 && draw.Frame < 12; }) && std::any_of(draws.begin(), draws.end(), [&](const SpriteDraw& draw) { return draw.Sprite == icon2 && draw.X == 305 && draw.Frame < 12; }), "Multiplayer identifiers were missing or attached to the wrong player.");
+	if (capture)
+		engine.DrawFrame(draws, "multiplayer-identifiers.bmp");
+	for (ItemCode code : { ItemCode::Rocket, ItemCode::SlowMushroom, ItemCode::StinkMushroom, ItemCode::Flower, ItemCode::AlienPower })
+	{
+		bodies.GetItems().GetPowerup() = { code, 10, 0 };
+		const std::vector<SpriteDraw>& powered = bodies.Draws();
+		Require(std::none_of(powered.begin(), powered.end(), [&](const SpriteDraw& draw) { return draw.Sprite == icon1; }) && std::any_of(powered.begin(), powered.end(), [&](const SpriteDraw& draw) { return draw.Sprite == icon2; }), "Equipped effect did not replace only its owner's player marker.");
+	}
+	if (capture)
+		engine.DrawFrame(bodies.Draws(), "multiplayer-powered-marker.bmp");
+	bodies.GetItems().GetPowerup() = {};
+	const std::vector<SpriteDraw>& restored = bodies.Draws();
+	Require(std::any_of(restored.begin(), restored.end(), [&](const SpriteDraw& draw) { return draw.Sprite == icon1; }), "Player marker did not return after the equipped effect ended.");
+	const LevelInfo demon = FixtureLevel(engine, "multiplayer-demon-target", { { 0, 80, 80, 0 }, { 0, 280, 200, 4 }, { 2, 280, 240, 0, 10, 0, static_cast<i32>(ActorState::DemonTransforming) } }, 0, GameEdition::XXX);
+	LevelScene shocked(engine, pack, demon, 1, nullptr, 2);
+	shocked.GetItems().GetPowerup() = { ItemCode::Flower, 10, 0 };
+	{
+		LevelScene::PlayerScope owner(shocked, 1);
+		shocked.GetItems().GetPowerup() = { ItemCode::Rocket, 10, 0 };
+	}
+	for (i32 tick = 0; tick < 500 && shocked.GetObjects()[2].State != ActorState::DemonShocking; ++tick)
+		shocked.Update(0.01f, 0, 0, false);
+	Require(shocked.GetObjects()[2].State == ActorState::DemonShocking && shocked.GetObjects()[2].TargetPlayer == 1 && shocked.GetItems().GetPowerup().Code == ItemCode::Flower, "Demon sheep shocked or cleared the effect of the wrong player.");
+	{
+		LevelScene::PlayerScope owner(shocked, 1);
+		Require(shocked.GetItems().GetPowerup().Code == ItemCode::None, "Caught player two retained its effect during demon shock.");
+	}
+	const LevelInfo teleports = FixtureLevel(engine, "multiplayer-splash-owners", { { 0, 240, 240, 2 }, { 0, 480, 240, 6 }, { 2, 640, 400, 0 } }, 0, GameEdition::XXX);
+	LevelScene splashes(engine, pack, teleports, 1, nullptr, 2);
+	const i32 first = splashes.GetObjects()[0].Tile + 1, second = splashes.GetObjects()[1].Tile - 1;
+	splashes.GetPlayer().Teleport(first);
+	splashes.Update(0.1f, 0, 0, false);
+	{
+		LevelScene::PlayerScope owner(splashes, 1);
+		splashes.GetPlayer().Teleport(second);
+	}
+	const Sprite* splashSprite = engine.LoadSprite(data.EditionAsset(GameEdition::XXX, "Sven2/gfx/FX_all_splash.bmp"), 14, 1);
+	const std::vector<SpriteDraw>& splashDraws = splashes.Draws();
+	Require(std::any_of(splashDraws.begin(), splashDraws.end(), [&](const SpriteDraw& draw) { return draw.Sprite == splashSprite && draw.X == first % 22 * 40 - 70 && draw.Frame > 0; }) && std::any_of(splashDraws.begin(), splashDraws.end(), [&](const SpriteDraw& draw) { return draw.Sprite == splashSprite && draw.X == second % 22 * 40 - 70 && draw.Frame == 0; }), "Second teleport replaced or restarted the other player's splash.");
+	const LevelInfo complete = FixtureLevel(engine, "multiplayer-campaign-completion", { { 0, 240, 240, 2 }, { 0, 480, 240, 6 }, { 12, 280, 240, 1, 0 }, { 12, 440, 240, 2, 0 } }, 0, GameEdition::XXX);
+	LevelSetInfo set = pack.LevelSets.front();
+	set.Levels = { complete };
+	GameSession session(engine, pack, set, 2);
+	session.Update(0.001f, inputs);
+	inputs[0].Action = inputs[1].Action = true;
+	session.Update(0.001f, inputs);
+	for (i32 tick = 0; tick < 1000 && !session.GetResults(); ++tick)
+		session.Update(0.01f, std::array<PlayerInput, 2>{});
+	RoundResult result = session.GetResult();
+	Require(session.GetResults() && result.PlayerCount == 2 && result.Sheep == 2 && result.PlayerSheep[0] == 1 && result.PlayerSheep[1] == 1, "Multiplayer campaign lost a player's animal completion/contribution.");
+	const i32 score = session.GetScore();
+	const i32 bonus = result.TimeRemaining * 2 + result.SheepRemaining * 10 + result.LivesRemaining * 10;
+	if (capture)
+	{
+		GameUi ui(engine, saves);
+		ui.ShowResults(result);
+		engine.DrawFrame(ui.Draws(0.1f), "multiplayer-level-results.bmp");
+	}
+	session.SkipBonuses();
+	Require(session.Ready() && session.GetScore() == score + bonus, "XXX result conversion disagreed with the shared time/animal/life multipliers.");
+	session.Advance();
+	Require(session.Finished(), "Multiplayer final-level acknowledgement did not finish the episode.");
+	GameUi ui(engine, saves / L"multiplayer-score");
+	result = session.GetResult();
+	ui.ShowResults(result);
+	if (capture)
+		engine.DrawFrame(ui.Draws(0.1f), "multiplayer-results.bmp");
+	WindowInput::Result confirm;
+	confirm.Confirm = true;
+	ui.Handle(confirm);
+	Require(ui.GetPage() == GameUi::Page::Name, "Multiplayer results did not reach name entry.");
+	WindowInput::Result name;
+	name.Text = "Two players";
+	ui.Handle(name);
+	ui.Handle(confirm);
+	const str bank = (ui.GetPack().Id.empty() ? ui.GetPack().Name : ui.GetPack().Id) + "-0-2player.tsv";
+	Require(std::filesystem::exists(saves / L"multiplayer-score" / std::filesystem::u8path(bank)), "Multiplayer highscore overwrote the single-player bank.");
+	const LevelInfo attacks = FixtureLevel(engine, "multiplayer-shared-life-insurance", { { 0, 240, 240, 0 }, { 0, 480, 240, 0 }, { 4, 160, 240, 2 }, { 4, 560, 240, 6 }, { 2, 640, 400, 0 } }, 0, GameEdition::XXX);
+	set.Levels = { attacks };
+	GameSession insurance(engine, pack, set, 2);
+	for (i32 tick = 0; tick < 2500 && insurance.GetLives() == 3; ++tick)
+		insurance.Update(0.01f, std::array<PlayerInput, 2>{});
+	Require(insurance.GetLives() == 2 && insurance.GetScore() == 0, "Concurrent attacks did not use one shared native initial-refund/life-insurance state.");
+	LevelPackInfo zwo = pack;
+	zwo.Edition = GameEdition::Zwo;
+	const LevelInfo original = FixtureLevel(engine, "multiplayer-zwo-spawn-policy", { { 0, 240, 240, 2 }, { 2, 640, 400, 0 } });
+	set.Levels = { original };
+	GameSession coop(engine, zwo, set, 2);
+	GameSession single(engine, zwo, set);
+	Require(coop.GetPlayerCount() == 2 && single.GetPlayerCount() == 1, "Zwo co-op did not preserve the independently selected single-player mode.");
+	Log("PASS: two-player body reservations, independent teleport effects/identifiers, joint completion/results/highscore bank and optional Zwo co-op.");
+}
+
+void CheckZwoCoopSpawns(MudGE& engine, const fpath& saves, bool capture)
+{
+	const GameData& data = engine.GetData();
+	const LevelPackInfo& pack = *std::find_if(data.GetPacks().begin(), data.GetPacks().end(), [](const LevelPackInfo& candidate) { return candidate.Name == "XS" && candidate.Edition == GameEdition::Zwo; });
+	auto write = [&](const LevelInfo& level, const bytestream& bytes) {
+		std::ofstream output(data.GetRoot() / std::filesystem::u8path(level.Map), std::ios::binary | std::ios::trunc);
+		output.write(reinterpret_cast<cstr>(bytes.data()), static_cast<std::streamsize>(bytes.size()));
+		Require(static_cast<bool>(output), "Cannot write isolated co-op fixture.");
+	};
+	auto integer = [](bytestream& bytes, size_t offset, i32 value) { std::memcpy(bytes.data() + offset, &value, sizeof(value)); };
+	const LevelInfo fallback = FixtureLevel(engine, "zwo-coop-crowded-start", { { 0, 240, 240, 0 }, { 2, 640, 400, 0 } });
+	bytestream bytes = engine.ReadAsset(fallback.Map);
+	const i32 origin = (240 + 60) / TileSize + 1 + ((240 + 60) / TileSize + 1) * Stride;
+	for (const i32* direction : Directions)
+		bytes[16 + (origin + direction[0] + direction[1] * Stride) * 24 + 12] = static_cast<u8>(ItemCode::Gift);
+	write(fallback, bytes);
+	LevelScene crowded(engine, pack, fallback, 1, nullptr, 2);
+	Require(crowded.GetObjects().GetPlayer(1).GetState().Tile == origin - 2 * Stride && crowded.GetObjects().GetPlayer(1).GetIndex() == 2, "Crowded spawn did not find the nearest reachable empty ring.");
+	LevelScene repeat(engine, pack, fallback, 79, nullptr, 2);
+	Require(repeat.GetObjects().GetPlayer(1).GetState().Tile == crowded.GetObjects().GetPlayer(1).GetState().Tile, "Generated spawn depends on gameplay randomness.");
+	const LevelInfo directed = FixtureLevel(engine, "zwo-coop-directional-start", { { 0, 240, 240, 0 }, { 2, 640, 400, 0 } });
+	bytes = engine.ReadAsset(directed.Map);
+	bytes[16 + origin * 24 + 4] = TileDirection[static_cast<i32>(PlayerMotion::East)];
+	integer(bytes, 16 + (origin + 1) * 24, static_cast<i32>(OccupancyCode::Wall));
+	integer(bytes, 16 + (origin - 1) * 24, static_cast<i32>(OccupancyCode::Wall));
+	bytes[16 + (origin + 1) * 24 + 4] = TileDirection[static_cast<i32>(PlayerMotion::East)];
+	write(directed, bytes);
+	LevelScene oneWay(engine, pack, directed, 1, nullptr, 2);
+	Require(oneWay.GetObjects().GetPlayer(1).GetState().Tile == origin + 2, "Spawn search ignored direction filtering or placed a player on a directional wall.");
+	const LevelInfo spawner = FixtureLevel(engine, "zwo-coop-spawner-start", { { 0, 240, 240, 0 }, { 2, 640, 400, 0 } });
+	bytes = engine.ReadAsset(spawner.Map);
+	integer(bytes, 16 + (origin - Stride) * 24 + 20, static_cast<i32>(SpawnerCode::Mixed));
+	write(spawner, bytes);
+	LevelScene spawning(engine, pack, spawner, 1, nullptr, 2);
+	Require(spawning.GetObjects().GetPlayer(1).GetState().Tile != origin - Stride, "Player two spawned on an item spawner.");
+	const LevelInfo pending = FixtureLevel(engine, "zwo-coop-unadopted-player", { { 1, 640, 400, 0 }, { 0, 0, 40, 0 }, { 2, 560, 400, 0 } });
+	LevelScene adopted(engine, pack, pending, 1, nullptr, 2);
+	Require(adopted.GetObjects().GetPlayer(0).GetIndex() == 1 && adopted.GetObjects().GetPlayer(1).GetX() == 0 && adopted.GetObjects().GetPlayer(1).GetY() == 0, "Pending player state falsely occupied the origin or replaced an authored object.");
+	const LevelInfo blocked = FixtureLevel(engine, "zwo-coop-no-space", { { 0, 240, 240, 0 }, { 2, 640, 400, 0 } });
+	bytes = engine.ReadAsset(blocked.Map);
+	for (size_t tile = 0; tile < LevelFile::CellCount; ++tile)
+		if (static_cast<i32>(tile) != origin)
+			integer(bytes, 16 + tile * 24, static_cast<i32>(OccupancyCode::Wall));
+	write(blocked, bytes);
+	bool rejected = false;
+	try
+	{
+		LevelScene invalid(engine, pack, blocked, 1, nullptr, 2);
+	}
+	catch (const std::runtime_error& error)
+	{
+		rejected = str(error.what()).find("no reachable free spawn cell") != str::npos;
+	}
+	Require(rejected && engine.ReadAsset(blocked.Map) == bytes, "Impossible co-op spawn overlapped an actor or modified the source map.");
+	LevelScene playableSingle(engine, pack, blocked, 1);
+	Require(playableSingle.GetPlayerCount() == 1, "Co-op spawn rejection broke single-player loading.");
+	const LevelInfo full = FixtureLevel(engine, "zwo-coop-full-world", { { 0, 240, 240, 0 }, { 1, 640, 400, 0 }, { 2, 560, 400, 0 } });
+	bytes = engine.ReadAsset(full.Map);
+	for (size_t slot = 3; slot < LevelFile::ObjectCount; ++slot)
+		std::memcpy(bytes.data() + 16 + 9048 + slot * 100, bytes.data() + 16 + 9048 + 100, 100);
+	write(full, bytes);
+	rejected = false;
+	try
+	{
+		LevelScene invalid(engine, pack, full, 1, nullptr, 2);
+	}
+	catch (const std::runtime_error& error)
+	{
+		rejected = str(error.what()).find("No free world object slot") != str::npos;
+	}
+	Require(rejected, "A full authored world was overwritten to fit player two.");
+	const LevelInfo complete = FixtureLevel(engine, "zwo-coop-joint-completion", { { 0, 240, 240, 2 }, { 12, 280, 240, 1, 0 }, { 12, 280, 200, 1, 0 } });
+	LevelSetInfo set = pack.LevelSets.front();
+	set.Levels = { complete, fallback };
+	GameSession session(engine, pack, set, 2);
+	std::array<PlayerInput, 2> input = { PlayerInput{ 1, 0, false }, PlayerInput{ 1, 0, false } };
+	session.Update(0.001f, input);
+	input[0].Action = input[1].Action = true;
+	session.Update(0.001f, input);
+	for (i32 tick = 0; tick < 1000 && !session.GetResults(); ++tick)
+		session.Update(0.01f, std::array<PlayerInput, 2>{});
+	Require(session.GetResults() && session.GetResult().PlayerCount == 2 && session.GetResult().PlayerSheep == std::array<i32, 2>{ 1, 1 }, "Generated player did not participate in the shared Zwo campaign results.");
+	if (capture)
+	{
+		GameUi ui(engine, saves);
+		ui.ShowResults(session.GetResult());
+		engine.DrawFrame(ui.Draws(0.1f), "zwo-coop-results.bmp");
+	}
+	session.SkipBonuses();
+	session.Advance();
+	Require(session.LevelNumber() == 2 && session.GetPlayerCount() == 2 && !session.GetResults(), "Campaign advance failed to regenerate player two.");
+	session.DebugRestartLevel();
+	Require(session.GetPlayerCount() == 2 && session.LevelNumber() == 2, "Restart dropped Zwo co-op mode.");
+	const LevelInfo combat = FixtureLevel(engine, "zwo-coop-generated-catch", { { 0, 240, 240, 0 }, { 4, 240, 120, 4 }, { 2, 640, 400, 0 } });
+	LevelScene caught(engine, pack, combat, 1, nullptr, 2);
+	const size_t generated = caught.GetObjects().GetPlayer(1).GetIndex();
+	caught.GetItems().SpawnItem(ObjectKind::Flower, caught.GetObjects()[generated].Tile);
+	caught.Update(0.001f, 0, 0, false);
+	{
+		LevelScene::PlayerScope owner(caught, 1);
+		Require(caught.GetItems().GetPowerup().Code == ItemCode::Flower, "Generated player failed to collect its own item.");
+	}
+	for (i32 tick = 0; tick < 500 && caught.GetObjects().Combats[1].Enemy < 0; ++tick)
+		caught.Update(0.01f, 0, 0, false);
+	Require(caught.GetObjects().Combats[1].Enemy == 1 && caught.GetObjects().Combats[0].Enemy == -1 && caught.GetObjects()[1].TargetPlayer == 1, "Enemy catch confused a generated world slot with the player number.");
+	const LevelInfo artifact = FixtureLevel(engine, "zwo-coop-generated-artifact", { { 0, 240, 240, 0 }, { 2, 640, 400, 0 } });
+	LevelScene beamed(engine, pack, artifact, 1, nullptr, 2);
+	beamed.GetItems().SpawnItem(ObjectKind::Artifact, beamed.GetObjects().GetPlayer(1).GetState().Tile);
+	bool returned = false;
+	for (i32 tick = 0; tick < 3000 && (!returned || beamed.UfoActive()); ++tick)
+	{
+		beamed.Update(0.01f, 0, 0, false);
+		LevelScene::PlayerScope owner(beamed, 1);
+		returned = returned || beamed.GetItems().GetPowerup().Code == ItemCode::AlienPower;
+	}
+	Require(returned && !beamed.UfoActive() && beamed.GetItems().GetPowerup().Code == ItemCode::None, "Generated player artifact return changed player one's state.");
+	const LevelInfo& tutorial = pack.LevelSets.front().Levels.front();
+	const LevelFile tutorialFile(engine.ReadAsset(tutorial.Map), tutorial.Map);
+	Require(!tutorialFile.GetPuddles().empty(), "Tutorial fixture has no authored teleport destinations.");
+	LevelScene teleported(engine, pack, tutorial, 1, nullptr, 2);
+	const f32 firstX = teleported.GetPlayer().GetX(), firstY = teleported.GetPlayer().GetY();
+	const i32 oldTile = teleported.GetObjects().GetPlayer(1).GetState().Tile;
+	{
+		LevelScene::PlayerScope owner(teleported, 1);
+		teleported.GetPlayer().Teleport(tutorialFile.GetPuddles().front());
+		const i32 landing = teleported.GetPlayer().GetState().Tile;
+		Require(landing != oldTile && teleported.GetGrid().GetReservationOwner(landing) == static_cast<i32>(teleported.GetPlayerIndex()) && teleported.GetGrid().GetReservationOwner(oldTile) != static_cast<i32>(teleported.GetPlayerIndex()), "Generated player teleport did not move its own collision ownership.");
+	}
+	Require(teleported.GetPlayer().GetX() == firstX && teleported.GetPlayer().GetY() == firstY, "Generated player's teleport moved the authored player.");
+	Log("PASS: Zwo co-op nearest/directional/spawner/pending-player/no-space cases; generated-player interactions, pickup, catch, artifact, results, advance and restart.");
+}
+
+void CheckZwoCoopCatalog(MudGE& engine, bool capture)
+{
+	size_t levels = 0;
+	for (const LevelPackInfo& pack : engine.GetData().GetPacks())
+	{
+		if (pack.Edition != GameEdition::Zwo)
+			continue;
+		for (const LevelSetInfo& set : pack.LevelSets)
+		{
+			for (const LevelInfo& level : set.Levels)
+			{
+				try
+				{
+					const bytestream bytes = engine.ReadAsset(level.Map);
+					const LevelFile source(bytes, level.Map);
+					LevelScene single(engine, pack, level, 1);
+					LevelScene coop(engine, pack, level, 1, nullptr, 2);
+					Require(single.GetPlayerCount() == 1 && coop.GetPlayerCount() == 2 && coop.GetObjects().Size() == single.GetObjects().Size() + 1, "Zwo co-op changed authored objects instead of adding one player.");
+					const PlayerCharacter& first = coop.GetObjects().GetPlayer(0);
+					const PlayerCharacter& second = coop.GetObjects().GetPlayer(1);
+					Require(first.GetIndex() == single.GetPlayerIndex() && first.GetX() == single.GetPlayer().GetX() && first.GetY() == single.GetPlayer().GetY(), "Generated player moved the authored spawn.");
+					const i32 tile = second.GetState().Tile;
+					const LevelCell& cell = source.GetCells()[tile];
+					Require(tile != first.GetState().Tile && cell.Terrain == OccupancyCode::Empty && cell.Direction == 0 && cell.ItemCode == ItemCode::None && !IsSpawner(cell.Spawner), "Generated player occupies an unsafe cell.");
+					Require(coop.GetGrid().GetReservationOwner(tile) == static_cast<i32>(second.GetIndex()) && coop.GetGrid().GetReservationOwner(first.GetState().Tile) == static_cast<i32>(first.GetIndex()), "Co-op spawn did not establish separate collision ownership.");
+					Require(!coop.GetObjects().CanOccupy(tile, first.GetIndex()), "Player one's movement can overlap the generated player.");
+					for (size_t index = 0; index < single.GetObjects().Size(); ++index)
+						Require(coop.GetObjects()[index].Original == single.GetObjects()[index].Original && coop.GetObjects()[index].Temperament == single.GetObjects()[index].Temperament, "Co-op spawn changed authored slots or consumed gameplay randomness.");
+					if (capture && levels == 0)
+						engine.DrawFrame(coop.Draws(), "zwo-coop-generated-spawn.bmp");
+					for (i32 tick = 0; tick < 1800; ++tick)
+					{
+						if (tick == 1200)
+							coop.TimeExpired();
+						coop.Update(1.0f / 60, std::array<PlayerInput, 2>{});
+					}
+					for (const SpriteDraw& draw : coop.Draws())
+						Require(draw.Sprite && draw.Frame >= 0 && draw.Frame < draw.Sprite->Rows * draw.Sprite->Columns, "Zwo co-op emitted an invalid frame.");
+					for (const str& sound : coop.TakeSounds())
+						engine.GetData().AssetPath(sound);
+					Require(engine.ReadAsset(level.Map) == bytes, "Co-op load altered the source level.");
+					++levels;
+				}
+				catch (const std::exception& error)
+				{
+					throw std::runtime_error(level.Map + ": " + error.what());
+				}
+			}
+		}
+	}
+	Require(levels == 105, "Zwo co-op catalog coverage is incomplete.");
+	Log("PASS: all 105 Zwo maps generate safe co-op spawns, preserve single-player/authored data/randomness and simulate 30 seconds.");
+}
+
 void CheckEditionFoundation(MudGE& engine, const fpath& saves)
 {
 	const GameData& data = engine.GetData();
@@ -2601,6 +3417,15 @@ i32 main(i32 argc, char** argv)
 		engine.Construct();
 		engine.InitializePlugins();
 		engine.VerifyData();
+		if (!engine.GetData().HasEdition(GameEdition::XXX))
+		{
+			const LevelPackInfo& pack = engine.GetData().GetPacks().front();
+			GameUi ui(engine, saves / L"legacy-coop-fallback");
+			ui.SetPlayerCount(2);
+			GameSession session(engine, pack, pack.LevelSets.front(), 2);
+			LevelScene scene(engine, pack, pack.LevelSets.front().Levels.front(), 1, nullptr, 2);
+			Require(ui.GetPlayerCount() == 1 && session.GetPlayerCount() == 1 && scene.GetPlayerCount() == 1 && scene.GetObjects().Find(ObjectKind::Player).size() == 1, "Archival Zwo-only data attempted to use unavailable XXX multiplayer resources.");
+		}
 		if (editions)
 		{
 			CheckEditionFoundation(engine, saves);
@@ -2609,6 +3434,15 @@ i32 main(i32 argc, char** argv)
 			CheckPresentationCorrections(engine, saves, editionVisual);
 			CheckSharedPlayerRuntime(engine);
 			CheckPlayerMovement(engine);
+			CheckInteractionOwnership(engine);
+			CheckSharedItems(engine, editionVisual);
+			CheckArtifactAndMultiplier(engine, editionVisual);
+			CheckMultiplayerFoundations(engine, editionVisual);
+			CheckMultiplayerEnemies(engine);
+			CheckBonusControllers(engine, saves, editionVisual);
+			CheckMultiplayerPlay(engine, saves, editionVisual);
+			CheckZwoCoopSpawns(engine, saves, editionVisual);
+			CheckZwoCoopCatalog(engine, editionVisual);
 			CheckCatalog(engine, 234);
 			CheckMenuPresentation(engine, saves, editionVisual);
 			engine.Shutdown();

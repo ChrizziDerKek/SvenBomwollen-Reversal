@@ -163,7 +163,7 @@ bool MudGE::StartAudio()
 	return result;
 }
 
-bool MudGE::PlaySample(const str& path, bool looped)
+bool MudGE::PlaySample(const str& path, bool looped, i32 frequency)
 {
 	if (!SoundSystem)
 		return false;
@@ -195,6 +195,10 @@ bool MudGE::PlaySample(const str& path, bool looped)
 		Method<void(__thiscall*)(any, i32)>(sample->second, 0x40)(sample->second, 0x02);
 	}
 	any channel = Method<any(__thiscall*)(any)>(sample->second, 0x54)(sample->second);
+	// Sven2 DX_SoundSystemPlugin: vtable 0x10015170, slot +0x1C ->
+	// 0x100013C0 -> IDirectSoundBuffer::SetFrequency (+0x44).
+	if (channel && frequency > 0)
+		Method<void(__thiscall*)(any, i32)>(channel, 0x1C)(channel, frequency);
 	if (looped)
 		LoopedChannel = channel;
 	if (looped && channel)

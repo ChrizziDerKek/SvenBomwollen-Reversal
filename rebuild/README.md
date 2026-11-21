@@ -146,3 +146,12 @@ and protected-backup source hash check from that migration. The archival
 `tools/VerifyRefactor.py` check requires the old working-copy backup and retained
 baseline/current traces; use the native suite above after clearing those files.
 The animal mood change is an intentional deviation from the original baseline.
+
+
+### XXX bonus rounds and local multiplayer
+
+The combined runtime supports the shipped Lars, Broemse and alien bonus controllers. Finishing Frigida on the first uninterrupted attempt unlocks the following bonus; locked bonus maps are skipped. Wine/teddy distractions cost time, artifacts end bonus play, and bonus rounds do not award a life bonus.
+
+Choose **2 Spieler** and a Zwo or XXX episode for local multiplayer in the combined runtime. Both sets of bindings can be checked/changed in **Steuerung**. Players share score, lives and time, with individual actions/items, contribution rows and a separate multiplayer highscore file. Multiplayer bonus rounds use two aliens. Zwo-authored episodes generate a second Sven on a nearby free, reachable tile in two-player mode, leaving the level files unchanged. **1 Spieler** retains the original single spawn; archival Zwo-only data remains single-player.
+
+Implementation/evidence/status: [XXX roadmap](research/xxx/PROGRESS.md) and [bonus/multiplayer notes](research/xxx/modes/BONUS_AND_MULTIPLAYER.md). This does not claim that all remaining XXX features or original-runtime parity work are complete.

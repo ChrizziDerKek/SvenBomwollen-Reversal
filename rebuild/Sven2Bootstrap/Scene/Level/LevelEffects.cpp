@@ -1,4 +1,5 @@
 #include "Scene/Level/LevelEffects.h"
+#include "Scene/Objects/ObjectCatalog.h"
 #include "Scene/LevelScene.h"
 #include "Scene/SceneConstants.h"
 #include <algorithm>
@@ -23,7 +24,7 @@ void LevelEffects::SpawnCompletionEffect(f32 x, f32 y, bool hearts)
 	if (slot >= 256)
 		return;
 	Object effect;
-	const ::Sprite* image = hearts ? Scene.Resources.Hearts : Scene.Resources.Explosion;
+	const ::Sprite* image = Scene.IsBonusLevel() ? Scene.Resources.GetSprite(Scene.CoreAsset("Sven2/gfx/anim_clouds_with_flash1.bmp"), 16) : (hearts ? Scene.Resources.Hearts : Scene.Resources.Explosion);
 	effect.Kind = ObjectKind::CompletionEffect;
 	// Native centering truncates odd sprite dimensions before subtraction.
 	// A floating midpoint shifts the effect and changes its depth ordering.
@@ -42,6 +43,11 @@ void LevelEffects::UpdateEffects(f32 seconds)
 {
 	for (auto& effect : SceneEffects)
 	{
+		if (effect.Kind == ObjectKind::Beam)
+		{
+			effect.Freed = Scene.AdvanceActor(effect, AnimationSequence::UfoBeam, 15, seconds);
+			continue;
+		}
 		if (effect.Kind == ObjectKind::ElectricFlash)
 		{
 			effect.Freed = Scene.AdvanceActor(effect, AnimationSequence::ElectricFlash, 15, seconds);
@@ -96,6 +102,16 @@ void LevelEffects::SpawnDigEffect(const Object& actor)
 	effect.CommittedY = effect.Y;
 	effect.DepthOffset = Scene.Resources.Digging->FrameHeight - 30;
 	effect.Draw = { Scene.Resources.Digging, static_cast<i32>(effect.X), static_cast<i32>(effect.Y), 0 };
+	SceneEffects.push_back(effect);
+}
+
+void LevelEffects::SpawnBeam(f32 x, f32 y)
+{
+	Object effect;
+	effect.Kind = ObjectKind::Beam;
+	effect.Y = effect.CommittedY = y - 93;
+	effect.DepthOffset = Scene.Resources.BeamSprite->FrameHeight;
+	effect.Draw = { Scene.Resources.BeamSprite, static_cast<i32>(x) - 150, static_cast<i32>(y) - 93, Scene.Resources.AnimationFrames(AnimationSequence::UfoBeam).front() };
 	SceneEffects.push_back(effect);
 }
 
@@ -155,29 +171,12 @@ bool EmitterParticle::Spawn(LevelScene& scene, ObjectKind kind, f32 x, f32 y, bo
 {
 	if (kind != ObjectKind::BubbleParticle && kind != ObjectKind::YellowParticle)
 		throw std::invalid_argument("Not a native XXX emitter particle.");
-	ObjectManager& objects = scene.GetObjects();
-	size_t slot = 256;
-	while (slot < objects.Size() && slot < 384 && !objects[slot].Freed)
-		++slot;
-	if (slot == 384)
-		return false;
-	while (objects.Size() < slot)
-	{
-		WorldObject empty;
-		empty.Kind = ObjectKind::Inactive;
-		empty.Freed = true;
-		objects.Add(empty);
-	}
 	WorldObject particle;
 	particle.Kind = kind;
 	particle.X = x;
 	particle.Y = y;
 	particle.Draw.Mirror = mirror;
-	if (slot == objects.Size())
-		objects.Add(particle);
-	else
-		objects.Replace(slot, particle);
-	return true;
+	return scene.GetObjects().AddTransient(particle);
 }
 
 void EmitterParticle::Initialize()
@@ -207,6 +206,116 @@ void EmitterParticle::Update(f32 seconds)
 	State.DepthOffset = static_cast<i32>(NativeDepth);
 	Lifetime -= seconds * 60;
 	State.Freed = Lifetime < 0;
+	State.CommittedY = State.Y;
+	State.Draw.X = static_cast<i32>(State.X);
+	State.Draw.Y = static_cast<i32>(State.Y);
+}
+
+PowerupEffect::PowerupEffect(LevelScene& scene, size_t index)
+    : BaseObject(scene, ObjectPhase::Effects, index)
+{}
+
+void PowerupEffect::Spawn(LevelScene& scene, ObjectKind kind, size_t target)
+{
+	WorldObject effect;
+	effect.Kind = kind;
+	effect.ItemTarget = static_cast<i32>(target);
+	if (kind != ObjectKind::SlowNotice)
+	{
+		const WorldObject& actor = scene.GetObjects()[target];
+		effect.X = actor.Kind == ObjectKind::Player ? scene.GetObjects().GetPlayer(actor.TargetPlayer).GetX() + actor.CenterX : actor.X + actor.CenterX;
+		effect.Y = actor.Kind == ObjectKind::Player ? scene.GetObjects().GetPlayer(actor.TargetPlayer).GetY() + actor.CenterY : actor.Y + actor.CenterY;
+	}
+	scene.GetObjects().AddTransient(effect);
+}
+
+void PowerupEffect::Initialize()
+{
+	const CharacterDefinition* definition = FindCharacterDefinition(State.Kind);
+	State.Draw.Sprite = Scene.Resources.GetSprite(Scene.CoreAsset(definition->SpriteAsset), definition->Frames);
+	State.X -= State.Draw.Sprite->FrameWidth / 2;
+	State.Y -= State.Draw.Sprite->FrameHeight / 2;
+	State.DepthOffset = State.Draw.Sprite->FrameHeight;
+	switch (State.Kind)
+	{
+	case ObjectKind::RocketBurst:
+		VelocityX = static_cast<f32>(Scene.RandomInt(25) + 5);
+		VelocityY = -100;
+		break;
+	case ObjectKind::SlowBubble:
+		Frames = &Scene.Resources.FrameList("aMushroom1");
+		VelocityX = static_cast<f32>(50 - Scene.RandomInt(100));
+		VelocityY = static_cast<f32>(-Scene.RandomInt(100));
+		Lifetime = static_cast<f32>(Scene.RandomInt(50) + 25);
+		break;
+	case ObjectKind::SmellBurst:
+		Frames = &Scene.Resources.FrameList("aMushroom2");
+		Lifetime = static_cast<f32>(Scene.RandomInt(150) + 50);
+		break;
+	case ObjectKind::FlowerBurst:
+		Frames = &Scene.Resources.FrameList("aRose");
+		Lifetime = static_cast<f32>(Scene.RandomInt(150) + 50);
+		break;
+	case ObjectKind::SlowNotice:
+		Lifetime = static_cast<f32>(Scene.RandomInt(150) + 50);
+		break;
+	default:
+		throw std::logic_error("Unsupported repeated-pickup effect.");
+	}
+	State.Draw.X = static_cast<i32>(State.X);
+	State.Draw.Y = static_cast<i32>(State.Y);
+}
+
+void PowerupEffect::Update(f32 seconds)
+{
+	if (Frames)
+	{
+		FrameAge += seconds * (State.Kind == ObjectKind::RocketBurst ? 30 : 5);
+		if (FrameAge >= Frames->size())
+			FrameAge = 0;
+		State.Draw.Frame = Frames->at(static_cast<size_t>(FrameAge));
+	}
+	if (State.Kind == ObjectKind::RocketBurst || State.Kind == ObjectKind::SlowBubble)
+	{
+		State.X += VelocityX * seconds;
+		State.Y += VelocityY * seconds;
+		if (State.Kind == ObjectKind::RocketBurst)
+		{
+			VelocityX += seconds * 50;
+			VelocityY -= seconds * 600;
+			State.Freed = State.Y < -128;
+		}
+		else
+		{
+			VelocityX += VelocityX < 0 ? seconds * 5 : -seconds * 5;
+			VelocityY += seconds * 60;
+		}
+	}
+	if (State.Kind != ObjectKind::RocketBurst)
+	{
+		Lifetime -= seconds * 60;
+		State.Freed = Lifetime < 0;
+	}
+	if (State.ItemTarget >= 0 && static_cast<size_t>(State.ItemTarget) < Scene.Objects.Size())
+	{
+		const WorldObject& target = Scene.Objects[State.ItemTarget];
+		if (State.Kind == ObjectKind::SmellBurst || State.Kind == ObjectKind::FlowerBurst)
+		{
+			State.X = target.X + target.CenterX - State.Draw.Sprite->FrameWidth / 2;
+			State.Y = target.Y + target.Lift + target.CenterY - State.Draw.Sprite->FrameHeight / 2;
+		}
+		if (!SoundPlayed && Lifetime < 75 && State.Kind == ObjectKind::SlowNotice && !target.Freed && Scene.IsEnemy(target.Kind))
+		{
+			SoundPlayed = true;
+			Scene.EmitNamedSound(target.Kind == ObjectKind::Dog ? "SfxDogFoundSven" : (target.Kind == ObjectKind::Farmer ? "SfxGuyFoundSven" : (target.Kind == ObjectKind::Girl ? "SfxBroemseFoundSven" : "SfxAlienFoundSven")), 35000);
+		}
+		else if (!SoundPlayed && Lifetime < 75 && (State.Kind == ObjectKind::SmellBurst || State.Kind == ObjectKind::FlowerBurst))
+		{
+			SoundPlayed = true;
+			if (target.Kind == ObjectKind::Sheep && Scene.RandomInt(3))
+				Scene.EmitNamedSound(State.Kind == ObjectKind::FlowerBurst ? (Scene.RandomInt(2) ? "SfxBlaat21" : "SfxBlaat20") : (Scene.RandomInt(2) ? "SfxBlaat23" : "SfxBlaat22"));
+		}
+	}
 	State.CommittedY = State.Y;
 	State.Draw.X = static_cast<i32>(State.X);
 	State.Draw.Y = static_cast<i32>(State.Y);

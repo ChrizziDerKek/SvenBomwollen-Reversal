@@ -31,7 +31,8 @@ public:
 		Pause,
 		Quit,
 		Results,
-		Name
+		Name,
+		Bonus
 	};
 	GameUi(MudGE& engine, fpath saves);
 	UiAction Handle(const WindowInput::Result& input);
@@ -44,7 +45,7 @@ public:
 	}
 	bool UsesSceneBackground() const
 	{
-		return CurrentPage == Page::Pause || CurrentPage == Page::Results || (CurrentPage == Page::Quit && QuitReturn == Page::Pause);
+		return CurrentPage == Page::Pause || CurrentPage == Page::Results || CurrentPage == Page::Bonus || (CurrentPage == Page::Quit && QuitReturn == Page::Pause);
 	}
 	i32 GetPlayerCount() const;
 	void SetPlayerCount(i32 playerCount);
@@ -55,6 +56,7 @@ public:
 	i32 CardCount() const;
 	void Show(Page page);
 	void ShowResults(const RoundResult& result);
+	void ShowBonus(BonusMode mode);
 	void SetNotice(const str& notice);
 	std::vector<str> TakeSounds();
 
@@ -88,6 +90,7 @@ private:
 	BitmapFont Large, Small, Green, SmallGreen;
 	i32 RequestedPlayerCount = 1;
 	i32 ScorePlayers = 1;
+	BonusMode IntroMode = BonusMode::Sven;
 	std::array<std::array<i32, 5>, 2> ControlBindings{};
 	i32 ControlSelection = -1;
 	std::array<std::array<bool, 5>, 2> CustomBindings{};

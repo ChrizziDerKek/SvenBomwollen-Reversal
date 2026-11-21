@@ -10,8 +10,8 @@ enum class SoundPlayback
 
 struct SoundRequest
 {
-	SoundRequest(str asset, SoundPlayback playback = SoundPlayback::OneShot)
-	    : Asset(std::move(asset)), Playback(playback)
+	SoundRequest(str asset, SoundPlayback playback = SoundPlayback::OneShot, i32 frequency = 0)
+	    : Asset(std::move(asset)), Playback(playback), Frequency(frequency)
 	{}
 
 	SoundRequest(cstr asset)
@@ -20,4 +20,5 @@ struct SoundRequest
 
 	str Asset;
 	SoundPlayback Playback;
+	i32 Frequency; // Zero keeps the sample's native rate; otherwise Hz.
 };

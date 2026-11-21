@@ -312,6 +312,25 @@ void SceneResources::InitializePlayer()
 		if (!std::isfinite(count) || count < 1 || count > interactionCount || std::floor(count) != count)
 			throw std::runtime_error("Invalid XXX ShagAnims parameter.");
 		Interactions.resize(static_cast<size_t>(count) * 2);
+		if (Scene.IsBonusLevel())
+		{
+			const ObjectKind kind = Scene.GetPlayerKind();
+			const ::EnemyRules& rules = EnemyRules.at(kind);
+			Stand = ActorSprites.at(kind).Stand;
+			Walks = ActorSprites.at(kind).Walk;
+			Scene.GetPlayer().Speed = rules.Speed * rules.Run * (kind == ObjectKind::Farmer ? 1.2f : 1);
+			Scene.GetPlayer().Diagonal = rules.Diagonal;
+			Scene.GetPlayer().WalkRate = rules.WalkRate * (kind == ObjectKind::Farmer ? 1.2f : 1);
+			for (i32 direction = 0; direction < 4 && kind != ObjectKind::Dog; ++direction)
+			{
+				const str side = direction == 0 || direction == 3 ? "Back" : "Front";
+				const str family = kind == ObjectKind::Farmer ? "Lars" : (kind == ObjectKind::Girl ? "Broemse" : "Alien");
+				const str sprite = kind == ObjectKind::Farmer ? "GuyShaving" + side : (kind == ObjectKind::Girl ? "BroemseSheep" + side : (side == "Back" ? "AlienSheep" : "AlienProbe3"));
+				BonusActions[direction] = { NamedSprite(sprite), FrameList("a" + family + "Shave" + side + "Bonus"), Scene.Engine.GetData().SoundPath("Sfx" + family + "Shave" + side, GameEdition::XXX), direction, direction >= 2 };
+				// 0x417BC0: bonus code 138 uses fixed 15 fps; code 150 uses the alien parameter.
+				Scene.GetPlayer().ActionRate = kind == ObjectKind::Alien ? Scene.Parameter("AlienShaveFrameRate", 20) : 15.0f;
+			}
+		}
 		return;
 	}
 	Stand = Scene.GetPlayerDraw().Sprite;
@@ -382,7 +401,9 @@ const std::vector<i32>& SceneResources::PlayerFrames(PlayerAnimation animation)
 		{ PlayerAnimation::ElectricShock, "aSvenElectro" },
 		{ PlayerAnimation::KickFront, "aSvenKickInBallsFront" },
 		{ PlayerAnimation::KickBack, "aSvenKickInBallsBack" },
-		{ PlayerAnimation::Frigida, "aSvenShagFrigida" }
+		{ PlayerAnimation::Frigida, "aSvenShagFrigida" },
+		{ PlayerAnimation::BeamUp, "aSvenBeamUp" },
+		{ PlayerAnimation::BeamDown, "aSvenBeamDown" }
 	};
 	const str& name = names.at(animation);
 	if (Scene.GetGameplayEdition() == GameEdition::XXX)
@@ -408,6 +429,13 @@ const std::vector<i32>& SceneResources::PlayerFrames(PlayerAnimation animation)
 		break;
 	case PlayerAnimation::Frigida:
 		frames.assign(std::begin(FrigidaFrames), std::end(FrigidaFrames));
+		break;
+	case PlayerAnimation::BeamUp:
+		frames.resize(PlayerBeamSprites[0]->Rows);
+		std::iota(frames.begin(), frames.end(), 0);
+		break;
+	case PlayerAnimation::BeamDown:
+		frames = { 3, 4, 5, 6, 7 }; // Archival Zwo fall sequence.
 		break;
 	default:
 		frames.resize(animation == PlayerAnimation::Walk ? Walks[0]->Rows : Kicks[animation == PlayerAnimation::KickBack ? 0 : 1]->Rows);

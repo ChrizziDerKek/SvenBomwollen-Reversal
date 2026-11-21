@@ -27,6 +27,9 @@ void AnimalCharacter::Resolve()
 
 void Sheep::Update(f32 seconds)
 {
+	const WorldObject& animal = GetState();
+	const size_t number = animal.InteractionPlayer >= 0 ? static_cast<size_t>(animal.InteractionPlayer) : (animal.TargetPlayer < Scene.GetPlayerCount() ? animal.TargetPlayer : 0);
+	LevelScene::PlayerScope owner(Scene, number);
 	UpdateSheep(seconds);
 }
 
@@ -179,9 +182,10 @@ void AnimalCharacter::UpdateXxxSmallAnimal(f32 seconds)
 
 void AnimalCharacter::ResolveSheep(Object& animal)
 {
+	Scene.RecordAnimalCompletion(animal);
 	// 0x407911..0x407B08: first resolved Frigida is special; otherwise first
 	// attempt earns 15, a later attempt 10. Time bonuses are not score awards.
-	const bool special = animal.Kind == ObjectKind::Sheep && Scene.CompletedSheep == 0 && animal.Temperament == 2;
+	const bool special = animal.Kind == ObjectKind::Sheep && (Scene.GetGameplayEdition() == GameEdition::XXX ? animal.Attempts == 1 : Scene.CompletedSheep == 0) && animal.Temperament == 2;
 	if (animal.Kind != ObjectKind::Sheep)
 	{
 		Scene.AddScore(10);
@@ -189,7 +193,7 @@ void AnimalCharacter::ResolveSheep(Object& animal)
 	}
 	else if (special)
 	{
-		Scene.AddScore(20);
+		Scene.AddScore(Scene.GetGameplayEdition() == GameEdition::XXX ? 30 : 20);
 		Scene.Effects.AddTime(10, animal.X + 60, animal.Y + 60);
 	}
 	else
@@ -209,7 +213,7 @@ void AnimalCharacter::ResolveSheep(Object& animal)
 	if (animal.Kind == ObjectKind::Sheep)
 		++Scene.CompletedSheep;
 	if (Scene.GetGameplayEdition() == GameEdition::XXX)
-		Scene.EmitNamedSound("SfxExplode");
+		Scene.EmitNamedSound(Scene.IsBonusLevel() ? "SfxExplodeFlash" : "SfxExplode");
 	else
 		Scene.Sounds.push_back("Sven2/sfx/sheep_explode3.ogg");
 	i32 oldTile = Scene.Grid.TileAt(Scene.GetPlayer().X, Scene.GetPlayer().Y);
@@ -253,6 +257,7 @@ bool AnimalCharacter::AgeSheepMood(Object& animal, f32 seconds)
 		return false;
 	}
 	animal.State = ActorState::DemonTransforming;
+	animal.TargetPlayer = Scene.GetPlayerCount();
 	animal.Age = animal.Pulse = 0;
 	animal.Draw = { Scene.Resources.DemonSheep[animal.Facing], static_cast<i32>(animal.X), static_cast<i32>(animal.Y), 0, SheepMirror[animal.Facing] };
 	Scene.EmitNamedSound("SfxDevil");
@@ -263,6 +268,12 @@ bool AnimalCharacter::MoveDemonSheep()
 {
 	const size_t index = GetIndex();
 	WorldObject& animal = Scene.Objects[index];
+	if (animal.TargetPlayer >= Scene.GetPlayerCount())
+	{
+		const i32 nearest = Scene.Objects.FindNearbyPlayer(animal, 500);
+		animal.TargetPlayer = nearest >= 0 ? static_cast<size_t>(nearest) : 0;
+	}
+	LevelScene::PlayerScope owner(Scene, animal.TargetPlayer);
 	const i32 playerTile = Scene.Grid.TileAt(Scene.GetPlayer().X, Scene.GetPlayer().Y);
 	const i32 preferred = animal.Tile % Stride > playerTile % Stride ? (animal.Tile / Stride > playerTile / Stride ? 3 : 2) : (animal.Tile / Stride <= playerTile / Stride ? 1 : 0);
 	// Literal fallback order in 0x408880. Despite the old analyst name, it
@@ -289,14 +300,14 @@ bool AnimalCharacter::ShockPlayer(Object& animal, i32 timeChange)
 {
 	Object facing = animal;
 	facing.Facing = 2 * animal.Facing + 1;
-	if (!Scene.Objects.CanCatchPlayer(facing))
+	const i32 caught = Scene.GetGameplayEdition() == GameEdition::XXX ? Scene.Objects.FindCaughtPlayer(facing) : (Scene.Objects.CanCatchPlayer(facing) ? static_cast<i32>(Scene.GetPlayer().GetNumber()) : -1);
+	if (caught < 0)
 		return false;
+	animal.TargetPlayer = static_cast<size_t>(caught);
+	LevelScene::PlayerScope owner(Scene, animal.TargetPlayer);
 	// 0x42C990 cancels interpolation, the current interaction and powerup.
 	Scene.GetPlayer().CancelPlayerStep();
-	Scene.GetPlayer().ActiveSheep = -1;
-	Scene.GetPlayer().PlayerAction = PlayerActionState::Idle;
-	Scene.GetPlayer().Interaction = nullptr;
-	Scene.GetPlayer().ActionQueued = false;
+	Scene.GetPlayer().InterruptInteraction();
 	Scene.GetPlayer().SelectedInteraction = -1;
 	Scene.Items.GetPowerup().Code = ItemCode::None;
 	Scene.Items.GetPowerup().Remaining = Scene.Items.GetPowerup().Age = 0;
@@ -412,7 +423,7 @@ void AnimalCharacter::UpdateSheep(f32 seconds)
 		animal.Draw.Mirror = SheepMirror[animal.Facing];
 		return;
 	}
-	if (static_cast<i32>(i) == Scene.GetPlayer().ActiveSheep && Scene.GetPlayer().PlayerAction != PlayerActionState::Whistle)
+	if (animal.InteractionPlayer >= 0 || (static_cast<i32>(i) == Scene.GetPlayer().ActiveSheep && Scene.GetPlayer().PlayerAction != PlayerActionState::Whistle))
 		return;
 	animal.Age += seconds;
 	if (animal.State == ActorState::Turning)
@@ -469,7 +480,8 @@ void AnimalCharacter::UpdateSheep(f32 seconds)
 	else
 	{
 		animal.Idle -= seconds * 60;
-		if (animal.Idle < 0 && !Scene.Objects.PlayerInRange(animal, 5))
+		const bool nearby = Scene.GetGameplayEdition() == GameEdition::XXX ? Scene.Objects.FindNearbyPlayer(animal, 5) >= 0 : Scene.Objects.PlayerInRange(animal, 5);
+		if (animal.Idle < 0 && !nearby)
 		{
 			animal.Idle = static_cast<f32>(450 + Scene.RandomInt(1000));
 			i32 choice = Scene.RandomInt(5);

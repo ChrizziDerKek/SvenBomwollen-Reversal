@@ -1,4 +1,5 @@
 #include "Scene/Characters/PlayerCharacter.h"
+#include "Scene/Objects/ObjectCatalog.h"
 #include "Scene/LevelScene.h"
 #include "Scene/SceneConstants.h"
 #include <algorithm>
@@ -33,6 +34,12 @@ bool PlayerCharacter::CanRepeatInteraction(const WorldObject& animal) const
 void PlayerCharacter::Update(f32 seconds)
 {
 	LevelScene::PlayerScope player(Scene, Number);
+	if (Scene.GetGameplayEdition() == GameEdition::XXX && !Scene.IsBonusLevel())
+	{
+		IconAge += seconds * 20;
+		if (IconAge >= Scene.Resources.FrameList(Number == 0 ? "aPlayerIcon1" : "aPlayerIcon2").size())
+			IconAge = 0;
+	}
 	AdvancePlayer(seconds, MovementX, MovementY);
 }
 
@@ -87,13 +94,13 @@ void PlayerCharacter::Teleport(i32 source)
 {
 	if (Scene.GetGameplayEdition() == GameEdition::XXX)
 		CancelPlayerStep();
-	const ::Sprite* sprite = Scene.Effects.Splashes[0].Sprite;
+	std::array<SpriteDraw, 2>& splashes = Scene.Effects.Splashes[Number];
+	const ::Sprite* sprite = splashes[0].Sprite;
 	auto splashAt = [sprite](i32 tile) {
 		return SpriteDraw{ sprite, tile % Stride * TileSize - 70, tile / Stride * TileSize - 65, 0 };
 	};
-	Scene.Effects.Splashes[0] = splashAt(source);
-	Scene.Effects.Splashes[1] = {};
-	Scene.Effects.SplashAge = 0;
+	splashes[0] = splashAt(source);
+	splashes[1] = {};
 	Scene.Effects.SplashSound = true;
 	Scene.Sounds.push_back("Sven2/sfx/water_splash22.ogg");
 	Scene.GetPlayer().SplashAge = 0;
@@ -119,7 +126,7 @@ void PlayerCharacter::Teleport(i32 source)
 		Scene.Objects[Scene.GetPlayerIndex()].CommittedY = Y;
 		if (Scene.GetGameplayEdition() == GameEdition::XXX)
 			MarkPlayerCell();
-		Scene.Effects.Splashes[1] = splashAt(target);
+		splashes[1] = splashAt(target);
 		Log(str(Scene.Grid.Tiles[source] == OccupancyCode::Water ? "Water entry: " : "Puddle teleport: ") + std::to_string(source) + " -> " + std::to_string(target));
 		return;
 	}
@@ -127,6 +134,11 @@ void PlayerCharacter::Teleport(i32 source)
 
 void PlayerCharacter::RestorePlayer()
 {
+	if (Scene.IsBonusLevel())
+	{
+		DrawBonusPlayer();
+		return;
+	}
 	SpriteDraw& draw = Scene.Objects[Scene.GetPlayerIndex()].Draw;
 	draw = { Scene.Resources.Stand, static_cast<i32>(X), static_cast<i32>(Y + PlayerLift), Facing };
 	if (PlayerShockAge >= 0)
@@ -142,21 +154,38 @@ void PlayerCharacter::RestorePlayer()
 			draw = {};
 			return;
 		}
-		const i32 frame = PlayerBeamState == 21 ? std::min(21, static_cast<i32>(PlayerBeamClock * 10)) : std::min(7, 3 + static_cast<i32>((PlayerBeamClock - 2.5f) * 10));
+		i32 frame;
+		if (Scene.GetGameplayEdition() == GameEdition::XXX)
+		{
+			// 0x40AA10 states 21/22: up clamps to the final up frame; down's
+			// one-frame descriptor completes immediately and restores that frame.
+			const std::vector<i32>& up = Scene.Resources.PlayerFrames(PlayerAnimation::BeamUp);
+			const std::vector<i32>& down = Scene.Resources.PlayerFrames(PlayerAnimation::BeamDown);
+			const size_t index = static_cast<size_t>(PlayerBeamClock * 10);
+			frame = PlayerBeamState == 21 ? up[std::min(up.size() - 1, index)] : (index >= down.size() ? up.back() : down[index]);
+		}
+		else
+			frame = PlayerBeamState == 21 ? std::min(21, static_cast<i32>(PlayerBeamClock * 10)) : std::min(7, 3 + static_cast<i32>((PlayerBeamClock - 2.5f) * 10));
 		draw = { Scene.Resources.PlayerBeamSprites[Facing / 2], static_cast<i32>(X), static_cast<i32>(Y + PlayerLift), frame, Facing / 2 == 1 || Facing / 2 == 3 };
 	}
 }
 
 void PlayerCharacter::Act(bool continuation)
 {
+	if (Scene.IsBonusLevel())
+	{
+		ActBonus(continuation);
+		return;
+	}
 	const i32 tile = Scene.Grid.TileAt(X + Directions[Facing][0] * 40, Y + Directions[Facing][1] * 40);
 	for (size_t i = 0; i < Scene.Objects.Size(); ++i)
 	{
 		WorldObject& animal = Scene.Objects[i];
-		if (!Scene.IsAnimal(animal.Kind) || animal.Freed || animal.Tile != tile || animal.State == ActorState::AnimalWalking || animal.State == ActorState::Turning || (IsDemonState(animal.State)))
+		if (!Scene.IsAnimal(animal.Kind) || animal.Freed || (animal.InteractionPlayer >= 0 && animal.InteractionPlayer != static_cast<i32>(Number)) || animal.Tile != tile || animal.State == ActorState::AnimalWalking || animal.State == ActorState::Turning || (IsDemonState(animal.State)))
 			continue;
 		ActiveSheep = static_cast<i32>(i);
 		ActionAge = 0;
+		ActionComplete = false;
 		// 0x42B730: each sheep direction accepts three of Sven's eight Directions.
 		const i32 difference = (Facing - 2 * animal.Facing + 8) % 8;
 		if (difference > 2)
@@ -167,6 +196,7 @@ void PlayerCharacter::Act(bool continuation)
 			animal.Age = 0;
 			animal.Idle = 75;
 			PlayerAction = PlayerActionState::Whistle;
+			CurrentActionRate = DefaultRate;
 			DrawActionFrame(0);
 			Scene.Sounds.push_back("Sven2/sfx/Sven_whistle.ogg");
 			return;
@@ -174,6 +204,8 @@ void PlayerCharacter::Act(bool continuation)
 		if (animal.Kind == ObjectKind::Sheep && animal.Impatience == 10 && animal.Temperament != 2)
 		{
 			PlayerAction = PlayerActionState::Kicked;
+			CurrentActionRate = DefaultRate;
+			animal.InteractionPlayer = static_cast<i32>(Number);
 			DrawActionFrame(0);
 			Scene.Effects.AddTime(-10, animal.X + 60, animal.Y + 60);
 			Scene.Sounds.push_back("Sven2/sfx/Sheep_kickSven.ogg");
@@ -189,6 +221,8 @@ void PlayerCharacter::Act(bool continuation)
 		if (animal.Kind == ObjectKind::Sheep && animal.Temperament == 2)
 		{
 			PlayerAction = PlayerActionState::Frigida;
+			CurrentActionRate = GetActionRate();
+			animal.InteractionPlayer = static_cast<i32>(Number);
 			Scene.Sounds.push_back("Sven2/sfx/Frigida_kettle.ogg");
 			DrawActionFrame(0);
 			return;
@@ -203,6 +237,8 @@ void PlayerCharacter::Act(bool continuation)
 				return;
 			}
 			PlayerAction = PlayerActionState::Interaction;
+			CurrentActionRate = GetInteractionRate();
+			animal.InteractionPlayer = static_cast<i32>(Number);
 			Scene.Sounds.push_back(Interaction->Sound);
 			Scene.Objects[Scene.GetPlayerIndex()].Draw = { Interaction->Sprite, static_cast<i32>(animal.X), static_cast<i32>(animal.Y), Interaction->Frames.front(), Interaction->Mirror };
 			return;
@@ -221,6 +257,8 @@ void PlayerCharacter::Act(bool continuation)
 			SelectedInteraction = static_cast<i32>(choices[Scene.RandomInt(static_cast<i32>(choices.size()))]);
 		Interaction = &Scene.Resources.Interactions[SelectedInteraction];
 		PlayerAction = PlayerActionState::Interaction;
+		CurrentActionRate = GetInteractionRate();
+		animal.InteractionPlayer = static_cast<i32>(Number);
 		Scene.Sounds.push_back(Interaction->Sound);
 		Scene.Objects[Scene.GetPlayerIndex()].Draw = { Interaction->Sprite, static_cast<i32>(animal.X), static_cast<i32>(animal.Y), Interaction->Frames.front(), Interaction->Mirror };
 		return;
@@ -230,12 +268,35 @@ void PlayerCharacter::Act(bool continuation)
 void PlayerCharacter::FinishInteraction()
 {
 	WorldObject& animal = Scene.Objects[ActiveSheep];
-	Scene.AddScore(Scene.Items.GetPowerup().Code == ItemCode::Rocket ? 3 : (Scene.Items.GetPowerup().Code == ItemCode::SlowMushroom ? 0 : (Scene.Items.GetPowerup().Code == ItemCode::AlienPower ? 10 : 1))); // 0x429B7E
-	animal.Impatience -= 2;
+	if (Scene.IsBonusLevel())
+	{
+		Scene.AddScore(2 * Scene.Items.GetInteractionMultiplier());
+		animal.Impatience += 2;
+		if (animal.Impatience > 11)
+			dynamic_cast<AnimalCharacter&>(Scene.Objects.Get(ActiveSheep)).Resolve();
+		const bool repeat = ActionQueued && !animal.Freed && CanRepeatInteraction(animal);
+		ReleaseInteraction();
+		PlayerAction = PlayerActionState::Idle;
+		Interaction = nullptr;
+		ActionQueued = false;
+		RestorePlayer();
+		if (repeat)
+			Act(true);
+		return;
+	}
+	if (Scene.GetGameplayEdition() == GameEdition::XXX)
+		Scene.AddScore(Powerup.Code == ItemCode::Rocket ? 4 : (Powerup.Code == ItemCode::SlowMushroom ? 0 : (Powerup.Code == ItemCode::AlienPower ? 8 : (2 * Scene.Items.GetInteractionMultiplier())))); // XXX 0x417AC0
+	else
+		Scene.AddScore(Powerup.Code == ItemCode::Rocket ? 3 : (Powerup.Code == ItemCode::SlowMushroom ? 0 : (Powerup.Code == ItemCode::AlienPower ? 10 : 1)));
+	animal.Impatience -= 2 * Scene.Items.GetInteractionMultiplier();
 	if (animal.Impatience < 0)
+	{
+		if (Scene.GetGameplayEdition() == GameEdition::XXX)
+			animal.Impatience = 0;
 		dynamic_cast<AnimalCharacter&>(Scene.Objects.Get(ActiveSheep)).Resolve();
+	}
+	ReleaseInteraction();
 	PlayerAction = PlayerActionState::Idle;
-	ActiveSheep = -1;
 	Interaction = nullptr;
 	RestorePlayer();
 	const bool repeat = ActionQueued && !animal.Freed && CanRepeatInteraction(animal);
@@ -289,8 +350,23 @@ void PlayerCharacter::DrawActionFrame(size_t frame)
 
 void PlayerCharacter::AdvancePlayer(f32 dt, i32 dx, i32 dy)
 {
+	if (Scene.IsBonusLevel())
+	{
+		AdvanceBonusPlayer(dt);
+		return;
+	}
 	if (Scene.GetGameplayEdition() == GameEdition::XXX)
 		UpdateRequestedMotion();
+	if (ActionComplete)
+	{
+		ActionComplete = false;
+		if (PlayerAction == PlayerActionState::Interaction)
+			FinishInteraction();
+		else
+			FinishAction();
+		if (PlayerAction == PlayerActionState::Idle)
+			return;
+	}
 	if (PlayerShockAge >= 0)
 	{
 		PlayerShockAge += dt * DefaultRate;
@@ -309,51 +385,7 @@ void PlayerCharacter::AdvancePlayer(f32 dt, i32 dx, i32 dy)
 	Scene.Items.PickupPlayerItem();
 	if (PlayerAction != PlayerActionState::Idle)
 	{
-		ActionAge += dt;
-		if (PlayerAction == PlayerActionState::Interaction && Interaction)
-		{
-			const f32 effectiveActionRate = Scene.Items.GetPowerup().Code == ItemCode::Rocket ? Scene.Parameter("SvenShagFireworkFrameRate", 30) : (Scene.Items.GetPowerup().Code == ItemCode::SlowMushroom ? Scene.Parameter("SvenShagImpotentFrameRate", 12) : (Scene.Items.GetPowerup().Code == ItemCode::AlienPower ? Scene.Parameter("SvenShagAlienFrameRate", 40) : ActionRate));
-			i32 frame = static_cast<i32>(ActionAge * effectiveActionRate);
-			if (frame >= static_cast<i32>(Interaction->Frames.size()))
-				FinishInteraction();
-			else
-			{
-				WorldObject& animal = Scene.Objects[ActiveSheep];
-				Scene.Objects[Scene.GetPlayerIndex()].Draw = { Interaction->Sprite, static_cast<i32>(animal.X), static_cast<i32>(animal.Y), Interaction->Frames[frame], Interaction->Mirror };
-			}
-		}
-		else if (ActionAge * GetActionRate() < GetActionFrames().size())
-		{
-			DrawActionFrame(static_cast<size_t>(ActionAge * GetActionRate()));
-		}
-		else
-		{
-			const bool repeat = ActionQueued && (Scene.GetGameplayEdition() != GameEdition::XXX || (PlayerAction == PlayerActionState::Frigida && CanRepeatInteraction(Scene.Objects[ActiveSheep])));
-			if (PlayerAction == PlayerActionState::Kicked)
-			{
-				// Player state 13 at 0x42A283 releases the sheep at mood 6.
-				Scene.Objects[ActiveSheep].Impatience = 6;
-				ActionQueued = false;
-			}
-			if (PlayerAction == PlayerActionState::Frigida)
-			{
-				WorldObject& animal = Scene.Objects[ActiveSheep];
-				++animal.Impatience;
-				if (animal.Impatience == 6 || animal.Impatience == 10)
-					Scene.Sounds.push_back("Sven2/sfx/Frigida.ogg");
-				if (animal.Impatience == 11)
-					dynamic_cast<AnimalCharacter&>(Scene.Objects.Get(ActiveSheep)).Resolve();
-			}
-			PlayerAction = PlayerActionState::Idle;
-			ActiveSheep = -1;
-			RestorePlayer();
-			if (repeat && ActionQueued)
-			{
-				ActionQueued = false;
-				Act(true);
-			}
-			ActionQueued = false;
-		}
+		AdvanceActionAnimation(dt);
 		return;
 	}
 	const std::vector<i32>& teleportFrames = Scene.Resources.PlayerFrames(PlayerAnimation::Teleport);
@@ -514,6 +546,8 @@ void PlayerCharacter::AdvanceMovement(f32 seconds)
 		{
 			ActionQueued = false;
 			Act();
+			if (PlayerAction != PlayerActionState::Idle)
+				AdvanceActionAnimation(seconds);
 		}
 		return;
 	}
@@ -558,4 +592,268 @@ void PlayerCharacter::AdvanceMovement(f32 seconds)
 	const f32 walkRate = Powerup.Code == ItemCode::Rocket ? Scene.Parameter("SvenWalkFireworkFrameRate", 36) : (Powerup.Code == ItemCode::SlowMushroom ? Scene.Parameter("SvenWalkImpotentFrameRate", 16) : (Powerup.Code == ItemCode::AlienPower ? Scene.Parameter("SvenWalkAlienFrameRate", 36) : WalkRate));
 	const std::vector<i32>& frames = Scene.Resources.PlayerFrames(PlayerAnimation::Walk);
 	actor.Draw = { Scene.Resources.Walks[walkFacing], static_cast<i32>(X), static_cast<i32>(Y), frames[static_cast<size_t>(AnimationAge * walkRate) % frames.size()], SvenMirror[walkFacing] };
+}
+
+void PlayerCharacter::ReleaseInteraction()
+{
+	if (ActiveSheep >= 0 && static_cast<size_t>(ActiveSheep) < Scene.Objects.Size())
+	{
+		WorldObject& animal = Scene.Objects[ActiveSheep];
+		if (animal.InteractionPlayer == static_cast<i32>(Number))
+			animal.InteractionPlayer = -1;
+	}
+	ActiveSheep = -1;
+}
+
+void PlayerCharacter::InterruptInteraction()
+{
+	// 0x417A48 maps native whistle states 6/7 to the turn-abort branch.
+	if (Scene.GetGameplayEdition() == GameEdition::XXX && PlayerAction == PlayerActionState::Whistle && ActiveSheep >= 0)
+	{
+		WorldObject& animal = Scene.Objects[ActiveSheep];
+		if (!animal.Freed && animal.State == ActorState::Turning && animal.InteractionPlayer < 0)
+		{
+			animal.State = ActorState::Idle;
+			animal.TurnTo = -1;
+			animal.Idle = InterruptedTurnIdle;
+			animal.Age = 0;
+		}
+	}
+	ReleaseInteraction();
+	PlayerAction = PlayerActionState::Idle;
+	Interaction = nullptr;
+	ActionComplete = false;
+	ActionQueued = false;
+	SelectedInteraction = -1;
+	ActionAge = 0;
+}
+
+f32 PlayerCharacter::GetInteractionRate() const
+{
+	return Powerup.Code == ItemCode::Rocket ? Scene.Parameter("SvenShagFireworkFrameRate", 30) : (Powerup.Code == ItemCode::SlowMushroom ? Scene.Parameter("SvenShagImpotentFrameRate", 12) : (Powerup.Code == ItemCode::AlienPower ? Scene.Parameter("SvenShagAlienFrameRate", 40) : ActionRate));
+}
+
+void PlayerCharacter::FinishAction()
+{
+	const bool repeat = ActionQueued && (Scene.GetGameplayEdition() != GameEdition::XXX || (PlayerAction == PlayerActionState::Frigida && CanRepeatInteraction(Scene.Objects[ActiveSheep])));
+	if (PlayerAction == PlayerActionState::Kicked)
+	{
+		// Player state 13 at 0x42A283 releases the sheep at mood 6.
+		Scene.Objects[ActiveSheep].Impatience = 6;
+		ActionQueued = false;
+	}
+	if (PlayerAction == PlayerActionState::Frigida)
+	{
+		WorldObject& animal = Scene.Objects[ActiveSheep];
+		animal.Impatience += Scene.Items.GetInteractionMultiplier();
+		if (animal.Impatience == 6 || animal.Impatience == 10)
+			Scene.Sounds.push_back("Sven2/sfx/Frigida.ogg");
+		if (animal.Impatience >= 11)
+		{
+			if (Scene.GetGameplayEdition() == GameEdition::XXX)
+				animal.Impatience = 0;
+			dynamic_cast<AnimalCharacter&>(Scene.Objects.Get(ActiveSheep)).Resolve();
+		}
+	}
+	ReleaseInteraction();
+	PlayerAction = PlayerActionState::Idle;
+	RestorePlayer();
+	if (repeat && ActionQueued)
+	{
+		ActionQueued = false;
+		Act(true);
+	}
+	ActionQueued = false;
+}
+
+void PlayerCharacter::ActBonus(bool continuation)
+{
+	if (Scene.GetPlayerKind() == ObjectKind::Dog)
+		return;
+	const i32 tile = Scene.Grid.TileAt(X + Directions[Facing][0] * TileSize, Y + Directions[Facing][1] * TileSize);
+	for (size_t index : Scene.Objects.Find(ObjectKind::Sheep))
+	{
+		WorldObject& animal = Scene.Objects[index];
+		if (animal.Tile != tile || animal.InteractionPlayer >= 0 || animal.State == ActorState::AnimalWalking || animal.State == ActorState::Turning || IsDemonState(animal.State))
+			continue;
+		if ((Facing - 2 * animal.Facing + 8) % 8 > 2)
+		{
+			static constexpr i32 turn[8] = { 0, 0, 0, 1, 1, 2, 2, 3 };
+			animal.TurnTo = turn[Facing];
+			animal.State = ActorState::Turning;
+			animal.Age = 0;
+			Scene.EmitNamedSound(Scene.GetPlayerKind() == ObjectKind::Farmer ? "SfxLarsTurnSheep" : (Scene.GetPlayerKind() == ObjectKind::Girl ? "SfxBroemseTurnSheep" : "SfxAlienTurnSheep"));
+			return;
+		}
+		if (!continuation)
+			++animal.Attempts;
+		animal.Temperament = 0;
+		animal.InteractionPlayer = static_cast<i32>(Number);
+		ActiveSheep = static_cast<i32>(index);
+		PlayerAction = PlayerActionState::Interaction;
+		Interaction = &Scene.Resources.BonusActions[animal.Facing];
+		CurrentActionRate = ActionRate;
+		ActionAge = 0;
+		ActionComplete = false;
+		Scene.Sounds.push_back(Interaction->Sound);
+		DrawInteractionFrame(Interaction->Frames.front());
+		return;
+	}
+}
+
+void PlayerCharacter::DrawInteractionFrame(i32 frame)
+{
+	const WorldObject& animal = Scene.Objects[ActiveSheep];
+	i32 x = static_cast<i32>(animal.X), y = static_cast<i32>(animal.Y);
+	if (Scene.GetBonusMode() == BonusMode::Farmer)
+	{
+		static constexpr i32 offsetX[4] = { -60, -20, -20, 20 }, offsetY[4] = { -60, -75, -75, -60 };
+		x += offsetX[animal.Facing];
+		y += offsetY[animal.Facing];
+	}
+	Scene.Objects[GetIndex()].Draw = { Interaction->Sprite, x, y, frame, Interaction->Mirror };
+}
+
+void PlayerCharacter::DrawBonusPlayer()
+{
+	SpriteDraw& draw = Scene.Objects[GetIndex()].Draw;
+	if (PlayerAction == PlayerActionState::Interaction && Interaction)
+	{
+		const size_t frame = ActionComplete ? 0 : std::min(Interaction->Frames.size() - 1, static_cast<size_t>(ActionAge * CurrentActionRate));
+		DrawInteractionFrame(Interaction->Frames[frame]);
+		return;
+	}
+	const i32 offsetX = Scene.GetBonusMode() == BonusMode::Farmer ? -20 : 0;
+	const i32 offsetY = Scene.GetBonusMode() == BonusMode::Farmer ? -60 : (Scene.GetBonusMode() == BonusMode::Girl ? -20 : 0);
+	if (PlayerAction == PlayerActionState::Distraction || PlayerAction == PlayerActionState::BonusExit)
+	{
+		const size_t frame = static_cast<size_t>(ActionAge * CurrentActionRate);
+		if (PlayerAction == PlayerActionState::BonusExit && frame >= BonusAnimation.Frames.size())
+			draw = {};
+		else
+			draw = { BonusAnimation.Sprite, static_cast<i32>(X) + offsetX, static_cast<i32>(Y) + offsetY, BonusAnimation.Frames[std::min(frame, BonusAnimation.Frames.size() - 1)], Scene.GetBonusMode() == BonusMode::Girl ? Facing / 2 < 2 : Facing / 2 >= 2 };
+		return;
+	}
+	if (StepFinished)
+		draw = { Scene.Resources.Stand, static_cast<i32>(X) + offsetX, static_cast<i32>(Y) + offsetY, Facing };
+	else
+	{
+		const i32 facing = static_cast<i32>(Motion);
+		const Sprite* sprite = Scene.Resources.Walks[facing];
+		const str name = Scene.GetBonusMode() == BonusMode::Farmer ? "aLarsWalk" : (Scene.GetBonusMode() == BonusMode::Girl ? "aBroemseWalk" : (Scene.GetBonusMode() == BonusMode::Alien ? "aAlienWalk" : "aWotanWalk"));
+		const std::vector<i32>& frames = Scene.Resources.FrameList(name);
+		const i32 frame = frames[static_cast<size_t>(AnimationAge * WalkRate) % frames.size()];
+		draw = { sprite, static_cast<i32>(X) + offsetX, static_cast<i32>(Y) + offsetY, std::min(frame, sprite->Rows - 1), EnemyWalkMirror[EnemyTableIndex(Scene.GetPlayerKind())][facing] };
+	}
+}
+
+void PlayerCharacter::AdvanceBonusPlayer(f32 seconds)
+{
+	if (PlayerAction == PlayerActionState::Idle)
+		UpdateRequestedMotion();
+	if (ActionComplete)
+	{
+		ActionComplete = false;
+		if (PlayerAction == PlayerActionState::Interaction)
+			FinishInteraction();
+		else
+		{
+			PlayerAction = PlayerActionState::Idle;
+			RestorePlayer();
+		}
+		if (PlayerAction == PlayerActionState::Idle)
+			return;
+	}
+	if (PlayerAction == PlayerActionState::Interaction)
+		AdvanceActionAnimation(seconds);
+	else if (PlayerAction == PlayerActionState::Distraction || PlayerAction == PlayerActionState::BonusExit)
+	{
+		ActionAge += seconds;
+		ActionComplete = PlayerAction == PlayerActionState::Distraction && ActionAge * CurrentActionRate >= BonusAnimation.Frames.size();
+		DrawBonusPlayer();
+	}
+	else if (!Scene.Completed())
+	{
+		if (SplashAge * DefaultRate < Scene.Resources.PlayerFrames(PlayerAnimation::Teleport).size())
+		{
+			RestorePlayer();
+			return;
+		}
+		Scene.Items.PickupPlayerItem();
+		if (PlayerAction == PlayerActionState::Idle)
+			AdvanceMovement(seconds);
+		DrawBonusPlayer();
+	}
+}
+
+void PlayerCharacter::PickupBonusItem(ItemCode code, i32 tile)
+{
+	if (PlayerAction != PlayerActionState::Idle || !StepFinished)
+		return;
+	const BonusMode mode = Scene.GetBonusMode();
+	const bool artifact = code == ItemCode::Artifact;
+	if (!artifact && !(mode == BonusMode::Farmer && code == ItemCode::Beer) && !(mode == BonusMode::Girl && code == ItemCode::Teddy))
+		return;
+	Scene.Items.RemoveItem(tile);
+	CancelPlayerStep();
+	ActionAge = 0;
+	ActionComplete = false;
+	PlayerAction = artifact ? PlayerActionState::BonusExit : PlayerActionState::Distraction;
+	const str side = Facing / 2 == 0 || Facing / 2 == 3 ? "Back" : "Front";
+	const ObjectKind kind = Scene.GetPlayerKind();
+	BonusAnimation.Sprite = Scene.Resources.ActorSprites[kind].Beam[Facing / 2];
+	BonusAnimation.Frames = Scene.Resources.FrameList(mode == BonusMode::Farmer ? "aLarsBeamUp" : (mode == BonusMode::Girl ? "aBroemseBeamUp" : "aAlienBeamingBonus"));
+	CurrentActionRate = 10;
+	if (artifact)
+	{
+		Scene.Effects.SpawnBeam(X + PlayerCenter, Y + PlayerCenter);
+		Scene.EmitNamedSound("SfxBeam");
+		Scene.EmitNamedSound(mode == BonusMode::Farmer ? "SfxLarsFoundSven" : (mode == BonusMode::Girl ? "SfxBroemseFoundSven" : "SfxAlienFoundSven"));
+		Scene.FinishBonus();
+	}
+	else
+	{
+		BonusAnimation.Sprite = Scene.Resources.ActorSprites[kind].Distraction[Facing / 2];
+		BonusAnimation.Frames = Scene.Resources.FrameList(mode == BonusMode::Farmer ? "aGuyDrinkBonus" : "aBroemseTeddy" + side + "Bonus");
+		CurrentActionRate = mode == BonusMode::Farmer ? 10.0f : 9.0f;
+		Scene.Effects.AddTime(-5, X + PlayerCenter, Y + PlayerCenter);
+		Scene.EmitNamedSound(mode == BonusMode::Farmer ? "SfxGuyFoundBeer" : "SfxBroemseFoundTeddy");
+		Scene.EmitNamedSound(mode == BonusMode::Farmer ? "SfxLarsDrinkAI" : "SfxBroemsePlaysTeddyAI");
+	}
+	DrawBonusPlayer();
+}
+
+void PlayerCharacter::AdvanceActionAnimation(f32 dt)
+{
+	ActionAge += dt;
+	if (PlayerAction == PlayerActionState::Interaction && Interaction)
+	{
+		const f32 effectiveActionRate = Scene.GetGameplayEdition() == GameEdition::XXX ? CurrentActionRate : GetInteractionRate();
+		i32 frame = static_cast<i32>(ActionAge * effectiveActionRate);
+		if (frame >= static_cast<i32>(Interaction->Frames.size()))
+		{
+			if (Scene.GetGameplayEdition() == GameEdition::XXX)
+			{
+				ActionComplete = true;
+				Scene.Objects[GetIndex()].Draw.Frame = Interaction->Frames.front();
+			}
+			else
+				FinishInteraction();
+		}
+		else
+		{
+			DrawInteractionFrame(Interaction->Frames[frame]);
+		}
+	}
+	else if (ActionAge * (Scene.GetGameplayEdition() == GameEdition::XXX ? CurrentActionRate : GetActionRate()) < GetActionFrames().size())
+	{
+		DrawActionFrame(static_cast<size_t>(ActionAge * (Scene.GetGameplayEdition() == GameEdition::XXX ? CurrentActionRate : GetActionRate())));
+	}
+	else if (Scene.GetGameplayEdition() == GameEdition::XXX && PlayerAction != PlayerActionState::Whistle)
+	{
+		ActionComplete = true;
+		DrawActionFrame(0);
+	}
+	else
+		FinishAction();
 }

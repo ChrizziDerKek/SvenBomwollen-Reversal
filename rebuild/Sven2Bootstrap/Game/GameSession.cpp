@@ -1,4 +1,5 @@
 #include "Game/GameSession.h"
+#include "Scene/Level/LevelFile.h"
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
@@ -9,7 +10,7 @@ GameSession::GameSession(MudGE& engine, const LevelPackInfo& pack, const LevelSe
 {
 	if (levelSet.Levels.empty())
 		throw std::runtime_error("The selected levelset is Empty.");
-	PlayerCount = pack.Edition == GameEdition::Zwo ? 1 : std::clamp(playerCount, size_t{ 1 }, size_t{ 2 });
+	PlayerCount = GetGameplayEdition() == GameEdition::XXX ? std::clamp(playerCount, size_t{ 1 }, size_t{ 2 }) : 1;
 	Load(0);
 }
 
@@ -32,6 +33,7 @@ void GameSession::Load(size_t index)
 	CompletionRemaining = 0;
 	BonusFinished = false;
 	TimeBonus = SheepBonus = LifeBonus = 0;
+	PlayerBonus = ResultPlayers = {};
 	LifeEffects.clear();
 	VisibleLives = Lives;
 	InitialRefundUsed = false;
@@ -46,14 +48,23 @@ void GameSession::Advance()
 {
 	if (!Ready() || Finished() || GameOver())
 		return;
-	if (LevelIndex + 1 == LevelSet.Levels.size())
+	size_t next = LevelIndex + 1;
+	const bool unlocked = Scene->GetBonusUnlocked();
+	while (next < LevelSet.Levels.size() && Pack.Edition == GameEdition::XXX && !unlocked)
+	{
+		const LevelFile file(Engine.ReadAsset(LevelSet.Levels[next].Map), LevelSet.Levels[next].Map);
+		if (file.GetBonusMode() == BonusMode::Sven)
+			break;
+		++next;
+	}
+	if (next == LevelSet.Levels.size())
 	{
 		EpisodeComplete = true; // Original 0x410B38-0x410BC4, after final bonus acknowledgement.
 		EmitSound("SfxFinishPack");
 		return;
 	}
 	const i32 total = PreviousSheep + Scene->GetCompletedSheep();
-	Load(LevelIndex + 1);
+	Load(next);
 	PreviousSheep = total;
 }
 
@@ -176,10 +187,16 @@ void GameSession::Update(f32 seconds, const std::array<PlayerInput, 2>& inputs)
 	if ((CompletionScheduled && CompletionRemaining <= 0) || Lives == 0)
 	{
 		Results = true;
+		// 0x41BAD8: a bonus ended with animals remaining forfeits its time bonus.
+		if (Scene->IsBonusLevel() && Scene->GetRemainingTargets() > 0)
+			Time = 0;
 		Time = std::floor(Time);
 		TimeBonus = static_cast<i32>(Time);
+		PlayerBonus = ResultPlayers = Scene->GetPlayerCompletions();
 		SheepBonus = Scene->GetCompletedSheep();
-		LifeBonus = Lives;
+		if (GetGameplayEdition() == GameEdition::XXX)
+			SheepBonus = PlayerBonus[0] + PlayerBonus[1];
+		LifeBonus = Scene->IsBonusLevel() ? 0 : Lives;
 		ResultSheep = SheepBonus;
 		ResultLives = LifeBonus;
 		BonusFinished = Lives == 0;
@@ -296,7 +313,7 @@ void GameSession::ConvertBonuses(f32 seconds)
 	{
 		--Time;
 		--Ticks;
-		AddScore(1);
+		AddScore(GetGameplayEdition() == GameEdition::XXX ? 2 : 1);
 	}
 	if (Time > 0)
 		return;
@@ -305,6 +322,16 @@ void GameSession::ConvertBonuses(f32 seconds)
 		--SheepBonus;
 		Ticks -= 10;
 		AddScore(10);
+		if (GetGameplayEdition() == GameEdition::XXX)
+		{
+			for (i32& remaining : PlayerBonus)
+			{
+				if (remaining > 0)
+				{
+					--remaining;
+				}
+			}
+		}
 	}
 	if (SheepBonus > 0)
 		return;
@@ -312,7 +339,7 @@ void GameSession::ConvertBonuses(f32 seconds)
 	{
 		--LifeBonus;
 		Ticks -= 10;
-		AddScore(25);
+		AddScore(GetGameplayEdition() == GameEdition::XXX ? 10 : 25);
 	}
 	BonusFinished = LifeBonus == 0;
 }
@@ -321,9 +348,10 @@ void GameSession::SkipBonuses()
 {
 	if (!Results || BonusFinished)
 		return;
-	const i32 remaining = static_cast<i32>(Time) + SheepBonus * 10 + LifeBonus * 25;
+	const i32 remaining = static_cast<i32>(Time) * (GetGameplayEdition() == GameEdition::XXX ? 2 : 1) + SheepBonus * 10 + LifeBonus * (GetGameplayEdition() == GameEdition::XXX ? 10 : 25);
 	Time = 0;
 	SheepBonus = LifeBonus = 0;
+	PlayerBonus = {};
 	AddScore(remaining);
 	BonusFinished = true;
 }
@@ -366,5 +394,5 @@ std::vector<str> GameSession::TakeSounds()
 
 RoundResult GameSession::GetResult() const
 {
-	return { Score, LevelNumber(), TimeBonus, ResultSheep, ResultLives, static_cast<i32>(Time), SheepBonus, LifeBonus, Finished(), GameOver(), PreviousSheep + Scene->GetCompletedSheep(), ScoreFrame };
+	return { Score, LevelNumber(), TimeBonus, ResultSheep, ResultLives, static_cast<i32>(Time), SheepBonus, LifeBonus, Finished(), GameOver(), PreviousSheep + Scene->GetCompletedSheep(), ScoreFrame, PlayerCount, ResultPlayers, PlayerBonus, Scene->GetBonusMode() };
 }

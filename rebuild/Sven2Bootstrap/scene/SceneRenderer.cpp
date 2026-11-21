@@ -18,6 +18,7 @@ const std::vector<SpriteDraw>& SceneRenderer::Draws()
 	// Original 0x40D72C sorts rendered Y + height - adjustment. Player grid
 	// ownership stays at the committed cell while the sprite moves between cells.
 	auto depth = [&](const Object& object) {
+		LevelScene::PlayerScope owner(Scene, object.Kind == ObjectKind::Player ? object.TargetPlayer : 0);
 		// These animations are placed at the animal's canvas, although the
 		// command is stored on Sven. Keep that compound sprite at its visible
 		// owner's depth instead of promoting it to Sven's approach position.
@@ -49,6 +50,8 @@ const std::vector<SpriteDraw>& SceneRenderer::Draws()
 	};
 	for (const WorldObject& object : Sorted)
 	{
+		const size_t number = object.Kind == ObjectKind::Player ? object.TargetPlayer : (object.InteractionPlayer >= 0 ? static_cast<size_t>(object.InteractionPlayer) : 0);
+		LevelScene::PlayerScope owner(Scene, number);
 		if (object.Freed)
 			continue;
 		const bool interacting = Scene.IsAnimal(object.Kind) && Scene.GetPlayer().ActiveSheep >= 0 && (Scene.GetPlayer().PlayerAction == PlayerActionState::Interaction || Scene.GetPlayer().PlayerAction == PlayerActionState::Kicked || Scene.GetPlayer().PlayerAction == PlayerActionState::Frigida) && object.Tile == Scene.Objects[Scene.GetPlayer().ActiveSheep].Tile;
@@ -56,6 +59,11 @@ const std::vector<SpriteDraw>& SceneRenderer::Draws()
 			continue;
 		if (!interacting && object.Draw.Sprite)
 			DrawCommands.push_back(object.Draw);
+		if (object.Kind == ObjectKind::Player && Scene.GetPlayerCount() > 1 && !Scene.IsBonusLevel() && Scene.Items.GetPowerup().Code == ItemCode::None && !Scene.GetPlayer().PlayerBeamState && (Scene.GetPlayer().PlayerAction == PlayerActionState::Idle || Scene.GetPlayer().PlayerAction == PlayerActionState::Whistle || Scene.GetPlayer().PlayerShockAge >= 0))
+		{
+			const std::vector<i32>& frames = Scene.Resources.FrameList(number == 0 ? "aPlayerIcon1" : "aPlayerIcon2");
+			DrawCommands.push_back({ Scene.Resources.NamedSprite(number == 0 ? "IconPlayer1" : "IconPlayer2"), static_cast<i32>(Scene.GetPlayer().X) - 15, static_cast<i32>(Scene.GetPlayer().Y) - 50, frames[static_cast<size_t>(Scene.GetPlayer().IconAge)] });
+		}
 		if ((object.Kind == ObjectKind::Dog || object.Kind == ObjectKind::Farmer) && object.State == ActorState::Sleeping)
 		{
 			static constexpr i32 sleepX[2][4] = { { 50, 50, 0, 0 }, { 90, 100, -10, 0 } };
@@ -74,10 +82,12 @@ const std::vector<SpriteDraw>& SceneRenderer::Draws()
 		if (object.Kind == ObjectKind::Player && Scene.GetPlayer().ActiveSheep >= 0 && (Scene.GetPlayer().PlayerAction == PlayerActionState::Interaction || Scene.GetPlayer().PlayerAction == PlayerActionState::Kicked || Scene.GetPlayer().PlayerAction == PlayerActionState::Frigida) && Scene.IsAnimal(Scene.Objects[Scene.GetPlayer().ActiveSheep].Kind))
 			indicator(Scene.Objects[Scene.GetPlayer().ActiveSheep]);
 	}
-	const i32 frame = static_cast<i32>(Scene.Effects.SplashAge * SplashFrameRate);
-	if (frame < SplashFrames)
+	for (size_t number = 0; number < Scene.GetPlayerCount(); ++number)
 	{
-		for (SpriteDraw splash : Scene.Effects.Splashes)
+		const i32 frame = static_cast<i32>(Scene.Objects.GetPlayer(number).SplashAge * SplashFrameRate);
+		if (frame >= SplashFrames)
+			continue;
+		for (SpriteDraw splash : Scene.Effects.Splashes[number])
 		{
 			if (!splash.Sprite)
 				continue;
@@ -85,14 +95,19 @@ const std::vector<SpriteDraw>& SceneRenderer::Draws()
 			DrawCommands.push_back(splash);
 		}
 	}
-	if (Scene.Items.GetPowerup().Code != ItemCode::None)
+	for (size_t number = 0; number < Scene.GetPlayerCount(); ++number)
 	{
-		const i32 effect = Scene.Items.GetPowerup().Code == ItemCode::Rocket ? 0 : (Scene.Items.GetPowerup().Code == ItemCode::SlowMushroom ? 1 : (Scene.Items.GetPowerup().Code == ItemCode::StinkMushroom ? 2 : (Scene.Items.GetPowerup().Code == ItemCode::Flower ? 3 : 4)));
-		const ::Sprite* image = Scene.Resources.EffectSprites[effect];
-		const SpriteDraw& player = Scene.GetPlayerDraw();
-		if (player.Sprite)
-			DrawCommands.push_back({ image, player.X + 28, player.Y - 4, static_cast<i32>(Scene.Items.GetPowerup().Age * 15) % image->Rows });
+		LevelScene::PlayerScope owner(Scene, number);
+		if (Scene.Items.GetPowerup().Code != ItemCode::None)
+		{
+			const i32 effect = Scene.Items.GetPowerup().Code == ItemCode::Rocket ? 0 : (Scene.Items.GetPowerup().Code == ItemCode::SlowMushroom ? 1 : (Scene.Items.GetPowerup().Code == ItemCode::StinkMushroom ? 2 : (Scene.Items.GetPowerup().Code == ItemCode::Flower ? 3 : 4)));
+			const ::Sprite* image = Scene.Resources.EffectSprites[effect];
+			const SpriteDraw& player = Scene.GetPlayerDraw();
+			if (player.Sprite)
+				DrawCommands.push_back({ image, player.X + 28, player.Y - 4, static_cast<i32>(Scene.Items.GetPowerup().Age * 15) % image->Rows });
+		}
 	}
+
 	if (Scene.UfoController.Ufo.State != UfoState::Inactive)
 	{
 		const f32 orbitX = std::sin(Scene.UfoController.Ufo.AngleX * 57.295776f) * Scene.UfoController.Ufo.Radius + Scene.UfoController.Ufo.X;
@@ -100,7 +115,7 @@ const std::vector<SpriteDraw>& SceneRenderer::Draws()
 		const i32 ufoFrame = static_cast<i32>(Scene.UfoController.Ufo.Age) % 13;
 		if (Scene.UfoController.Ufo.Beam)
 		{
-			const std::vector<i32>& frames = ActorFrameTables.at(AnimationSequence::UfoBeam);
+			const std::vector<i32>& frames = Scene.Resources.AnimationFrames(AnimationSequence::UfoBeam);
 			const i32 step = std::min(static_cast<i32>(frames.size()) - 1, static_cast<i32>(Scene.UfoController.Ufo.BeamAge));
 			DrawCommands.push_back({ Scene.Resources.BeamSprite, static_cast<i32>(Scene.UfoController.Ufo.X) - 150, static_cast<i32>(Scene.UfoController.Ufo.Y) - 93, frames[step] });
 		}

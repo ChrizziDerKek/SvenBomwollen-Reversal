@@ -30,9 +30,15 @@ enum class ObjectKind : i32
 	Mermaid = 28,
 	CompletionEffect = 32,
 	ElectricFlash = 34,
+	Beam = 36,
 	Particle = 37,
 	BubbleEmitter = 43,
 	YellowEmitter = 44,
+	RocketBurst = 219,
+	SlowBubble = 221,
+	SlowNotice = 222,
+	SmellBurst = 223,
+	FlowerBurst = 224,
 	BubbleParticle = 543,
 	YellowParticle = 544
 };

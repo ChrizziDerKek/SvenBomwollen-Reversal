@@ -3,6 +3,18 @@
 #include <cmath>
 #include <stdexcept>
 
+BonusMode LevelFile::GetBonusMode() const
+{
+	BonusMode mode = BonusMode::Sven;
+	if (Version == 7)
+	{
+		for (BonusMode candidate : { BonusMode::Farmer, BonusMode::Dog, BonusMode::Girl, BonusMode::Alien })
+			if ((Flags & (u32{ 1 } << static_cast<u32>(candidate))) != 0)
+				mode = candidate;
+	}
+	return mode;
+}
+
 template <class T>
 T ReadWord(const u8* bytes, size_t offset)
 {
@@ -21,7 +33,7 @@ LevelFile::LevelFile(const bytestream& bytes, const str& path)
 	if (Version != 6 && Version != 7)
 		throw std::runtime_error("Expected a Zwo v6 or XXX v7 level.");
 	Flags = ReadWord<u32>(bytes.data(), 8);
-	HidesUfo = Version == 6 ? Flags != 0 : (Flags & 1) != 0;
+	HidesUfo = Version == 6 ? Flags != 0 : (Flags & 1) == 0;
 	const u32 nameSize = ReadWord<u32>(bytes.data(), 12);
 	const size_t extensionBytes = Version == 7 ? sizeof(Extensions) : 0;
 	if (nameSize > bytes.size() - headerSize || bytes.size() - headerSize - nameSize != gridAndStateSize + ObjectCount * objectBytes + extensionBytes)

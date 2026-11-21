@@ -15,3 +15,5 @@
 * Sound requests explicitly specify looping. Never infer it from an asset filename.
 * In a combined installation, use XXX gameplay, character resources, frame lists and bindings for both v6 Zwo and v7 XXX levels. Select gameplay through GameData.GetGameplayEdition(), never the pack's edition. Keep source-format decoding, scenery, episode identity and spawn-count validation tied to the source pack. Legacy behavior is only an asset-availability fallback when XXX data is absent.
 * Keep binary-layout/vtable constants in documented format/ABI definitions. Do not guess another DLL layout or retune original gameplay merely to remove a literal.
+
+* Zwo co-op generates a second runtime player only when two-player mode is selected in the shared XXX runtime. Preserve the authored one-player record validation and source files; keep archival Zwo-only resources single-player. See research/xxx/modes/ZWO_COOP.md.

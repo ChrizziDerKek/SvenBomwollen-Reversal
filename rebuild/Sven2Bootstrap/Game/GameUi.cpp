@@ -117,7 +117,7 @@ str GameUi::EpisodeLabel(size_t pack, size_t levelSet) const
 
 i32 GameUi::GetPlayerCount() const
 {
-	return GetPack().Edition == GameEdition::Zwo ? 1 : RequestedPlayerCount;
+	return Data.GetGameplayEdition() == GameEdition::XXX ? RequestedPlayerCount : 1;
 }
 
 void GameUi::SetPlayerCount(i32 playerCount)
@@ -198,7 +198,7 @@ void GameUi::AppendMenuEyes()
 
 void GameUi::AppendPlayerHeader()
 {
-	// Requested menu mode remains visible even when a highlighted Zwo pack is single-player.
+	// Keep the requested mode visible while browsing either source edition.
 	Large.Append(DrawCommands, Text(RequestedPlayerCount == 2 ? "Player2_HeadLine" : "Player1_HeadLine"), 150, 80);
 	if (RequestedPlayerCount == 2)
 	{
@@ -388,14 +388,23 @@ i32 GameUi::ButtonAt(POINT point) const
 void GameUi::ShowResults(const RoundResult& summary)
 {
 	this->Result = summary;
-	ScorePlayers = GetPlayerCount();
+	ScorePlayers = static_cast<i32>(summary.PlayerCount);
 	CardsTab = false;
 	if (CurrentPage != Page::Results)
 		Show(Page::Results);
 }
 
+void GameUi::ShowBonus(BonusMode mode)
+{
+	IntroMode = mode;
+	Show(Page::Bonus);
+	UiAge = 0;
+}
+
 UiAction GameUi::Handle(const WindowInput::Result& input)
 {
+	if (CurrentPage == Page::Bonus)
+		return input.Confirm || UiAge >= 5 ? UiAction::Resume : UiAction::None;
 	Mouse = input.Mouse;
 	// Scaled input uses (-1, -1) outside the viewport. Keep hit testing inactive,
 	// but retain the last eye pose rather than jumping to the upper-left corner.
@@ -887,6 +896,16 @@ const std::vector<SpriteDraw>& GameUi::Draws(f32 elapsed, const std::vector<Spri
 	}
 	switch (CurrentPage)
 	{
+	case Page::Bonus:
+	{
+		DrawCommands.push_back({ PausePanel, 200, 100, 0 });
+		Centered(Large, Text("BonusScreen"), 400, 110);
+		const str family = IntroMode == BonusMode::Farmer ? "Guy" : (IntroMode == BonusMode::Girl ? "Broemse" : "Alien");
+		const Sprite* actor = LoadNamedTheme((family + "Stand").c_str());
+		DrawCommands.push_back({ actor, 400 - actor->FrameWidth / 2, 140, 3 });
+		Centered(Small, Text(IntroMode == BonusMode::Farmer ? "LarsBonus" : (IntroMode == BonusMode::Girl ? "BroemseBonus" : "AlienBonus")), 400, 260);
+		break;
+	}
 	case Page::Title:
 		AppendTitle();
 		AppendButtons();
@@ -976,21 +995,48 @@ const std::vector<SpriteDraw>& GameUi::Draws(f32 elapsed, const std::vector<Spri
 			DrawCommands.push_back({ Timer, 307 - Timer->FrameWidth / 2, 140, 0 });
 			const i32 remaining = std::max(0, Result.TimeRemaining);
 			Small.Append(DrawCommands, Padded(remaining / 60, 2) + ":" + (remaining % 60 < 10 ? "0" : "") + std::to_string(remaining % 60), Theme == GameEdition::XXX ? 292 : 282, 172);
-			DrawCommands.push_back({ Sheep, 310 - Sheep->FrameWidth / 2, (Theme == GameEdition::XXX ? 255 : 240) - Sheep->FrameHeight / 2, 0 });
-			if (Theme == GameEdition::XXX)
-				Centered(Small, Padded(Result.SheepRemaining), 299, 247);
+			if (Result.PlayerCount == 2)
+			{
+				for (size_t number = 0; number < 2; ++number)
+				{
+					const i32 y = 222 + static_cast<i32>(number) * 50;
+					DrawCommands.push_back({ Sheep, 310 - Sheep->FrameWidth / 2, y + 8 - Sheep->FrameHeight / 2, 0 });
+					DrawCommands.push_back({ PlayerIcons[number], 180, y - 72, 0 });
+					Centered(Small, Padded(Result.PlayerRemaining[number]), 299, y);
+					Small.Append(DrawCommands, "x 10", 360, y);
+					Small.Append(DrawCommands, "=", 410, y);
+					Small.Append(DrawCommands, Padded((Result.PlayerSheep[number] - Result.PlayerRemaining[number]) * 10), 450, y);
+				}
+			}
 			else
-				Small.Append(DrawCommands, Padded(Result.SheepRemaining), 270, 232);
-			DrawCommands.push_back({ Life, 300 - Life->FrameWidth / 2, (Theme == GameEdition::XXX ? 330 : 300) - Life->FrameHeight / 2, 0 });
-			if (Theme == GameEdition::XXX)
-				Centered(Small, Padded(Result.LivesRemaining), 320, 322);
+			{
+				DrawCommands.push_back({ Sheep, 310 - Sheep->FrameWidth / 2, (Theme == GameEdition::XXX ? 255 : 240) - Sheep->FrameHeight / 2, 0 });
+				if (Theme == GameEdition::XXX)
+					Centered(Small, Padded(Result.SheepRemaining), 299, 247);
+				else
+					Small.Append(DrawCommands, Padded(Result.SheepRemaining), 270, 232);
+			}
+			if (Result.Mode == BonusMode::Sven)
+			{
+				DrawCommands.push_back({ Life, 300 - Life->FrameWidth / 2, (Theme == GameEdition::XXX ? 330 : 300) - Life->FrameHeight / 2, 0 });
+				if (Theme == GameEdition::XXX)
+					Centered(Small, Padded(Result.LivesRemaining), 320, 322);
+				else
+					Small.Append(DrawCommands, Padded(Result.LivesRemaining), 290, 292);
+			}
 			else
-				Small.Append(DrawCommands, Padded(Result.LivesRemaining), 290, 292);
+			{
+				const Sprite* actor = LoadNamedTheme(Result.Mode == BonusMode::Farmer ? "GuyStand" : (Result.Mode == BonusMode::Girl ? "BroemseStand" : "AlienStand"));
+				DrawCommands.push_back({ actor, 300 - actor->FrameWidth / 2, 300, 3 });
+			}
 			const i32 rows[] = { 172, Theme == GameEdition::XXX ? 247 : 232, Theme == GameEdition::XXX ? 322 : 292 };
-			const cstr multipliers[] = { GetPack().Edition == GameEdition::XXX ? "x 2" : "x 1", "x 10", GetPack().Edition == GameEdition::XXX ? "x 10" : "x 25" };
-			const i32 points[] = { (Result.Time - Result.TimeRemaining) * (GetPack().Edition == GameEdition::XXX ? 2 : 1), (Result.Sheep - Result.SheepRemaining) * 10, (Result.Lives - Result.LivesRemaining) * (GetPack().Edition == GameEdition::XXX ? 10 : 25) };
+			const bool xxx = Data.GetGameplayEdition() == GameEdition::XXX;
+			const cstr multipliers[] = { xxx ? "x 2" : "x 1", "x 10", xxx ? "x 10" : "x 25" };
+			const i32 points[] = { (Result.Time - Result.TimeRemaining) * (xxx ? 2 : 1), (Result.Sheep - Result.SheepRemaining) * 10, (Result.Lives - Result.LivesRemaining) * (xxx ? 10 : 25) };
 			for (i32 i = 0; i < 3; ++i)
 			{
+				if ((i == 1 && Result.PlayerCount == 2) || (i == 2 && Result.Mode != BonusMode::Sven))
+					continue;
 				Small.Append(DrawCommands, multipliers[i], 360, rows[i]);
 				Small.Append(DrawCommands, "=", 410, rows[i]);
 				Small.Append(DrawCommands, Padded(points[i]), 450, rows[i]);

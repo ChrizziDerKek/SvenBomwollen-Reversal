@@ -17,6 +17,7 @@ public:
 	void UpdateEffects(f32 seconds);
 	void UpdateWorldEffect(size_t index, f32 seconds);
 	void SpawnDigEffect(const Object& actor);
+	void SpawnBeam(f32 x, f32 y);
 	bool TakeSplashSound();
 
 private:
@@ -31,8 +32,7 @@ private:
 	LevelScene& Scene;
 	std::vector<TimePopup> TimePopups;
 	std::vector<Object> SceneEffects;
-	std::array<SpriteDraw, 2> Splashes{};
-	f32 SplashAge = 100;
+	std::array<std::array<SpriteDraw, 2>, 2> Splashes{};
 	bool SplashSound = false;
 	f32 TimeDelta = 0;
 };
@@ -74,4 +74,21 @@ private:
 	f32 VelocityY = 0;
 	f32 Lifetime = 0;
 	f32 NativeDepth = 0;
+};
+
+class PowerupEffect final : public BaseObject
+{
+public:
+	PowerupEffect(LevelScene& scene, size_t index);
+	void Initialize() override;
+	void Update(f32 seconds) override;
+	static void Spawn(LevelScene& scene, ObjectKind kind, size_t target);
+
+private:
+	const std::vector<i32>* Frames = nullptr;
+	f32 FrameAge = 0;
+	f32 VelocityX = 0;
+	f32 VelocityY = 0;
+	f32 Lifetime = 0;
+	bool SoundPlayed = false;
 };

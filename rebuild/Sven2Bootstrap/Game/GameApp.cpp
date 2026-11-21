@@ -19,8 +19,8 @@ void RunGame(MudGE& engine, const fpath& saves, bool audio, u32 seconds, bool di
 	WindowInput controls(engine.WindowHandle(), engine.ScaledVideo());
 	std::unique_ptr<GameSession> session;
 	bool playing = false;
-	auto play = [&](const str& path, bool looped = false) {
-		if (audio && engine.PlaySample(path, looped))
+	auto play = [&](const str& path, bool looped = false, i32 frequency = 0) {
+		if (audio && engine.PlaySample(path, looped, frequency))
 			Log("Played sound sample: " + path);
 	};
 	auto music = [&](const str& path) {
@@ -30,10 +30,15 @@ void RunGame(MudGE& engine, const fpath& saves, bool audio, u32 seconds, bool di
 			engine.StopMusic();
 	};
 	auto start = [&] {
-		auto next = std::make_unique<GameSession>(engine, ui.GetPack(), ui.GetLevelSet());
+		auto next = std::make_unique<GameSession>(engine, ui.GetPack(), ui.GetLevelSet(), static_cast<size_t>(ui.GetPlayerCount()));
 		engine.StopLoopedSound();
 		session = std::move(next);
 		playing = true;
+		if (session->GetBonusMode() != BonusMode::Sven)
+		{
+			ui.ShowBonus(session->GetBonusMode());
+			playing = false;
+		}
 		music(session->Level().Music);
 		Log("Started " + ui.GetPack().Name + "/" + ui.GetLevelSet().Name);
 	};
@@ -81,8 +86,10 @@ void RunGame(MudGE& engine, const fpath& saves, bool audio, u32 seconds, bool di
 				{
 					if (session->GetGameplayEdition() == GameEdition::XXX || ui.HasCustomControls())
 					{
-						const PlayerInput player = controls.BoundPlayerInput(ui.GetControlBindings()[0]);
-						session->Update(elapsed, player.X, player.Y, player.Action);
+						std::array<PlayerInput, 2> players{};
+						for (size_t number = 0; number < session->GetPlayerCount(); ++number)
+							players[number] = controls.BoundPlayerInput(ui.GetControlBindings()[number]);
+						session->Update(elapsed, players);
 					}
 					else
 						session->Update(elapsed, controls.DX(), controls.DY(), controls.ActionHeld());
@@ -129,7 +136,12 @@ void RunGame(MudGE& engine, const fpath& saves, bool audio, u32 seconds, bool di
 						playing = !session->GetResults();
 						if (playing)
 							music(session->Level().Music);
-						else
+						if (playing && session->GetBonusMode() != BonusMode::Sven)
+						{
+							ui.ShowBonus(session->GetBonusMode());
+							playing = false;
+						}
+						if (session->GetResults())
 							ui.ShowResults(session->GetResult());
 						break;
 					default:
@@ -157,7 +169,7 @@ void RunGame(MudGE& engine, const fpath& saves, bool audio, u32 seconds, bool di
 		if (session)
 		{
 			for (const SoundRequest& request : session->TakeAudioEvents())
-				play(request.Asset, request.Playback == SoundPlayback::Loop);
+				play(request.Asset, request.Playback == SoundPlayback::Loop, request.Frequency);
 		}
 		if (!session || !session->UfoActive() || session->GetResults())
 			engine.StopLoopedSound();

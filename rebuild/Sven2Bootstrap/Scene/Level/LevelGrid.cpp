@@ -55,6 +55,8 @@ bool LevelGrid::Unoccupied(i32 tile, size_t except) const
 	for (size_t number = 0; number < Scene.GetPlayerCount(); ++number)
 	{
 		const PlayerCharacter& player = Scene.Objects.GetPlayer(number);
+		if (player.GetState().Kind != ObjectKind::Player)
+			continue;
 		if (except != player.GetIndex() && (TileAt(player.X, player.Y) == tile || TileAt(player.TargetX, player.TargetY) == tile))
 			return false;
 	}

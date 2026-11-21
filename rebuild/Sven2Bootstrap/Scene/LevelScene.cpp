@@ -34,7 +34,7 @@ LevelScene::LevelScene(MudGE& engine, u32 seed)
 {}
 
 LevelScene::LevelScene(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& level, u32 seed, u32* sharedRandomState, size_t playerCount)
-    : Engine(engine), GameplayEdition(engine.GetData().GetGameplayEdition()), PlayerCount(pack.Edition == GameEdition::Zwo ? 1 : std::clamp(playerCount, size_t{ 1 }, size_t{ 2 })), Objects(*this), RandomState(seed), SharedRandomState(sharedRandomState), Grid(*this), Resources(*this), Items(*this), UfoController(*this), Effects(*this), Renderer(*this)
+    : Engine(engine), GameplayEdition(engine.GetData().GetGameplayEdition()), PlayerCount(GameplayEdition == GameEdition::XXX ? std::clamp(playerCount, size_t{ 1 }, size_t{ 2 }) : 1), Objects(*this), RandomState(seed), SharedRandomState(sharedRandomState), Grid(*this), Resources(*this), Items(*this), UfoController(*this), Effects(*this), Renderer(*this)
 {
 	const TileSetInfo& descriptor = engine.GetData().TileSet(pack, level);
 	Log("Read level map: " + level.Map);
@@ -42,9 +42,7 @@ LevelScene::LevelScene(MudGE& engine, const LevelPackInfo& pack, const LevelInfo
 	UfoController.HideUfo = file->GetHidesUfo();
 	if (pack.Edition == GameEdition::XXX)
 	{
-		for (u32 bit = 1; bit <= 4; ++bit)
-			if ((file->GetFlags() & (u32{ 1 } << bit)) != 0)
-				Mode = static_cast<BonusMode>(bit);
+		Mode = file->GetBonusMode();
 		if (PlayerCount > 1 && Mode != BonusMode::Sven)
 			Mode = BonusMode::Alien;
 	}
@@ -54,7 +52,8 @@ LevelScene::LevelScene(MudGE& engine, const LevelPackInfo& pack, const LevelInfo
 	slots.fill(-1);
 	Grid.Load(*file);
 	Renderer.Background = { engine.LoadSprite(descriptor.Background, 1, 1, true), 0, 0, 0 };
-	Effects.Splashes[0].Sprite = engine.LoadSprite(CoreAsset("Sven2/gfx/FX_all_splash.bmp"), SplashFrames, 1);
+	for (std::array<SpriteDraw, 2>& splashes : Effects.Splashes)
+		splashes[0].Sprite = engine.LoadSprite(CoreAsset("Sven2/gfx/FX_all_splash.bmp"), SplashFrames, 1);
 	Resources.Explosion = engine.LoadSprite(CoreAsset("Sven2/gfx/explode.bmp"), 14, 1);
 	Resources.Hearts = engine.LoadSprite(CoreAsset("Sven2/gfx/anim_clouds_with_hearts.bmp"), 21, 1);
 	Resources.InitializeActors();
@@ -200,6 +199,12 @@ LevelScene::LevelScene(MudGE& engine, const LevelPackInfo& pack, const LevelInfo
 		Objects[sheep[RandomInt(static_cast<i32>(sheep.size()))]].Temperament = 1; // 0x422C00
 	Items.SpawnPeriod = Parameter("WaitTime", 10);
 	Items.SpawnClock = Items.SpawnPeriod;
+	if (pack.Edition == GameEdition::Zwo && PlayerCount == 2 && foundPlayers == 1)
+	{
+		SpawnCoopPlayer();
+		++foundPlayers;
+		++actors;
+	}
 	if (foundPlayers < PlayerCount || Grid.TileAt(GetPlayer().X, GetPlayer().Y) < 0)
 		throw std::runtime_error("Missing or invalid player spawn.");
 	for (size_t number = 0; number < PlayerCount; ++number)
@@ -208,11 +213,69 @@ LevelScene::LevelScene(MudGE& engine, const LevelPackInfo& pack, const LevelInfo
 		GetPlayer().TargetX = GetPlayer().X;
 		GetPlayer().TargetY = GetPlayer().Y;
 		Resources.InitializePlayer();
+		GetPlayer().RestorePlayer();
+		if (pack.Edition == GameEdition::Zwo && PlayerCount == 2)
+			GetPlayer().MarkPlayerCell();
 		Objects[GetPlayerIndex()].CommittedY = GetPlayer().Y;
 	}
 	Renderer.Sorted.reserve(Objects.Size());
 	Renderer.DrawCommands.reserve(1 + Objects.Size() + Renderer.Overlays.size());
 	Log("Loaded " + level.Map + " with " + std::to_string(scenery) + " scenery objects and " + std::to_string(actors) + " actors from folder data.");
+}
+
+void LevelScene::SpawnCoopPlayer()
+{
+	const i32 origin = Grid.TileAt(GetPlayer().X, GetPlayer().Y);
+	if (origin < 0)
+		throw std::runtime_error("Missing or invalid player spawn.");
+	const size_t slot = FindAvailableObjectSlot();
+	if (slot >= LevelFile::ObjectCount)
+		throw std::runtime_error("No free world object slot for player two.");
+	GetPlayer().TargetX = GetPlayer().X;
+	GetPlayer().TargetY = GetPlayer().Y;
+	std::array<i32, LevelFile::CellCount> queue{};
+	std::array<bool, LevelFile::CellCount> visited{};
+	size_t head = 0, tail = 1;
+	queue[0] = origin;
+	visited[origin] = true;
+	while (head < tail)
+	{
+		const i32 tile = queue[head++];
+		bool spawner = false;
+		for (const auto& [kind, tiles] : Grid.Spawners)
+			spawner = spawner || std::find(tiles.begin(), tiles.end(), tile) != tiles.end();
+		if (tile != origin && Grid.Tiles[tile] == OccupancyCode::Empty && !Grid.TileDirections[tile] && Grid.ItemCodes[tile] == ItemCode::None && !spawner)
+		{
+			Object actor = Objects[GetPlayerIndex()];
+			actor.Original = {};
+			actor.TargetPlayer = 1;
+			actor.Tile = tile;
+			actor.X = actor.TargetX = static_cast<f32>((tile % Stride - 1) * TileSize + TileSize / 2) - PlayerCenter;
+			actor.Y = actor.TargetY = actor.CommittedY = static_cast<f32>((tile / Stride - 1) * TileSize + TileSize / 2) - PlayerCenter;
+			actor.Draw.X = static_cast<i32>(actor.X);
+			actor.Draw.Y = static_cast<i32>(actor.Y);
+			Objects.GetPlayer(1).X = actor.X;
+			Objects.GetPlayer(1).Y = actor.Y;
+			if (slot == Objects.Size())
+				Objects.Add(actor);
+			else
+				Objects.Replace(slot, actor);
+			return;
+		}
+		for (i32 direction = 0; direction < 8; ++direction)
+		{
+			const i32 x = tile % Stride + Directions[direction][0], y = tile / Stride + Directions[direction][1];
+			if (x < 1 || x > Columns || y < 1 || y > Rows || (Grid.TileDirections[tile] && Grid.TileDirections[tile] != TileDirection[direction]))
+				continue;
+			const i32 next = y * Stride + x;
+			const bool directionalWall = Grid.Tiles[next] == OccupancyCode::Wall && Grid.TileDirections[next] == TileDirection[direction] && Grid.Reservations[next] < 0;
+			if (visited[next] || (!directionalWall && (Grid.Tiles[next] != OccupancyCode::Empty || !Grid.Unoccupied(next, slot))))
+				continue;
+			visited[next] = true;
+			queue[tail++] = next;
+		}
+	}
+	throw std::runtime_error("Cannot place player two: no reachable free spawn cell.");
 }
 
 bool LevelScene::IsAnimal(ObjectKind kind)
@@ -263,11 +326,11 @@ bool LevelScene::AdvanceActor(Object& actor, AnimationSequence table, f32 rate, 
 	return false;
 }
 
-void LevelScene::EmitNamedSound(cstr name)
+void LevelScene::EmitNamedSound(cstr name, i32 frequency)
 {
 	str path = Engine.GetData().SoundPath(name, GameplayEdition);
 	if (!path.empty())
-		Sounds.push_back(path);
+		Sounds.emplace_back(path, SoundPlayback::OneShot, frequency);
 }
 
 void LevelScene::AddScore(i32 amount)
@@ -277,6 +340,9 @@ void LevelScene::AddScore(i32 amount)
 
 void LevelScene::RecordLifeLoss()
 {
+	// XXX 0x41E901 resets the chain even when life insurance refunds this hit.
+	if (GameplayEdition == GameEdition::XXX)
+		Items.ResetGiftChain();
 	// 0x412B00 insurance depends on campaign score and belongs to GameSession.
 	++PendingLifeHits;
 }
@@ -333,7 +399,6 @@ void LevelScene::Update(f32 seconds, const std::array<PlayerInput, 2>& inputs)
 	{
 		const f32 dt = std::min(left, 1.0f / 60.0f);
 		left -= dt;
-		Effects.SplashAge += dt;
 		for (size_t number = 0; number < PlayerCount; ++number)
 			Objects.GetPlayer(number).SplashAge += dt;
 		Effects.UpdateEffects(dt);
@@ -360,6 +425,11 @@ void LevelScene::TimeExpired()
 	if (Expired)
 		return;
 	Expired = true;
+	if (IsBonusLevel())
+	{
+		FinishBonus();
+		return;
+	}
 	UfoController.UpdateUfo(0); // 0x408B80 requests a remaining animal; no life penalty.
 }
 
@@ -522,14 +592,31 @@ void LevelScene::FinishBonus()
 	if (Mode != BonusMode::Sven)
 	{
 		BonusFinished = true;
-		RemainingTargets = 0;
 	}
 }
 
 void LevelScene::RecordAnimalCompletion(const WorldObject& animal)
 {
+	++PlayerCompletions[ActivePlayer];
 	if (GameplayEdition == GameEdition::XXX && animal.Kind == ObjectKind::Sheep && animal.Temperament == 2 && animal.Attempts == 1)
 		BonusUnlocked = true;
+}
+
+ObjectKind LevelScene::GetPlayerKind() const
+{
+	switch (Mode)
+	{
+	case BonusMode::Farmer:
+		return ObjectKind::Farmer;
+	case BonusMode::Dog:
+		return ObjectKind::Dog;
+	case BonusMode::Girl:
+		return ObjectKind::Girl;
+	case BonusMode::Alien:
+		return ObjectKind::Alien;
+	default:
+		return ObjectKind::Player;
+	}
 }
 
 i32 LevelScene::FindInteractingPlayer(size_t slot) const

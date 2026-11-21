@@ -1,6 +1,7 @@
 #pragma once
 #include "Types.h"
 #include "LevelCodes.h"
+#include "Engine/GameEdition.h"
 #include <array>
 #include <cstdint>
 #include <cstring>
@@ -149,6 +150,7 @@ public:
 	{
 		return Flags;
 	}
+	BonusMode GetBonusMode() const;
 	const std::array<i32, 4>& GetExtension(size_t index) const
 	{
 		return Extensions.at(index);

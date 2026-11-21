@@ -27,6 +27,7 @@ private:
 	friend class EnemyCharacter;
 	friend class LevelEffects;
 	friend class LevelItems;
+	friend class PowerupEffect;
 	friend class LevelScene;
 	friend class PlayerCharacter;
 	friend class SceneRenderer;
@@ -61,6 +62,7 @@ private:
 	std::array<const Sprite*, 8> Walks{};
 	std::array<const Sprite*, 4> SheepWalks{};
 	std::vector<ShagAnimation> Interactions;
+	std::array<ShagAnimation, 4> BonusActions;
 	std::array<const Sprite*, 8> Blinks{};
 	std::array<const Sprite*, 4> Kicks{}, Frigida{};
 };

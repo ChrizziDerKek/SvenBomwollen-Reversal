@@ -13,6 +13,10 @@ public:
 	void Update(f32 seconds, i32 dx, i32 dy, bool actionPressed);
 	void Update(f32 seconds, const std::array<PlayerInput, 2>& inputs);
 	GameEdition GetGameplayEdition() const;
+	BonusMode GetBonusMode() const
+	{
+		return Scene->GetBonusMode();
+	}
 	size_t GetPlayerCount() const
 	{
 		return PlayerCount;
@@ -110,6 +114,7 @@ private:
 	i32 TimeBonus = 0, SheepBonus = 0, LifeBonus = 0;
 	i32 ResultSheep = 0, ResultLives = 0;
 	i32 PreviousSheep = 0;
+	std::array<i32, 2> PlayerBonus{}, ResultPlayers{};
 	bool Results = false, BonusFinished = false, TimedOut = false;
 	bool EpisodeComplete = false;
 	bool CompletionScheduled = false;

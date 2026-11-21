@@ -20,6 +20,11 @@ public:
 	void AffectNearbyAnimals();
 	void PickupPlayerItem();
 	PlayerPowerup& GetPowerup();
+	i32 GetInteractionMultiplier() const;
+	f32 GetEnemyMotionScale() const;
+	f32 GetSharedRocketRemaining() const;
+	f32 GetSharedSlowRemaining() const;
+	void ResetGiftChain();
 
 private:
 	friend class AnimalCharacter;
@@ -31,4 +36,13 @@ private:
 	LevelScene& Scene;
 	f32 SpawnClock = 0, SpawnPeriod = 10;
 	i32 LivesGained = 0;
+	i32 GiftIndex = 0;
+	f32 SharedRocketRemaining = 0;
+	f32 SharedSlowRemaining = 0;
+	bool SharedRocket = false;
+	bool SharedSlow = false;
+	static constexpr f32 DoubleRocketDuration = 10; // XXX 0x41A216/0x41A21C
+	static constexpr f32 DoubleSlowDuration = 30;   // XXX 0x41A5E9
+	static constexpr f32 SlowMotionScale = 0.5f;    // XXX 0x41A5F3
+	void ApplyGlobalMood(i32 mood);
 };

@@ -180,3 +180,101 @@ bool ObjectManager::CanOccupy(i32 tile, size_t except) const
 {
 	return Scene.Grid.Unoccupied(tile, except);
 }
+
+bool ObjectManager::AddTransient(const WorldObject& state)
+{
+	// Native 0x411050 shares slots 256..383 between all transient effects.
+	constexpr size_t first = 256, limit = 384;
+	size_t slot = first;
+	while (slot < Size() && slot < limit && !(*this)[slot].Freed)
+		++slot;
+	if (slot == limit)
+		return false;
+	while (Size() < slot)
+	{
+		WorldObject empty;
+		empty.Kind = ObjectKind::Inactive;
+		empty.Freed = true;
+		Add(empty);
+	}
+	if (slot == Size())
+		Add(state);
+	else
+		Replace(slot, state);
+	return true;
+}
+
+i32 ObjectManager::FindNearbyPlayer(const WorldObject& actor, i32 radius) const
+{
+	// XXX 0x403E60: strict square radius, squared cell distance, ties to P2.
+	if (Scene.IsBonusLevel() || actor.Tile < 0 || radius <= 0)
+		return -1;
+	i32 chosen = -1, nearest = 0;
+	for (size_t number = 0; number < Scene.GetPlayerCount(); ++number)
+	{
+		const PlayerCharacter& player = GetPlayer(number);
+		const i32 x = 1 + static_cast<i32>((player.X + PlayerCenter) / TileSize);
+		const i32 y = 1 + static_cast<i32>((player.Y + player.PlayerLift + PlayerCenter) / TileSize);
+		const i32 dx = x - actor.Tile % Stride, dy = y - actor.Tile / Stride;
+		if (dx <= -radius || dx >= radius || dy <= -radius || dy >= radius)
+			continue;
+		const i32 distance = dx * dx + dy * dy;
+		if (chosen < 0 || distance <= nearest)
+		{
+			chosen = static_cast<i32>(number);
+			nearest = distance;
+		}
+	}
+	return chosen;
+}
+
+i32 ObjectManager::FindActiveInteractionPlayer(const WorldObject& actor) const
+{
+	// Normal Sven subset of native 0x403D60. Whistles and kicks do not qualify.
+	i32 chosen = -1;
+	for (size_t number = 0; number < Scene.GetPlayerCount(); ++number)
+	{
+		const PlayerCharacter& player = GetPlayer(number);
+		if (player.PlayerAction != PlayerActionState::Interaction && player.PlayerAction != PlayerActionState::Frigida)
+			continue;
+		if (chosen >= 0)
+			return FindNearbyPlayer(actor, 500);
+		chosen = static_cast<i32>(number);
+	}
+	return chosen;
+}
+
+i32 ObjectManager::FindCaughtPlayer(const WorldObject& actor) const
+{
+	if (Scene.IsBonusLevel() || actor.Tile < 0 || actor.Facing < 0 || actor.Facing >= 8)
+		return -1;
+	// 0x4044F0 checks occupied neighbors in this order, stopping at the first player cell.
+	// NE's final fallback is west, as in the shared native branch at 0x404948..0x40499C.
+	static constexpr i32 directions[8][3] = { { 0, 7, 1 }, { 1, 0, 6 }, { 2, 1, 3 }, { 3, 2, 4 }, { 4, 3, 5 }, { 5, 4, 6 }, { 6, 5, 7 }, { 7, 0, 6 } };
+	const i32 x = actor.Tile % Stride, y = actor.Tile / Stride;
+	const i32* facing = Directions[actor.Facing];
+	if ((facing[0] < 0 && x <= 1) || (facing[0] > 0 && x >= Columns + 1) || (facing[1] < 0 && y <= 1) || (facing[1] > 0 && y >= Rows + 1))
+		return -1;
+	for (i32 direction : directions[actor.Facing])
+	{
+		const i32 tile = actor.Tile + Directions[direction][0] + Stride * Directions[direction][1];
+		if (tile < 0 || tile >= Stride * (Rows + 2) || Scene.Grid.GetOccupancy(tile) != OccupancyCode::Player)
+			continue;
+		const i32 slot = Scene.Grid.GetReservationOwner(tile);
+		for (size_t number = 0; number < Scene.GetPlayerCount(); ++number)
+		{
+			const PlayerCharacter& player = GetPlayer(number);
+			if (slot != static_cast<i32>(player.GetIndex()))
+				continue;
+			if (Combats[number].Enemy >= 0 || player.PlayerBeamState || player.PlayerShockAge >= 0 || player.SplashAge * player.DefaultRate < 16)
+				return -1;
+			// 0x404B00 truncates centers before its size-dependent distance comparison.
+			const i32 dx = static_cast<i32>(player.X + PlayerCenter) - static_cast<i32>(actor.X + actor.CenterX);
+			const i32 dy = static_cast<i32>(player.Y + player.PlayerLift + PlayerCenter) - static_cast<i32>(actor.Y + actor.Lift + actor.CenterY);
+			const f32 radius = (actor.CenterX + actor.CenterY) * 0.5f - 5;
+			return dx * dx + dy * dy <= radius * radius ? static_cast<i32>(number) : -1;
+		}
+		return -1;
+	}
+	return -1;
+}

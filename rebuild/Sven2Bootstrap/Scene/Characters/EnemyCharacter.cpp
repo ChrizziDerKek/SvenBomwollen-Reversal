@@ -18,6 +18,7 @@ void EnemyCharacter::Initialize()
 
 void EnemyCharacter::Update(f32 seconds)
 {
+	LevelScene::PlayerScope owner(Scene, GetState().TargetPlayer);
 	UpdateEnemy(seconds);
 }
 
@@ -42,6 +43,18 @@ void EnemyCharacter::EnemyIdle(Object& actor, bool retry)
 void EnemyCharacter::EnemyNotice(const Object& actor, bool item)
 {
 	Scene.EmitNamedSound(actor.Kind == ObjectKind::Alien ? "SfxAlienFoundSven" : (actor.Kind == ObjectKind::Dog ? (item ? "SfxDogFoundBone" : "SfxDogFoundSven") : (actor.Kind == ObjectKind::Farmer ? (item ? "SfxGuyFoundBeer" : "SfxGuyFoundSven") : (item ? "SfxBroemseFoundTeddy" : "SfxBroemseFoundSven"))));
+}
+
+i32 EnemyCharacter::FindNoticePlayer(bool walking) const
+{
+	const WorldObject& actor = GetState();
+	if (actor.Kind == ObjectKind::Farmer || (actor.Kind == ObjectKind::Dog && walking))
+	{
+		const i32 active = Scene.Objects.FindActiveInteractionPlayer(actor);
+		if (active >= 0 || actor.Kind == ObjectKind::Farmer)
+			return active;
+	}
+	return Scene.Objects.FindNearbyPlayer(actor, static_cast<i32>(Scene.Resources.EnemyRules.at(actor.Kind).Range));
 }
 
 bool EnemyCharacter::ChooseEnemyStep()
@@ -267,12 +280,15 @@ void EnemyCharacter::EnemyArrived()
 			}
 		}
 	}
-	if (Scene.Objects.CanCatchPlayer(actor))
+	const i32 caught = Scene.GetGameplayEdition() == GameEdition::XXX ? Scene.Objects.FindCaughtPlayer(actor) : (Scene.Objects.CanCatchPlayer(actor) ? 0 : -1);
+	if (caught >= 0)
 	{
+		actor.TargetPlayer = static_cast<size_t>(caught);
+		LevelScene::PlayerScope owner(Scene, actor.TargetPlayer);
 		BeginBattle();
 		return;
 	}
-	const bool activity = Scene.GetPlayer().PlayerAction == PlayerActionState::Interaction || Scene.GetPlayer().PlayerAction == PlayerActionState::Frigida;
+	const bool activity = Scene.GetGameplayEdition() == GameEdition::XXX ? Scene.Objects.FindActiveInteractionPlayer(actor) >= 0 : (Scene.GetPlayer().PlayerAction == PlayerActionState::Interaction || Scene.GetPlayer().PlayerAction == PlayerActionState::Frigida);
 	// Lars sometimes gives up with a directional grumble once Sven stops.
 	if (actor.Kind == ObjectKind::Farmer && actor.Hunting && actor.ItemTarget < 0 && !activity && Scene.RandomInt(2) == 0)
 	{
@@ -297,12 +313,17 @@ void EnemyCharacter::EnemyArrived()
 			EnemyNotice(actor, true);
 		}
 	}
-	if (!actor.Hunting && ((actor.Kind == ObjectKind::Farmer && activity) || (actor.Kind == ObjectKind::Dog && (activity || Scene.Objects.PlayerInRange(actor, Scene.Resources.EnemyRules[ObjectKind::Dog].Range))) || ((actor.Kind == ObjectKind::Alien || actor.Kind == ObjectKind::Girl) && Scene.Objects.PlayerInRange(actor, Scene.Resources.EnemyRules[actor.Kind].Range))))
+	const i32 noticed = !actor.Hunting && Scene.GetGameplayEdition() == GameEdition::XXX ? FindNoticePlayer(true) : -1;
+	const bool detect = Scene.GetGameplayEdition() == GameEdition::XXX ? noticed >= 0 : ((actor.Kind == ObjectKind::Farmer && activity) || (actor.Kind == ObjectKind::Dog && (activity || Scene.Objects.PlayerInRange(actor, Scene.Resources.EnemyRules[ObjectKind::Dog].Range))) || ((actor.Kind == ObjectKind::Alien || actor.Kind == ObjectKind::Girl) && Scene.Objects.PlayerInRange(actor, Scene.Resources.EnemyRules[actor.Kind].Range)));
+	if (!actor.Hunting && detect)
 	{
+		if (noticed >= 0)
+			actor.TargetPlayer = static_cast<size_t>(noticed);
 		actor.Hunting = true;
 		actor.Steps = Scene.Resources.EnemyRules[actor.Kind].HuntSteps;
 		EnemyNotice(actor, false);
 	}
+	LevelScene::PlayerScope owner(Scene, actor.TargetPlayer);
 	if (--actor.Steps == 0 || !ChooseEnemyStep())
 	{
 		// 0x4022F0/0x4038F0/0x4063C0 draw the next walk budget before idle time.
@@ -331,7 +352,10 @@ void EnemyCharacter::UpdateEnemy(f32 seconds)
 				Scene.EmitNamedSound("SfxLarsSleep");
 			}
 		}
-		if (Scene.Objects.PlayerInRange(actor, rules.WakeRange))
+		const i32 nearby = Scene.GetGameplayEdition() == GameEdition::XXX ? Scene.Objects.FindNearbyPlayer(actor, static_cast<i32>(rules.WakeRange)) : -1;
+		if (nearby >= 0)
+			actor.TargetPlayer = static_cast<size_t>(nearby);
+		if (Scene.GetGameplayEdition() == GameEdition::XXX ? nearby >= 0 : Scene.Objects.PlayerInRange(actor, rules.WakeRange))
 			actor.Pulse = 0;
 		actor.Pulse -= seconds;
 		if (actor.Pulse < 0)
@@ -383,7 +407,10 @@ void EnemyCharacter::UpdateEnemy(f32 seconds)
 		{
 			if (code != ItemCode::None)
 				actor.ItemTarget = Scene.Items.FindDistraction(actor, code);
-			bool detect = actor.Kind == ObjectKind::Farmer ? activity : Scene.Objects.PlayerInRange(actor, rules.Range);
+			const i32 noticed = actor.ItemTarget < 0 && Scene.GetGameplayEdition() == GameEdition::XXX ? FindNoticePlayer(false) : -1;
+			const bool detect = Scene.GetGameplayEdition() == GameEdition::XXX ? noticed >= 0 : (actor.Kind == ObjectKind::Farmer ? activity : Scene.Objects.PlayerInRange(actor, rules.Range));
+			if (noticed >= 0)
+				actor.TargetPlayer = static_cast<size_t>(noticed);
 			if (actor.ItemTarget >= 0 || detect)
 			{
 				actor.Hunting = true;
@@ -394,6 +421,7 @@ void EnemyCharacter::UpdateEnemy(f32 seconds)
 		actor.Pulse -= seconds;
 		if (actor.Pulse < 0)
 		{
+			LevelScene::PlayerScope owner(Scene, actor.TargetPlayer);
 			actor.Retry = false;
 			// The chooser must consume its random draws BEFORE the walk budget.
 			// A failed chooser consumes no walk-budget draw at all.
@@ -417,11 +445,11 @@ void EnemyCharacter::UpdateEnemy(f32 seconds)
 	{
 		const f32 vx = actor.TargetX - actor.X, vy = actor.TargetY - actor.Y;
 		const f32 distance = std::max(std::abs(vx), std::abs(vy));
-		const f32 speed = rules.Speed * (actor.Hunting ? rules.Run : 1) * (vx != 0 && vy != 0 ? rules.Diagonal : 1);
+		const f32 speed = rules.Speed * (actor.Hunting ? rules.Run : 1) * (vx != 0 && vy != 0 ? rules.Diagonal : 1) * Scene.Items.GetEnemyMotionScale();
 		const f32 fraction = distance ? std::min(1.0f, seconds * speed / distance) : 1;
 		actor.X += vx * fraction;
 		actor.Y += vy * fraction;
-		actor.Age += seconds * (actor.Hunting ? rules.RunRate : rules.WalkRate);
+		actor.Age += seconds * (actor.Hunting ? rules.RunRate : rules.WalkRate) * Scene.Items.GetEnemyMotionScale();
 		// 0x40B920/0x40B990 discard fractional overflow at sequence end;
 		// a successful tile-to-tile chooser preserves the current phase.
 		const size_t walkLength = actor.Kind == ObjectKind::Girl ? ActorFrameTables.at(AnimationSequence::GirlWalk).size() : static_cast<size_t>(Scene.Resources.ActorSprites[actor.Kind].Walk[actor.Facing]->Rows);
@@ -584,10 +612,7 @@ void EnemyCharacter::BeginBattle()
 	actor.Draw.Frame = 0;
 	if (actor.Kind == ObjectKind::Girl)
 		actor.AnimRate = 20;
-	Scene.GetPlayer().PlayerAction = PlayerActionState::Idle;
-	Scene.GetPlayer().ActiveSheep = -1;
-	Scene.GetPlayer().Interaction = nullptr;
-	Scene.GetPlayer().ActionQueued = false;
+	Scene.GetPlayer().InterruptInteraction();
 	Scene.GetPlayer().CancelPlayerStep();
 	Scene.Items.GetPowerup().Code = ItemCode::None;
 	Scene.Items.GetPowerup().Remaining = 0;

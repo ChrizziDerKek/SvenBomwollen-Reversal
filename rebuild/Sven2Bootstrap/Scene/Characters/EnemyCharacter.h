@@ -18,6 +18,7 @@ public:
 protected:
 	void EnemyIdle(Object& actor, bool retry = false);
 	void EnemyNotice(const Object& actor, bool item);
+	i32 FindNoticePlayer(bool walking) const;
 	bool ChooseEnemyStep();
 	void DrawEnemy(Object& actor);
 	void EnemyArrived();
