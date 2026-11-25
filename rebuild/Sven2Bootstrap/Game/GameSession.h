@@ -21,13 +21,14 @@ public:
 	{
 		return PlayerCount;
 	}
+	void UpdateAtmosphere(f32 seconds);
 	void Advance();
 	void SkipBonuses();
 	void DebugNextLevel();
 	void DebugRestartLevel();
 	void DebugChangeLives(i32 amount);
 	bool DebugSpawn(ObjectKind kind);
-	const std::vector<SpriteDraw>& Draws();
+	const std::vector<SpriteDraw>& Draws(bool showHelp = true);
 	std::vector<str> TakeSounds();
 	std::vector<SoundRequest> TakeAudioEvents();
 	bool GetResults() const

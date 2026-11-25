@@ -1,6 +1,14 @@
 #pragma once
 #include "Types.h"
 
+enum class WeatherMode
+{
+	None,
+	Snow,
+	Rain,
+	Bubbles
+};
+
 // Native cell codes are a separate domain from serialized ObjectKind IDs.
 enum class OccupancyCode : i32
 {

@@ -247,3 +247,47 @@ i32 BitmapFont::Width(const str& text) const
 	Layout(nullptr, Decode(text), 0, 0, 0, 0, measured);
 	return measured;
 }
+
+void BitmapFont::AppendLevelHelp(std::vector<SpriteDraw>& draws, const str& text, i32 x, i32 y, i32 rightEdge) const
+{
+	if (!NativeFont)
+		throw std::logic_error("Level help requires a native XXX font.");
+	const wstr decoded = Decode(text);
+	i32 cursor = x;
+	bool inWord = false;
+	auto newline = [&]() { cursor = x; y = Checked(static_cast<i64>(y) + LineAdvance); inWord = false; };
+	for (size_t index = 0; index < decoded.size(); ++index)
+	{
+		const wchar_t character = decoded[index];
+		const bool hasGlyph = NativeFont && Glyphs.find(character) != Glyphs.end();
+		if (hasGlyph && !inWord)
+		{
+			i64 wordWidth = 0;
+			// 0x4437D0's lookahead stops before the string's final character.
+			size_t next = index;
+			do
+			{
+				wordWidth += Advance(GetGlyph(decoded[next++]));
+			} while (next + 1 < decoded.size() && Glyphs.find(decoded[next]) != Glyphs.end());
+			if (wordWidth > 0 && cursor + wordWidth > rightEdge)
+				newline();
+			inWord = true;
+		}
+		if (character == L'#' || character == L'\n')
+		{
+			newline();
+			continue;
+		}
+		if (!hasGlyph)
+		{
+			inWord = false;
+			cursor = Checked(static_cast<i64>(cursor) + SpaceAdvance);
+			if (cursor > rightEdge)
+				newline();
+			continue;
+		}
+		const i32 glyph = GetGlyph(character);
+		draws.push_back({ &Glyphs.at(glyph).Image, cursor, y, 0 });
+		cursor = Checked(static_cast<i64>(cursor) + Advance(glyph));
+	}
+}

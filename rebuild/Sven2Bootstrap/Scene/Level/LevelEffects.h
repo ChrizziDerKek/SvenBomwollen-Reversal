@@ -2,6 +2,7 @@
 #include "Types.h"
 #include "Engine/Structures.h"
 #include "Scene/Objects/BaseObject.h"
+#include "LevelCodes.h"
 
 class LevelScene;
 class LevelEffects
@@ -15,6 +16,7 @@ public:
 	void AddTime(i32 amount, f32 x, f32 y);
 	void SpawnCompletionEffect(f32 x, f32 y, bool hearts);
 	void UpdateEffects(f32 seconds);
+	void UpdateWeather(f32 seconds);
 	void UpdateWorldEffect(size_t index, f32 seconds);
 	void SpawnDigEffect(const Object& actor);
 	void SpawnBeam(f32 x, f32 y);
@@ -30,11 +32,28 @@ private:
 	friend class PlayerCharacter;
 	friend class SceneRenderer;
 	LevelScene& Scene;
+	WeatherMode Weather = WeatherMode::None;
+	f32 WeatherCountdown = 10; // Reset at native level entry, 0x41D204.
 	std::vector<TimePopup> TimePopups;
 	std::vector<Object> SceneEffects;
 	std::array<std::array<SpriteDraw, 2>, 2> Splashes{};
 	bool SplashSound = false;
 	f32 TimeDelta = 0;
+};
+
+class WeatherParticle final : public BaseObject
+{
+public:
+	WeatherParticle(LevelScene& scene, size_t index);
+	void Initialize() override;
+	void Update(f32 seconds) override;
+
+private:
+	f32 VelocityX = 0;
+	f32 VelocityY = 0;
+	f32 Lifetime = 0;
+	f32 SwayAngle = 0;
+	i32 SwayWidth = 0;
 };
 
 class ParticleEmitter : public BaseObject

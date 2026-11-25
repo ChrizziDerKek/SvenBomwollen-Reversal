@@ -32,6 +32,9 @@ enum class ObjectKind : i32
 	ElectricFlash = 34,
 	Beam = 36,
 	Particle = 37,
+	Snowflake = 40,
+	Raindrop = 41,
+	RisingBubble = 42,
 	BubbleEmitter = 43,
 	YellowEmitter = 44,
 	RocketBurst = 219,
@@ -40,12 +43,19 @@ enum class ObjectKind : i32
 	SmellBurst = 223,
 	FlowerBurst = 224,
 	BubbleParticle = 543,
-	YellowParticle = 544
+	YellowParticle = 544,
+	HeartParticle = 545
 };
+
+inline bool IsWeatherParticle(ObjectKind kind)
+{
+	return kind == ObjectKind::Snowflake || kind == ObjectKind::Raindrop || kind == ObjectKind::RisingBubble;
+}
 
 enum class ObjectPhase
 {
 	Effects,
+	Weather,
 	Items,
 	Enemies,
 	Animals,

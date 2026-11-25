@@ -137,6 +137,20 @@ struct LevelCell
 	u16 HelpId = 0;
 };
 
+enum class HelpFontStyle : i32
+{
+	Large,
+	LargeActive,
+	Small,
+	SmallActive
+};
+
+struct LevelHelpLayout
+{
+	i32 X, Y, RightEdge;
+	HelpFontStyle Font;
+};
+
 class LevelFile
 {
 public:
@@ -151,9 +165,15 @@ public:
 		return Flags;
 	}
 	BonusMode GetBonusMode() const;
+	WeatherMode GetWeatherMode() const;
 	const std::array<i32, 4>& GetExtension(size_t index) const
 	{
 		return Extensions.at(index);
+	}
+	LevelHelpLayout GetHelpLayout(size_t index) const
+	{
+		const std::array<i32, 4>& words = Extensions.at(index);
+		return { words[0], words[1], words[2], static_cast<HelpFontStyle>(words[3]) };
 	}
 	bool GetHidesUfo() const
 	{

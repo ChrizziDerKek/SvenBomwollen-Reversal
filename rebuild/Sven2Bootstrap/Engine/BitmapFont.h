@@ -12,6 +12,7 @@ public:
 	// Maximum line advance; Zwo spaces advance 6 pixels, XXX spacing comes from FDD.
 	// Unsupported Unicode scalars render as '?'; CRLF is one newline.
 	i32 Width(const str& utf8) const;
+	void AppendLevelHelp(std::vector<SpriteDraw>& draws, const str& utf8, i32 x, i32 y, i32 rightEdge) const;
 
 private:
 	const Sprite* Sprite;

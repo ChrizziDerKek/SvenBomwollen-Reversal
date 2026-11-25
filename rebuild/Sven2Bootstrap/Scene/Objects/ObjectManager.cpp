@@ -184,7 +184,9 @@ bool ObjectManager::CanOccupy(i32 tile, size_t except) const
 bool ObjectManager::AddTransient(const WorldObject& state)
 {
 	// Native 0x411050 shares slots 256..383 between all transient effects.
-	constexpr size_t first = 256, limit = 384;
+	constexpr size_t first = 256;
+	// 0x411050 reserves the final 28 transient slots for non-weather effects.
+	const size_t limit = IsWeatherParticle(state.Kind) ? 356 : 384;
 	size_t slot = first;
 	while (slot < Size() && slot < limit && !(*this)[slot].Freed)
 		++slot;

@@ -592,8 +592,9 @@ bool Mermaid::FinishInteraction(bool repeat)
 	Scene.AddScore(16);
 	if (++State.Attempts > 6)
 	{
+		ClearCell();
 		SetState(MermaidState::Resolved);
-		ReleasedPlayer = LinkedPlayer;
+		CompletingPlayer = LinkedPlayer;
 		LinkedPlayer = -1;
 		State.InteractionPlayer = -1;
 		return false;
@@ -603,18 +604,20 @@ bool Mermaid::FinishInteraction(bool repeat)
 		Scene.EmitNamedSound("SfxShagMermaid");
 		return true;
 	}
-	ReleasedPlayer = LinkedPlayer;
 	LinkedPlayer = -1;
 	State.InteractionPlayer = -1;
 	State.State = static_cast<ActorState>(MermaidState::Idle);
 	return false;
 }
 
-i32 Mermaid::TakeReleasedPlayer()
+void Mermaid::CancelInteraction(size_t playerNumber)
 {
-	const i32 number = ReleasedPlayer;
-	ReleasedPlayer = -1;
-	return number;
+	if (LinkedPlayer != static_cast<i32>(playerNumber))
+		return;
+	LinkedPlayer = -1;
+	State.InteractionPlayer = -1;
+	if (GetMermaidState() == MermaidState::Interacting)
+		State.State = static_cast<ActorState>(MermaidState::Idle);
 }
 
 bool Mermaid::Advance(cstr sequence, f32 rate, f32 seconds)
@@ -634,7 +637,7 @@ bool Mermaid::Advance(cstr sequence, f32 rate, f32 seconds)
 void Mermaid::Draw()
 {
 	State.Draw = {};
-	if (State.Freed || GetMermaidState() == MermaidState::Dormant || GetMermaidState() == MermaidState::Resolved)
+	if (State.Freed || GetMermaidState() == MermaidState::Dormant || GetMermaidState() == MermaidState::Interacting || GetMermaidState() == MermaidState::Resolved)
 		return;
 	cstr sequence = GetMermaidState() == MermaidState::Emerging ? "aMermaidJump" : (GetMermaidState() == MermaidState::Submerging ? "aMermaidJumpBack" : "aMermaidIdle");
 	const std::vector<i32>& frames = Scene.Resources.FrameList(sequence);
@@ -667,9 +670,12 @@ void Mermaid::Update(f32 seconds)
 		if (Advance("aMermaidIdle", 5, seconds) && ++Cycles > 10)
 		{
 			ClearCell();
-			ReleasedPlayer = LinkedPlayer;
-			LinkedPlayer = -1;
-			State.InteractionPlayer = -1;
+			if (LinkedPlayer >= 0)
+			{
+				LevelScene::PlayerScope player(Scene, static_cast<size_t>(LinkedPlayer));
+				Scene.GetPlayer().InterruptInteraction();
+				Scene.GetPlayer().RestorePlayer();
+			}
 			SetState(MermaidState::Submerging);
 		}
 		break;
@@ -678,6 +684,8 @@ void Mermaid::Update(f32 seconds)
 			SetState(MermaidState::Dormant);
 		break;
 	case MermaidState::Resolved:
+	{
+		LevelScene::PlayerScope player(Scene, static_cast<size_t>(CompletingPlayer));
 		ClearCell();
 		Scene.AddScore(30);
 		// Native 0x40AA10 calls 0x41E850(10, slot): this is a time popup, not ten lives.
@@ -686,6 +694,7 @@ void Mermaid::Update(f32 seconds)
 		Scene.EmitNamedSound("SfxExplode");
 		State.Freed = true;
 		break;
+	}
 	}
 	Draw();
 }

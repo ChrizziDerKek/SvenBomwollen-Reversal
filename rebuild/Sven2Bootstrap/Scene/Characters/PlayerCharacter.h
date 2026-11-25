@@ -4,6 +4,7 @@
 #include "Engine/Structures.h"
 #include "Scene/ShagAnimation.h"
 #include "BaseCharacter.h"
+#include <array>
 
 class PlayerCharacter final : public BaseCharacter
 {
@@ -38,6 +39,7 @@ public:
 
 private:
 	friend class AnimalCharacter;
+	friend class Mermaid;
 	friend class EnemyCharacter;
 	friend class LevelEffects;
 	friend class LevelGrid;
@@ -64,6 +66,10 @@ private:
 	void UpdateRequestedMotion();
 	void AdvanceMovement(f32 seconds);
 	void AdvanceLegacyMovement(f32 seconds, i32 dx, i32 dy);
+	void RecordStreakCompletion();
+	void UpdateStreak(f32 seconds);
+	std::array<f32, 32> CompletionWindows{}; // XXX 0x41F380: 32 countdowns per player.
+	size_t CompletionCount = 0;
 
 	i32 MovementX = 0;
 	PlayerMotion Motion = PlayerMotion::Stopped;

@@ -134,6 +134,67 @@ void LevelEffects::UpdateWorldEffect(size_t index, f32 seconds)
 	effect.Freed = effect.Draw.Frame >= effect.Draw.Sprite->Rows;
 }
 
+void LevelEffects::UpdateWeather(f32 seconds)
+{
+	if (Weather != WeatherMode::None)
+	{
+		WeatherCountdown -= seconds * 60;
+		if (WeatherCountdown < 0)
+		{
+			WeatherCountdown = Weather == WeatherMode::Snow ? 1.0f : (Weather == WeatherMode::Rain ? 2.0f : 3.0f);
+			WorldObject particle;
+			particle.Kind = Weather == WeatherMode::Snow ? ObjectKind::Snowflake : (Weather == WeatherMode::Rain ? ObjectKind::Raindrop : ObjectKind::RisingBubble);
+			// 0x41DC12..20 draws Y before X for the rising-bubble mode.
+			particle.Y = Weather == WeatherMode::Bubbles ? static_cast<f32>(Scene.RandomInt(600)) : 0;
+			particle.X = static_cast<f32>(Scene.RandomInt(800));
+			Scene.Objects.AddTransient(particle);
+		}
+	}
+	Scene.Objects.UpdatePhase(ObjectPhase::Weather, seconds);
+}
+
+WeatherParticle::WeatherParticle(LevelScene& scene, size_t index)
+    : BaseObject(scene, ObjectPhase::Weather, index)
+{}
+
+void WeatherParticle::Initialize()
+{
+	const CharacterDefinition* definition = FindCharacterDefinition(State.Kind);
+	const Sprite* sprite = Scene.Resources.GetSprite(Scene.CoreAsset(definition->SpriteAsset), definition->Frames);
+	const bool snow = State.Kind == ObjectKind::Snowflake;
+	const i32 layer = Scene.RandomInt(3);
+	static constexpr i32 snowRange[] = { 6, 10, 20 }, snowSpeed[] = { 25, 35, 45 }, snowLife[] = { 2500, 3500, 5000 };
+	static constexpr i32 rainRange[] = { 30, 40, 50 }, rainSpeed[] = { 150, 190, 230 }, rainLife[] = { 250, 500, 1000 };
+	if (snow)
+		VelocityX = static_cast<f32>(Scene.RandomInt(snowRange[layer]) - snowRange[layer] / 2) * 0.1f;
+	VelocityY = static_cast<f32>(Scene.RandomInt(snow ? snowSpeed[layer] : rainRange[layer]) + (snow ? snowSpeed[layer] : rainSpeed[layer]));
+	Lifetime = static_cast<f32>(Scene.RandomInt(snow ? snowLife[layer] : rainLife[layer]) / 10 + 100);
+	State.Draw = { sprite, static_cast<i32>(State.X), static_cast<i32>(State.Y), Scene.RandomInt(layer == 2 ? 6 : 5) + (layer == 0 ? 0 : (layer == 1 ? 5 : 10)), true };
+	if (snow)
+	{
+		SwayWidth = Scene.RandomInt(20) / 2;
+		SwayAngle = static_cast<f32>(Scene.RandomInt(360)) * 0.01f;
+	}
+	State.CommittedY = State.Y;
+}
+
+void WeatherParticle::Update(f32 seconds)
+{
+	State.X += VelocityX * seconds;
+	State.Y += VelocityY * seconds * (State.Kind == ObjectKind::RisingBubble ? -1 : 1);
+	Lifetime -= seconds * 60;
+	State.Freed = Lifetime < 0 || (State.Kind == ObjectKind::Raindrop && State.Y < -32);
+	State.Draw.X = static_cast<i32>(State.X);
+	if (State.Kind == ObjectKind::Snowflake)
+	{
+		// Native phase uses this conversion constant directly, not radians-to-degrees correction.
+		State.Draw.X = static_cast<i32>(State.X + SwayWidth * std::cos(SwayAngle * 57.295776f));
+		SwayAngle += seconds * 0.05f;
+	}
+	State.Draw.Y = static_cast<i32>(State.Y);
+	State.CommittedY = State.Y;
+}
+
 ParticleEmitter::ParticleEmitter(LevelScene& scene, size_t index)
     : BaseObject(scene, ObjectPhase::Animals, index)
 {}
@@ -169,7 +230,7 @@ EmitterParticle::EmitterParticle(LevelScene& scene, size_t index)
 
 bool EmitterParticle::Spawn(LevelScene& scene, ObjectKind kind, f32 x, f32 y, bool mirror)
 {
-	if (kind != ObjectKind::BubbleParticle && kind != ObjectKind::YellowParticle)
+	if (kind != ObjectKind::BubbleParticle && kind != ObjectKind::YellowParticle && kind != ObjectKind::HeartParticle)
 		throw std::invalid_argument("Not a native XXX emitter particle.");
 	WorldObject particle;
 	particle.Kind = kind;
@@ -182,14 +243,21 @@ bool EmitterParticle::Spawn(LevelScene& scene, ObjectKind kind, f32 x, f32 y, bo
 void EmitterParticle::Initialize()
 {
 	const bool bubbles = State.Kind == ObjectKind::BubbleParticle;
-	const Sprite* sprite = Scene.Resources.GetSprite(Scene.CoreAsset(bubbles ? "Sven2/gfx/pfx_bubbles.bmp" : "Sven2/gfx/pfx_yellow.bmp"), 16);
+	const bool hearts = State.Kind == ObjectKind::HeartParticle;
+	const CharacterDefinition* definition = FindCharacterDefinition(State.Kind);
+	const Sprite* sprite = Scene.Resources.GetSprite(Scene.CoreAsset(definition->SpriteAsset), definition->Frames);
 	State.X -= sprite->FrameWidth / 2;
 	State.Y -= sprite->FrameHeight / 2;
-	State.Draw = { sprite, static_cast<i32>(State.X), static_cast<i32>(State.Y), Scene.RandomInt(bubbles ? 16 : 3), State.Draw.Mirror };
+	if (hearts)
+	{
+		State.X += 10 - Scene.RandomInt(20);
+		State.Y += 10 - Scene.RandomInt(20);
+	}
+	State.Draw = { sprite, static_cast<i32>(State.X), static_cast<i32>(State.Y), Scene.RandomInt(hearts ? 7 : (bubbles ? 16 : 3)), State.Draw.Mirror };
 	const i32 frame = State.Draw.Frame;
-	VelocityX = static_cast<f32>(bubbles ? 30 - Scene.RandomInt(60) : 20 - Scene.RandomInt(40));
-	VelocityY = static_cast<f32>(bubbles ? frame - Scene.RandomInt(30) - 50 : frame - Scene.RandomInt(15) - 25);
-	Lifetime = static_cast<f32>(bubbles ? Scene.RandomInt(75) + 2 * (50 - frame) : Scene.RandomInt(25) - frame + 25);
+	VelocityX = static_cast<f32>(bubbles || hearts ? 30 - Scene.RandomInt(60) : 20 - Scene.RandomInt(40));
+	VelocityY = static_cast<f32>(hearts ? 5 * (frame - 14) - Scene.RandomInt(30) : (bubbles ? frame - Scene.RandomInt(30) - 50 : frame - Scene.RandomInt(15) - 25));
+	Lifetime = static_cast<f32>(hearts ? 5 * (10 - frame) + Scene.RandomInt(50) : (bubbles ? Scene.RandomInt(75) + 2 * (50 - frame) : Scene.RandomInt(25) - frame + 25));
 	NativeDepth = 0;
 	State.CommittedY = State.Y;
 }
@@ -202,7 +270,8 @@ void EmitterParticle::Update(f32 seconds)
 	// subtract otherwise. Native code intentionally does not clamp at zero.
 	const f32 drag = seconds * (State.Kind == ObjectKind::BubbleParticle ? 10 : 5);
 	VelocityX += VelocityX < 0 ? drag : -drag;
-	NativeDepth += VelocityY * seconds;
+	if (State.Kind != ObjectKind::HeartParticle)
+		NativeDepth += VelocityY * seconds;
 	State.DepthOffset = static_cast<i32>(NativeDepth);
 	Lifetime -= seconds * 60;
 	State.Freed = Lifetime < 0;

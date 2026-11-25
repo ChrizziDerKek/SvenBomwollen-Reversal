@@ -15,6 +15,18 @@ BonusMode LevelFile::GetBonusMode() const
 	return mode;
 }
 
+WeatherMode LevelFile::GetWeatherMode() const
+{
+	if (Version != 7)
+		return WeatherMode::None;
+	// XXX 0x4306DF..72F: later enabled flags override earlier modes.
+	if (Flags & (1u << 7))
+		return WeatherMode::Bubbles;
+	if (Flags & (1u << 6))
+		return WeatherMode::Rain;
+	return Flags & (1u << 5) ? WeatherMode::Snow : WeatherMode::None;
+}
+
 template <class T>
 T ReadWord(const u8* bytes, size_t offset)
 {

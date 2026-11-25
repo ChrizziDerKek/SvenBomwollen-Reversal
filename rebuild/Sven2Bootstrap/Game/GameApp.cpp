@@ -103,6 +103,8 @@ void RunGame(MudGE& engine, const fpath& saves, bool audio, u32 seconds, bool di
 			else
 			{
 				const Page priorPage = ui.GetPage();
+				if (session && (priorPage == Page::Pause || (priorPage == Page::Quit && ui.UsesSceneBackground())))
+					session->UpdateAtmosphere(elapsed);
 				if (priorPage == Page::Results && session)
 				{
 					session->Update(elapsed, 0, 0, false);
@@ -181,7 +183,7 @@ void RunGame(MudGE& engine, const fpath& saves, bool audio, u32 seconds, bool di
 		else
 		{
 			const bool overlay = session && ui.UsesSceneBackground();
-			const std::vector<SpriteDraw>* background = overlay ? &session->Draws() : nullptr;
+			const std::vector<SpriteDraw>* background = overlay ? &session->Draws(false) : nullptr;
 			const std::vector<SpriteDraw>& menu = ui.Draws(elapsed, background);
 			engine.DrawFrame(debug.IsOpen() ? debug.Draws(menu) : menu);
 		}

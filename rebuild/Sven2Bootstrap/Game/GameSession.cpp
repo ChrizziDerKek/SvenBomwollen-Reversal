@@ -135,6 +135,7 @@ void GameSession::Update(f32 seconds, const std::array<PlayerInput, 2>& inputs)
 	UpdateLifeEffects(seconds);
 	if (Results)
 	{
+		UpdateAtmosphere(seconds);
 		ConvertBonuses(seconds);
 		AnimateScore(seconds);
 		return;
@@ -356,7 +357,7 @@ void GameSession::SkipBonuses()
 	BonusFinished = true;
 }
 
-const std::vector<SpriteDraw>& GameSession::Draws()
+const std::vector<SpriteDraw>& GameSession::Draws(bool showHelp)
 {
 	DrawCommands = Scene->Draws();
 	for (const LifeEffect& effect : LifeEffects)
@@ -372,6 +373,8 @@ const std::vector<SpriteDraw>& GameSession::Draws()
 	std::snprintf(text, sizeof(text), "%2i:%02i", remaining / 60, remaining % 60);
 	const BitmapFont& timerFont = remaining < 10 && static_cast<i32>(Ticks) % 2 ? GreenFont : Font;
 	timerFont.Append(DrawCommands, text, HudTheme == GameEdition::XXX ? 22 : 12, HudTheme == GameEdition::XXX ? 34 : 36);
+	if (showHelp && !Results)
+		Scene->AppendHelp(DrawCommands);
 	return DrawCommands;
 }
 
@@ -395,4 +398,16 @@ std::vector<str> GameSession::TakeSounds()
 RoundResult GameSession::GetResult() const
 {
 	return { Score, LevelNumber(), TimeBonus, ResultSheep, ResultLives, static_cast<i32>(Time), SheepBonus, LifeBonus, Finished(), GameOver(), PreviousSheep + Scene->GetCompletedSheep(), ScoreFrame, PlayerCount, ResultPlayers, PlayerBonus, Scene->GetBonusMode() };
+}
+
+void GameSession::UpdateAtmosphere(f32 seconds)
+{
+	if (!std::isfinite(seconds) || seconds <= 0)
+		return;
+	while (seconds > 0)
+	{
+		const f32 step = std::min(seconds, 1.0f / 60);
+		seconds -= step;
+		Scene->GetEffects().UpdateWeather(step);
+	}
 }

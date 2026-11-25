@@ -3199,6 +3199,345 @@ void CheckZwoCoopCatalog(MudGE& engine, bool capture)
 	Log("PASS: all 105 Zwo maps generate safe co-op spawns, preserve single-player/authored data/randomness and simulate 30 seconds.");
 }
 
+void CheckStreaksAndMermaids(MudGE& engine, bool capture)
+{
+	const std::vector<LevelPackInfo>& packs = engine.GetData().GetPacks();
+	const LevelPackInfo& zwo = *std::find_if(packs.begin(), packs.end(), [](const LevelPackInfo& pack) { return pack.Edition == GameEdition::Zwo && pack.Name == "XS"; });
+	LevelPackInfo xxx = zwo;
+	xxx.Edition = GameEdition::XXX; // Fixtures reuse Zwo scenery while exercising the v7 reader.
+	const Sprite* action = engine.LoadSprite(engine.GetData().GetSpriteDefinition("MermaidShag", GameEdition::XXX).File, engine.GetData().GetSpriteDefinition("MermaidShag", GameEdition::XXX).Rows, 1);
+	auto fixture = [&](const str& name, GameEdition edition, i32 facing = 2) {
+		return FixtureLevel(engine, name, { { 0, 240 - Directions[facing][0] * 40, 200 - Directions[facing][1] * 40, facing }, { 28, 240, 200, 0 }, { 2, 600, 400, 0 } }, 0, edition);
+	};
+	auto idle = [](LevelScene& scene, Mermaid& mermaid) {
+		Require(mermaid.Reveal(), "Dormant mermaid did not reveal.");
+		for (i32 tick = 0; tick < 500 && mermaid.GetMermaidState() != MermaidState::Idle; ++tick)
+			scene.Update(0.01f, 0, 0, false);
+		Require(mermaid.GetMermaidState() == MermaidState::Idle, "Mermaid emergence never reached idle.");
+	};
+	for (GameEdition edition : { GameEdition::Zwo, GameEdition::XXX })
+	{
+		const LevelPackInfo& pack = edition == GameEdition::Zwo ? zwo : xxx;
+		for (i32 count : { 1, 2, 3, 4, 5, 6, 7, 16, 17, 32 })
+		{
+			LevelScene scene(engine, pack, fixture("streak-" + std::to_string(count) + "-" + std::to_string(static_cast<i32>(edition)), edition), 1);
+			Mermaid& mermaid = dynamic_cast<Mermaid&>(scene.GetObjects().Get(1));
+			for (i32 completion = 0; completion < count; ++completion)
+			{
+				scene.RecordAnimalCompletion(scene.GetObjects()[2]);
+				scene.Update(0.02f, 0, 0, false);
+			}
+			Require(mermaid.GetMermaidState() == MermaidState::Dormant && scene.TakeScoreDelta() == 0, "Streak fired before its first five-second window expired.");
+			scene.Update(5.1f - count * 0.02f, 0, 0, false);
+			const i32 award = count < 3 || count > 16 ? 0 : (count <= 6 ? 10 * count : 70);
+			Require(scene.TakeScoreDelta() == award, "Streak score differs from the native 3..16 switch.");
+			Require((mermaid.GetMermaidState() == MermaidState::Dormant) == (count < 3), "Mermaid appearance did not follow the streak threshold.");
+			Require(scene.GetRemainingTargets() == 1, "Mermaid was counted as a required animal.");
+			if (count >= 3)
+			{
+				Require(scene.GetObjects().Find(ObjectKind::HeartParticle).size() == static_cast<size_t>(std::min(5 * count - 5, 128)), "Streak heart count differs from native behavior.");
+				const std::vector<str> sounds = scene.TakeSounds();
+				Require(std::find(sounds.begin(), sounds.end(), engine.GetData().SoundPath("SfxMultipleShag", GameEdition::XXX)) != sounds.end(), "Streak reward sound is missing.");
+				const std::vector<SpriteDraw>& draws = scene.Draws();
+				const Sprite* hearts = scene.GetObjects()[scene.GetObjects().Find(ObjectKind::HeartParticle).front()].Draw.Sprite;
+				const Sprite* playerSprite = scene.GetPlayerDraw().Sprite;
+				const auto firstHeart = std::find_if(draws.begin(), draws.end(), [&](const SpriteDraw& draw) { return draw.Sprite == hearts; });
+				const auto playerDraw = std::find_if(draws.begin(), draws.end(), [&](const SpriteDraw& draw) { return draw.Sprite == playerSprite; });
+				Require(firstHeart != draws.end() && playerDraw != draws.end() && firstHeart > playerDraw, "Streak hearts must render after the world, not behind Sven.");
+				if (capture && count == 3 && edition == GameEdition::XXX)
+					engine.DrawFrame(scene.Draws(), "mermaid-streak.bmp");
+			}
+			scene.Update(1, 0, 0, false);
+			Require(scene.TakeScoreDelta() == 0, "A completed streak paid twice.");
+		}
+		for (i32 facing = 0; facing < 8; ++facing)
+		{
+			LevelScene scene(engine, pack, fixture("mermaid-facing-" + std::to_string(facing) + "-" + std::to_string(static_cast<i32>(edition)), edition, facing), 1);
+			Mermaid& mermaid = dynamic_cast<Mermaid&>(scene.GetObjects().Get(1));
+			idle(scene, mermaid);
+			scene.Update(0, Directions[facing][0], Directions[facing][1], false);
+			scene.Update(0.001f, 0, 0, true);
+			const bool accepted = facing >= 2 && facing <= 4;
+			Require((mermaid.GetMermaidState() == MermaidState::Interacting) == accepted, "Mermaid accepted the wrong approach direction.");
+			if (!accepted)
+				continue;
+			Require(scene.GetPlayerDraw().Sprite == action && !scene.GetObjects()[1].Draw.Sprite, "Mermaid compound animation draws duplicate sprites.");
+			if (capture && facing == 2 && edition == GameEdition::XXX)
+				engine.DrawFrame(scene.Draws(), "mermaid-interaction.bmp");
+			// Queue one repeat per animation; the seventh completion resolves her.
+			for (i32 cycle = 1; cycle <= 7; ++cycle)
+			{
+				if (cycle < 7)
+				{
+					scene.Update(0, 0, 0, false);
+					scene.Update(0, 0, 0, true);
+				}
+				for (i32 tick = 0; tick < 500 && scene.GetObjects()[1].Attempts < cycle && !scene.GetObjects()[1].Freed; ++tick)
+					scene.Update(0.01f, 0, 0, false);
+				Require(scene.GetObjects()[1].Attempts == cycle, "Mermaid animation/repeat failed to complete.");
+				Require(scene.TakeScoreDelta() == (cycle == 7 ? 46 : 16), "Mermaid cycle or resolution score is wrong.");
+			}
+			Require(scene.GetObjects()[1].Freed && scene.GetRemainingTargets() == 1 && scene.TakeTimeDelta() == 10 && scene.TakeLivesGained() == 0, "Mermaid completion must grant ten seconds, not lives or target completion.");
+			Require(scene.GetObjects()[scene.GetPlayerIndex()].Tile == scene.GetObjects()[1].Tile && scene.GetGrid().GetOccupancy(scene.GetObjects()[1].Tile) == OccupancyCode::Player, "Mermaid completion did not transfer Sven's collision reservation.");
+		}
+	}
+	LevelScene interrupted(engine, xxx, fixture("mermaid-interrupted", GameEdition::XXX), 1);
+	Mermaid& interruptedMermaid = dynamic_cast<Mermaid&>(interrupted.GetObjects().Get(1));
+	idle(interrupted, interruptedMermaid);
+	interrupted.Update(0, 1, 0, false);
+	interrupted.Update(0.001f, 0, 0, true);
+	interrupted.GetPlayer().InterruptInteraction();
+	interrupted.GetPlayer().RestorePlayer();
+	Require(interruptedMermaid.GetMermaidState() == MermaidState::Idle && interrupted.GetObjects()[1].InteractionPlayer < 0 && interrupted.TakeScoreDelta() == 0, "Interrupted mermaid retained ownership or awarded a completion.");
+	interrupted.Update(0, 0, 0, false);
+	interrupted.Update(0.001f, 0, 0, true);
+	// Force the next native idle cycle to expire while the player is interacting.
+	for (i32 tick = 0; tick < 10000 && interruptedMermaid.GetMermaidState() == MermaidState::Interacting; ++tick)
+	{
+		interrupted.GetObjects().Get(1).Update(0.01f);
+	}
+	Require(interruptedMermaid.GetMermaidState() == MermaidState::Submerging && interrupted.GetObjects()[1].InteractionPlayer < 0 && interrupted.GetPlayerDraw().Sprite != action, "Mermaid timeout failed to release and restore Sven.");
+	Require(interrupted.GetGrid().GetOccupancy(interrupted.GetObjects()[1].Tile) == OccupancyCode::Empty, "Submerging mermaid left collision behind.");
+	for (i32 tick = 0; tick < 500 && interruptedMermaid.GetMermaidState() != MermaidState::Dormant; ++tick)
+		interrupted.GetObjects().Get(1).Update(0.01f);
+	Require(interruptedMermaid.Reveal(), "Timed-out mermaid cannot appear again.");
+	LevelScene owners(engine, xxx, FixtureLevel(engine, "mermaid-owners", { { 0, 200, 200, 2 }, { 0, 240, 160, 4 }, { 28, 240, 200, 0 }, { 2, 600, 400, 0 } }, 0, GameEdition::XXX), 1, nullptr, 2);
+	Mermaid& ownedMermaid = dynamic_cast<Mermaid&>(owners.GetObjects().Get(2));
+	idle(owners, ownedMermaid);
+	owners.Update(0, std::array<PlayerInput, 2>{ PlayerInput{ 1, 0, false }, PlayerInput{ 0, 1, false } });
+	owners.Update(0.001f, std::array<PlayerInput, 2>{ PlayerInput{ 0, 0, true }, PlayerInput{ 0, 0, true } });
+	Require(owners.GetObjects()[2].InteractionPlayer == 0 && owners.GetObjects().GetPlayer(1).GetState().Draw.Sprite != action, "Both players acquired the same mermaid.");
+	owners.GetObjects().GetPlayer(0).InterruptInteraction();
+	owners.Update(0, std::array<PlayerInput, 2>{ PlayerInput{ 1, 0, false }, PlayerInput{ 0, 1, false } });
+	owners.Update(0.001f, std::array<PlayerInput, 2>{ PlayerInput{}, PlayerInput{ 0, 0, true } });
+	Require(owners.GetObjects()[2].InteractionPlayer == 1, "Released mermaid cannot be acquired by player two.");
+	const f32 otherX = owners.GetObjects().GetPlayer(0).GetX(), otherY = owners.GetObjects().GetPlayer(0).GetY();
+	for (i32 cycle = 1; cycle <= 7; ++cycle)
+	{
+		if (cycle < 7)
+		{
+			owners.Update(0, std::array<PlayerInput, 2>{});
+			owners.Update(0, std::array<PlayerInput, 2>{ PlayerInput{}, PlayerInput{ 0, 0, true } });
+		}
+		for (i32 tick = 0; tick < 500 && owners.GetObjects()[2].Attempts < cycle && !owners.GetObjects()[2].Freed; ++tick)
+			owners.Update(0.01f, std::array<PlayerInput, 2>{});
+		Require(owners.GetObjects()[2].Attempts == cycle, "Player two's mermaid repeat stalled.");
+	}
+	Require(owners.TakeScoreDelta() == 142 && owners.TakeTimeDelta() == 10 && owners.GetObjects().GetPlayer(0).GetX() == otherX && owners.GetObjects().GetPlayer(0).GetY() == otherY, "Player two's mermaid reward moved or credited the wrong player.");
+	Require(owners.GetGrid().GetReservationOwner(owners.GetObjects()[2].Tile) == static_cast<i32>(owners.GetObjects().GetPlayer(1).GetIndex()), "Mermaid completion reserved the cell for the wrong player.");
+	// Separate player histories must not combine to reveal her.
+	LevelScene histories(engine, xxx, FixtureLevel(engine, "mermaid-histories", { { 0, 200, 200, 2 }, { 0, 400, 200, 4 }, { 28, 240, 200, 0 }, { 2, 600, 400, 0 } }, 0, GameEdition::XXX), 1, nullptr, 2);
+	for (size_t number : { size_t{ 0 }, size_t{ 1 }, size_t{ 0 }, size_t{ 1 } })
+	{
+		LevelScene::PlayerScope player(histories, number);
+		histories.RecordAnimalCompletion(histories.GetObjects()[3]);
+		histories.Update(0.02f, std::array<PlayerInput, 2>{});
+	}
+	histories.Update(5.1f, std::array<PlayerInput, 2>{});
+	Require(histories.TakeScoreDelta() == 0 && dynamic_cast<Mermaid&>(histories.GetObjects().Get(2)).GetMermaidState() == MermaidState::Dormant, "Streak histories were shared between players.");
+	LevelScene resolved(engine, xxx, FixtureLevel(engine, "streak-real-completions", { { 0, 200, 200, 2 }, { 2, 240, 200, 0 }, { 11, 320, 200, 0 }, { 25, 400, 200, 0 }, { 2, 600, 400, 0 }, { 28, 240, 360, 0 } }, 0, GameEdition::XXX), 1);
+	for (size_t index : { size_t{ 1 }, size_t{ 2 }, size_t{ 3 } })
+	{
+		dynamic_cast<AnimalCharacter&>(resolved.GetObjects().Get(index)).Resolve();
+		resolved.Update(0.02f, 0, 0, false);
+	}
+	resolved.TakeScoreDelta();
+	resolved.Update(5.1f, 0, 0, false);
+	Require(resolved.TakeScoreDelta() == 30 && dynamic_cast<Mermaid&>(resolved.GetObjects().Get(5)).GetMermaidState() != MermaidState::Dormant, "Actual sheep/chicken/penguin completion did not register a streak.");
+	LevelScene blocked(engine, xxx, FixtureLevel(engine, "mermaid-blocked", { { 0, 240, 200, 2 }, { 28, 240, 200, 0 }, { 2, 600, 400, 0 } }, 0, GameEdition::XXX), 1);
+	blocked.Update(0, 0, 0, false);
+	Require(!dynamic_cast<Mermaid&>(blocked.GetObjects().Get(1)).Reveal(), "Mermaid revealed through an occupied player cell.");
+	// Exact zero is intentionally not expiration: native ticks positive timers only.
+	LevelScene boundary(engine, xxx, fixture("streak-zero-boundary", GameEdition::XXX), 1);
+	boundary.RecordAnimalCompletion(boundary.GetObjects()[2]);
+	for (i32 tick = 0; tick < 160; ++tick)
+		boundary.Update(0.015625f, 0, 0, false);
+	boundary.RecordAnimalCompletion(boundary.GetObjects()[2]);
+	boundary.RecordAnimalCompletion(boundary.GetObjects()[2]);
+	for (i32 tick = 0; tick < 160; ++tick)
+		boundary.Update(0.015625f, 0, 0, false);
+	boundary.Update(0.001f, 0, 0, false);
+	Require(boundary.TakeScoreDelta() == 0 && dynamic_cast<Mermaid&>(boundary.GetObjects().Get(1)).GetMermaidState() == MermaidState::Dormant, "Exact-zero streak timer did not preserve the native strict comparisons.");
+	Log("PASS: native five-second per-player streaks, score buckets/hearts, mermaid directions, repeats, rewards, collision, interruption, timeout and ownership on v6/v7 maps.");
+}
+
+void CheckWeatherAndLevelHelp(MudGE& engine, bool capture)
+{
+	const std::vector<LevelPackInfo>& packs = engine.GetData().GetPacks();
+	const LevelPackInfo& zwo = *std::find_if(packs.begin(), packs.end(), [](const LevelPackInfo& pack) { return pack.Edition == GameEdition::Zwo && pack.Name == "XS"; });
+	LevelPackInfo profile = zwo;
+	profile.Edition = GameEdition::XXX;
+	for (u32 flags = 0; flags < 256; ++flags)
+	{
+		const LevelInfo level = FixtureLevel(engine, "weather-flags", { { 0, 200, 200, 2 } }, 0, GameEdition::XXX, flags);
+		const LevelFile file(engine.ReadAsset(level.Map), level.Map);
+		const WeatherMode expected = flags & 128 ? WeatherMode::Bubbles : (flags & 64 ? WeatherMode::Rain : (flags & 32 ? WeatherMode::Snow : WeatherMode::None));
+		Require(file.GetWeatherMode() == expected, "Native weather flag priority differs.");
+	}
+	const LevelInfo oldFlags = FixtureLevel(engine, "weather-zwo-flags", { { 0, 200, 200, 2 } }, 0, GameEdition::Zwo, 224);
+	Require(LevelFile(engine.ReadAsset(oldFlags.Map), oldFlags.Map).GetWeatherMode() == WeatherMode::None, "Zwo flags were reinterpreted as XXX weather.");
+	for (ObjectKind kind : { ObjectKind::Snowflake, ObjectKind::Raindrop, ObjectKind::RisingBubble })
+	{
+		const u32 flags = kind == ObjectKind::Snowflake ? 32u : (kind == ObjectKind::Raindrop ? 64u : 128u);
+		const LevelInfo level = FixtureLevel(engine, "weather-cadence-" + std::to_string(static_cast<i32>(kind)), { { 0, 200, 200, 2 } }, 0, GameEdition::XXX, flags);
+		LevelScene scene(engine, profile, level, 1);
+		for (i32 tick = 0; tick < 10; ++tick)
+			scene.Update(1.0f / 60, 0, 0, false);
+		Require(scene.GetObjects().Find(kind).empty(), "Weather spawned before the ten-tick entry delay expired.");
+		scene.Update(1.0f / 60, 0, 0, false);
+		Require(scene.GetObjects().Find(kind).size() == 1, "Weather did not spawn after the strict-negative timer boundary.");
+		const i32 interval = kind == ObjectKind::Snowflake ? 1 : (kind == ObjectKind::Raindrop ? 2 : 3);
+		for (i32 tick = 0; tick < interval; ++tick)
+			scene.Update(1.0f / 60, 0, 0, false);
+		Require(scene.GetObjects().Find(kind).size() == 1, "Weather used an inclusive-zero recurring timer.");
+		scene.Update(1.0f / 60, 0, 0, false);
+		Require(scene.GetObjects().Find(kind).size() == 2, "Weather recurring interval differs from native.");
+		if (capture)
+		{
+			scene.Update(2, 0, 0, false);
+			const str name = "weather-" + std::to_string(static_cast<i32>(kind)) + ".bmp";
+			engine.DrawFrame(scene.Draws(), name.c_str());
+		}
+		LevelScene restarted(engine, profile, level, 1);
+		restarted.Update(0.01f, 0, 0, false);
+		Require(restarted.GetObjects().Find(kind).empty(), "Weather entry delay was not reset with the level.");
+	}
+	const LevelInfo plain = FixtureLevel(engine, "weather-pool", { { 0, 200, 200, 2 } }, 0, GameEdition::XXX);
+	LevelScene pool(engine, profile, plain, 1);
+	WorldObject particle;
+	particle.Kind = ObjectKind::Snowflake;
+	particle.X = 200;
+	for (i32 count = 0; count < 100; ++count)
+		Require(pool.GetObjects().AddTransient(particle), "Native weather pool rejected an available slot.");
+	Require(!pool.GetObjects().AddTransient(particle) && EmitterParticle::Spawn(pool, ObjectKind::HeartParticle, 200, 200, true), "Weather failed to reserve 28 transient slots for other effects.");
+	// Compare particle construction/motion with the saved native formulas and MSVC rand sequence.
+	for (ObjectKind kind : { ObjectKind::Snowflake, ObjectKind::Raindrop, ObjectKind::RisingBubble })
+	{
+		u32 sharedRandom = 7;
+		LevelScene scene(engine, profile, plain, 7, &sharedRandom);
+		u32 expectedRandom = sharedRandom;
+		auto random = [&](i32 limit) { expectedRandom = expectedRandom * 214013u + 2531011u; return static_cast<i32>((expectedRandom >> 16) & 32767) % limit; };
+		const bool snow = kind == ObjectKind::Snowflake;
+		const i32 layer = random(3);
+		constexpr i32 snowRange[] = { 6, 10, 20 }, snowSpeed[] = { 25, 35, 45 }, snowLife[] = { 2500, 3500, 5000 };
+		constexpr i32 rainRange[] = { 30, 40, 50 }, rainSpeed[] = { 150, 190, 230 }, rainLife[] = { 250, 500, 1000 };
+		const f32 vx = snow ? static_cast<f32>(random(snowRange[layer]) - snowRange[layer] / 2) * 0.1f : 0;
+		const f32 vy = static_cast<f32>(random(snow ? snowSpeed[layer] : rainRange[layer]) + (snow ? snowSpeed[layer] : rainSpeed[layer]));
+		const f32 life = static_cast<f32>(random(snow ? snowLife[layer] : rainLife[layer]) / 10 + 100);
+		const i32 frame = random(layer == 2 ? 6 : 5) + (layer == 0 ? 0 : (layer == 1 ? 5 : 10));
+		const i32 width = snow ? random(20) / 2 : 0;
+		const f32 angle = snow ? static_cast<f32>(random(360)) * 0.01f : 0;
+		particle.Kind = kind;
+		particle.X = 200;
+		particle.Y = 300;
+		Require(scene.GetObjects().AddTransient(particle), "Cannot construct weather regression particle.");
+		WorldObject& state = scene.GetObjects()[256];
+		Require(sharedRandom == expectedRandom && state.Draw.Frame == frame, "Weather construction consumed a different native random sequence.");
+		scene.GetObjects().Get(256).Update(0.25f);
+		const i32 x = static_cast<i32>(200 + vx * 0.25f + (snow ? width * std::cos(angle * 57.295776f) : 0));
+		const i32 y = static_cast<i32>(300 + vy * 0.25f * (kind == ObjectKind::RisingBubble ? -1 : 1));
+		Require(state.Draw.X == x && state.Draw.Y == y, "Weather particle motion differs from native.");
+		scene.GetObjects().Get(256).Update(life / 60 + 1);
+		Require(state.Freed, "Weather particle lifetime failed to expire.");
+	}
+	auto helpLevel = [&](const str& name, i32 fontIndex, u16 firstId = 1) {
+		LevelInfo level = FixtureLevel(engine, name, { { 0, 200, 200, 2 }, { 0, 400, 200, 4 }, { 2, 600, 400, 0 } }, 0, GameEdition::XXX);
+		bytestream bytes = engine.ReadAsset(level.Map);
+		const i32 firstTile = (260 / 40 + 1) * 22 + 260 / 40 + 1, secondTile = (260 / 40 + 1) * 22 + 460 / 40 + 1;
+		const u32 first = static_cast<u32>(firstId) << 16, second = 2u << 16;
+		std::memcpy(bytes.data() + 16 + firstTile * 24 + 20, &first, 4);
+		std::memcpy(bytes.data() + 16 + secondTile * 24 + 20, &second, 4);
+		const std::array<i32, 4> firstLayout{ 160, 100, 680, fontIndex }, secondLayout{ 40, 400, 360, 2 };
+		std::memcpy(bytes.data() + 16 + 34648, firstLayout.data(), 16);
+		std::memcpy(bytes.data() + 16 + 34648 + 16, secondLayout.data(), 16);
+		std::ofstream file(engine.GetData().AssetPath(level.Map), std::ios::binary | std::ios::trunc);
+		file.write(reinterpret_cast<cstr>(bytes.data()), static_cast<std::streamsize>(bytes.size()));
+		Require(static_cast<bool>(file), "Cannot write help regression fixture.");
+		return level;
+	};
+	for (i32 fontIndex = 0; fontIndex < 4; ++fontIndex)
+	{
+		const LevelInfo level = helpLevel("help-font-" + std::to_string(fontIndex), fontIndex);
+		LevelScene scene(engine, profile, level, 1, nullptr, 2);
+		std::vector<SpriteDraw> help;
+		scene.AppendHelp(help);
+		BitmapFont font(engine, fontIndex >= 2, fontIndex == 1 || fontIndex == 3, GameEdition::XXX);
+		std::vector<SpriteDraw> glyph;
+		font.Append(glyph, "N", 160, 100);
+		Require(!help.empty() && help.front().X == 160 && help.front().Y == 100 && help.front().Sprite->Pixels == glyph.front().Sprite->Pixels, "Help record did not select player one's layout and native font.");
+		if (capture && fontIndex == 2)
+		{
+			std::vector<SpriteDraw> draws = scene.Draws();
+			scene.AppendHelp(draws);
+			engine.DrawFrame(draws, "level-help.bmp");
+		}
+		scene.Update(0.04f, 1, 0, false);
+		help.clear();
+		scene.AppendHelp(help);
+		Require(help.front().X == 160, "Help marker changed before Sven committed the next tile.");
+		scene.Update(0.5f, 0, 0, false);
+		help.clear();
+		scene.AppendHelp(help);
+		Require(!help.empty() && help.front().X == 40 && help.front().Y == 400, "Player two's help did not appear after player one left his marker.");
+	}
+	LevelScene invalid(engine, profile, helpLevel("help-invalid", 2, 257), 1);
+	std::vector<SpriteDraw> help;
+	invalid.AppendHelp(help);
+	Require(help.empty(), "An invalid help ID indexed beyond the layout table.");
+	LevelSetInfo set;
+	set.Levels.push_back(helpLevel("help-session", 2));
+	GameSession session(engine, profile, set);
+	const size_t playing = session.Draws().size(), overlay = session.Draws(false).size();
+	Require(playing > overlay, "Session did not append help after the HUD or hide it behind menu overlays.");
+	BitmapFont font(engine, true, false, GameEdition::XXX);
+	font.AppendLevelHelp(help, "AA#BB", 10, 20, 1000);
+	Require(help.size() == 4 && help[0].X == 10 && help[0].Y == 20 && help[2].X == 10 && help[2].Y == 36, "Native help hash break or FDD line advance is wrong.");
+	help.clear();
+	font.AppendLevelHelp(help, "AAAA ", 10, 20, 11);
+	Require(help.size() == 4 && help.front().Y == 36 && help.back().Y == 36, "Oversized help words must wrap once and remain intact.");
+	help.clear();
+	font.AppendLevelHelp(help, "A", 10, 20, 11);
+	Require(help.size() == 1 && help.front().Y == 36, "A final single-glyph help word bypassed native overflow wrapping.");
+	if (capture)
+	{
+		for (const LevelPackInfo& pack : packs)
+		{
+			if (pack.Edition != GameEdition::XXX)
+				continue;
+			for (const LevelSetInfo& episode : pack.LevelSets)
+			{
+				if (!episode.Levels.empty() && episode.Levels.front().Map.find("training01.lvl") != str::npos)
+				{
+					GameSession training(engine, pack, episode);
+					engine.DrawFrame(training.Draws(), "training-help.bmp");
+				}
+			}
+		}
+	}
+	LevelSetInfo rainy;
+	rainy.Levels.push_back(FixtureLevel(engine, "weather-paused", { { 0, 200, 200, 2 } }, 0, GameEdition::XXX, 64));
+	GameSession paused(engine, profile, rainy);
+	const Sprite* rain = engine.LoadSprite(engine.GetData().EditionAsset(GameEdition::XXX, "SvenXXX/gfx/rain.bmp"), 16, 1);
+	auto drops = [&]() {
+		std::vector<SpriteDraw> result;
+		for (const SpriteDraw& draw : paused.Draws())
+			if (draw.Sprite == rain)
+				result.push_back(draw);
+		return result;
+	};
+	Require(drops().empty(), "Weather started without the level-entry countdown.");
+	paused.UpdateAtmosphere(0.5f);
+	Require(!drops().empty() && !paused.GetResults() && paused.GetScore() == 0 && paused.GetLives() == 3, "Paused atmosphere failed to update independently of gameplay.");
+	paused.Update(0.01f, 0, 0, false);
+	paused.Update(2, 0, 0, false);
+	Require(paused.GetResults(), "Cannot enter weather result fixture.");
+	const std::vector<SpriteDraw> before = drops();
+	paused.Update(0.2f, 0, 0, false);
+	const std::vector<SpriteDraw> after = drops();
+	Require(!before.empty() && !after.empty() && before.front().Y != after.front().Y, "Weather froze during result conversion.");
+	Log("PASS: weather flag priority/cadence, native random construction/motion/lifetimes/pool, four help fonts, marker ownership/commit, absolute layout, wrapping and menu suppression.");
+}
+
 void CheckEditionFoundation(MudGE& engine, const fpath& saves)
 {
 	const GameData& data = engine.GetData();
@@ -3443,6 +3782,8 @@ i32 main(i32 argc, char** argv)
 			CheckMultiplayerPlay(engine, saves, editionVisual);
 			CheckZwoCoopSpawns(engine, saves, editionVisual);
 			CheckZwoCoopCatalog(engine, editionVisual);
+			CheckStreaksAndMermaids(engine, editionVisual);
+			CheckWeatherAndLevelHelp(engine, editionVisual);
 			CheckCatalog(engine, 234);
 			CheckMenuPresentation(engine, saves, editionVisual);
 			engine.Shutdown();

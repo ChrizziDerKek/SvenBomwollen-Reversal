@@ -1,4 +1,5 @@
 #include "Scene/Characters/PlayerCharacter.h"
+#include "Scene/Characters/Characters.h"
 #include "Scene/Objects/ObjectCatalog.h"
 #include "Scene/LevelScene.h"
 #include "Scene/SceneConstants.h"
@@ -181,6 +182,20 @@ void PlayerCharacter::Act(bool continuation)
 	for (size_t i = 0; i < Scene.Objects.Size(); ++i)
 	{
 		WorldObject& animal = Scene.Objects[i];
+		if (animal.Kind == ObjectKind::Mermaid && !animal.Freed && animal.Tile == tile)
+		{
+			Mermaid& mermaid = dynamic_cast<Mermaid&>(Scene.Objects.Get(i));
+			if (!mermaid.BeginInteraction(Number, Facing))
+				continue;
+			ActiveSheep = static_cast<i32>(i);
+			Interaction = &Scene.Resources.MermaidAction;
+			PlayerAction = PlayerActionState::Interaction;
+			CurrentActionRate = GetInteractionRate();
+			ActionAge = 0;
+			ActionComplete = false;
+			DrawInteractionFrame(Interaction->Frames.front());
+			return;
+		}
 		if (!Scene.IsAnimal(animal.Kind) || animal.Freed || (animal.InteractionPlayer >= 0 && animal.InteractionPlayer != static_cast<i32>(Number)) || animal.Tile != tile || animal.State == ActorState::AnimalWalking || animal.State == ActorState::Turning || (IsDemonState(animal.State)))
 			continue;
 		ActiveSheep = static_cast<i32>(i);
@@ -268,6 +283,32 @@ void PlayerCharacter::Act(bool continuation)
 void PlayerCharacter::FinishInteraction()
 {
 	WorldObject& animal = Scene.Objects[ActiveSheep];
+	if (animal.Kind == ObjectKind::Mermaid)
+	{
+		Mermaid& mermaid = dynamic_cast<Mermaid&>(Scene.Objects.Get(ActiveSheep));
+		const bool repeat = mermaid.FinishInteraction(ActionQueued && CanRepeatInteraction(animal));
+		ActionQueued = false;
+		ActionAge = 0;
+		if (repeat)
+		{
+			CurrentActionRate = GetInteractionRate();
+			DrawInteractionFrame(Interaction->Frames.front());
+			return;
+		}
+		if (mermaid.GetMermaidState() == MermaidState::Resolved)
+		{
+			Scene.Grid.ClearPlayerCells(GetIndex());
+			X = TargetX = animal.X;
+			Y = TargetY = animal.Y;
+			Scene.Objects[GetIndex()].CommittedY = Y;
+			MarkPlayerCell();
+		}
+		ReleaseInteraction();
+		PlayerAction = PlayerActionState::Idle;
+		Interaction = nullptr;
+		RestorePlayer();
+		return;
+	}
 	if (Scene.IsBonusLevel())
 	{
 		Scene.AddScore(2 * Scene.Items.GetInteractionMultiplier());
@@ -599,10 +640,52 @@ void PlayerCharacter::ReleaseInteraction()
 	if (ActiveSheep >= 0 && static_cast<size_t>(ActiveSheep) < Scene.Objects.Size())
 	{
 		WorldObject& animal = Scene.Objects[ActiveSheep];
+		if (animal.Kind == ObjectKind::Mermaid)
+			dynamic_cast<Mermaid&>(Scene.Objects.Get(ActiveSheep)).CancelInteraction(Number);
 		if (animal.InteractionPlayer == static_cast<i32>(Number))
 			animal.InteractionPlayer = -1;
 	}
 	ActiveSheep = -1;
+}
+
+void PlayerCharacter::RecordStreakCompletion()
+{
+	// Native append buffer; avoid overwriting adjacent state on malformed/custom maps.
+	if (CompletionCount < CompletionWindows.size())
+		CompletionWindows[CompletionCount++] = 5;
+}
+
+void PlayerCharacter::UpdateStreak(f32 seconds)
+{
+	// 0x41F51F..594: only positive timers tick. When the first becomes negative,
+	// count it plus the still-positive entries, then start a fresh window.
+	for (f32& window : CompletionWindows)
+		if (window > 0)
+			window -= seconds;
+	if (CompletionWindows.front() >= 0)
+		return;
+	CompletionWindows.front() = 0;
+	i32 count = 1;
+	for (size_t index = 1; index < CompletionWindows.size(); ++index)
+	{
+		if (CompletionWindows[index] > 0)
+		{
+			++count;
+			CompletionWindows[index] = 0;
+		}
+	}
+	CompletionCount = 0;
+	if (count < 3)
+		return;
+	for (size_t index : Scene.Objects.Find(ObjectKind::Mermaid))
+		dynamic_cast<Mermaid&>(Scene.Objects.Get(index)).Reveal();
+	const WorldObject& actor = Scene.Objects[GetIndex()];
+	for (i32 index = 0; index < 5 * count - 5; ++index)
+		EmitterParticle::Spawn(Scene, ObjectKind::HeartParticle, static_cast<i32>(X + actor.CenterX), static_cast<i32>(Y + actor.CenterY), true);
+	Scene.EmitNamedSound("SfxMultipleShag");
+	// Native switch has no award outside 3..16; don't extend its last bucket.
+	if (count <= 16)
+		Scene.AddScore(count <= 6 ? count * 10 : 70);
 }
 
 void PlayerCharacter::InterruptInteraction()

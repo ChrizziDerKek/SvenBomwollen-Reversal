@@ -4,6 +4,7 @@
 #pragma once
 #include "Engine/Structures.h"
 #include "Scene/Level/LevelGrid.h"
+#include "Scene/Level/LevelFile.h"
 #include "Scene/SceneResources.h"
 #include "Scene/Characters/PlayerCharacter.h"
 #include "Scene/Characters/EnemyCharacter.h"
@@ -107,6 +108,7 @@ public:
 	i32 TakeLifeHits();    // attack events; GameSession applies campaign life insurance
 	i32 TakeLivesGained(); // gift pickup; separate from the loss callback
 	const std::vector<SpriteDraw>& Draws();
+	void AppendHelp(std::vector<SpriteDraw>& draws) const;
 	// Consumes the splash event from both APIs, so callers may safely use either.
 	bool TakeSplashSound();
 	ObjectManager& GetObjects()
@@ -147,6 +149,7 @@ private:
 	friend class Mermaid;
 	friend class ParticleEmitter;
 	friend class EmitterParticle;
+	friend class WeatherParticle;
 	friend class LevelItems;
 	friend class UfoController;
 	friend class LevelEffects;
@@ -183,6 +186,8 @@ private:
 	u32* SharedRandomState = nullptr;
 	LevelGrid Grid;
 	SceneResources Resources;
+	std::array<u16, 22 * 17> HelpIds{};
+	std::array<LevelHelpLayout, 256> HelpLayouts{};
 
 	LevelItems Items;
 	UfoController UfoController;

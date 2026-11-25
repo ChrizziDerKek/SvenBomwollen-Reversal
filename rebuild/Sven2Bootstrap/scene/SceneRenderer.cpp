@@ -25,7 +25,7 @@ const std::vector<SpriteDraw>& SceneRenderer::Draws()
 		if (object.Kind == ObjectKind::Player && Scene.GetPlayer().PlayerAction == PlayerActionState::Interaction && Scene.GetPlayer().ActiveSheep >= 0)
 		{
 			const WorldObject& animal = Scene.Objects[Scene.GetPlayer().ActiveSheep];
-			if (Scene.IsAnimal(animal.Kind) && animal.Kind != ObjectKind::Sheep)
+			if ((Scene.IsAnimal(animal.Kind) && animal.Kind != ObjectKind::Sheep) || animal.Kind == ObjectKind::Mermaid)
 				return static_cast<f32>(animal.Y + animal.DepthOffset);
 		}
 		const f32 y = object.Kind == ObjectKind::Player ? Scene.GetPlayer().Y : object.Y;
@@ -52,7 +52,7 @@ const std::vector<SpriteDraw>& SceneRenderer::Draws()
 	{
 		const size_t number = object.Kind == ObjectKind::Player ? object.TargetPlayer : (object.InteractionPlayer >= 0 ? static_cast<size_t>(object.InteractionPlayer) : 0);
 		LevelScene::PlayerScope owner(Scene, number);
-		if (object.Freed)
+		if (object.Freed || (object.Kind == ObjectKind::HeartParticle || IsWeatherParticle(object.Kind)))
 			continue;
 		const bool interacting = Scene.IsAnimal(object.Kind) && Scene.GetPlayer().ActiveSheep >= 0 && (Scene.GetPlayer().PlayerAction == PlayerActionState::Interaction || Scene.GetPlayer().PlayerAction == PlayerActionState::Kicked || Scene.GetPlayer().PlayerAction == PlayerActionState::Frigida) && object.Tile == Scene.Objects[Scene.GetPlayer().ActiveSheep].Tile;
 		if (object.Kind == ObjectKind::Player && Scene.GetCombat().Enemy >= 0)
@@ -125,6 +125,10 @@ const std::vector<SpriteDraw>& SceneRenderer::Draws()
 			DrawCommands.push_back({ Scene.Resources.UfoSprite, static_cast<i32>(orbitX) - 240, static_cast<i32>(orbitY) - 460, ufoFrame });
 		}
 	}
+	// XXX 0x41DDC4..CB renders 0x414870's hearts/weather after the world pass.
+	for (const WorldObject& object : Sorted)
+		if (!object.Freed && (object.Kind == ObjectKind::HeartParticle || IsWeatherParticle(object.Kind)) && object.Draw.Sprite)
+			DrawCommands.push_back(object.Draw);
 	DrawCommands.insert(DrawCommands.end(), Overlays.begin(), Overlays.end());
 	for (const TimePopup& popup : Scene.Effects.TimePopups)
 	{
@@ -132,4 +136,39 @@ const std::vector<SpriteDraw>& SceneRenderer::Draws()
 		OverlayFont.Append(DrawCommands, label, static_cast<i32>(popup.X), static_cast<i32>(popup.Y));
 	}
 	return DrawCommands;
+}
+
+void SceneRenderer::AppendHelp(std::vector<SpriteDraw>& draws) const
+{
+	if (Scene.GetGameplayEdition() != GameEdition::XXX)
+		return;
+	// 0x41E1A8..226 gives player one priority when both occupy help markers.
+	for (size_t number = 0; number < Scene.GetPlayerCount(); ++number)
+	{
+		const i32 tile = Scene.Objects[Scene.Objects.GetPlayer(number).GetIndex()].Tile;
+		if (tile < 0 || static_cast<size_t>(tile) >= Scene.HelpIds.size())
+			continue;
+		const u16 id = Scene.HelpIds[tile];
+		if (id == 0)
+			continue;
+		if (id > Scene.HelpLayouts.size())
+			return;
+		const LevelHelpLayout& layout = Scene.HelpLayouts[id - 1];
+		const i32 fontIndex = static_cast<i32>(layout.Font);
+		const str key = "Help" + (id < 10 ? str("0") : str{}) + std::to_string(id);
+		const str text = Scene.Engine.GetData().Text(key, GameEdition::XXX);
+		if (text == key || fontIndex < 0 || fontIndex >= static_cast<i32>(HelpFonts.size()))
+			return;
+		// 0x41E21C..226 indexes font1/font1aktiv/font2/font2aktiv with word four.
+		if (layout.Font == HelpFontStyle::Small)
+			OverlayFont.AppendLevelHelp(draws, text, layout.X, layout.Y, layout.RightEdge);
+		else
+		{
+			std::unique_ptr<BitmapFont>& font = HelpFonts[fontIndex];
+			if (!font)
+				font = std::make_unique<BitmapFont>(Scene.Engine, layout.Font == HelpFontStyle::SmallActive, layout.Font == HelpFontStyle::LargeActive || layout.Font == HelpFontStyle::SmallActive, GameEdition::XXX);
+			font->AppendLevelHelp(draws, text, layout.X, layout.Y, layout.RightEdge);
+		}
+		return;
+	}
 }

@@ -26,6 +26,9 @@ const std::vector<CharacterDefinition> Definitions = {
 	{ ObjectKind::Turtle, CharacterCategory::Animal, "Turtle", "Sven2/gfx/animals/Turtle_Stand.bmp", 4, OccupancyCode::Turtle, Create<Turtle>, "TurtleStand", true },
 	{ ObjectKind::Rabbit, CharacterCategory::Animal, "Rabbit", "Sven2/gfx/animals/Rabbit_Stand.bmp", 4, OccupancyCode::Rabbit, Create<Rabbit>, "RabbitStand", true },
 	{ ObjectKind::Mermaid, CharacterCategory::Mermaid, "Mermaid", "Sven2/gfx/NF/mermaid_jump.bmp", 12, OccupancyCode::Mermaid, Create<Mermaid>, "MermaidJump", true, false },
+	{ ObjectKind::Snowflake, CharacterCategory::Effect, "Snowflake", "Sven2/gfx/snowflakes.bmp", 16, OccupancyCode::Empty, Create<WeatherParticle>, nullptr, true, false },
+	{ ObjectKind::Raindrop, CharacterCategory::Effect, "Raindrop", "Sven2/gfx/rain.bmp", 16, OccupancyCode::Empty, Create<WeatherParticle>, nullptr, true, false },
+	{ ObjectKind::RisingBubble, CharacterCategory::Effect, "Rising bubble", "Sven2/gfx/pfx_bubbles.bmp", 16, OccupancyCode::Empty, Create<WeatherParticle>, nullptr, true, false },
 	{ ObjectKind::BubbleEmitter, CharacterCategory::Emitter, "Bubble emitter", "Sven2/gfx/pfx_bubbles.bmp", 16, OccupancyCode::Empty, Create<BubbleEmitter>, nullptr, true, false },
 	{ ObjectKind::YellowEmitter, CharacterCategory::Emitter, "Yellow emitter", "Sven2/gfx/pfx_yellow.bmp", 16, OccupancyCode::Empty, Create<YellowEmitter>, nullptr, true, false },
 	{ ObjectKind::RocketBurst, CharacterCategory::Effect, "Rocket burst", "Sven2/gfx/icons.bmp", 5, OccupancyCode::Empty, Create<PowerupEffect>, nullptr, true, false },
@@ -34,7 +37,8 @@ const std::vector<CharacterDefinition> Definitions = {
 	{ ObjectKind::SmellBurst, CharacterCategory::Effect, "Smell burst", "Sven2/gfx/symbol_smell.bmp", 14, OccupancyCode::Empty, Create<PowerupEffect>, nullptr, true, false },
 	{ ObjectKind::FlowerBurst, CharacterCategory::Effect, "Flower burst", "Sven2/gfx/symbol_flowers.bmp", 8, OccupancyCode::Empty, Create<PowerupEffect>, nullptr, true, false },
 	{ ObjectKind::BubbleParticle, CharacterCategory::Effect, "Bubble particle", "Sven2/gfx/pfx_bubbles.bmp", 16, OccupancyCode::Empty, Create<EmitterParticle>, nullptr, true, false },
-	{ ObjectKind::YellowParticle, CharacterCategory::Effect, "Yellow particle", "Sven2/gfx/pfx_yellow.bmp", 16, OccupancyCode::Empty, Create<EmitterParticle>, nullptr, true, false }
+	{ ObjectKind::YellowParticle, CharacterCategory::Effect, "Yellow particle", "Sven2/gfx/pfx_yellow.bmp", 16, OccupancyCode::Empty, Create<EmitterParticle>, nullptr, true, false },
+	{ ObjectKind::HeartParticle, CharacterCategory::Effect, "Streak heart", "Sven2/gfx/pfx_hearts.bmp", 16, OccupancyCode::Empty, Create<EmitterParticle>, nullptr, true, false }
 };
 
 u16 CharacterDefinition::GetFrames(const GameData& data, GameEdition edition) const

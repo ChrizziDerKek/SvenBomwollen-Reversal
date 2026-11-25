@@ -81,7 +81,7 @@ public:
 	bool BeginInteraction(size_t playerNumber, i32 facing);
 	// Called once per completed player interaction; true means the repeat was accepted.
 	bool FinishInteraction(bool repeat);
-	i32 TakeReleasedPlayer();
+	void CancelInteraction(size_t playerNumber);
 	MermaidState GetMermaidState() const;
 
 private:
@@ -90,6 +90,6 @@ private:
 	void ClearCell();
 	void Draw();
 	i32 LinkedPlayer = -1;
-	i32 ReleasedPlayer = -1;
+	i32 CompletingPlayer = 0;
 	f32 Cycles = 0;
 };

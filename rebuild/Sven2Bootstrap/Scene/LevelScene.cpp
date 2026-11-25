@@ -40,6 +40,11 @@ LevelScene::LevelScene(MudGE& engine, const LevelPackInfo& pack, const LevelInfo
 	Log("Read level map: " + level.Map);
 	const LevelFile* file = new LevelFile(engine.ReadAsset(level.Map), level.Map);
 	UfoController.HideUfo = file->GetHidesUfo();
+	Effects.Weather = GameplayEdition == GameEdition::XXX ? file->GetWeatherMode() : WeatherMode::None;
+	for (size_t index = 0; index < HelpIds.size(); ++index)
+		HelpIds[index] = file->GetCells()[index].HelpId;
+	for (size_t index = 0; index < HelpLayouts.size(); ++index)
+		HelpLayouts[index] = file->GetHelpLayout(index);
 	if (pack.Edition == GameEdition::XXX)
 	{
 		Mode = file->GetBonusMode();
@@ -401,6 +406,14 @@ void LevelScene::Update(f32 seconds, const std::array<PlayerInput, 2>& inputs)
 		left -= dt;
 		for (size_t number = 0; number < PlayerCount; ++number)
 			Objects.GetPlayer(number).SplashAge += dt;
+		if (GameplayEdition == GameEdition::XXX && !IsBonusLevel())
+		{
+			for (size_t number = 0; number < PlayerCount; ++number)
+			{
+				PlayerScope player(*this, number);
+				GetPlayer().UpdateStreak(dt);
+			}
+		}
 		Effects.UpdateEffects(dt);
 		for (size_t number = 0; number < PlayerCount; ++number)
 		{
@@ -415,6 +428,7 @@ void LevelScene::Update(f32 seconds, const std::array<PlayerInput, 2>& inputs)
 		Objects.UpdatePhase(ObjectPhase::Animals, dt);
 		Objects.UpdatePhase(ObjectPhase::Sheep, dt);
 		UfoController.UpdateUfo(dt);
+		Effects.UpdateWeather(dt);
 		if (GameplayEdition != GameEdition::XXX)
 			Objects.UpdatePhase(ObjectPhase::Player, dt);
 	} while (left > 0);
@@ -598,6 +612,8 @@ void LevelScene::FinishBonus()
 void LevelScene::RecordAnimalCompletion(const WorldObject& animal)
 {
 	++PlayerCompletions[ActivePlayer];
+	if (GameplayEdition == GameEdition::XXX && !IsBonusLevel())
+		GetPlayer().RecordStreakCompletion();
 	if (GameplayEdition == GameEdition::XXX && animal.Kind == ObjectKind::Sheep && animal.Temperament == 2 && animal.Attempts == 1)
 		BonusUnlocked = true;
 }
@@ -625,4 +641,9 @@ i32 LevelScene::FindInteractingPlayer(size_t slot) const
 		if (Objects.GetPlayer(number).ActiveSheep == static_cast<i32>(slot))
 			return static_cast<i32>(number);
 	return -1;
+}
+
+void LevelScene::AppendHelp(std::vector<SpriteDraw>& draws) const
+{
+	Renderer.AppendHelp(draws);
 }
