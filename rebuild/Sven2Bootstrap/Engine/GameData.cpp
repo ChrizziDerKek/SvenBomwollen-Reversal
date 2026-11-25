@@ -71,6 +71,7 @@ void GameData::LoadEdition(GameEdition edition, const str& coreDirectory, const 
 				if (item.Name == "string")
 					resources.Strings[item.Attribute("name")] = item.Attribute("value");
 	const fpath catalog = Root / std::filesystem::u8path(prefix);
+	auto qualify = [&](const str& path) { return path.rfind("ZWO/", 0) == 0 || path.rfind("XXX/", 0) == 0 ? path : prefix + path; };
 	std::vector<fpath> directories;
 	for (const auto& entry : std::filesystem::directory_iterator(catalog))
 		if (entry.is_directory() && !EqualWindows(entry.path().filename().native(), std::filesystem::u8path(coreDirectory).native()))
@@ -97,16 +98,16 @@ void GameData::LoadEdition(GameEdition edition, const str& coreDirectory, const 
 						{
 							for (LevelInfo& level : set.Levels)
 							{
-								level.Map = prefix + level.Map;
+								level.Map = qualify(level.Map);
 								if (!level.Music.empty())
-									level.Music = prefix + level.Music;
+									level.Music = qualify(level.Music);
 							}
 						}
 						for (TileSetInfo& set : pack.TileSets)
 						{
-							set.Background = prefix + set.Background;
+							set.Background = qualify(set.Background);
 							for (TileInfo& tile : set.Tiles)
-								tile.File = prefix + tile.File;
+								tile.File = qualify(tile.File);
 						}
 						Packs.push_back(std::move(pack));
 					}
@@ -252,4 +253,10 @@ str GameData::ThemeAsset(const str& path) const
 const GameData::SpriteDefinition& GameData::GetSpriteDefinition(const str& name, GameEdition edition) const
 {
 	return Editions.at(edition).Sprites.at(name);
+}
+
+void GameData::ReloadPacks()
+{
+	GameData refreshed(Root);
+	Packs.swap(refreshed.Packs);
 }

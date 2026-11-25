@@ -2,6 +2,7 @@
 #include "Game/GameSession.h"
 #include "Game/GameUi.h"
 #include "Game/DebugMenu.h"
+#include "Editor/LevelEditor.h"
 #include "Input/WindowInput.h"
 #include <array>
 #include <chrono>
@@ -18,6 +19,7 @@ void RunGame(MudGE& engine, const fpath& saves, bool audio, u32 seconds, bool di
 	DebugMenu debug(engine);
 	WindowInput controls(engine.WindowHandle(), engine.ScaledVideo());
 	std::unique_ptr<GameSession> session;
+	std::unique_ptr<LevelEditor> editor;
 	bool playing = false;
 	auto play = [&](const str& path, bool looped = false, i32 frequency = 0) {
 		if (audio && engine.PlaySample(path, looped, frequency))
@@ -57,9 +59,63 @@ void RunGame(MudGE& engine, const fpath& saves, bool audio, u32 seconds, bool di
 		const f32 elapsed = std::chrono::duration<f32>(now - previous).count();
 		previous = now;
 		WindowInput::Result input = controls.Poll();
+		if (editor && input.CloseRequested)
+		{
+			if (editor->RequestWindowClose())
+			{
+				controls.SetEditorCloseGuard(false);
+				PostMessageW(engine.WindowHandle(), WM_CLOSE, 0, 0);
+			}
+			continue;
+		}
 		if (GetForegroundWindow() == engine.WindowHandle())
 		{
-			if (debug.IsOpen() || input.Debug)
+			if (editor)
+			{
+				const bool wasTesting = editor->IsPlaytesting();
+				std::array<PlayerInput, 2> players{};
+				if (data.GetGameplayEdition() == GameEdition::XXX || ui.HasCustomControls())
+				{
+					for (size_t number = 0; number < editor->GetPlayerCount(); ++number)
+						players[number] = controls.BoundPlayerInput(ui.GetControlBindings()[number]);
+				}
+				else
+					players[0] = { controls.DX(), controls.DY(), controls.ActionHeld() };
+				if (editor->Handle(input, elapsed, players))
+				{
+					const bool refresh = editor->NeedsCatalogRefresh();
+					editor.reset();
+					controls.SetEditorCloseGuard(false);
+					engine.StopLoopedSound();
+					if (refresh)
+					{
+						try
+						{
+							engine.ReloadPacks();
+							ui.RefreshPackSelection();
+						}
+						catch (const std::exception& error)
+						{
+							ui.SetNotice(error.what());
+						}
+					}
+					if (session && session->UfoActive() && !session->GetResults())
+						play(data.SoundPath("SfxUFO", session->GetGameplayEdition()), true);
+					previous = std::chrono::steady_clock::now();
+				}
+				else if (wasTesting != editor->IsPlaytesting())
+					music(editor->IsPlaytesting() ? editor->GetDocument().GetInfo().Music : (session && (playing || ui.GetPage() == Page::Pause) ? session->Level().Music : menuMusic));
+			}
+			else if (input.Editor && !debug.IsOpen())
+			{
+				engine.StopLoopedSound();
+				if (session && (playing || ui.GetPage() == Page::Pause))
+					editor = std::make_unique<LevelEditor>(engine, session->GetPack(), session->Level(), session->GetPlayerCount());
+				else
+					editor = std::make_unique<LevelEditor>(engine, ui.GetPack(), ui.GetLevelSet().Levels.front(), 1, true);
+				controls.SetEditorCloseGuard(true);
+			}
+			else if (debug.IsOpen() || input.Debug)
 			{
 				if (input.Debug)
 					debug.Toggle();
@@ -168,14 +224,26 @@ void RunGame(MudGE& engine, const fpath& saves, bool audio, u32 seconds, bool di
 		}
 		for (const str& sound : ui.TakeSounds())
 			play(sound);
-		if (session)
+		if (editor)
 		{
-			for (const SoundRequest& request : session->TakeAudioEvents())
+			for (const SoundRequest& request : editor->TakeAudioEvents())
 				play(request.Asset, request.Playback == SoundPlayback::Loop, request.Frequency);
+			if (!editor->UfoActive())
+				engine.StopLoopedSound();
 		}
-		if (!session || !session->UfoActive() || session->GetResults())
-			engine.StopLoopedSound();
-		if (playing)
+		else
+		{
+			if (session)
+			{
+				for (const SoundRequest& request : session->TakeAudioEvents())
+					play(request.Asset, request.Playback == SoundPlayback::Loop, request.Frequency);
+			}
+			if (!session || !session->UfoActive() || session->GetResults())
+				engine.StopLoopedSound();
+		}
+		if (editor)
+			engine.DrawFrame(editor->Draws());
+		else if (playing)
 		{
 			const std::vector<SpriteDraw>& scene = session->Draws();
 			engine.DrawFrame(debug.IsOpen() ? debug.Draws(scene) : scene);

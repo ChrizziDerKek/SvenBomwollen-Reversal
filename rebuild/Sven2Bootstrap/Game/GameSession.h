@@ -78,6 +78,10 @@ public:
 		return Scene->GetRemainingTargets();
 	}
 	RoundResult GetResult() const;
+	const LevelPackInfo& GetPack() const
+	{
+		return Pack;
+	}
 	const LevelInfo& Level() const
 	{
 		return LevelSet.Levels.at(LevelIndex);
@@ -112,8 +116,8 @@ private:
 	void EmitSound(cstr name);
 	i32 RandomInt(i32 limit);
 	MudGE& Engine;
-	const LevelPackInfo& Pack;
-	const LevelSetInfo& LevelSet;
+	const LevelPackInfo Pack;
+	const LevelSetInfo LevelSet;
 	GameEdition HudTheme;
 	std::unique_ptr<LevelScene> Scene;
 	BitmapFont Font, GreenFont;

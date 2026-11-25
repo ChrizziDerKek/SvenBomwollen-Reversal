@@ -1,9 +1,20 @@
 # Sven Zwo rebuild
 
-XXX integration is in progress. The persistent [XXX roadmap and validation status](research/xxx/PROGRESS.md)
-is the continuation entry point; loading an XXX map does not yet establish native gameplay parity.
+The in-game editor supports objects, free scenery, terrain/teleports, random
+spawners, draw order, global themes and named multi-level folder projects.
+**F3** on the title screen starts a blank project; in a level it edits the map.
+Use **T** to select cells beneath scenery, **V** for objects, drag the inspector
+header to move it, and use its Project tab for blank/import/duplicate/open flows.
+Press **I** for properties, **Ctrl+S** to save a separate folder pack, and **F5** to
+playtest without changing the running game or stored progress.
+See [editor controls and scope](EDITOR.md) and the persistent
+[editor progress](research/editor/PROGRESS.md).
+
+The supplied Zwo/XXX features have passed automated checks and user acceptance.
+The persistent [XXX roadmap and validation status](research/xxx/PROGRESS.md)
+retains the implementation history and native evidence.
 Source data uses `assets/ZWO` and `assets/XXX`. Both catalogs are discovered together,
-with Zwo gameplay assets retained and a common XXX menu/HUD/font theme for both
+with a shared XXX runtime and a common XXX menu/HUD/font theme for both
 editions. For Zwo alone with its original presentation, pass
 `-DataDirectory assets/ZWO` to `Run-Sven2.ps1`. Builds copy the existing asset layout
 to the executable directory without moving or changing the sources.
@@ -11,8 +22,9 @@ to the executable directory without moving or changing the sources.
 The shared card browser has 39 animations: all 33 Zwo poses plus six new XXX poses. In Help → Steuerung,
 click a character or key label, then press a key; Escape cancels. Overrides are saved
 beside the EXE in `saves/controls.tsv`. XXX uses arrows/right Control by default.
-Zwo keeps its previous controls until player 1 is customized. Player 2 bindings can
-be stored, but multiplayer gameplay remains a later milestone.
+The combined installation uses these bindings for both editions and supports
+local two-player games, including generated second-player starts for Zwo levels.
+The Zwo-only fallback keeps its previous controls until player 1 is customized.
 
 Build with Visual Studio v143 C++ tools and a Windows SDK, targeting x86/Win32:
 

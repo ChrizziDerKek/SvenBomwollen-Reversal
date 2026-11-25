@@ -26,6 +26,10 @@ public:
 	{
 		return Data;
 	}
+	void ReloadPacks()
+	{
+		Data.ReloadPacks();
+	}
 	bytestream ReadAsset(const str& path);
 	const Sprite* LoadSprite(const str& path, i16 rows, i16 columns, bool opaque = false);
 	void StartVideo(bool input = true);

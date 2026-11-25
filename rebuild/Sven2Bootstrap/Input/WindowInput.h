@@ -62,7 +62,11 @@ public:
 		bool Tab = false;
 		bool Erase = false;
 		bool Debug = false;
+		bool Editor = false, Playtest = false, SaveEditor = false, Undo = false, Redo = false, Delete = false;
+		bool MouseHeld = false, RightClick = false, CloseRequested = false;
+		bool Shift = false, Control = false, Enter = false;
 		i32 BindingKey = -1;
+		i32 Wheel = 0;
 		str Text;
 	};
 
@@ -71,6 +75,10 @@ public:
 	WindowInput(const WindowInput&) = delete;
 	WindowInput& operator=(const WindowInput&) = delete;
 	Result Poll();
+	void SetEditorCloseGuard(bool active)
+	{
+		GuardClose = active;
+	}
 	i32 DX() const;
 	i32 DY() const;
 	bool ActionHeld() const;
@@ -88,4 +96,6 @@ private:
 	POINT Mouse{ -1, -1 };
 	wstr Typed;
 	i32 PendingBindingKey = -1;
+	i32 PendingWheel = 0;
+	bool GuardClose = false, ClosePending = false;
 };

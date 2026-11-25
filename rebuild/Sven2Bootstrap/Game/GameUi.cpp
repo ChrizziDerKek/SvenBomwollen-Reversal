@@ -1049,3 +1049,9 @@ const std::vector<SpriteDraw>& GameUi::Draws(f32 elapsed, const std::vector<Spri
 		DrawCommands.push_back({ Cursor, Mouse.x - 9, Mouse.y - 9, ButtonAt(Mouse) >= 0 ? 1 : 0 });
 	return DrawCommands;
 }
+
+void GameUi::RefreshPackSelection()
+{
+	PackIndex = SetIndex = 0;
+	EpisodeFirst = 0;
+}

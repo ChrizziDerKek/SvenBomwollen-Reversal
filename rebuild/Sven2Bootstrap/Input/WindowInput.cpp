@@ -108,6 +108,10 @@ WindowInput::~WindowInput()
 WindowInput::Result WindowInput::Poll()
 {
 	Result input;
+	input.Wheel = PendingWheel / WHEEL_DELTA;
+	PendingWheel %= WHEEL_DELTA;
+	input.CloseRequested = ClosePending;
+	ClosePending = false;
 	input.BindingKey = PendingBindingKey;
 	PendingBindingKey = -1;
 	std::array<bool, 256> held{};
@@ -115,6 +119,9 @@ WindowInput::Result WindowInput::Poll()
 		held[i] = (GetAsyncKeyState(i) & 0x8000) != 0;
 	auto pressed = [&](i32 key) { return held[key] && !Previous[key]; };
 	input.Confirm = pressed(VK_RETURN) || pressed(VK_SPACE);
+	input.Enter = pressed(VK_RETURN);
+	input.Shift = held[VK_SHIFT];
+	input.Control = held[VK_CONTROL];
 	input.Back = pressed(VK_ESCAPE);
 	input.Click = pressed(VK_LBUTTON);
 	input.Left = pressed(VK_LEFT);
@@ -124,6 +131,14 @@ WindowInput::Result WindowInput::Poll()
 	input.Tab = pressed(VK_TAB);
 	input.Erase = pressed(VK_BACK);
 	input.Debug = pressed(VK_F2);
+	input.Editor = pressed(VK_F3);
+	input.Playtest = pressed(VK_F5);
+	input.SaveEditor = held[VK_CONTROL] && pressed('S');
+	input.Undo = held[VK_CONTROL] && pressed('Z');
+	input.Redo = held[VK_CONTROL] && pressed('Y');
+	input.Delete = pressed(VK_DELETE);
+	input.MouseHeld = held[VK_LBUTTON];
+	input.RightClick = pressed(VK_RBUTTON);
 	GetCursorPos(&input.Mouse);
 	ScreenToClient(Window, &input.Mouse);
 	if (Scaled)
@@ -163,6 +178,13 @@ LRESULT CALLBACK WindowInput::Procedure(HWND window, UINT message, WPARAM wParam
 	WindowInput* input = Current;
 	if (!input)
 		return DefWindowProcW(window, message, wParam, lParam);
+	if (message == WM_MOUSEWHEEL)
+		input->PendingWheel += static_cast<i16>(HIWORD(wParam));
+	if (message == WM_CLOSE && input->GuardClose)
+	{
+		input->ClosePending = true;
+		return 0;
+	}
 	if (message == WM_SETCURSOR && LOWORD(lParam) == HTCLIENT)
 	{
 		SetCursor(nullptr);

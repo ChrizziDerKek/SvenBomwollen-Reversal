@@ -12,6 +12,7 @@ public:
 	fpath AssetPath(str name) const;
 	bytestream ReadAsset(const str& name) const;
 	const std::vector<LevelPackInfo>& GetPacks() const noexcept;
+	void ReloadPacks();
 	str Text(const str& key, GameEdition edition = GameEdition::Zwo) const;
 	str SoundPath(const str& name, GameEdition edition = GameEdition::Zwo) const;
 	f64 NumericParam(const str& name, f64 defaultValue, GameEdition edition = GameEdition::Zwo) const;

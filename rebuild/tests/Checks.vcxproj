@@ -51,6 +51,8 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ItemGroup>
     <ClCompile Include="Checks.cpp" />
+    <ClCompile Include="EditorChecks.cpp" />
+    <ClInclude Include="EditorChecks.h" />
     <ClCompile Include="../Sven2Bootstrap/Engine/BitmapFont.cpp" />
     <ClCompile Include="../Sven2Bootstrap/Engine/GameData.cpp" />
     <ClCompile Include="../Sven2Bootstrap/Engine/MudGE.cpp" />
@@ -128,4 +130,14 @@
     <ClInclude Include="../Sven2Bootstrap/Game/DebugMenu.h" />
   </ItemGroup>
   <ItemGroup><ClInclude Include="../Sven2Bootstrap/Engine/GameEdition.h" /></ItemGroup>
+
+  <ItemGroup>
+    <ClCompile Include="../Sven2Bootstrap/Editor/LevelProject.cpp" />
+    <ClInclude Include="../Sven2Bootstrap/Editor/LevelProject.h" />
+    <ClInclude Include="../Sven2Bootstrap/Editor/EditorFiles.h" />
+    <ClCompile Include="../Sven2Bootstrap/Editor/LevelDocument.cpp" />
+    <ClInclude Include="../Sven2Bootstrap/Editor/LevelDocument.h" />
+    <ClCompile Include="../Sven2Bootstrap/Editor/LevelEditor.cpp" />
+    <ClInclude Include="../Sven2Bootstrap/Editor/LevelEditor.h" />
+  </ItemGroup>
 </Project>

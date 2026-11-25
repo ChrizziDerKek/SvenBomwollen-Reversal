@@ -37,6 +37,7 @@ public:
 	GameUi(MudGE& engine, fpath saves);
 	UiAction Handle(const WindowInput::Result& input);
 	const std::vector<SpriteDraw>& Draws(f32 elapsed, const std::vector<SpriteDraw>* scene = nullptr);
+	void RefreshPackSelection();
 	const LevelPackInfo& GetPack() const;
 	const LevelSetInfo& GetLevelSet() const;
 	Page GetPage() const

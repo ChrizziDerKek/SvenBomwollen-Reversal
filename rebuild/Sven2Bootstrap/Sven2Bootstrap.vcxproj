@@ -134,4 +134,14 @@
     <ClInclude Include="Game/DebugMenu.h" />
   </ItemGroup>
   <ItemGroup><ClInclude Include="Engine/GameEdition.h" /></ItemGroup>
+
+  <ItemGroup>
+    <ClCompile Include="Editor/LevelProject.cpp" />
+    <ClInclude Include="Editor/LevelProject.h" />
+    <ClInclude Include="Editor/EditorFiles.h" />
+    <ClCompile Include="Editor/LevelDocument.cpp" />
+    <ClInclude Include="Editor/LevelDocument.h" />
+    <ClCompile Include="Editor/LevelEditor.cpp" />
+    <ClInclude Include="Editor/LevelEditor.h" />
+  </ItemGroup>
 </Project>

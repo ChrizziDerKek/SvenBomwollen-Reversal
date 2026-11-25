@@ -1,4 +1,5 @@
 #include "Scene/Level/LevelFile.h"
+#include "EditorChecks.h"
 #include "Game/DebugMenu.h"
 #include "Scene/Objects/ObjectCatalog.h"
 #include "Scene/Characters/Characters.h"
@@ -3703,6 +3704,19 @@ void CheckCardAwards(MudGE& engine, const fpath& saves, bool capture)
 	Log("PASS: native card award frames/coordinates/layer/cues, atomic saved progress, replay/restart/episode/P2/Zwo ownership, cap/bonus behavior, gallery access and malformed/failed-save handling.");
 }
 
+void CheckEditors(MudGE& engine, bool capture)
+{
+	const std::vector<LevelPackInfo> packs = engine.GetData().GetPacks();
+	for (GameEdition edition : { GameEdition::Zwo, GameEdition::XXX })
+	{
+		if (!engine.GetData().HasEdition(edition))
+			continue;
+		const LevelPackInfo& pack = *std::find_if(packs.begin(), packs.end(), [&](const LevelPackInfo& value) { return value.Edition == edition; });
+		const LevelInfo level = FixtureLevel(engine, "integrated-editor-" + std::to_string(static_cast<i32>(edition)), { { 0, 240, 200, 0 }, { 2, 400, 360, 0 } }, 0, edition);
+		CheckIntegratedEditor(engine, pack, level, capture);
+	}
+}
+
 void CheckEditionFoundation(MudGE& engine, const fpath& saves)
 {
 	const GameData& data = engine.GetData();
@@ -3952,6 +3966,7 @@ i32 main(i32 argc, char** argv)
 			CheckCardAwards(engine, saves, editionVisual);
 			CheckCatalog(engine, 234);
 			CheckMenuPresentation(engine, saves, editionVisual);
+			CheckEditors(engine, editionVisual);
 			engine.Shutdown();
 			return 0;
 		}
@@ -4163,6 +4178,7 @@ i32 main(i32 argc, char** argv)
 			Log("PASS: native UFO sample loops beyond 6 seconds, stops and restarts.");
 			Log("PASS: native UI captures in " + saves.string());
 		}
+		CheckEditors(engine, argc == 2 && str(argv[1]) == "--visual");
 		engine.Shutdown();
 		Log("PASS: all remake checks.");
 		return 0;
