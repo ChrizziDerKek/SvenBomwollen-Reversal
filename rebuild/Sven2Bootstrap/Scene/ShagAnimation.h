@@ -1,6 +1,9 @@
 #pragma once
 #include "Types.h"
 #include "Engine/MudGE.h"
+#include <sstream>
+#include <algorithm>
+#include <stdexcept>
 
 struct ShagAnimation
 {
@@ -9,6 +12,27 @@ struct ShagAnimation
 	str Sound;
 	i32 Facing = 0;
 	bool Mirror = false;
+
+	inline static ShagAnimation LoadCard(MudGE& engine, i32 index)
+	{
+		if (index < 0 || index >= 39)
+			throw std::out_of_range("Card index outside the native XXX catalog.");
+		const bool original = index < 13;
+		const i32 number = original ? index + 2 : index - 13 + 1;
+		const str suffix = (number < 10 ? str("0") : str{}) + std::to_string(number);
+		const GameData& data = engine.GetData();
+		const GameData::SpriteDefinition& definition = data.GetSpriteDefinition((original ? "Shag" : "NF") + suffix, GameEdition::XXX);
+		ShagAnimation animation;
+		animation.Sprite = engine.LoadSprite(definition.File, definition.Rows, definition.Columns);
+		animation.Sound = data.SoundPath((original ? "SfxFuck" : "SfxNewFuck") + suffix, GameEdition::XXX);
+		str sequence = data.StringParam((original ? "aShagAnimO" : "aShagAnimN") + suffix, "0", GameEdition::XXX);
+		std::replace(sequence.begin(), sequence.end(), ',', ' ');
+		std::istringstream frames(sequence);
+		i32 frame;
+		while (frames >> frame)
+			animation.Frames.push_back(frame);
+		return animation;
+	}
 
 	inline static std::vector<ShagAnimation> Load(MudGE& engine)
 	{

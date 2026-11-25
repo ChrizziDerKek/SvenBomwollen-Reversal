@@ -5,11 +5,13 @@
 #include "Scene/LevelScene.h"
 #include "Engine/Structures.h"
 #include <memory>
+#include <set>
+#include <tuple>
 
 class GameSession
 {
 public:
-	GameSession(MudGE& engine, const LevelPackInfo& pack, const LevelSetInfo& levelSet, size_t playerCount = 1);
+	GameSession(MudGE& engine, const LevelPackInfo& pack, const LevelSetInfo& levelSet, size_t playerCount = 1, const fpath& saves = {});
 	void Update(f32 seconds, i32 dx, i32 dy, bool actionPressed);
 	void Update(f32 seconds, const std::array<PlayerInput, 2>& inputs);
 	GameEdition GetGameplayEdition() const;
@@ -20,6 +22,10 @@ public:
 	size_t GetPlayerCount() const
 	{
 		return PlayerCount;
+	}
+	i32 GetEarnedCards() const
+	{
+		return EarnedCards;
 	}
 	void UpdateAtmosphere(f32 seconds);
 	void Advance();
@@ -79,6 +85,18 @@ public:
 
 private:
 	void Load(size_t index);
+	void LoadCardProgress();
+	void SaveCardProgress() const;
+	void AwardCard();
+	void UpdateCardAward(f32 seconds);
+	void AppendCardAward();
+	using CardLevel = std::tuple<str, str, i32>;
+	std::set<CardLevel> RewardedLevels;
+	fpath CardProgressPath;
+	i32 EarnedCards = 4; // Native initial collection, 0x43784E / app+33740.
+	f32 CardAwardTicks = 0;
+	const Sprite *AwardedCard = nullptr, *CardBlank = nullptr, *CardZoom = nullptr;
+	bool CardAwardActive = false;
 	void AddScore(i32 amount);
 	void ConvertBonuses(f32 seconds);
 	void AnimateScore(f32 seconds);

@@ -1,16 +1,24 @@
 #include "Game/GameSession.h"
 #include "Scene/Level/LevelFile.h"
+#include "Utility/Logger.h"
+#include <fstream>
+#include <iomanip>
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <utility>
 
-GameSession::GameSession(MudGE& engine, const LevelPackInfo& pack, const LevelSetInfo& levelSet, size_t playerCount)
+GameSession::GameSession(MudGE& engine, const LevelPackInfo& pack, const LevelSetInfo& levelSet, size_t playerCount, const fpath& saves)
     : Engine(engine), Pack(pack), LevelSet(levelSet), HudTheme(engine.GetData().GetThemeEdition()), Font(engine, true, false, HudTheme), GreenFont(engine, true, true, HudTheme), Clock(engine.LoadSprite(engine.GetData().EditionAsset(HudTheme, "Sven2/gfx/timer.bmp"), 1, 1)), ScoreIcon(engine.LoadSprite(engine.GetData().EditionAsset(HudTheme, "Sven2/gfx/score.bmp"), 4, 1)), LifeIcon(engine.LoadSprite(engine.GetData().EditionAsset(HudTheme, "Sven2/gfx/Life_icon.bmp"), 1, 1))
 {
 	if (levelSet.Levels.empty())
 		throw std::runtime_error("The selected levelset is Empty.");
 	PlayerCount = GetGameplayEdition() == GameEdition::XXX ? std::clamp(playerCount, size_t{ 1 }, size_t{ 2 }) : 1;
+	if (GetGameplayEdition() == GameEdition::XXX && !saves.empty())
+	{
+		CardProgressPath = saves / L"xxx-cards.tsv";
+		LoadCardProgress();
+	}
 	Load(0);
 }
 
@@ -162,6 +170,9 @@ void GameSession::Update(f32 seconds, const std::array<PlayerInput, 2>& inputs)
 		TimedOut = true;
 	}
 	Scene->Update(seconds, inputs);
+	for (i32 unlock = Scene->TakeBonusUnlocks(); unlock > 0; --unlock)
+		AwardCard();
+	UpdateCardAward(seconds);
 	AddScore(Scene->TakeScoreDelta());
 	Time = std::max(0.0f, Time + Scene->TakeTimeDelta());
 	if (Time > 0)
@@ -360,6 +371,7 @@ void GameSession::SkipBonuses()
 const std::vector<SpriteDraw>& GameSession::Draws(bool showHelp)
 {
 	DrawCommands = Scene->Draws();
+	AppendCardAward();
 	for (const LifeEffect& effect : LifeEffects)
 		DrawCommands.push_back({ LifeIcon, static_cast<i32>(effect.X), static_cast<i32>(effect.Y), 0 });
 	DrawCommands.push_back({ Clock, 4, 4, 0 });
@@ -402,6 +414,7 @@ RoundResult GameSession::GetResult() const
 
 void GameSession::UpdateAtmosphere(f32 seconds)
 {
+	const f32 secondsElapsed = seconds;
 	if (!std::isfinite(seconds) || seconds <= 0)
 		return;
 	while (seconds > 0)
@@ -410,4 +423,123 @@ void GameSession::UpdateAtmosphere(f32 seconds)
 		seconds -= step;
 		Scene->GetEffects().UpdateWeather(step);
 	}
+	UpdateCardAward(secondsElapsed);
+}
+
+void GameSession::LoadCardProgress()
+{
+	std::ifstream file(CardProgressPath, std::ios::binary);
+	if (!file)
+	{
+		if (std::filesystem::exists(CardProgressPath))
+			throw std::runtime_error("Cannot read XXX card progress.");
+		return;
+	}
+	str signature;
+	i32 version = 0, count = 0;
+	if (!(file >> signature >> version >> count) || signature != "SvenCards" || version != 1 || count < 4 || count > 39)
+		throw std::runtime_error("Invalid XXX card progress header.");
+	std::set<CardLevel> levels;
+	while (file >> std::ws && !file.eof())
+	{
+		str pack, episode;
+		i32 level = -1;
+		if (!(file >> std::quoted(pack) >> std::quoted(episode) >> level) || pack.empty() || episode.empty() || level < 0)
+			throw std::runtime_error("Invalid XXX card progress record.");
+		levels.emplace(pack, episode, level);
+	}
+	if (file.bad())
+		throw std::runtime_error("Cannot finish reading XXX card progress.");
+	EarnedCards = count;
+	RewardedLevels = std::move(levels);
+}
+
+void GameSession::SaveCardProgress() const
+{
+	if (CardProgressPath.empty())
+		return;
+	std::filesystem::create_directories(CardProgressPath.parent_path());
+	fpath temporary = CardProgressPath;
+	temporary += L".tmp";
+	std::ofstream file(temporary, std::ios::binary | std::ios::trunc);
+	file << "SvenCards 1\n";
+	file << EarnedCards << '\n';
+	for (const CardLevel& level : RewardedLevels)
+		file << std::quoted(std::get<0>(level)) << '\t' << std::quoted(std::get<1>(level)) << '\t' << std::get<2>(level) << '\n';
+	file.close();
+	if (!file || !MoveFileExW(temporary.c_str(), CardProgressPath.c_str(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
+		throw std::runtime_error("Cannot save XXX card progress; previous file retained.");
+}
+
+void GameSession::AwardCard()
+{
+	const CardLevel key{ Pack.Id, LevelSet.Name, static_cast<i32>(LevelIndex) };
+	const i32 available = static_cast<i32>(std::clamp(Engine.GetData().NumericParam("ShagAnims", 39, GameEdition::XXX), 1.0, 39.0));
+	if (RewardedLevels.find(key) != RewardedLevels.end() || EarnedCards >= available)
+	{
+		if (!CardAwardActive)
+			EmitSound("SfxUnlockBonus");
+		return;
+	}
+	AwardedCard = ShagAnimation::LoadCard(Engine, EarnedCards).Sprite;
+	CardBlank = Engine.LoadSprite(Engine.GetData().EditionAsset(GameEdition::XXX, "SvenXXX/gfx/Highsc_file_card_blank.bmp"), 1, 1);
+	CardZoom = Engine.LoadSprite(Engine.GetData().EditionAsset(GameEdition::XXX, "SvenXXX/gfx/Highsc_file_card_zoom.bmp"), 4, 1);
+	++EarnedCards;
+	RewardedLevels.insert(key);
+	CardAwardTicks = 200;
+	CardAwardActive = true;
+	EmitSound("SfxShowCard");
+	try
+	{
+		SaveCardProgress();
+	}
+	catch (const std::exception& error)
+	{
+		Log(str("Card progress remains in memory; save failed: ") + error.what());
+	}
+}
+
+void GameSession::UpdateCardAward(f32 seconds)
+{
+	// 0x41F7B0 preserves the native strict-positive tick / strict-negative clear.
+	if (!CardAwardActive || CardAwardTicks <= 0)
+		return;
+	CardAwardTicks -= seconds * 60;
+	if (CardAwardTicks < 0)
+	{
+		CardAwardTicks = 0;
+		CardAwardActive = false;
+	}
+}
+
+void GameSession::AppendCardAward()
+{
+	if (!CardAwardActive)
+		return;
+	// 0x41F800: fixed zoom frames surround a static card, not its action animation.
+	i32 frame = -1;
+	if (CardAwardTicks > 195)
+		frame = 3;
+	else if (CardAwardTicks > 190)
+		frame = 2;
+	else if (CardAwardTicks > 185)
+		frame = 1;
+	else if (CardAwardTicks > 180)
+		frame = 0;
+	else if (CardAwardTicks > 50)
+	{
+		DrawCommands.push_back({ CardBlank, 669, 394, 0 });
+		DrawCommands.push_back({ AwardedCard, 669, 404, 0 });
+		return;
+	}
+	else if (CardAwardTicks > 45)
+		frame = 0;
+	else if (CardAwardTicks > 40)
+		frame = 1;
+	else if (CardAwardTicks > 35)
+		frame = 2;
+	else if (CardAwardTicks > 30)
+		frame = 3;
+	if (frame >= 0)
+		DrawCommands.push_back({ CardZoom, 695, 435, frame });
 }

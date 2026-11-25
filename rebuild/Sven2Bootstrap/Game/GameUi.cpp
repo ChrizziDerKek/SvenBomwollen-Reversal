@@ -759,19 +759,7 @@ void GameUi::LoadCards()
 	// Native catalog: thirteen OF entries followed by twenty-six NF entries.
 	for (i32 index = 0; index < CardCount(); ++index)
 	{
-		const bool original = index < OriginalSeriesCards;
-		const i32 number = original ? index + 2 : index - OriginalSeriesCards + 1;
-		const str name = Numbered(original ? "Shag" : "NF", number);
-		const GameData::SpriteDefinition& definition = Data.GetSpriteDefinition(name, Theme);
-		ShagAnimation animation;
-		animation.Sprite = Engine.LoadSprite(definition.File, definition.Rows, definition.Columns);
-		animation.Sound = Data.SoundPath(Numbered(original ? "SfxFuck" : "SfxNewFuck", number), Theme);
-		str sequence = Data.StringParam(Numbered(original ? "aShagAnimO" : "aShagAnimN", number), "0", Theme);
-		std::replace(sequence.begin(), sequence.end(), ',', ' ');
-		std::istringstream frames(sequence);
-		i32 frame;
-		while (frames >> frame)
-			animation.Frames.push_back(frame);
+		ShagAnimation animation = ShagAnimation::LoadCard(Engine, index);
 		CardAnimations.push_back(animation);
 		animation.Mirror = true;
 		CardAnimations.push_back(std::move(animation));

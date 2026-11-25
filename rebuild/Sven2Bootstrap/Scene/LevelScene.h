@@ -77,6 +77,7 @@ public:
 	}
 	void FinishBonus();
 	void RecordAnimalCompletion(const WorldObject& animal);
+	i32 TakeBonusUnlocks();
 	i32 FindInteractingPlayer(size_t slot) const;
 	str CoreAsset(const str& path) const;
 	bool SpawnNearPlayer(ObjectKind kind);
@@ -171,6 +172,7 @@ private:
 	GameEdition GameplayEdition;
 	BonusMode Mode = BonusMode::Sven;
 	bool BonusUnlocked = false;
+	i32 PendingBonusUnlocks = 0;
 	bool BonusFinished = false;
 	size_t PlayerCount = 1;
 	size_t ActivePlayer = 0;

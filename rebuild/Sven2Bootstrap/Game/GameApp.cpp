@@ -30,7 +30,7 @@ void RunGame(MudGE& engine, const fpath& saves, bool audio, u32 seconds, bool di
 			engine.StopMusic();
 	};
 	auto start = [&] {
-		auto next = std::make_unique<GameSession>(engine, ui.GetPack(), ui.GetLevelSet(), static_cast<size_t>(ui.GetPlayerCount()));
+		auto next = std::make_unique<GameSession>(engine, ui.GetPack(), ui.GetLevelSet(), static_cast<size_t>(ui.GetPlayerCount()), saves);
 		engine.StopLoopedSound();
 		session = std::move(next);
 		playing = true;

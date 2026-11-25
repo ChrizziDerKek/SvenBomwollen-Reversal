@@ -7,6 +7,7 @@
 #include <cstring>
 #include <map>
 #include <stdexcept>
+#include <utility>
 
 static const LevelPackInfo& FirstPack(const MudGE& engine)
 {
@@ -615,7 +616,10 @@ void LevelScene::RecordAnimalCompletion(const WorldObject& animal)
 	if (GameplayEdition == GameEdition::XXX && !IsBonusLevel())
 		GetPlayer().RecordStreakCompletion();
 	if (GameplayEdition == GameEdition::XXX && animal.Kind == ObjectKind::Sheep && animal.Temperament == 2 && animal.Attempts == 1)
+	{
 		BonusUnlocked = true;
+		++PendingBonusUnlocks;
+	}
 }
 
 ObjectKind LevelScene::GetPlayerKind() const
@@ -646,4 +650,9 @@ i32 LevelScene::FindInteractingPlayer(size_t slot) const
 void LevelScene::AppendHelp(std::vector<SpriteDraw>& draws) const
 {
 	Renderer.AppendHelp(draws);
+}
+
+i32 LevelScene::TakeBonusUnlocks()
+{
+	return std::exchange(PendingBonusUnlocks, 0);
 }

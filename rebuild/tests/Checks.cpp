@@ -3538,6 +3538,171 @@ void CheckWeatherAndLevelHelp(MudGE& engine, bool capture)
 	Log("PASS: weather flag priority/cadence, native random construction/motion/lifetimes/pool, four help fonts, marker ownership/commit, absolute layout, wrapping and menu suppression.");
 }
 
+void CheckCardAwards(MudGE& engine, const fpath& saves, bool capture)
+{
+	const std::vector<LevelPackInfo>& packs = engine.GetData().GetPacks();
+	const LevelPackInfo& zwo = *std::find_if(packs.begin(), packs.end(), [](const LevelPackInfo& pack) { return pack.Edition == GameEdition::Zwo && pack.Name == "XS"; });
+	LevelPackInfo profile = zwo;
+	profile.Edition = GameEdition::XXX;
+	profile.Id = "XXX-" + zwo.Id;
+	LevelSetInfo episode;
+	episode.Name = "Cards \"native\" test";
+	episode.Levels = { FixtureLevel(engine, "card-frigida", { { 0, 240, 240, 2 }, { 2, 280, 240, 1, 0 } }, 0, GameEdition::XXX) };
+	const fpath storage = saves / L"card-awards";
+	const Sprite* zoom = engine.LoadSprite(engine.GetData().EditionAsset(GameEdition::XXX, "SvenXXX/gfx/Highsc_file_card_zoom.bmp"), 4, 1);
+	const Sprite* blank = engine.LoadSprite(engine.GetData().EditionAsset(GameEdition::XXX, "SvenXXX/gfx/Highsc_file_card_blank.bmp"), 1, 1);
+	const Sprite* timer = engine.LoadSprite(engine.GetData().EditionAsset(GameEdition::XXX, "SvenXXX/gfx/timer.bmp"), 1, 1);
+	const str gong = engine.GetData().SoundPath("SfxShowCard", GameEdition::XXX), bonusSound = engine.GetData().SoundPath("SfxUnlockBonus", GameEdition::XXX);
+	auto complete = [](GameSession& session, i32 player = 0) {
+		for (i32 tick = 0; tick < 5000 && session.GetRemainingTargets() > 0; ++tick)
+		{
+			std::array<PlayerInput, 2> input{};
+			input[player] = { 1, 0, tick % 2 != 0 };
+			session.Update(0.01f, input);
+		}
+		Require(session.GetRemainingTargets() == 0, "Card award fixture did not complete Frigida.");
+	};
+	auto contains = [](const std::vector<str>& sounds, const str& sound) { return std::find(sounds.begin(), sounds.end(), sound) != sounds.end(); };
+	GameSession first(engine, profile, episode, 1, storage);
+	Require(first.GetEarnedCards() == 4 && !std::filesystem::exists(storage / L"xxx-cards.tsv"), "Initial card history must be four without an unsolicited save.");
+	complete(first);
+	Require(first.GetEarnedCards() == 5 && contains(first.TakeSounds(), gong), "First-attempt Frigida did not earn the next card and play its gong.");
+	struct Stage
+	{
+		f32 Seconds;
+		i32 ZoomFrame;
+		bool Hold;
+	};
+	const Stage stages[] = { { 0, 3, false }, { 0.08f, 2, false }, { 0.08f, 1, false }, { 0.09f, 0, false }, { 0.1f, -1, true }, { 2, -1, true }, { 0.2f, 0, false }, { 0.08f, 1, false }, { 0.08f, 2, false }, { 0.08f, 3, false }, { 0.08f, -1, false }, { 0.5f, -1, false } };
+	const Sprite* art = ShagAnimation::LoadCard(engine, 4).Sprite;
+	for (const Stage& stage : stages)
+	{
+		first.UpdateAtmosphere(stage.Seconds);
+		const std::vector<SpriteDraw>& draws = first.Draws();
+		const auto cardZoom = std::find_if(draws.begin(), draws.end(), [&](const SpriteDraw& draw) { return draw.Sprite == zoom; });
+		const auto cardBlank = std::find_if(draws.begin(), draws.end(), [&](const SpriteDraw& draw) { return draw.Sprite == blank; });
+		if (stage.ZoomFrame >= 0)
+			Require(cardZoom != draws.end() && cardZoom->Frame == stage.ZoomFrame && cardZoom->X == 695 && cardZoom->Y == 435, "Card zoom frame/placement differs from native thresholds.");
+		else
+			Require(cardZoom == draws.end(), "Card zoom outlived its native interval.");
+		Require((cardBlank != draws.end()) == stage.Hold, "Card hold interval differs from native.");
+		if (stage.Hold)
+		{
+			Require(cardBlank->X == 669 && cardBlank->Y == 394 && std::any_of(draws.begin(), draws.end(), [&](const SpriteDraw& draw) { return draw.Sprite == art && draw.X == 669 && draw.Y == 404 && draw.Frame == 0; }), "Card preview must use the next catalog entry's static frame above the blank card.");
+			const auto hud = std::find_if(draws.begin(), draws.end(), [&](const SpriteDraw& draw) { return draw.Sprite == timer; });
+			Require(hud != draws.end() && cardBlank < hud, "Card award was drawn above the HUD instead of below it.");
+			if (capture && stage.Seconds == 0.1f)
+				engine.DrawFrame(draws, "card-award-hold.bmp");
+		}
+		if (capture && stage.Seconds == 0)
+			engine.DrawFrame(draws, "card-award-zoom.bmp");
+	}
+	Require(first.GetScore() == 30 && first.GetLives() == 3, "Card notification changed Frigida score or lives.");
+	GameSession replay(engine, profile, episode, 1, storage);
+	complete(replay);
+	const std::vector<str> replaySounds = replay.TakeSounds();
+	Require(replay.GetEarnedCards() == 5 && !contains(replaySounds, gong) && contains(replaySounds, bonusSound), "Replayed level awarded another card or lost its bonus-unlock cue.");
+	replay.DebugRestartLevel();
+	complete(replay);
+	Require(replay.GetEarnedCards() == 5, "Restart bypassed the level's persistent card history.");
+	LevelSetInfo otherEpisode = episode;
+	otherEpisode.Name += " other";
+	GameSession distinct(engine, profile, otherEpisode, 1, storage);
+	complete(distinct);
+	Require(distinct.GetEarnedCards() == 6, "Distinct episodes incorrectly shared a level award bit.");
+	LevelSetInfo coop = episode;
+	coop.Name += " co-op";
+	coop.Levels = { FixtureLevel(engine, "card-coop", { { 0, 600, 400, 0 }, { 0, 240, 240, 2 }, { 2, 280, 240, 1, 0 } }, 0, GameEdition::XXX) };
+	GameSession secondPlayer(engine, profile, coop, 2, storage);
+	complete(secondPlayer, 1);
+	Require(secondPlayer.GetEarnedCards() == 7 && contains(secondPlayer.TakeSounds(), gong), "Player two did not award the shared card collection.");
+	LevelSetInfo oldEpisode = episode;
+	oldEpisode.Levels = { FixtureLevel(engine, "card-zwo", { { 0, 240, 240, 2 }, { 2, 280, 240, 1, 0 } }) };
+	GameSession oldSource(engine, zwo, oldEpisode, 1, storage);
+	complete(oldSource);
+	Require(oldSource.GetEarnedCards() == 8, "Zwo source map failed to use the shared XXX card reward.");
+	LevelSetInfo normal = episode;
+	normal.Levels = { FixtureLevel(engine, "card-chicken", { { 0, 240, 240, 2 }, { 11, 280, 240, 1, 0 } }, 0, GameEdition::XXX) };
+	GameSession ordinary(engine, profile, normal, 1, storage);
+	complete(ordinary);
+	Require(ordinary.GetEarnedCards() == 8 && !contains(ordinary.TakeSounds(), gong), "Ordinary animal completion awarded a Frigida card.");
+	LevelSetInfo interruptedEpisode = episode;
+	interruptedEpisode.Name += " interrupted";
+	interruptedEpisode.Levels = { FixtureLevel(engine, "card-second-attempt", { { 0, 240, 240, 2 }, { 2, 280, 240, 1, 0 } }, 0, GameEdition::XXX) };
+	GameSession interrupted(engine, profile, interruptedEpisode, 1, storage);
+	interrupted.Update(0.01f, 1, 0, false);
+	interrupted.Update(0.01f, 1, 0, true);
+	interrupted.Update(10, 0, 0, false);
+	complete(interrupted);
+	Require(interrupted.GetEarnedCards() == 8 && !contains(interrupted.TakeSounds(), gong), "Second-attempt Frigida incorrectly earned a first-attempt card.");
+	LevelScene requests(engine, profile, episode.Levels.front(), 1);
+	WorldObject eligible = requests.GetObjects()[1];
+	eligible.Temperament = 2;
+	eligible.Attempts = 1;
+	requests.RecordAnimalCompletion(eligible);
+	requests.RecordAnimalCompletion(eligible);
+	Require(requests.GetBonusUnlocked() && requests.TakeBonusUnlocks() == 2 && requests.TakeBonusUnlocks() == 0, "Simultaneous qualifying completions were lost or replayed.");
+	LevelSetInfo reused = episode;
+	reused.Name += " repeated asset";
+	reused.Levels.push_back(reused.Levels.front());
+	GameSession repeatedAsset(engine, profile, reused, 1, saves / L"card-repeated-asset");
+	complete(repeatedAsset);
+	for (i32 tick = 0; tick < 300 && !repeatedAsset.GetResults(); ++tick)
+		repeatedAsset.Update(0.01f, 0, 0, false);
+	repeatedAsset.SkipBonuses();
+	repeatedAsset.Advance();
+	const std::vector<SpriteDraw>& carried = repeatedAsset.Draws();
+	Require(std::any_of(carried.begin(), carried.end(), [&](const SpriteDraw& draw) { return draw.Sprite == blank; }), "Changing levels cleared the native application-scoped card popup prematurely.");
+	complete(repeatedAsset);
+	Require(repeatedAsset.LevelNumber() == 2 && repeatedAsset.GetEarnedCards() == 6, "Native per-level-position award flags were collapsed by a reused map filename.");
+	const fpath cappedStorage = saves / L"card-cap";
+	std::filesystem::create_directories(cappedStorage);
+	{
+		std::ofstream file(cappedStorage / L"xxx-cards.tsv");
+		file << "SvenCards 1\n39\n";
+	}
+	LevelSetInfo cappedEpisode = episode;
+	cappedEpisode.Levels.push_back(FixtureLevel(engine, "card-cap-bonus", { { 0, 240, 240, 2 }, { 2, 280, 240, 1 } }, 0, GameEdition::XXX, 2));
+	GameSession capped(engine, profile, cappedEpisode, 1, cappedStorage);
+	complete(capped);
+	const std::vector<str> cappedSounds = capped.TakeSounds();
+	Require(capped.GetEarnedCards() == 39 && !contains(cappedSounds, gong) && contains(cappedSounds, bonusSound), "Full collection awarded an invalid card or suppressed the bonus cue.");
+	for (i32 tick = 0; tick < 300 && !capped.GetResults(); ++tick)
+		capped.Update(0.01f, 0, 0, false);
+	capped.SkipBonuses();
+	capped.Advance();
+	Require(capped.GetBonusMode() == BonusMode::Farmer, "Full card collection prevented entry to an earned bonus level.");
+	GameUi gallery(engine, saves / L"card-gallery");
+	Require(gallery.CardCount() == 39, "Earned progress locked the intentionally accessible gallery.");
+	const fpath corrupt = saves / L"card-corrupt";
+	std::filesystem::create_directories(corrupt);
+	{
+		std::ofstream file(corrupt / L"xxx-cards.tsv");
+		file << "SvenCards 1\n999\n";
+	}
+	bool rejected = false;
+	try
+	{
+		GameSession bad(engine, profile, episode, 1, corrupt);
+	}
+	catch (const std::runtime_error&)
+	{
+		rejected = true;
+	}
+	Require(rejected, "Malformed card progress was accepted and could be overwritten.");
+	const fpath failed = saves / L"card-write-failure";
+	std::filesystem::create_directories(failed / L"xxx-cards.tsv.tmp");
+	{
+		std::ofstream file(failed / L"xxx-cards.tsv");
+		file << "SvenCards 1\n4\n";
+	}
+	GameSession memory(engine, profile, episode, 1, failed);
+	complete(memory);
+	GameSession retained(engine, profile, episode, 1, failed);
+	Require(memory.GetEarnedCards() == 5 && retained.GetEarnedCards() == 4, "Failed card save lost the in-memory award or overwrote the previous file.");
+	Log("PASS: native card award frames/coordinates/layer/cues, atomic saved progress, replay/restart/episode/P2/Zwo ownership, cap/bonus behavior, gallery access and malformed/failed-save handling.");
+}
+
 void CheckEditionFoundation(MudGE& engine, const fpath& saves)
 {
 	const GameData& data = engine.GetData();
@@ -3784,6 +3949,7 @@ i32 main(i32 argc, char** argv)
 			CheckZwoCoopCatalog(engine, editionVisual);
 			CheckStreaksAndMermaids(engine, editionVisual);
 			CheckWeatherAndLevelHelp(engine, editionVisual);
+			CheckCardAwards(engine, saves, editionVisual);
 			CheckCatalog(engine, 234);
 			CheckMenuPresentation(engine, saves, editionVisual);
 			engine.Shutdown();

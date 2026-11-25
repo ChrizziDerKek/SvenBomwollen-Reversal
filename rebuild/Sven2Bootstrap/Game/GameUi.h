@@ -61,7 +61,6 @@ public:
 	std::vector<str> TakeSounds();
 
 private:
-	static constexpr i32 OriginalSeriesCards = 13;
 	Highscores& Scores();
 	const Sprite* LoadTheme(const str& path, i16 rows = 1, i16 columns = 1, bool opaque = false);
 	const Sprite* LoadNamedTheme(cstr name);
