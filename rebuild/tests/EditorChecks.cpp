@@ -1,5 +1,6 @@
 #include "EditorChecks.h"
 #include "Editor/LevelEditor.h"
+#include "Editor/EditorGraphics.h"
 #include "Game/GameUi.h"
 #include "Scene/Characters/Characters.h"
 #include <fstream>
@@ -1308,6 +1309,89 @@ void CheckAnimalPlacementDefaults(MudGE& engine, const LevelPackInfo& pack, cons
 	Log("PASS: all available animal placement defaults, four directions and impatience bounds, atomic history/ownership, native reload/rounding, sidebar preferences and matching ghost.");
 }
 
+void CheckLinkAnnotations(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& level, bool capture)
+{
+	Sprite raster = EditorGraphics::Rectangle(8, 8, 0xFFFF00FF, false);
+	EditorGraphics::Line(raster, { 0, 0 }, { 7, 7 }, 0xFF00DDDD);
+	Require(raster.Pixels[0] == 0xFF00DDDD && raster.Pixels[2 * 8 + 2] == 0xFF00DDDD && raster.Pixels[3 * 8 + 3] == 0xFFFF00FF && raster.Pixels[7 * 8 + 7] == 0xFF00DDDD, "Dashed annotation line lost its endpoints or dash gaps.");
+	EditorGraphics::Line(raster, { 20, 4 }, { -20, 4 }, 0xFFFFB000, false);
+	EditorGraphics::Line(raster, { 4, -20 }, { 4, 20 }, 0xFF66FF66, false);
+	Require(raster.Pixels[4 * 8] == 0xFFFFB000 && raster.Pixels[4 * 8 + 7] == 0xFFFFB000 && raster.Pixels[4] == 0xFF66FF66 && raster.Pixels[7 * 8 + 4] == 0xFF66FF66, "Annotation lines did not clip safely in both directions.");
+	const str suffix = pack.Edition == GameEdition::XXX ? "xxx" : "zwo";
+	LevelEditor editor(engine, pack, level, 1, true);
+	MoveSidebar(editor, 480, 26);
+	LevelDocument& document = editor.GetDocument();
+	const i32 water = LevelDocument::TileAt(100, 100), a = LevelDocument::TileAt(300, 100), b = LevelDocument::TileAt(300, 300);
+	document.PaintTerrain(water, OccupancyCode::Water);
+	document.PaintTerrain(a, OccupancyCode::Puddle);
+	document.PaintTerrain(b, OccupancyCode::Puddle);
+	document.SetTeleporters({ b, a });
+	const i32 animal = document.Place(ObjectKind::Sheep, LevelDocument::TileAt(100, 300));
+	document.Place(ObjectKind::Bone, LevelDocument::TileAt(180, 300));
+	const bytestream baseline = document.GetBytes();
+	auto send = [&](WindowInput::Result input) { editor.Handle(input, 0); };
+	auto key = [&](i32 binding) { WindowInput::Result input; input.BindingKey = binding; send(input); };
+	auto select = [&](POINT point) { WindowInput::Result input; input.Click = input.Shift = true; input.Mouse = editor.ScreenAt(point); send(input); };
+	auto toggle = [&](LevelEditor::Layer layer) { key('l'); const RECT bounds = editor.GetInspectorBounds(); WindowInput::Result input; input.Click = true; input.Mouse = { bounds.left + 20, bounds.top + 28 + static_cast<i32>(layer) * 28 + 4 }; send(input); };
+	Require(!editor.IsLayerVisible(LevelEditor::Layer::Links), "Link overlay should be opt-in.");
+	toggle(LevelEditor::Layer::Links);
+	select({ 100, 100 });
+	const std::vector<SpriteDraw>& draws = editor.Draws();
+	const auto found = std::find_if(draws.begin(), draws.end(), [](const SpriteDraw& draw) { return draw.Sprite->Keyed && draw.Sprite->Width == 800 && draw.Sprite->FrameHeight == 600 && draw.Sprite->Pixels[100 * 800 + 300] == 0xFF00DDDD; });
+	Require(found != draws.end() && editor.GetSelectedCell() == water, "Selecting water did not show its destination pool.");
+	const Sprite* overlay = found->Sprite;
+	auto pixel = [&](i32 x, i32 y) { editor.Draws(); return overlay->Pixels[y * 800 + x]; };
+	Require(pixel(300, 300) == 0xFF00DDDD && pixel(100, 300) == 0xFF66FF66 && pixel(180, 300) == 0xFFFFB000 && document.GetBytes() == baseline, "Link overlay lost a teleport/actor/item endpoint or edited authored data.");
+	BitmapFont font(engine, true, false, engine.GetData().GetThemeEdition());
+	auto label = [&](cstr text) { std::vector<SpriteDraw> expected; font.Append(expected, text, 282, 82); const std::vector<SpriteDraw>& commands = editor.Draws(); return std::all_of(expected.begin(), expected.end(), [&](const SpriteDraw& glyph) { return std::any_of(commands.begin(), commands.end(), [&](const SpriteDraw& draw) { return draw.X == glyph.X && draw.Y == glyph.Y && draw.Frame == glyph.Frame && draw.Sprite->Width == glyph.Sprite->Width && draw.Sprite->FrameHeight == glyph.Sprite->FrameHeight && draw.Sprite->Pixels == glyph.Sprite->Pixels; }); }); };
+	Require(label("P2"), "Puddle label does not match its destination-table position.");
+	if (capture)
+		engine.DrawFrame(editor.Draws(), ("editor-teleport-links-" + suffix + ".bmp").c_str());
+	select({ 300, 100 });
+	Require(pixel(297, 97) == 0xFFFF00FF && pixel(300, 300) == 0xFF00DDDD, "Multi-destination puddle incorrectly included itself as a target.");
+	document.SetTeleporters({ a });
+	Require(pixel(297, 97) == 0xFF00DDDD && label("P1"), "Single-destination self teleport or live table labels were not shown.");
+	document.SetTeleporters({});
+	editor.Draws();
+	Require(std::count(overlay->Pixels.begin(), overlay->Pixels.end(), 0xFF00DDDD) == 0 && label("P-"), "Empty pool retained stale teleport lines or claimed a registered destination.");
+	document.SetTeleporters({ b });
+	Require(pixel(300, 300) == 0xFF00DDDD && label("P-"), "An unregistered puddle could not show the shared outgoing pool.");
+	toggle(LevelEditor::Layer::Animals);
+	Require(pixel(100, 300) == 0xFFFF00FF && pixel(180, 300) == 0xFFFFB000, "Hidden animals retained links or hid unrelated item links.");
+	toggle(LevelEditor::Layer::Animals);
+	const bytestream beforeMove = document.GetBytes();
+	document.Move(animal, 40, 0);
+	Require(pixel(100, 300) == 0xFFFF00FF && pixel(140, 300) == 0xFF66FF66 && document.Undo() && document.GetBytes() == beforeMove && pixel(100, 300) == 0xFF66FF66, "Actor links did not follow movement/undo.");
+	select({ 100, 100 });
+	toggle(LevelEditor::Layer::Tiles);
+	Require(pixel(300, 300) == 0xFF00DDDD, "Hiding tile outlines also hid the independent link layer.");
+	key('b');
+	WindowInput::Result input;
+	input.Control = true;
+	input.Wheel = 2;
+	input.Mouse = { 100, 100 };
+	send(input);
+	const POINT projected = editor.ScreenAt({ 300, 300 });
+	const std::vector<SpriteDraw>& zoomed = editor.Draws();
+	Require(zoomed.front().Sprite->Pixels[projected.y * 800 + projected.x] == 0xFF00DDDD, "Viewport zoom did not transform teleport link endpoints with the level.");
+	if (capture)
+		engine.DrawFrame(zoomed, ("editor-teleport-links-zoom-" + suffix + ".bmp").c_str());
+	key('0');
+	const bytestream beforeView = document.GetBytes();
+	toggle(LevelEditor::Layer::Links);
+	const std::vector<SpriteDraw>& hidden = editor.Draws();
+	Require(std::none_of(hidden.begin(), hidden.end(), [&](const SpriteDraw& draw) { return draw.Sprite == overlay; }) && document.GetBytes() == beforeView, "Disabled link layer still drew or changed the document.");
+	toggle(LevelEditor::Layer::Links);
+	input = {};
+	input.Playtest = true;
+	send(input);
+	const std::vector<SpriteDraw>& preview = editor.Draws();
+	Require(editor.IsPlaytesting() && std::none_of(preview.begin(), preview.end(), [&](const SpriteDraw& draw) { return draw.Sprite == overlay; }), "Editor links leaked into gameplay playtest.");
+	send(input);
+	Require(!editor.IsPlaytesting() && document.GetBytes() == beforeView, "Link visualization/playtest changed the authored document.");
+	Log("PASS: read-only teleport pool labels/possible targets, self and empty-pool rules, actor/item links, movement/undo, visibility, clipped dashed lines, zoom and playtest isolation.");
+}
+
 void CheckContinuousPainting(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& level, bool capture)
 {
 	LevelEditor editor(engine, pack, level, 1, true);
@@ -2042,6 +2126,7 @@ void CheckIntegratedEditor(MudGE& engine, const LevelPackInfo& pack, LevelInfo l
 	CheckPlacementOrder(engine, pack, level);
 	CheckNaturalSceneryDepth(engine, pack, level, capture);
 	CheckAnimalPlacementDefaults(engine, pack, level, capture);
+	CheckLinkAnnotations(engine, pack, level, capture);
 	CheckContinuousPainting(engine, pack, level, capture);
 	CheckSceneryWorkflow(engine, pack, level, capture);
 	CheckEditorMenu(engine, capture);

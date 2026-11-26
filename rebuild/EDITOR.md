@@ -73,11 +73,32 @@ to the preceding even value when loading; the authored value remains unchanged
 in the file. These settings do not apply to enemies, player starts or mermaids.
 
 **View** separates background, scenery, player starts, animals, enemies, items,
-special actors, tiles/spawners, grid and object-slot labels. Hidden object layers
+special actors, tiles/spawners, grid, object-slot labels and links. Hidden object layers
 are excluded from canvas picking; the instance browser still inventories the
 whole document. Picking a placement thumbnail reveals that object's layer.
 Layer/zoom/pan changes never enter level history or exports. Playtest uses normal
 game presentation, then restores the editor's view and layers on return.
+
+Enable **View > Links** (**L** opens View) for editor-only reference guides:
+
+- Puddles show **P1**, **P2**, etc. in destination-table order, with their raw
+  cell index underneath. **P-** means omitted from that table; it can still
+  trigger a teleport. **W** marks a water entry and also shows its raw index.
+- **Shift+click** a puddle/water cell, or select it in the Cell inspector, to
+  show cyan dashed lines and endpoint crosses for its possible destination pool.
+  This is a shared random pool, not fixed pairs: self is excluded with multiple
+  destinations, included when it is the only entry, and an empty pool has no
+  lines. Crosses mark target puddles, not exact landing cells. Gameplay chooses
+  a target and attempts a free neighboring exit; a line is not a guarantee that
+  an exit is currently usable.
+- Green lines join visible characters' sprite centers to their authored cells;
+  gold lines do the same for items. A/I labels identify the owning object slot.
+  Hidden object layers omit their links. Scenery has no actor/item cell link.
+
+The guides follow zoom/pan, movement, undo and destination-table edits. Links are
+independent of tile outlines and object labels, do not intercept canvas picking,
+and never change saved bytes or undo history. They are off by default and are
+not shown in F5 playtest. Like the grid, guides remain when H hides the panels.
 
 Tile brushes now support continuous strokes. Hold **left mouse** and drag to
 paint; hold **right mouse** and drag to erase. Gaps between mouse samples are
@@ -328,7 +349,7 @@ command to discard, including when closing the game window.
 
 Undo/redo and savepoints include both binary level changes and display metadata.
 Unrelated v6/v7 fields remain preserved. The parity checklist still includes
-teleport/link annotations and the final standalone-editor parity review.
+the final standalone-editor parity review.
 The canvas shows static authored object
 sprites; playtest provides the real animation, bonus-controller and gameplay
 presentation.

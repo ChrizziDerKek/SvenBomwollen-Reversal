@@ -656,7 +656,7 @@ const std::vector<SpriteDraw>& LevelEditor::Draws()
 					const Sprite* outline = cell.Terrain == OccupancyCode::Wall ? &Wall : (cell.Terrain == OccupancyCode::Water ? &WaterCell : (cell.Terrain == OccupancyCode::Puddle ? &PuddleCell : &GridCell));
 					if (IsLayerVisible(Layer::Tiles) && (cell.Terrain == OccupancyCode::Wall || cell.Terrain == OccupancyCode::Water || cell.Terrain == OccupancyCode::Puddle))
 						Commands.push_back({ outline, x * TileSize, y * TileSize, 0 });
-					if (IsLayerVisible(Layer::Tiles) && (cell.Terrain == OccupancyCode::Puddle || cell.Terrain == OccupancyCode::Water))
+					if (IsLayerVisible(Layer::Tiles) && !IsLayerVisible(Layer::Links) && (cell.Terrain == OccupancyCode::Puddle || cell.Terrain == OccupancyCode::Water))
 						Font.Append(Commands, cell.Terrain == OccupancyCode::Puddle ? "P" : "W", x * TileSize + 3, y * TileSize + 3);
 					if (IsLayerVisible(Layer::Tiles) && IsSpawner(cell.Spawner))
 					{
@@ -668,6 +668,8 @@ const std::vector<SpriteDraw>& LevelEditor::Draws()
 		}
 		if (SelectedCell >= 0 && (SelectCells || (Inspector && InspectorTab == InspectorPage::Cell)))
 			Commands.push_back({ &Selection, (SelectedCell % Stride - 1) * TileSize, (SelectedCell / Stride - 1) * TileSize, 0 });
+		if (IsLayerVisible(Layer::Links))
+			DrawLinks();
 		if (Selected >= 0 && GetDocument().GetLevel().GetObjects()[Selected].Kind() != static_cast<i32>(ObjectKind::Inactive) && ObjectVisible(static_cast<ObjectKind>(GetDocument().GetLevel().GetObjects()[Selected].Kind())))
 		{
 			const LevelObjectRecord& record = GetDocument().GetLevel().GetObjects()[Selected];
@@ -1816,6 +1818,62 @@ bool LevelEditor::HandlePalette(const WindowInput::Result& input)
 	return result.Consumed;
 }
 
+void LevelEditor::DrawLinks()
+{
+	if (LinkOverlay.Pixels.empty())
+		LinkOverlay = Rectangle(800, 600, 0xFFFF00FF, false);
+	std::fill(LinkOverlay.Pixels.begin(), LinkOverlay.Pixels.end(), 0xFFFF00FF);
+	Commands.push_back({ &LinkOverlay, 0, 0, 0 });
+	const LevelFile& level = GetDocument().GetLevel();
+	const std::vector<i32>& destinations = level.GetPuddles();
+	auto valid = [](i32 tile) { return tile >= 0 && tile < static_cast<i32>(LevelFile::CellCount) && tile % Stride >= 1 && tile % Stride <= Columns && tile / Stride >= 1 && tile / Stride <= Rows; };
+	auto center = [](i32 tile) { return POINT{ (tile % Stride - 1) * TileSize + TileSize / 2, (tile / Stride - 1) * TileSize + TileSize / 2 }; };
+	auto link = [&](POINT from, POINT to, u32 color) {
+		EditorGraphics::Line(LinkOverlay, from, to, color);
+		EditorGraphics::Line(LinkOverlay, { to.x - 3, to.y - 3 }, { to.x + 3, to.y + 3 }, color, false);
+		EditorGraphics::Line(LinkOverlay, { to.x - 3, to.y + 3 }, { to.x + 3, to.y - 3 }, color, false);
+	};
+	for (i32 tile = 0; tile < static_cast<i32>(LevelFile::CellCount); ++tile)
+	{
+		if (!valid(tile))
+			continue;
+		const OccupancyCode terrain = level.GetCells()[tile].Terrain;
+		if (terrain != OccupancyCode::Puddle && terrain != OccupancyCode::Water)
+			continue;
+		const POINT point = center(tile);
+		const auto destination = std::find(destinations.begin(), destinations.end(), tile);
+		const str label = terrain == OccupancyCode::Water ? "W" : (destination == destinations.end() ? "P-" : "P" + std::to_string(std::distance(destinations.begin(), destination) + 1));
+		Font.Append(Commands, label, point.x - TileSize / 2 + 2, point.y - TileSize / 2 + 2);
+		Font.Append(Commands, std::to_string(tile), point.x - TileSize / 2 + 2, point.y + 2);
+		if (tile != SelectedCell || (!SelectCells && !(Inspector && InspectorTab == InspectorPage::Cell)))
+			continue;
+		// The native random pool excludes self only with multiple entries;
+		// the chosen destination still needs a free neighboring exit.
+		for (i32 target : destinations)
+		{
+			if (valid(target) && (target != tile || destinations.size() == 1))
+				link(point, center(target), 0xFF00DDDD);
+		}
+	}
+	for (const VisibleObject& object : Objects)
+	{
+		const LevelObjectRecord& record = level.GetObjects()[object.Slot];
+		const ObjectKind kind = static_cast<ObjectKind>(record.Kind());
+		const CharacterDefinition* character = FindCharacterDefinition(kind);
+		if ((!character && !IsItem(kind)) || !valid(record.Tile()))
+			continue;
+		POINT origin{ object.Draw.X + object.Draw.Sprite->FrameWidth / 2, object.Draw.Y + object.Draw.Sprite->FrameHeight / 2 };
+		if (Dragging && static_cast<i32>(object.Slot) == Selected)
+		{
+			origin.x += Snap(WorldMouse.x - DragOrigin.x);
+			origin.y += Snap(WorldMouse.y - DragOrigin.y);
+		}
+		const POINT target = center(record.Tile());
+		link(origin, target, IsItem(kind) ? 0xFFFFB000 : 0xFF66FF66);
+		Font.Append(Commands, str(IsItem(kind) ? "I#" : "A#") + std::to_string(object.Slot), target.x + 4, target.y + 2);
+	}
+}
+
 void LevelEditor::DrawView()
 {
 	const RECT bounds = InspectorBounds();
@@ -1831,7 +1889,7 @@ void LevelEditor::DrawView()
 	}
 	Font.Append(Commands, "Ctrl+wheel: zoom at cursor", bounds.left + 8, bounds.bottom - 60);
 	Font.Append(Commands, "Middle drag: pan | 0: reset", bounds.left + 8, bounds.bottom - 40);
-	Font.Append(Commands, "Hidden objects cannot be picked.", bounds.left + 8, bounds.bottom - 20);
+	Font.Append(Commands, "Links: select P/W for possible targets.", bounds.left + 8, bounds.bottom - 20);
 }
 
 bool LevelEditor::HandleView(const WindowInput::Result& input)

@@ -21,6 +21,7 @@ public:
 		Tiles,
 		Grid,
 		Labels,
+		Links,
 		Count
 	};
 	bool IsLayerVisible(Layer layer) const
@@ -265,6 +266,7 @@ private:
 	Layer ObjectLayer(ObjectKind kind) const;
 	bool ObjectVisible(ObjectKind kind) const;
 	void DrawView();
+	void DrawLinks();
 	bool HandleView(const WindowInput::Result& input);
 	RECT PaletteBounds() const;
 	bool HandlePalette(const WindowInput::Result& input);
@@ -290,11 +292,12 @@ private:
 	PlacementPalette Palette;
 	RawInspector Raw;
 	EditorViewport Viewport;
-	std::array<bool, static_cast<size_t>(Layer::Count)> Layers{ true, true, true, true, true, true, true, true, true, false };
-	inline static constexpr std::array<cstr, static_cast<size_t>(Layer::Count)> LayerNames{ "Background", "Scenery", "Player starts", "Animals", "Enemies", "Items", "Special actors", "Tiles / spawners", "Grid", "Labels" };
+	std::array<bool, static_cast<size_t>(Layer::Count)> Layers{ true, true, true, true, true, true, true, true, true, false, false };
+	inline static constexpr std::array<cstr, static_cast<size_t>(Layer::Count)> LayerNames{ "Background", "Scenery", "Player starts", "Animals", "Enemies", "Items", "Special actors", "Tiles / spawners", "Grid", "Labels", "Links" };
 	BitmapFont Font;
 	Sprite Canvas, Bar, Selection, Wall, GridCell, ActiveTool, WaterCell, PuddleCell, SpawnerCell, Panel, FieldBar, PanelTab;
 	Sprite ObjectOutline{};
+	Sprite LinkOverlay{};
 	Sprite ListPanel, ListHeader, ListRow, AnchorMark;
 	const Sprite* Cursor;
 	std::vector<Choice> Choices;
