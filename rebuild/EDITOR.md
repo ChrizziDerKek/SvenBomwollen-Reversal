@@ -7,22 +7,55 @@ authored level. Your running game freezes and resumes unchanged on editor close.
 | Action | Control |
 |---|---|
 | Select and move | **V**, click an opaque part of an object, drag and release; **Ctrl+click** cycles overlapping objects |
-| Place | **P**, choose a category/type in the second toolbar row, then click the level |
-| Change placement choice | Mouse wheel or Left/Right; click the left/right portions of the type selector |
-| Tile brush | **C** or Tiles; wheel/Left/Right chooses collision, puddle, water or a random spawner group |
+| Place | Click Place or **B**, choose a sidebar thumbnail, then click the level; **P** repeats the current object; scenery returns to Select after one placement |
+| Scenery placement anchor | **A** switches between visible-art center and canvas origin; the yellow reticle shows the anchor |
+| Change placement choice | Click a sidebar thumbnail; wheel or Left/Right over the canvas cycles the current tool choices |
+| Tile brush | Click Tiles in the main toolbar, then choose a brush in the sidebar; **C** activates the current brush |
 | Erase tile/spawner | Right-click in Tiles mode; terrain and spawner brushes erase their own layer |
 | Scenery snapping | **N** toggles 40px/pixel placement and dragging; free scenery nudges by 1px, Shift+arrows by 10px |
-| Level/object/cell inspector | **I** or Props; click a tab, then a field |
+| Level/object/cell inspector | **I** or the sidebar Props tab; choose Level/Object/Cell/Project, then a field |
 | Select gameplay cells beneath artwork | **T**, the inspector's Cell tab, or Shift+click; **V** returns to object selection |
 | Rotate selected animal/enemy | **R**, or the inspector's Facing field |
 | Delete selected object | Delete or Backspace |
 | Cancel selection/drag | Right mouse button |
 | Undo / redo | Ctrl+Z / Ctrl+Y; toolbar buttons |
 | Hide/show toolbars | Tab; this exposes the cells under the toolbars |
-| Toggle grid | Grid in the second toolbar row |
+| Hide/show all editor interface / playtest HUD | **H**; restores panel state when shown again |
+| Visual placement sidebar | **B** or Place; click a thumbnail, then click the level |
+| Existing-object list | **O** or Object → Object list |
+| Toggle grid | Grid in the sidebar header |
 | Save a separate folder pack | Ctrl+S or Save copy |
 | Enter/leave playtest | F5 or Playtest; Escape also returns from playtest |
 | Close editor and resume original game | F3, Escape or Close |
+
+The movable sidebar shows actual texture thumbnails. Filter with **All**, **Scenery**,
+**Actors** (animals, enemies, player starts and special objects), **Items**, **Tiles**, or **Props**.
+The Tiles tab contains clear terrain, collision, puddle destinations, water
+entries, distraction/powerup/mixed random spawners and remove-spawner brushes.
+Tiles use color-coded icons; D/P/M distinguish random-spawner groups. Brush
+selection alone never edits data. Left-click paints and right-click erases the
+chosen layer, keeping terrain and spawners independent. Properties has its own
+Props tab; Grid remains in the sidebar header; **A** and **N** still control scenery anchoring and snapping.
+Drag the sidebar header to move the entire panel; its position is shared by all
+tabs and clamped inside the game view. The former placement selector row and
+floating inspector are removed, exposing more canvas.
+
+Scroll over the sidebar to browse; click **Find** to search, Ctrl+A clears it,
+and Enter selects the first match. Escape leaves search. Choosing a thumbnail
+only selects the placement tool; the level changes when you click the canvas.
+Scenery still returns to Select after one placement. **B** hides the sidebar to
+reach the left part of the level; **H** hides the whole interface. **O** opens
+the separate browser of objects already placed, replacing the palette.
+
+While editing, the game loops `assets/XXX/SvenXXX/sfx/editor.wav`. **F5** switches
+to the level's music and restores the editor track on return. Closing the editor
+restores the previous game/menu track. WAV music uses Windows' built-in playback;
+OGG music and sound effects retain the original engine backend. Missing editor
+music or a Zwo-only installation falls back to the level's music; `--no-audio`
+continues to silence it. The editor WAV is now normalized to the title music's
+measured loudness (about -10.4 LUFS), with a true-peak ceiling near -1 dBTP.
+The original quiet WAV is backed up at `rebuild/runtime/editor-music-original.wav`;
+its PCM format and duration are preserved, and title music/textures are unchanged.
 
 Actors and items always snap to the original 40-pixel grid. The palette uses
 the current tileset and the runtime's registered animals, enemies, items,
@@ -32,9 +65,15 @@ edit those cells explicitly. Free scenery also accepts fractional X/Y positions
 in its inspector. Puddle/water brushes edit gameplay cells, not scenery: place
 their visible artwork separately, as in the standalone editor.
 
-The inspector is 320 pixels wide and adjusts its height to its contents. Drag
-its green title bar to move it; the **- / +** button folds/unfolds it. Only its
-visible rectangle blocks canvas input. The inspector has four tabs:
+Scenery defaults to centering its visible pixels around the pointer (or the
+snapped cell center), ignoring transparent sprite padding. **A** restores the
+old canvas-origin placement when needed. Preview and placement use the same
+calculation, including scenery partly outside the level. Actors keep their
+native grid/collision anchors; the reticle shows that cell center. The cursor
+uses the same hotspot as the game's menus, so its tip matches the click position.
+
+**Props** replaces the floating I menu inside the 320-pixel sidebar. **I** opens
+this tab and returns to placement when pressed again. It contains four subtabs:
 
 | Tab | Available properties |
 |---|---|
@@ -45,9 +84,19 @@ visible rectangle blocks canvas input. The inspector has four tabs:
 
 Cell selection ignores all artwork; it never starts an object drag. Object
 selection uses opaque sprite pixels and shows the sprite's bounding rectangle.
-Use Ctrl+click to cycle overlaps, or **Object → Object list** to search by
-slot/name and select a hidden object directly. Switching to Cell clears the
+Use Ctrl+click to cycle overlaps, or the persistent object list to search by
+slot/name and select a hidden object directly. Its rows remain visible while
+you select, move, delete or undo. Click Find to filter; Enter selects the first
+match and leaves text-entry mode. Escape cancels text focus. Wheel scrolls;
+drag its header to move it and use +/- to fold it. Clicking a row never begins
+a world drag or activates a toolbar control underneath. **O** closes the list.
+Switching to Cell clears the
 object selection so Delete cannot remove a previously selected sprite.
+
+**H** hides the toolbar, status, sidebar and object list, releasing their
+screen areas for editing. Grid/selection guides remain usable; Grid toggles
+the grid separately. During F5 playtest, H hides the clock/score/lives, help/card
+overlays and playtest banner. It does not change gameplay or saved level data.
 
 Click a text field, type to replace its value, then press **Enter**. Backspace
 edits, Ctrl+A selects the whole value, and Escape cancels. Spaces are accepted

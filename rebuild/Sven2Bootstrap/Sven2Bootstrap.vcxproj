@@ -136,6 +136,9 @@
   <ItemGroup><ClInclude Include="Engine/GameEdition.h" /></ItemGroup>
 
   <ItemGroup>
+    <ClCompile Include="Editor/PlacementPalette.cpp" />
+    <ClInclude Include="Editor/PlacementPalette.h" />
+    <ClInclude Include="Editor/EditorGraphics.h" />
     <ClCompile Include="Editor/LevelProject.cpp" />
     <ClInclude Include="Editor/LevelProject.h" />
     <ClInclude Include="Editor/EditorFiles.h" />

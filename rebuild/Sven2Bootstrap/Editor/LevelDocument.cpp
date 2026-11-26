@@ -159,6 +159,17 @@ const Sprite* LevelDocument::GetSprite(const LevelObjectRecord& record) const
 	return GetSprite(static_cast<ObjectKind>(record.Kind()), record.TextureOrPermanent());
 }
 
+const TileSetInfo& LevelDocument::GetTileSet() const
+{
+	return Engine.GetData().TileSet(Pack, Info);
+}
+
+bool LevelDocument::Supports(ObjectKind kind) const
+{
+	const CharacterDefinition* definition = FindCharacterDefinition(kind);
+	return definition ? definition->Category != CharacterCategory::Effect && (!definition->XxxOnly || Engine.GetData().GetGameplayEdition() == GameEdition::XXX) : kind == ObjectKind::Scenery || IsItem(kind);
+}
+
 const Sprite* LevelDocument::GetSprite(ObjectKind kind, i32 texture) const
 {
 	if (kind == ObjectKind::Scenery)
@@ -239,8 +250,8 @@ void LevelDocument::Link(bytestream& bytes, size_t slot, ObjectKind kind, i32 ti
 i32 LevelDocument::Place(ObjectKind kind, i32 tile, i32 texture, const POINT* sceneryPosition)
 {
 	CheckDestination(kind, tile);
-	if (sceneryPosition && (kind != ObjectKind::Scenery || TileAt(sceneryPosition->x, sceneryPosition->y) < 0))
-		throw std::runtime_error("Free placement requires scenery inside the level.");
+	if (sceneryPosition && kind != ObjectKind::Scenery)
+		throw std::runtime_error("Free positioning applies to scenery only.");
 	const CharacterDefinition* definition = FindCharacterDefinition(kind);
 	if (definition && (definition->Category == CharacterCategory::Effect || (definition->XxxOnly && Engine.GetData().GetGameplayEdition() != GameEdition::XXX)))
 		throw std::runtime_error("This object is unavailable in this runtime.");
@@ -263,6 +274,8 @@ i32 LevelDocument::Place(ObjectKind kind, i32 tile, i32 texture, const POINT* sc
 		Set(next, slot, Word::Texture, kind == ObjectKind::Scenery ? texture : (IsItem(kind) ? 1 : -1));
 		const SpriteDraw preview = PlacementPreview(kind, tile, texture);
 		const Sprite* image = preview.Sprite;
+		if (sceneryPosition && (sceneryPosition->x <= -image->FrameWidth || sceneryPosition->x >= Columns * TileSize || sceneryPosition->y <= -image->FrameHeight || sceneryPosition->y >= Rows * TileSize))
+			throw std::runtime_error("Keep some scenery visible inside the level.");
 		const bool scenery = kind == ObjectKind::Scenery;
 		const f32 x = static_cast<f32>(sceneryPosition ? sceneryPosition->x : preview.X), y = static_cast<f32>(sceneryPosition ? sceneryPosition->y : preview.Y);
 		Set(next, slot, Word::X, x);

@@ -8,6 +8,8 @@
 #include <fstream>
 #include <wincodec.h>
 #include <wrl/client.h>
+#include <mmsystem.h>
+#pragma comment(lib, "winmm.lib")
 
 MudGE::MudGE(const fpath& directory, const fpath& dataDirectory)
     : Directory(directory), Data(dataDirectory)
@@ -226,7 +228,15 @@ bool MudGE::PlayMusic(const str& path)
 	if (!SoundSystem)
 		return false;
 	StopMusic();
-	LegacyString url = String(Data.AssetPath(path).string().c_str(), true);
+	const fpath asset = Data.AssetPath(path);
+	if (_wcsicmp(asset.extension().c_str(), L".wav") == 0)
+	{
+		// The original streaming decoder accepts OGG, not PCM WAV music.
+		WaveMusic = PlaySoundW(asset.c_str(), nullptr, SND_FILENAME | SND_ASYNC | SND_LOOP | SND_NODEFAULT) != FALSE;
+		Log(str(WaveMusic ? "Started WAV music: " : "WAV music unavailable: ") + path);
+		return WaveMusic;
+	}
+	LegacyString url = String(asset.string().c_str(), true);
 	any loaded = nullptr;
 	try
 	{
@@ -256,6 +266,12 @@ bool MudGE::PlayMusic(const str& path)
 
 void MudGE::StopMusic()
 {
+	if (WaveMusic)
+	{
+		PlaySoundW(nullptr, nullptr, 0);
+		WaveMusic = false;
+		Log("Stopped WAV music.");
+	}
 	if (!MusicStream)
 		return;
 	Method<void(__thiscall*)(any)>(MusicStream, 0x1C)(MusicStream);

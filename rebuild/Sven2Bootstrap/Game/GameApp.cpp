@@ -7,6 +7,7 @@
 #include <array>
 #include <chrono>
 #include <memory>
+#include <optional>
 #include <stdexcept>
 
 void RunGame(MudGE& engine, const fpath& saves, bool audio, u32 seconds, bool directTutorial)
@@ -20,12 +21,15 @@ void RunGame(MudGE& engine, const fpath& saves, bool audio, u32 seconds, bool di
 	WindowInput controls(engine.WindowHandle(), engine.ScaledVideo());
 	std::unique_ptr<GameSession> session;
 	std::unique_ptr<LevelEditor> editor;
+	std::optional<str> editorTrack;
+	str currentMusic, editorReturnMusic;
 	bool playing = false;
 	auto play = [&](const str& path, bool looped = false, i32 frequency = 0) {
 		if (audio && engine.PlaySample(path, looped, frequency))
 			Log("Played sound sample: " + path);
 	};
 	auto music = [&](const str& path) {
+		currentMusic = path;
 		if (audio && !path.empty())
 			engine.PlayMusic(path);
 		else
@@ -72,7 +76,6 @@ void RunGame(MudGE& engine, const fpath& saves, bool audio, u32 seconds, bool di
 		{
 			if (editor)
 			{
-				const bool wasTesting = editor->IsPlaytesting();
 				std::array<PlayerInput, 2> players{};
 				if (data.GetGameplayEdition() == GameEdition::XXX || ui.HasCustomControls())
 				{
@@ -87,6 +90,8 @@ void RunGame(MudGE& engine, const fpath& saves, bool audio, u32 seconds, bool di
 					editor.reset();
 					controls.SetEditorCloseGuard(false);
 					engine.StopLoopedSound();
+					editorTrack.reset();
+					music(editorReturnMusic);
 					if (refresh)
 					{
 						try
@@ -103,11 +108,10 @@ void RunGame(MudGE& engine, const fpath& saves, bool audio, u32 seconds, bool di
 						play(data.SoundPath("SfxUFO", session->GetGameplayEdition()), true);
 					previous = std::chrono::steady_clock::now();
 				}
-				else if (wasTesting != editor->IsPlaytesting())
-					music(editor->IsPlaytesting() ? editor->GetDocument().GetInfo().Music : (session && (playing || ui.GetPage() == Page::Pause) ? session->Level().Music : menuMusic));
 			}
 			else if (input.Editor && !debug.IsOpen())
 			{
+				editorReturnMusic = currentMusic;
 				engine.StopLoopedSound();
 				if (session && (playing || ui.GetPage() == Page::Pause))
 					editor = std::make_unique<LevelEditor>(engine, session->GetPack(), session->Level(), session->GetPlayerCount());
@@ -220,6 +224,15 @@ void RunGame(MudGE& engine, const fpath& saves, bool audio, u32 seconds, bool di
 					else if (priorPage == Page::Highscores && ui.GetPage() != Page::Name)
 						music(menuMusic);
 				}
+			}
+		}
+		if (editor)
+		{
+			const str wanted = editor->GetMusic();
+			if (!editorTrack || *editorTrack != wanted)
+			{
+				music(wanted);
+				editorTrack = wanted;
 			}
 		}
 		for (const str& sound : ui.TakeSounds())

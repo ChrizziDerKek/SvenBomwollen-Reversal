@@ -49,6 +49,8 @@ public:
 	{
 		return Info;
 	}
+	const TileSetInfo& GetTileSet() const;
+	bool Supports(ObjectKind kind) const;
 	bool IsDirty() const
 	{
 		return Bytes != SavedBytes || Info.Name != SavedInfo.Name || Info.TileSet != SavedInfo.TileSet || Info.Music != SavedInfo.Music;

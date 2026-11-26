@@ -132,6 +132,9 @@
   <ItemGroup><ClInclude Include="../Sven2Bootstrap/Engine/GameEdition.h" /></ItemGroup>
 
   <ItemGroup>
+    <ClCompile Include="../Sven2Bootstrap/Editor/PlacementPalette.cpp" />
+    <ClInclude Include="../Sven2Bootstrap/Editor/PlacementPalette.h" />
+    <ClInclude Include="../Sven2Bootstrap/Editor/EditorGraphics.h" />
     <ClCompile Include="../Sven2Bootstrap/Editor/LevelProject.cpp" />
     <ClInclude Include="../Sven2Bootstrap/Editor/LevelProject.h" />
     <ClInclude Include="../Sven2Bootstrap/Editor/EditorFiles.h" />

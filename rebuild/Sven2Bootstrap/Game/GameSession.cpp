@@ -368,9 +368,11 @@ void GameSession::SkipBonuses()
 	BonusFinished = true;
 }
 
-const std::vector<SpriteDraw>& GameSession::Draws(bool showHelp)
+const std::vector<SpriteDraw>& GameSession::Draws(bool showHelp, bool showHud)
 {
 	DrawCommands = Scene->Draws();
+	if (!showHud)
+		return DrawCommands;
 	AppendCardAward();
 	for (const LifeEffect& effect : LifeEffects)
 		DrawCommands.push_back({ LifeIcon, static_cast<i32>(effect.X), static_cast<i32>(effect.Y), 0 });

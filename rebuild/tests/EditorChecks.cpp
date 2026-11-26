@@ -13,6 +13,32 @@ void Require(bool condition, cstr message)
 	if (!condition)
 		throw std::runtime_error(message);
 }
+void MoveSidebar(LevelEditor& editor, i32 x, i32 y)
+{
+	const bool visible = editor.IsPaletteVisible();
+	WindowInput::Result input;
+	if (!visible)
+	{
+		input.BindingKey = 'b';
+		editor.Handle(input, 0);
+	}
+	const RECT bounds = editor.GetPaletteBounds();
+	input = {};
+	input.Click = input.MouseHeld = true;
+	input.Mouse = { bounds.left + 10, bounds.top + 8 };
+	editor.Handle(input, 0);
+	input.Click = false;
+	input.Mouse = { x + 10, y + 8 };
+	editor.Handle(input, 0);
+	input.MouseHeld = false;
+	editor.Handle(input, 0);
+	if (!visible)
+	{
+		input = {};
+		input.BindingKey = 'b';
+		editor.Handle(input, 0);
+	}
+}
 template <class T>
 void Put(bytestream& bytes, size_t offset, T value)
 {
@@ -151,11 +177,17 @@ void CheckAuthoring(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& l
 		scene.Update(1.0f / 60, 0, 0, false);
 
 	LevelEditor editor(engine, pack, level, 1);
+	{
+		WindowInput::Result hidePalette;
+		hidePalette.BindingKey = 'b';
+		editor.Handle(hidePalette, 0);
+	}
+	MoveSidebar(editor, 480, 26);
 	auto send = [&](WindowInput::Result input) { return editor.Handle(input, 0); };
 	auto key = [&](i32 binding) { WindowInput::Result input; input.BindingKey = binding; send(input); };
 	auto click = [&](i32 x, i32 y) { WindowInput::Result input; input.Click = true; input.Mouse = { x, y }; send(input); };
 	key('i');
-	click(650, 141); // Level timer field.
+	click(editor.GetInspectorBounds().left + 180, editor.GetInspectorBounds().top + 56); // Level timer field.
 	WindowInput::Result input;
 	input.Text = "not a number";
 	send(input);
@@ -166,7 +198,7 @@ void CheckAuthoring(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& l
 	input = {};
 	input.Back = true;
 	send(input);
-	click(650, 141);
+	click(editor.GetInspectorBounds().left + 180, editor.GetInspectorBounds().top + 56);
 	input = {};
 	input.Text = "75.5";
 	send(input);
@@ -174,7 +206,7 @@ void CheckAuthoring(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& l
 	input.Enter = true;
 	send(input);
 	Require(editor.GetDocument().GetLevel().GetTimeLimit() == 75.5f, "Inspector timer text did not apply.");
-	click(650, 113);
+	click(editor.GetInspectorBounds().left + 180, editor.GetInspectorBounds().top + 28);
 	input = {};
 	input.Text = "Wiese mit Leerzeichen";
 	input.Confirm = true; // Space must not submit a text field.
@@ -196,10 +228,14 @@ void CheckAuthoring(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& l
 	send(input);
 	Require(editor.GetDocument().GetLevel().GetCells()[tile].Spawner == SpawnerCode::None, "Spawner erase changed the wrong field.");
 	key('p');
-	click(130, 39);
-	click(130, 39);
-	click(130, 39); // Animals -> enemies -> items -> scenery.
+	if (!editor.IsPaletteVisible())
+		key('b');
+	const RECT palette = editor.GetPaletteBounds();
+	click(palette.left + PlacementPalette::Width / PlacementPalette::GroupCount + 2, palette.top + 28);
+	click(palette.left + 10, palette.top + 100);
+	key('b');
 	key('n');
+	key('a'); // Legacy canvas-origin placement; centered placement has separate coverage.
 	click(113, 157);
 	Require(editor.GetDocument().GetLevel().GetObjects()[2].X() == 113 && editor.GetDocument().GetLevel().GetObjects()[2].Y() == 157, "Free placement tool ignored the unsnapped pointer.");
 	key('v');
@@ -212,8 +248,8 @@ void CheckAuthoring(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& l
 	key('i');
 	if (capture)
 		engine.DrawFrame(editor.Draws(), pack.Edition == GameEdition::XXX ? "editor-properties-xxx.bmp" : "editor-properties-zwo.bmp");
-	click(590, 89); // Object inspector.
-	click(650, 169);
+	click(editor.GetInspectorBounds().left + 90, editor.GetInspectorBounds().top + 4); // Object inspector.
+	click(editor.GetInspectorBounds().left + 180, editor.GetInspectorBounds().top + 84);
 	input = {};
 	input.Text = "125.5";
 	send(input);
@@ -231,11 +267,17 @@ void CheckProjectWorkflow(MudGE& engine, const LevelPackInfo& pack, const LevelI
 	const str suffix = pack.Edition == GameEdition::XXX ? "xxx" : "zwo";
 	const bytestream source = engine.ReadAsset(level.Map);
 	LevelEditor editor(engine, pack, level, 1);
+	{
+		WindowInput::Result hidePalette;
+		hidePalette.BindingKey = 'b';
+		editor.Handle(hidePalette, 0);
+	}
+	MoveSidebar(editor, 480, 26);
 	auto send = [&](WindowInput::Result input) { return editor.Handle(input, 0); };
 	auto key = [&](i32 binding) { WindowInput::Result input; input.BindingKey = binding; send(input); };
 	auto click = [&](i32 x, i32 y, bool control = false) { WindowInput::Result input; input.Click = true; input.Control = control; input.Mouse = { x, y }; send(input); };
-	auto tab = [&](i32 index) { const RECT box = editor.GetInspectorBounds(); click(box.left + index * 80 + 10, box.top + 28); };
-	auto field = [&](i32 row) { const RECT box = editor.GetInspectorBounds(); click(box.left + 180, box.top + 52 + row * 28); };
+	auto tab = [&](i32 index) { const RECT box = editor.GetInspectorBounds(); click(box.left + index * 80 + 10, box.top + 4); };
+	auto field = [&](i32 row) { const RECT box = editor.GetInspectorBounds(); click(box.left + 180, box.top + 24 + row * 28); };
 	LevelDocument& document = editor.GetDocument();
 	const POINT position{ 100, 140 };
 	const i32 first = document.Place(ObjectKind::Scenery, LevelDocument::TileAt(100, 140), 0, &position);
@@ -273,22 +315,12 @@ void CheckProjectWorkflow(MudGE& engine, const LevelPackInfo& pack, const LevelI
 		engine.DrawFrame(editor.Draws(), ("editor-cell-covered-" + suffix + ".bmp").c_str());
 	const RECT initial = editor.GetInspectorBounds();
 	Require(initial.right - initial.left == 320 && initial.bottom - initial.top < 522, "Inspector was not made smaller.");
-	WindowInput::Result drag;
-	drag.Click = drag.MouseHeld = true;
-	drag.Mouse = { initial.left + 10, initial.top + 8 };
-	send(drag);
-	drag.Click = false;
-	drag.Mouse = { 90, 88 };
-	send(drag);
-	drag.MouseHeld = false;
-	send(drag);
+	MoveSidebar(editor, 80, 52);
 	const RECT moved = editor.GetInspectorBounds();
-	Require(moved.left == 80 && moved.top == 80 && document.GetBytes() == beforePicking, "Inspector drag edited the level or did not move the panel.");
+	Require(moved.left == 80 && moved.top == 100 && document.GetBytes() == beforePicking, "Sidebar drag did not move its embedded properties or edited data.");
 	click(600, 300);
-	Require(editor.GetSelectedCell() == LevelDocument::TileAt(600, 300), "Former inspector location still blocked canvas selection.");
-	click(moved.right - 8, moved.top + 8);
-	Require(editor.GetInspectorBounds().bottom - editor.GetInspectorBounds().top == 24, "Inspector did not fold to its header.");
-	click(moved.right - 8, moved.top + 8);
+	Require(editor.GetSelectedCell() == LevelDocument::TileAt(600, 300), "Former sidebar location still blocked canvas selection.");
+
 	tab(1);
 	field(0);
 	WindowInput::Result input;
@@ -298,6 +330,8 @@ void CheckProjectWorkflow(MudGE& engine, const LevelPackInfo& pack, const LevelI
 	input.Enter = true;
 	send(input);
 	Require(editor.GetSelectedObject() == first, "Searchable object list could not select obscured scenery.");
+	key('o'); // Close the object list and reopen embedded properties.
+	key('i');
 	tab(0);
 	const std::vector<TileSetInfo>& themes = document.GetThemes();
 	size_t themeIndex = themes.size();
@@ -394,6 +428,11 @@ void CheckProjectWorkflow(MudGE& engine, const LevelPackInfo& pack, const LevelI
 	if (capture)
 		engine.DrawFrame(editor.Draws(), ("editor-project-" + suffix + ".bmp").c_str());
 	LevelEditor fromTitle(engine, pack, level, 1, true);
+	{
+		WindowInput::Result hidePalette;
+		hidePalette.BindingKey = 'b';
+		fromTitle.Handle(hidePalette, 0);
+	}
 	Require(fromTitle.GetProject().IsDirty(), "Title-screen editor did not create a blank project.");
 	WindowInput::Result play;
 	play.Playtest = true;
@@ -407,6 +446,375 @@ void CheckProjectWorkflow(MudGE& engine, const LevelPackInfo& pack, const LevelI
 	Require(whole.GetEntries().size() == originalLevels && whole.Current().GetBytes() == engine.ReadAsset(pack.LevelSets.front().Levels.front().Map), "Opening a full working copy lost levels or altered source bytes.");
 	engine.ReloadPacks();
 	Log("PASS: editor selection under scenery/overlaps, compact movable/foldable inspector, global mixed-edition themes, blank/multiple/duplicate/imported levels, named folder export and failed-save preservation.");
+}
+
+void CheckEditorUsability(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& level, bool capture)
+{
+	const str suffix = pack.Edition == GameEdition::XXX ? "xxx" : "zwo";
+	LevelEditor placement(engine, pack, level, 1);
+	{
+		WindowInput::Result hidePalette;
+		hidePalette.BindingKey = 'b';
+		placement.Handle(hidePalette, 0);
+	}
+	MoveSidebar(placement, 480, 26);
+	auto send = [&](WindowInput::Result input) { return placement.Handle(input, 0); };
+	auto key = [&](i32 binding) { WindowInput::Result input; input.BindingKey = binding; send(input); };
+	auto click = [&](i32 x, i32 y) { WindowInput::Result input; input.Click = true; input.Mouse = { x, y }; send(input); };
+	key('p');
+	key('b');
+	const RECT palette = placement.GetPaletteBounds();
+	click(palette.left + PlacementPalette::Width / PlacementPalette::GroupCount + 2, palette.top + 28);
+	click(palette.left + 10, palette.top + 100);
+	key('b');
+	key('n');
+	WindowInput::Result pointer;
+	pointer.Mouse = { 380, 300 };
+	send(pointer);
+	const Sprite* art = placement.GetDocument().GetSprite(ObjectKind::Scenery, 0);
+	const std::vector<SpriteDraw> ghost = placement.Draws();
+	const auto image = std::find_if(ghost.begin(), ghost.end(), [&](const SpriteDraw& draw) { return draw.Sprite == art; });
+	Require(image != ghost.end(), "Placement ghost was not drawn.");
+	i32 left = art->FrameWidth, right = -1, top = art->FrameHeight, bottom = -1;
+	for (i32 y = 0; y < art->FrameHeight; ++y)
+	{
+		for (i32 x = 0; x < art->FrameWidth; ++x)
+		{
+			if (art->Keyed && (art->Pixels[y * art->Width + x] & 0xFFFFFF) == 0xFF00FF)
+				continue;
+			left = std::min(left, x);
+			right = std::max(right, x);
+			top = std::min(top, y);
+			bottom = std::max(bottom, y);
+		}
+	}
+	Require(image->X + (left + right) / 2 == pointer.Mouse.x && image->Y + (top + bottom) / 2 == pointer.Mouse.y, "Scenery anchor did not center its visible art on the pointer.");
+	Require(ghost.back().X == pointer.Mouse.x - 9 && ghost.back().Y == pointer.Mouse.y - 9, "Editor cursor hotspot differs from the game's actual click position.");
+	if (capture)
+		engine.DrawFrame(ghost, ("editor-placement-anchor-" + suffix + ".bmp").c_str());
+	click(pointer.Mouse.x, pointer.Mouse.y);
+	Require(placement.GetDocument().GetLevel().GetObjects()[2].X() == image->X && placement.GetDocument().GetLevel().GetObjects()[2].Y() == image->Y, "Committed scenery position differs from its preview.");
+	click(700, 500);
+	Require(placement.GetDocument().GetLevel().GetObjects()[3].Kind() == static_cast<i32>(ObjectKind::Inactive), "Scenery placement was not one-shot like the standalone editor.");
+	key('p');
+	key('a');
+	click(113, 157);
+	Require(placement.GetDocument().GetLevel().GetObjects()[3].X() == 113 && placement.GetDocument().GetLevel().GetObjects()[3].Y() == 157, "Canvas-origin anchor no longer supports exact legacy placement.");
+	key('p');
+	key('a');
+	key('n');
+	pointer.Mouse = { 113, 157 };
+	send(pointer);
+	const std::vector<SpriteDraw> snapped = placement.Draws();
+	const auto lastGhost = std::find_if(snapped.rbegin(), snapped.rend(), [&](const SpriteDraw& draw) { return draw.Sprite == art; });
+	Require(lastGhost != snapped.rend() && lastGhost->X + (left + right) / 2 == 100 && lastGhost->Y + (top + bottom) / 2 == 140, "Snapped anchor does not match the selected cell center.");
+
+	LevelEditor browser(engine, pack, level, 1);
+	{
+		WindowInput::Result hidePalette;
+		hidePalette.BindingKey = 'b';
+		browser.Handle(hidePalette, 0);
+	}
+	MoveSidebar(browser, 480, 26);
+	auto browse = [&](WindowInput::Result input) { return browser.Handle(input, 0); };
+	auto browseKey = [&](i32 binding) { WindowInput::Result input; input.BindingKey = binding; browse(input); };
+	for (i32 index = 0; index < 16; ++index)
+		browser.GetDocument().Place(ObjectKind::Scenery, LevelDocument::TileAt(100, 140), 0);
+	browser.GetDocument().SetTimeLimit(444);
+	const bytestream beforeUi = browser.GetDocument().GetBytes();
+	browseKey('o');
+	Require(browser.IsObjectListVisible(), "O did not show the persistent object list.");
+	RECT list = browser.GetObjectListBounds();
+	WindowInput::Result input;
+	input.Click = input.MouseHeld = true;
+	input.Mouse = { list.left + 8, list.top + 52 };
+	browse(input);
+	Require(browser.GetSelectedObject() == 0 && browser.IsObjectListVisible(), "List selection closed the list or failed to select an object.");
+	input.Mouse = { 350, 10 }; // Same held gesture crosses Undo; even a repeated press must stay captured.
+	browse(input);
+	Require(browser.GetDocument().GetBytes() == beforeUi, "Object-list gesture clicked through to Undo.");
+	input.Click = input.MouseHeld = false;
+	browse(input);
+	input.Click = true;
+	browse(input);
+	Require(browser.GetDocument().GetLevel().GetTimeLimit() != 444, "Toolbar did not accept a new gesture after list capture released.");
+	input = {};
+	input.Mouse = { list.left + 8, list.top + 80 };
+	input.Wheel = -3;
+	browse(input);
+	input = {};
+	input.Click = true;
+	input.Mouse = { list.left + 8, list.top + 52 };
+	browse(input);
+	Require(browser.GetSelectedObject() == 8 && browser.IsObjectListVisible(), "Persistent list scrolling selected the wrong stable slot.");
+	input.Mouse.y = list.top + 28;
+	browse(input);
+	input = {};
+	input.Text = "Sheep";
+	browse(input);
+	input = {};
+	input.Enter = true;
+	browse(input);
+	Require(browser.GetSelectedObject() == 1 && browser.IsObjectListVisible(), "Persistent search did not select the named object and stay open.");
+	if (capture)
+		engine.DrawFrame(browser.Draws(), ("editor-object-browser-" + suffix + ".bmp").c_str());
+	input = {};
+	input.Delete = true;
+	browse(input);
+	Require(browser.GetDocument().GetLevel().GetObjects()[1].Kind() == static_cast<i32>(ObjectKind::Inactive), "Delete missed the list selection.");
+	input = {};
+	input.Undo = true;
+	browse(input);
+	Require(browser.GetDocument().GetLevel().GetObjects()[1].Kind() == static_cast<i32>(ObjectKind::Sheep), "List undo did not restore the object.");
+	browseKey('i');
+	const RECT properties = browser.GetInspectorBounds();
+	input = {};
+	input.Click = true;
+	input.Mouse = { properties.left + 8, properties.top + 4 };
+	browse(input);
+	input.Mouse = { properties.left + 160, properties.top + 52 };
+	browse(input);
+	input = {};
+	input.Text = "222";
+	browse(input);
+	input = {};
+	input.Click = true;
+	const RECT sidebar = browser.GetPaletteBounds();
+	input.Mouse = { sidebar.left + 2 * (PlacementPalette::Width / PlacementPalette::GroupCount) + 2, sidebar.top + 28 };
+	browse(input);
+	browseKey('o');
+	Require(browser.GetDocument().GetLevel().GetTimeLimit() == 222, "Switching focus to the list abandoned the pending inspector edit.");
+	input = {};
+	input.Back = true;
+	browse(input);
+	browseKey('h');
+	Require(!browser.IsHudVisible() && !browser.IsObjectListVisible(), "H did not hide the whole editor interface.");
+	const std::vector<SpriteDraw> hidden = browser.Draws();
+	Require(std::none_of(hidden.begin(), hidden.end(), [](const SpriteDraw& draw) { return (draw.Sprite->FrameWidth == 800 && draw.Sprite->FrameHeight == 26) || draw.Sprite->FrameWidth == 320 || draw.Sprite->FrameWidth == 280; }), "Hidden editor panels or toolbars still cover the canvas.");
+	const bytestream hiddenBefore = browser.GetDocument().GetBytes();
+	input = {};
+	input.Click = true;
+	input.Mouse = { 350, 10 };
+	browse(input);
+	Require(browser.GetDocument().GetBytes() == hiddenBefore, "Hidden Undo still handled a canvas click.");
+	if (capture)
+		engine.DrawFrame(browser.Draws(), ("editor-hidden-ui-" + suffix + ".bmp").c_str());
+	browseKey('h');
+	Require(browser.IsHudVisible() && browser.IsObjectListVisible(), "Showing UI lost the persistent object list state.");
+	input = {};
+	input.Playtest = true;
+	browse(input);
+	Require(browser.IsPlaytesting(), "Usability test could not enter playtest.");
+	const Sprite* clock = engine.LoadSprite(engine.GetData().EditionAsset(engine.GetData().GetThemeEdition(), "Sven2/gfx/timer.bmp"), 1, 1);
+	const std::vector<SpriteDraw> withHud = browser.Draws();
+	Require(std::any_of(withHud.begin(), withHud.end(), [&](const SpriteDraw& draw) { return draw.Sprite == clock; }), "Playtest lost its default HUD.");
+	browseKey('h');
+	const std::vector<SpriteDraw> withoutHud = browser.Draws();
+	Require(std::none_of(withoutHud.begin(), withoutHud.end(), [&](const SpriteDraw& draw) { return draw.Sprite == clock || (draw.Sprite->FrameWidth == 800 && draw.Sprite->FrameHeight == 26); }), "H left playtest HUD/banner over the level.");
+	if (capture)
+		engine.DrawFrame(withoutHud, ("editor-playtest-hidden-hud-" + suffix + ".bmp").c_str());
+	input = {};
+	input.Playtest = true;
+	browse(input);
+	Require(!browser.IsPlaytesting() && browser.GetDocument().GetBytes() == hiddenBefore, "HUD toggles or playtest changed authored data.");
+	Log("PASS: editor cursor hotspot, centered/origin anchors and exact preview/commit, one-shot scenery, persistent searchable object list, UI gesture ownership, hidden interface hit testing and playtest HUD toggle.");
+}
+
+void CheckPaletteAndMusic(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& level, bool capture)
+{
+	const str suffix = pack.Edition == GameEdition::XXX ? "xxx" : "zwo";
+	Sprite sheet{ std::vector<u32>(96 * 192, 0xFFFF00FF), 96, 96, 96, 2, 1, true };
+	for (i32 y = 20; y < 60; ++y)
+	{
+		for (i32 x = 8; x < 88; ++x)
+		{
+			if (x < 40 || x >= 56 || y < 36 || y >= 48)
+				sheet.Pixels[(96 + y) * sheet.Width + x] = 0xFFFF0000;
+		}
+	}
+	const Sprite thumb = PlacementPalette::MakeThumbnail(sheet, 1);
+	Require(thumb.FrameWidth == 64 && thumb.FrameHeight == 32 && thumb.Keyed, "Thumbnail lost aspect ratio or transparent crop.");
+	Require(std::all_of(thumb.Pixels.begin(), thumb.Pixels.end(), [](u32 color) { return color == 0xFFFF00FF || color == 0xFFFF0000; }), "Thumbnail filtering bled the magenta key into opaque edges.");
+	Require(std::any_of(thumb.Pixels.begin(), thumb.Pixels.end(), [](u32 color) { return color == 0xFFFF00FF; }) && PlacementPalette::MakeThumbnail(sheet, 0).FrameWidth == 1, "Transparent holes/empty frames were not preserved.");
+	Require(Rejects([&]() { PlacementPalette::MakeThumbnail(sheet, 2); }), "Thumbnail accepted an out-of-range frame.");
+
+	LevelEditor editor(engine, pack, level, 1);
+	auto send = [&](WindowInput::Result input) { return editor.Handle(input, 0); };
+	auto key = [&](i32 binding) { WindowInput::Result input; input.BindingKey = binding; send(input); };
+	auto click = [&](i32 x, i32 y) { WindowInput::Result input; input.Click = true; input.Mouse = { x, y }; send(input); };
+	auto chooseGroup = [&](i32 group) { const RECT bounds = editor.GetPaletteBounds(); click(bounds.left + group * (PlacementPalette::Width / PlacementPalette::GroupCount) + 2, bounds.top + 28); };
+	auto search = [&](const str& name) {
+		const RECT bounds = editor.GetPaletteBounds();
+		click(bounds.left + 12, bounds.top + 52);
+		WindowInput::Result text;
+		text.Text = name;
+		send(text);
+		text = {};
+		text.Enter = true;
+		send(text);
+	};
+	Require(editor.IsPaletteVisible(), "Visual placement sidebar is not initially visible.");
+	const bytestream original = editor.GetDocument().GetBytes();
+	const std::vector<SpriteDraw> initial = editor.Draws();
+	Require(std::count_if(initial.begin(), initial.end(), [](const SpriteDraw& draw) { return draw.Sprite->FrameWidth <= 64 && draw.Sprite->FrameHeight <= 64 && draw.X >= 0 && draw.X < PlacementPalette::Width && draw.Y >= 124 && draw.Y < 476; }) >= 6, "Placement sidebar did not render texture thumbnails.");
+	if (capture)
+		engine.DrawFrame(initial, ("editor-placement-sidebar-" + suffix + ".bmp").c_str());
+	chooseGroup(2); // Actors includes animals, enemies, starts and special authored objects.
+	search("Sheep");
+	Require(editor.GetDocument().GetBytes() == original, "Choosing a thumbnail modified the level before placement.");
+	if (capture)
+		engine.DrawFrame(editor.Draws(), ("editor-palette-actors-" + suffix + ".bmp").c_str());
+	click(620, 140);
+	Require(editor.GetDocument().GetLevel().GetObjects()[2].Kind() == static_cast<i32>(ObjectKind::Sheep) && editor.GetDocument().GetLevel().GetCells()[LevelDocument::TileAt(620, 140)].Terrain == OccupancyCode::Sheep, "Actor thumbnail did not select a linked actor placement tool.");
+	chooseGroup(3);
+	search("Bone");
+	click(660, 140);
+	Require(editor.GetDocument().GetLevel().GetObjects()[3].Kind() == static_cast<i32>(ObjectKind::Bone) && editor.GetDocument().GetLevel().GetCells()[LevelDocument::TileAt(660, 140)].ItemCode == ItemCode::Bone, "Item thumbnail did not place its pickup record.");
+	chooseGroup(1);
+	const RECT bounds = editor.GetPaletteBounds();
+	WindowInput::Result input;
+	input.Wheel = -1;
+	input.Mouse = { bounds.left + 10, bounds.top + 100 };
+	send(input);
+	click(bounds.left + 10, bounds.top + 100);
+	click(700, 180);
+	const i32 visible = PlacementPalette::Columns * ((bounds.bottom - bounds.top - PlacementPalette::HeaderHeight - PlacementPalette::TabHeight - PlacementPalette::SearchHeight - PlacementPalette::FooterHeight) / PlacementPalette::CellHeight);
+	const i32 expectedTexture = editor.GetDocument().GetTileSet().Tiles.size() > static_cast<size_t>(visible) ? PlacementPalette::Columns : 0;
+	Require(editor.GetDocument().GetLevel().GetObjects()[4].Kind() == static_cast<i32>(ObjectKind::Scenery) && editor.GetDocument().GetLevel().GetObjects()[4].TextureOrPermanent() == expectedTexture, "Scrolled scenery thumbnail selected the wrong texture ID.");
+	editor.GetDocument().SetTimeLimit(444);
+	const bytestream beforeGesture = editor.GetDocument().GetBytes();
+	input = {};
+	input.Click = input.MouseHeld = true;
+	input.Mouse = { bounds.left + 10, bounds.top + 100 };
+	send(input);
+	input.Mouse = { 350, 10 };
+	send(input);
+	Require(editor.GetDocument().GetBytes() == beforeGesture, "Palette gesture clicked through to Undo.");
+	input.Click = input.MouseHeld = false;
+	send(input);
+	chooseGroup(2);
+	search("Penguin");
+	if (editor.GetDocument().Supports(ObjectKind::Penguin))
+	{
+		click(620, 220);
+		Require(editor.GetDocument().GetLevel().GetObjects()[5].Kind() == static_cast<i32>(ObjectKind::Penguin), "Shared XXX animal thumbnail was missing from a supported runtime.");
+	}
+	else
+	{
+		Require(editor.GetDocument().GetLevel().GetObjects()[5].Kind() == static_cast<i32>(ObjectKind::Inactive), "Archival Zwo palette exposed an unavailable actor.");
+	}
+	chooseGroup(2);
+	search("Sheep");
+	key('h');
+	Require(!editor.IsPaletteVisible(), "Hidden HUD still displays the placement sidebar.");
+	click(100, 140);
+	Require(editor.GetDocument().GetLevel().GetCells()[LevelDocument::TileAt(100, 140)].Terrain == OccupancyCode::Sheep, "Hidden sidebar still intercepted placement into its former area.");
+	key('h');
+	Require(editor.IsPaletteVisible(), "Showing HUD did not restore the sidebar.");
+	key('o');
+	Require(!editor.IsPaletteVisible() && editor.IsObjectListVisible(), "Instance browser and placement sidebar were not kept distinct.");
+	key('b');
+	Require(editor.IsPaletteVisible() && !editor.IsObjectListVisible(), "B did not restore visual placement mode.");
+	chooseGroup(static_cast<i32>(PlacementPalette::Group::Tiles));
+	const i32 tile = LevelDocument::TileAt(740, 300);
+	const RECT tilePalette = editor.GetPaletteBounds();
+	Require(tilePalette.top == 26, "Removed placement bar still reserves canvas height.");
+	const std::vector<SpriteDraw> tileDraws = editor.Draws();
+	Require(std::none_of(tileDraws.begin(), tileDraws.end(), [](const SpriteDraw& draw) { return draw.Sprite->FrameWidth == 800 && draw.Sprite->FrameHeight == 26 && draw.Y == 26; }), "Old second toolbar is still drawn.");
+	if (capture)
+		engine.DrawFrame(tileDraws, ("editor-tile-sidebar-" + suffix + ".bmp").c_str());
+	for (size_t brush = 0; brush < PlacementPalette::GetTileBrushes().size(); ++brush)
+	{
+		const bytestream beforeChoice = editor.GetDocument().GetBytes();
+		click(tilePalette.left + static_cast<i32>(brush % PlacementPalette::Columns) * PlacementPalette::CellWidth + 10, tilePalette.top + PlacementPalette::HeaderHeight + PlacementPalette::TabHeight + PlacementPalette::SearchHeight + static_cast<i32>(brush / PlacementPalette::Columns) * PlacementPalette::CellHeight + 10);
+		Require(editor.GetDocument().GetBytes() == beforeChoice, "Selecting a tile brush edited the level.");
+		const PlacementPalette::TileBrush& definition = PlacementPalette::GetTileBrushes()[brush];
+		const LevelCell previous = editor.GetDocument().GetLevel().GetCells()[tile];
+		click(740, 300);
+		const LevelCell painted = editor.GetDocument().GetLevel().GetCells()[tile];
+		Require(definition.SpawnerOnly ? painted.Spawner == definition.Spawner && painted.Terrain == previous.Terrain : painted.Terrain == definition.Terrain && painted.Spawner == previous.Spawner, "Tile sidebar selected the wrong brush or modified another layer.");
+		input = {};
+		input.RightClick = true;
+		input.Mouse = { 740, 300 };
+		send(input);
+		const LevelCell erased = editor.GetDocument().GetLevel().GetCells()[tile];
+		Require(definition.SpawnerOnly ? erased.Spawner == SpawnerCode::None : erased.Terrain == OccupancyCode::Empty, "Sidebar tile right-click did not erase its own layer.");
+	}
+	chooseGroup(static_cast<i32>(PlacementPalette::Group::Properties));
+	const std::vector<SpriteDraw> withProperties = editor.Draws();
+	Require(std::any_of(withProperties.begin(), withProperties.end(), [](const SpriteDraw& draw) { return draw.Sprite->FrameWidth == 320; }), "Palette properties button failed.");
+	key('i');
+	key('b');
+	key('v');
+	click(740, 39);
+	Require(editor.GetSelectedCell() == LevelDocument::TileAt(740, 39), "Former placement-row canvas is still blocked.");
+	click(240, 10); // Main Tiles opens the sidebar's Tiles tab.
+	Require(editor.IsPaletteVisible(), "Top-level Tiles button did not reopen the sidebar.");
+	Log("PASS: sidebar-only tile/spawner brushes, terrain-layer preservation, erasing and reclaimed toolbar canvas.");
+	const bytestream beforeHeader = editor.GetDocument().GetBytes();
+	click(tilePalette.left + PlacementPalette::GridX + 2, tilePalette.top + 5);
+	const std::vector<SpriteDraw> noGrid = editor.Draws();
+	Require(std::none_of(noGrid.begin(), noGrid.end(), [](const SpriteDraw& draw) { return draw.Sprite->FrameWidth == 40 && draw.Sprite->FrameHeight == 40 && draw.Sprite->Pixels.front() == 0xFF809070; }), "Palette Grid button did not hide the grid.");
+	click(tilePalette.left + PlacementPalette::GridX + 2, tilePalette.top + 5);
+	Require(editor.GetDocument().GetBytes() == beforeHeader, "Palette header toggles modified authored data.");
+	PlacementPalette specials;
+	for (const CharacterDefinition& character : GetCharacterDefinitions())
+	{
+		if (!editor.GetDocument().Supports(character.Kind) || (character.Category != CharacterCategory::Mermaid && character.Category != CharacterCategory::Emitter))
+			continue;
+		specials.Show(PlacementPalette::Group::Actors);
+		input = {};
+		input.Click = true;
+		input.Mouse = { tilePalette.left + 8, tilePalette.top + PlacementPalette::HeaderHeight + PlacementPalette::TabHeight + 4 };
+		specials.Handle(input, editor.GetDocument(), tilePalette);
+		input = {};
+		input.Text = character.Name;
+		specials.Handle(input, editor.GetDocument(), tilePalette);
+		input = {};
+		input.Enter = true;
+		const PlacementPalette::Result result = specials.Handle(input, editor.GetDocument(), tilePalette);
+		Require(result.Selected && result.Selected->Kind == character.Kind, "Special authored object is missing from the Actors tab.");
+	}
+	const bytestream beforeMove = editor.GetDocument().GetBytes();
+	MoveSidebar(editor, 480, 50);
+	chooseGroup(static_cast<i32>(PlacementPalette::Group::Properties));
+	const RECT movedSidebar = editor.GetPaletteBounds(), embedded = editor.GetInspectorBounds();
+	Require(movedSidebar.left == 480 && movedSidebar.top == 50 && embedded.left == movedSidebar.left && embedded.right == movedSidebar.right && embedded.top == movedSidebar.top + PlacementPalette::HeaderHeight + PlacementPalette::TabHeight && embedded.bottom == movedSidebar.bottom, "Properties tab did not share the moved sidebar's bounds.");
+	if (capture)
+		engine.DrawFrame(editor.Draws(), ("editor-movable-properties-" + suffix + ".bmp").c_str());
+	key('t');
+	click(100, 140);
+	Require(editor.GetSelectedCell() == LevelDocument::TileAt(100, 140), "Moved sidebar retained its former canvas hit region.");
+	MoveSidebar(editor, -1000, -1000);
+	Require(editor.GetPaletteBounds().left == 0 && editor.GetPaletteBounds().top == 26, "Sidebar escaped the top/left screen boundary.");
+	MoveSidebar(editor, 1000, 1000);
+	Require(editor.GetPaletteBounds().right == 800 && editor.GetPaletteBounds().bottom == 574, "Sidebar escaped the bottom/right screen boundary.");
+	chooseGroup(static_cast<i32>(PlacementPalette::Group::Actors));
+	Require(editor.GetPaletteBounds().left == 480 && editor.GetDocument().GetBytes() == beforeMove, "Tab switching lost sidebar position or dragging changed authored data.");
+	Log("PASS: embedded Properties tab, shared draggable sidebar, viewport clamps and released canvas hit regions.");
+	const str editingMusic = editor.GetMusic();
+	if (engine.GetData().HasEdition(GameEdition::XXX))
+		Require(editingMusic == "XXX/SvenXXX/sfx/editor.wav", "Editor did not select the user-supplied WAV in a combined install.");
+	else
+		Require(editingMusic == editor.GetDocument().GetInfo().Music, "Zwo-only editor lost its fallback music.");
+	input = {};
+	input.Playtest = true;
+	send(input);
+	Require(editor.IsPlaytesting() && editor.GetMusic() == editor.GetDocument().GetInfo().Music, "Playtest did not select the level's music.");
+	send(input);
+	Require(!editor.IsPlaytesting() && editor.GetMusic() == editingMusic, "Returning from playtest did not restore editor music.");
+	if (capture && pack.Edition == GameEdition::XXX)
+	{
+		for (i32 repeat = 0; repeat < 6; ++repeat)
+		{
+			Require(engine.PlayMusic(editingMusic), "Native backend could not play editor.wav.");
+			engine.Tick();
+			Require(engine.PlayMusic(level.Music), "Level music failed after WAV playback.");
+		}
+		engine.StopMusic();
+		Log("PASS: native editor WAV playback and six level/editor music transitions.");
+	}
+	Log("PASS: visual palette thumbnails/keyed resampling, filtering/scrolling, actor/item/scenery placement, capture/hide behavior, shared/fallback availability and editor/playtest music selection.");
 }
 
 } // namespace
@@ -497,6 +905,11 @@ void CheckIntegratedEditor(MudGE& engine, const LevelPackInfo& pack, LevelInfo l
 	const size_t foldersBefore = PreviewFolders(editionRoot);
 	{
 		LevelEditor editor(engine, pack, level, 1);
+		{
+			WindowInput::Result hidePalette;
+			hidePalette.BindingKey = 'b';
+			editor.Handle(hidePalette, 0);
+		}
 		WindowInput::Result place;
 		place.BindingKey = 'p';
 		editor.Handle(place, 0);
@@ -612,5 +1025,7 @@ void CheckIntegratedEditor(MudGE& engine, const LevelPackInfo& pack, LevelInfo l
 		guarded.SetEditorCloseGuard(false);
 	}
 	CheckProjectWorkflow(engine, pack, level, capture);
+	CheckEditorUsability(engine, pack, level, capture);
+	CheckPaletteAndMusic(engine, pack, level, capture);
 	Log("PASS: integrated editor " + suffix + " exact data preservation, placement/move/delete/rotate, collision, undo/redo, protected export, catalog reload, playtest isolation/cleanup and close guards.");
 }

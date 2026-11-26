@@ -34,7 +34,7 @@ public:
 	void DebugRestartLevel();
 	void DebugChangeLives(i32 amount);
 	bool DebugSpawn(ObjectKind kind);
-	const std::vector<SpriteDraw>& Draws(bool showHelp = true);
+	const std::vector<SpriteDraw>& Draws(bool showHelp = true, bool showHud = true);
 	std::vector<str> TakeSounds();
 	std::vector<SoundRequest> TakeAudioEvents();
 	bool GetResults() const

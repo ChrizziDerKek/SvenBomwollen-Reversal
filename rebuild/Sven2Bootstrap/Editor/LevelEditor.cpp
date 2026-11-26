@@ -1,4 +1,5 @@
 #include "LevelEditor.h"
+#include "EditorGraphics.h"
 #include "Scene/SceneConstants.h"
 #include <algorithm>
 #include <cmath>
@@ -10,53 +11,16 @@
 
 namespace
 {
-Sprite Rectangle(i32 width, i32 height, u32 color, bool outline)
-{
-	Sprite sprite{ std::vector<u32>(width * height, 0xFFFF00FF), width, width, height, 1, 1, true };
-	for (i32 y = 0; y < height; ++y)
-	{
-		for (i32 x = 0; x < width; ++x)
-		{
-			if (!outline || x == 0 || y == 0 || x == width - 1 || y == height - 1)
-				sprite.Pixels[y * width + x] = color;
-		}
-	}
-	return sprite;
-}
-str FitText(const BitmapFont& font, str text, i32 width)
-{
-	if (font.Width(text) <= width)
-		return text;
-	while (!text.empty() && font.Width(text + "...") > width)
-	{
-		size_t end = text.size() - 1;
-		while (end > 0 && (static_cast<u8>(text[end]) & 0xC0) == 0x80)
-			--end;
-		text.resize(end);
-	}
-	return text + "...";
-}
+// Matches GameUi and the supplied arrow sprite.
+constexpr POINT CursorHotspot{ 9, 9 };
+using EditorGraphics::FitText;
+using EditorGraphics::Rectangle;
 i32 Snap(i32 value)
 {
 	return static_cast<i32>(std::round(static_cast<f32>(value) / TileSize)) * TileSize;
 }
-struct TileBrush
-{
-	cstr Name;
-	OccupancyCode Terrain;
-	SpawnerCode Spawner;
-	bool SpawnerOnly;
-};
-const std::vector<TileBrush> TileBrushes = {
-	{ "Clear terrain", OccupancyCode::Empty, SpawnerCode::None, false },
-	{ "Collision", OccupancyCode::Wall, SpawnerCode::None, false },
-	{ "Puddle destination", OccupancyCode::Puddle, SpawnerCode::None, false },
-	{ "Pond / water entry", OccupancyCode::Water, SpawnerCode::None, false },
-	{ "Random distraction spawner", OccupancyCode::Empty, SpawnerCode::Distraction, true },
-	{ "Random powerup spawner", OccupancyCode::Empty, SpawnerCode::Powerup, true },
-	{ "Random mixed spawner", OccupancyCode::Empty, SpawnerCode::Mixed, true },
-	{ "Remove spawner", OccupancyCode::Empty, SpawnerCode::None, true }
-};
+using TileBrush = PlacementPalette::TileBrush;
+const std::vector<TileBrush>& TileBrushes = PlacementPalette::GetTileBrushes();
 str Number(f32 value)
 {
 	std::ostringstream text;
@@ -82,8 +46,21 @@ i32 ParseInteger(const str& text)
 } // namespace
 
 LevelEditor::LevelEditor(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& level, size_t players, bool startBlank)
-    : Engine(engine), Project(engine, pack, level), Font(engine, true, false, engine.GetData().GetThemeEdition()), Bar(Rectangle(800, 26, 0xFFEDE4CE, false)), Selection(Rectangle(40, 40, 0xFF00DD00, true)), Wall(Rectangle(40, 40, 0xFFFF3030, true)), GridCell(Rectangle(40, 40, 0xFF809070, true)), ActiveTool(Rectangle(100, 26, 0xFFB8D498, false)), WaterCell(Rectangle(40, 40, 0xFF2266FF, true)), PuddleCell(Rectangle(40, 40, 0xFF00DDDD, true)), SpawnerCell(Rectangle(40, 40, 0xFFFFB000, true)), Panel(Rectangle(PanelWidth, 1, 0xFFEDE4CE, false)), FieldBar(Rectangle(PanelWidth - 8, FieldHeight - 2, 0xFFD8CCA8, false)), PanelHeader(Rectangle(PanelWidth, HeaderHeight, 0xFFB8D498, false)), PanelTab(Rectangle(PanelWidth / 4, TabsHeight, 0xFFB8D498, false)), Cursor(engine.LoadSprite(engine.GetData().ThemeAsset("Sven2/gfx/mousecursor.bmp"), 5, 1)), Players(players)
+    : Engine(engine), Project(engine, pack, level), Font(engine, true, false, engine.GetData().GetThemeEdition()), Bar(Rectangle(800, 26, 0xFFEDE4CE, false)), Selection(Rectangle(40, 40, 0xFF00DD00, true)), Wall(Rectangle(40, 40, 0xFFFF3030, true)), GridCell(Rectangle(40, 40, 0xFF809070, true)), ActiveTool(Rectangle(100, 26, 0xFFB8D498, false)), WaterCell(Rectangle(40, 40, 0xFF2266FF, true)), PuddleCell(Rectangle(40, 40, 0xFF00DDDD, true)), SpawnerCell(Rectangle(40, 40, 0xFFFFB000, true)), Panel(Rectangle(PanelWidth, 1, 0xFFEDE4CE, false)), FieldBar(Rectangle(PanelWidth - 8, FieldHeight - 2, 0xFFD8CCA8, false)), PanelTab(Rectangle(PanelWidth / 4, TabsHeight, 0xFFB8D498, false)), ListPanel(Rectangle(ListWidth, HeaderHeight + (ListRows + 2) * ListRowHeight, 0xFFEDE4CE, false)), ListHeader(Rectangle(ListWidth, HeaderHeight, 0xFFB8D498, false)), ListRow(Rectangle(ListWidth - 8, ListRowHeight, 0xFFD8CCA8, false)), AnchorMark(Rectangle(7, 7, 0xFFFFFF00, true)), Cursor(engine.LoadSprite(engine.GetData().ThemeAsset("Sven2/gfx/mousecursor.bmp"), 5, 1)), Players(players)
 {
+	if (engine.GetData().HasEdition(GameEdition::XXX))
+	{
+		const str music = engine.GetData().EditionAsset(GameEdition::XXX, "SvenXXX/sfx/editor.wav");
+		try
+		{
+			engine.GetData().AssetPath(music);
+			EditorMusic = music;
+		}
+		catch (const std::exception& error)
+		{
+			Log(str("Editor music unavailable; using level music: ") + error.what());
+		}
+	}
 	if (startBlank)
 		Project.New();
 	BuildChoices();
@@ -226,8 +203,46 @@ bool LevelEditor::Handle(const WindowInput::Result& input, f32 seconds, const st
 	Mouse = input.Mouse;
 	try
 	{
-		if (!Preview && HandleInspector(input))
-			return false;
+		if (!Preview && Hud)
+		{
+			if (UiPointerHeld && !MovingPalette && !MovingList)
+			{
+				UiPointerHeld = input.MouseHeld;
+				if (input.MouseHeld)
+					return false;
+			}
+			if (input.Click)
+				Palette.Blur();
+			if (PaletteVisible && Palette.HasSearchFocus() && !input.Click)
+			{
+				if (HandlePalette(input))
+					return false;
+			}
+			if (MovingPalette)
+			{
+				HandlePalette(input);
+				return false;
+			}
+			const RECT sidebar = PaletteBounds();
+			if (PaletteVisible && input.Click && Mouse.x >= sidebar.left && Mouse.x < sidebar.right && Mouse.y >= sidebar.top && Mouse.y < sidebar.top + PlacementPalette::HeaderHeight)
+			{
+				HandlePalette(input);
+				return false;
+			}
+			if (Inspector && PaletteVisible && Picker != PickerKind::None)
+			{
+				if (HandleInspector(input))
+					return false;
+			}
+			else if (HandleObjectList(input) || HandleInspector(input) || HandlePalette(input))
+				return false;
+		}
+		if (input.BindingKey == 'h' && !input.Control)
+		{
+			Hud = !Hud;
+			Dragging = MovingPalette = MovingList = UiPointerHeld = false;
+			ListSearchFocused = false;
+		}
 		if (input.Back || input.Editor)
 		{
 			if (Preview)
@@ -238,13 +253,13 @@ bool LevelEditor::Handle(const WindowInput::Result& input, f32 seconds, const st
 			if (Project.IsDirty() && !DiscardArmed)
 			{
 				DiscardArmed = true;
-				Toolbar = true;
+				Hud = Toolbar = true;
 				Notice = "Unsaved edits: Escape again discards; Ctrl+S saves a separate pack.";
 				return false;
 			}
 			return true;
 		}
-		if ((input.Click && LevelDocument::TileAt(Mouse.x, Mouse.y) >= 0 && !(Toolbar && Mouse.y < 26 && Mouse.x >= 700)) || input.SaveEditor || input.Undo || input.Redo || input.Playtest || (input.BindingKey >= 32 && input.BindingKey < 256))
+		if ((input.Click && LevelDocument::TileAt(Mouse.x, Mouse.y) >= 0 && !(ToolbarVisible() && Mouse.y < 26 && Mouse.x >= 700)) || input.SaveEditor || input.Undo || input.Redo || input.Playtest || (input.BindingKey >= 32 && input.BindingKey < 256))
 			DiscardArmed = false;
 		if (input.Playtest)
 		{
@@ -256,11 +271,35 @@ bool LevelEditor::Handle(const WindowInput::Result& input, f32 seconds, const st
 			Preview->Update(seconds, players);
 			return false;
 		}
+		if (input.BindingKey == 'b' && !input.Control)
+		{
+			PaletteVisible = !Hud || !PaletteVisible;
+			Hud = true;
+			if (PaletteVisible)
+				ObjectBrowser = false;
+			Palette.Blur();
+			Dragging = false;
+		}
+		if (input.BindingKey == 'o' && !input.Control)
+		{
+			ObjectBrowser = !Hud || !ObjectBrowser;
+			if (ObjectBrowser)
+				PaletteVisible = false;
+			Hud = true;
+			Dragging = false;
+			ListSearchFocused = false;
+		}
+		if (input.BindingKey == 'a' && !input.Control)
+		{
+			CenterScenery = !CenterScenery;
+			Notice = CenterScenery ? "Scenery anchor: visible center. A switches to canvas origin." : "Scenery anchor: canvas origin. A switches to visible center.";
+		}
 		if (input.Tab)
 			Toolbar = !Toolbar;
 		if (input.BindingKey == 'i' && !input.Control)
 		{
-			Inspector = !Inspector;
+			ShowInspector(!Hud || !PaletteVisible || !Inspector);
+			Hud = true;
 			Dragging = false;
 		}
 		if (input.BindingKey == 'n' && !input.Control)
@@ -320,66 +359,54 @@ bool LevelEditor::Handle(const WindowInput::Result& input, f32 seconds, const st
 		}
 		else if (input.Left || input.Right || input.Wheel != 0)
 			ChangeChoice(input.Right ? 1 : (input.Left ? -1 : -input.Wheel));
-		if (Toolbar && input.Click && Mouse.y >= 0 && Mouse.y < 52 && Mouse.x >= 0 && Mouse.x < 800)
+		if (ToolbarVisible() && input.Click && Mouse.y >= 0 && Mouse.y < 26 && Mouse.x >= 0 && Mouse.x < 800)
 		{
-			if (Mouse.y < 26)
+			UiPointerHeld = input.MouseHeld;
+			Dragging = false;
+			switch (Mouse.x / 100)
 			{
-				switch (Mouse.x / 100)
-				{
-				case 0:
-					CurrentTool = Tool::Select;
-					SelectCells = false;
-					break;
-				case 1:
-					CurrentTool = Tool::Place;
-					break;
-				case 2:
-					CurrentTool = Tool::Collision;
-					Selected = -1;
-					break;
-				case 3:
-					GetDocument().Undo();
-					Selected = -1;
-					BuildChoices();
-					break;
-				case 4:
-					GetDocument().Redo();
-					Selected = -1;
-					BuildChoices();
-					break;
-				case 5:
-					Save();
-					break;
-				case 6:
-					Playtest();
-					break;
-				case 7:
-				{
-					WindowInput::Result close;
-					close.Back = true;
-					return Handle(close, 0);
-				}
-				}
-			}
-			else if (CurrentTool == Tool::Collision && Mouse.x < 670)
-				ChangeChoice(Mouse.x < 310 ? -1 : 1);
-			else if (Mouse.x < 260)
-			{
-				const i32 count = static_cast<i32>(Category::Count);
-				CurrentCategory = static_cast<Category>((static_cast<i32>(CurrentCategory) + (Mouse.x < 80 ? count - 1 : 1)) % count);
+			case 0:
+				CurrentTool = Tool::Select;
+				SelectCells = false;
+				break;
+			case 1:
+				PaletteVisible = true;
+				ObjectBrowser = false;
+				Inspector = false;
+				Palette.Show(PlacementPalette::Group::All);
+				CurrentTool = Tool::Place;
+				break;
+			case 2:
+				PaletteVisible = true;
+				ObjectBrowser = false;
+				Inspector = false;
+				Palette.Show(PlacementPalette::Group::Tiles);
+				CurrentTool = Tool::Collision;
+				Selected = -1;
+				break;
+			case 3:
+				GetDocument().Undo();
+				Selected = -1;
 				BuildChoices();
-			}
-			else if (Mouse.x < 670)
+				break;
+			case 4:
+				GetDocument().Redo();
+				Selected = -1;
+				BuildChoices();
+				break;
+			case 5:
+				Save();
+				break;
+			case 6:
+				Playtest();
+				break;
+			case 7:
 			{
-				ChangeChoice(Mouse.x < 310 ? -1 : 1);
+				WindowInput::Result close;
+				close.Back = true;
+				return Handle(close, 0);
 			}
-			else if (Mouse.x < 740)
-			{
-				Inspector = !Inspector;
-				Dragging = false;
 			}
-			else
-				ShowGrid = !ShowGrid;
 			return false;
 		}
 		if ((input.Click || (input.RightClick && CurrentTool == Tool::Collision)) && CanvasAt(Mouse))
@@ -404,7 +431,18 @@ bool LevelEditor::Handle(const WindowInput::Result& input, f32 seconds, const st
 					GetDocument().PaintTerrain(SelectedCell, input.RightClick ? OccupancyCode::Empty : brush.Terrain);
 			}
 			else if (CurrentTool == Tool::Place && !Choices.empty())
-				Selected = GetDocument().Place(Choices[ChoiceIndex].Kind, SelectedCell, Choices[ChoiceIndex].Texture, !SnapScenery && Choices[ChoiceIndex].Kind == ObjectKind::Scenery ? &Mouse : nullptr);
+			{
+				const Placement placement = PlacementAt(Mouse);
+				const POINT origin{ placement.Draw.X, placement.Draw.Y };
+				const Choice& choice = Choices[ChoiceIndex];
+				Selected = GetDocument().Place(choice.Kind, placement.Tile, choice.Texture, choice.Kind == ObjectKind::Scenery ? &origin : nullptr);
+				if (choice.Kind == ObjectKind::Scenery)
+				{
+					CurrentTool = Tool::Select;
+					SelectCells = false;
+					Notice = "Scenery placed. P places another; A changes the anchor.";
+				}
+			}
 			else
 			{
 				Selected = Pick(Mouse, input.Control);
@@ -431,9 +469,12 @@ const std::vector<SpriteDraw>& LevelEditor::Draws()
 {
 	if (Preview)
 	{
-		Commands = Preview->Draws();
-		Commands.push_back({ &Bar, 0, 74, 0 });
-		Font.Append(Commands, Preview->GetResults() ? "Playtest finished. F5 returns to editing." : "PLAYTEST - F5 returns to editing; progress is temporary.", 8, 78);
+		Commands = Preview->Draws(Hud, Hud);
+		if (Hud)
+		{
+			Commands.push_back({ &Bar, 0, 74, 0 });
+			Font.Append(Commands, Preview->GetResults() ? "Playtest finished. F5 returns to editing." : "PLAYTEST - F5 returns; H hides HUD; progress is temporary.", 8, 78);
+		}
 	}
 	else
 	{
@@ -459,13 +500,9 @@ const std::vector<SpriteDraw>& LevelEditor::Draws()
 			{
 				try
 				{
-					SpriteDraw ghost = GetDocument().PlacementPreview(Choices[ChoiceIndex].Kind, tile, Choices[ChoiceIndex].Texture);
-					if (!SnapScenery && Choices[ChoiceIndex].Kind == ObjectKind::Scenery)
-					{
-						ghost.X = Mouse.x;
-						ghost.Y = Mouse.y;
-					}
-					Commands.push_back(ghost);
+					const Placement placement = PlacementAt(Mouse);
+					Commands.push_back(placement.Draw);
+					Commands.push_back({ &AnchorMark, placement.Anchor.x - 3, placement.Anchor.y - 3, 0 });
 				}
 				catch (const std::exception& error)
 				{
@@ -508,31 +545,35 @@ const std::vector<SpriteDraw>& LevelEditor::Draws()
 				Commands.push_back({ &ObjectOutline, static_cast<i32>(record.X()) + dx, static_cast<i32>(record.Y()) + dy, 0 });
 			}
 		}
-		if (Toolbar)
+		if (ToolbarVisible())
 		{
 			Commands.push_back({ &Bar, 0, 0, 0 });
-			Commands.push_back({ &Bar, 0, 26, 0 });
 			Commands.push_back({ &ActiveTool, static_cast<i32>(CurrentTool) * 100, 0, 0 });
 			constexpr cstr tools[] = { "Select", "Place", "Tiles", "Undo", "Redo", "Save copy", "Playtest", "Close" };
 			for (i32 index = 0; index < 8; ++index)
 				Font.Append(Commands, tools[index], index * 100 + 6, 5);
-			constexpr cstr categories[] = { "Animals", "Enemies", "Items", "Scenery", "Players", "Special" };
-			Font.Append(Commands, CurrentTool == Tool::Collision ? "< Tile brush >" : str("< Type: ") + categories[static_cast<i32>(CurrentCategory)] + " >", 6, 31);
-			const str choice = CurrentTool == Tool::Collision ? TileBrushes[TileChoice].Name : (Choices.empty() ? str("No entries") : Choices[ChoiceIndex].Name);
-			Font.Append(Commands, "< " + FitText(Font, choice, 350) + " >", 270, 31);
-			Font.Append(Commands, "Props    Grid", 674, 31);
 		}
-		if (Toolbar)
+		if (ToolbarVisible())
 		{
 			Commands.push_back({ &Bar, 0, 574, 0 });
 			const str status = (Project.IsDirty() ? "* " : "") + Notice;
 			Font.Append(Commands, FitText(Font, status, 788), 6, 579);
 		}
-		if (Inspector)
+		if (Hud && PaletteVisible)
+		{
+			if (!Choices.empty())
+				Palette.Select(CurrentTool == Tool::Collision ? ObjectKind::Inactive : Choices[ChoiceIndex].Kind, CurrentTool == Tool::Collision ? TileChoice : Choices[ChoiceIndex].Texture);
+			Palette.Append(Commands, GetDocument(), PaletteBounds(), Font);
+		}
+		if (Hud && PaletteVisible && Inspector && Picker == PickerKind::None)
+			DrawInspector();
+		if (Hud && ObjectBrowser)
+			DrawObjectList();
+		if (Hud && PaletteVisible && Inspector && Picker != PickerKind::None)
 			DrawInspector();
 	}
 	if (Mouse.x >= 0 && Mouse.x < 800 && Mouse.y >= 0 && Mouse.y < 600)
-		Commands.push_back({ Cursor, Mouse.x, Mouse.y, 0 });
+		Commands.push_back({ Cursor, Mouse.x - CursorHotspot.x, Mouse.y - CursorHotspot.y, 0 });
 	return Commands;
 }
 
@@ -547,7 +588,7 @@ bool LevelEditor::RequestWindowClose()
 	{
 		Preview.reset();
 		DiscardArmed = true;
-		Toolbar = true;
+		Hud = Toolbar = true;
 		Notice = "Unsaved edits: close again to quit/discard, or Ctrl+S to save.";
 		return false;
 	}
@@ -556,7 +597,7 @@ bool LevelEditor::RequestWindowClose()
 
 bool LevelEditor::CanvasAt(POINT point) const
 {
-	return LevelDocument::TileAt(point.x, point.y) >= 0 && (!Toolbar || (point.y >= 52 && point.y < 574)) && !(Inspector && point.x >= InspectorBounds().left && point.x < InspectorBounds().right && point.y >= InspectorBounds().top && point.y < InspectorBounds().bottom);
+	return LevelDocument::TileAt(point.x, point.y) >= 0 && (!ToolbarVisible() || (point.y >= 26 && point.y < 574)) && !(Hud && PaletteVisible && Inspector && point.x >= InspectorBounds().left && point.x < InspectorBounds().right && point.y >= InspectorBounds().top && point.y < InspectorBounds().bottom) && !(Hud && ObjectBrowser && point.x >= ObjectListBounds().left && point.x < ObjectListBounds().right && point.y >= ObjectListBounds().top && point.y < ObjectListBounds().bottom) && !(Hud && PaletteVisible && point.x >= PaletteBounds().left && point.x < PaletteBounds().right && point.y >= PaletteBounds().top && point.y < PaletteBounds().bottom);
 }
 
 void LevelEditor::ChangeChoice(i32 step)
@@ -747,8 +788,15 @@ void LevelEditor::ApplyField(Property property, const str& text, i32 step)
 		PickerFirst = PickerSelected = 0;
 		break;
 	case Property::FindObject:
+		ObjectBrowser = true;
+		PaletteVisible = false;
+		ListCollapsed = false;
+		ListSearch.clear();
+		ListFirst = 0;
+		ListSearchFocused = true;
+		break;
 	case Property::ChooseLevel:
-		Picker = property == Property::FindObject ? PickerKind::Object : PickerKind::Level;
+		Picker = PickerKind::Level;
 		Search.clear();
 		PickerFirst = PickerSelected = 0;
 		break;
@@ -858,24 +906,23 @@ void LevelEditor::ApplyField(Property property, const str& text, i32 step)
 	}
 }
 
+void LevelEditor::ShowInspector(bool show)
+{
+	Palette.Show(show ? PlacementPalette::Group::Properties : PlacementPalette::Group::All);
+	Inspector = show;
+	PaletteVisible = Hud = true;
+	ObjectBrowser = false;
+	Dragging = false;
+}
+
 RECT LevelEditor::InspectorBounds() const
 {
-	const i32 height = PanelCollapsed ? HeaderHeight : (Picker != PickerKind::None ? HeaderHeight + (PickerRows + 1) * FieldHeight + 40 : HeaderHeight + TabsHeight + static_cast<i32>(Fields().size()) * FieldHeight + 48);
-	const i32 x = std::clamp(static_cast<i32>(PanelPosition.x), 0, 800 - PanelWidth);
-	const i32 y = std::clamp(static_cast<i32>(PanelPosition.y), Toolbar ? 52 : 0, (Toolbar ? 574 : 600) - height);
-	return { x, y, x + PanelWidth, y + height };
+	const RECT bounds = PaletteBounds();
+	return { bounds.left, bounds.top + PlacementPalette::HeaderHeight + PlacementPalette::TabHeight, bounds.right, bounds.bottom };
 }
 
 bool LevelEditor::HandleInspector(const WindowInput::Result& input)
 {
-	if (MovingPanel)
-	{
-		PanelPosition = { Mouse.x - PanelDrag.x, Mouse.y - PanelDrag.y };
-		const RECT clamped = InspectorBounds();
-		PanelPosition = { clamped.left, clamped.top };
-		MovingPanel = input.MouseHeld;
-		return true;
-	}
 
 	if (EditingField && input.Click)
 	{
@@ -924,7 +971,7 @@ bool LevelEditor::HandleInspector(const WindowInput::Result& input)
 		}
 		return true;
 	}
-	if (!Inspector)
+	if (!PaletteVisible || !Inspector)
 		return false;
 	if (Picker != PickerKind::None && (input.Back || input.Editor))
 	{
@@ -933,32 +980,23 @@ bool LevelEditor::HandleInspector(const WindowInput::Result& input)
 	}
 	if (input.BindingKey == 'i' && !input.Control && Picker == PickerKind::None)
 	{
-		Inspector = false;
+		ShowInspector(false);
 		return true;
 	}
 	const RECT bounds = InspectorBounds();
 	const bool inside = Mouse.x >= bounds.left && Mouse.x < bounds.right && Mouse.y >= bounds.top && Mouse.y < bounds.bottom;
-	if (inside && input.Click && Mouse.y < bounds.top + HeaderHeight)
-	{
-		if (Mouse.x >= bounds.right - HeaderHeight)
-			PanelCollapsed = !PanelCollapsed;
-		else
-		{
-			PanelDrag = { Mouse.x - bounds.left, Mouse.y - bounds.top };
-			MovingPanel = input.MouseHeld;
-			Dragging = false;
-		}
-		return true;
-	}
+	if (inside && input.Click)
+		UiPointerHeld = input.MouseHeld;
+
 	if (Picker != PickerKind::None)
 		return HandlePicker(input);
 	if (!inside)
 		return false;
-	if (!PanelCollapsed && (input.Click || input.RightClick))
+	if (input.Click || input.RightClick)
 	{
 		DiscardArmed = false;
 		Dragging = false;
-		const i32 content = bounds.top + HeaderHeight;
+		const i32 content = bounds.top;
 		if (Mouse.y < content + TabsHeight)
 		{
 			InspectorTab = static_cast<InspectorPage>((Mouse.x - bounds.left) / (PanelWidth / 4));
@@ -999,18 +1037,13 @@ void LevelEditor::DrawInspector()
 	if (Panel.FrameHeight != height)
 		Panel = Rectangle(PanelWidth, height, 0xFFEDE4CE, false);
 	Commands.push_back({ &Panel, bounds.left, bounds.top, 0 });
-	Commands.push_back({ &PanelHeader, bounds.left, bounds.top, 0 });
-	Font.Append(Commands, "Properties - drag to move", bounds.left + 6, bounds.top + 4);
-	Font.Append(Commands, PanelCollapsed ? "+" : "-", bounds.right - 18, bounds.top + 4);
-	if (PanelCollapsed)
-		return;
 	if (Picker != PickerKind::None)
 	{
 		DrawPicker();
 		return;
 	}
 	constexpr cstr tabs[] = { "Level", "Object", "Cell", "Project" };
-	const i32 content = bounds.top + HeaderHeight;
+	const i32 content = bounds.top;
 	Commands.push_back({ &PanelTab, bounds.left + static_cast<i32>(InspectorTab) * (PanelWidth / 4), content, 0 });
 	for (i32 tab = 0; tab < 4; ++tab)
 		Font.Append(Commands, tabs[tab], bounds.left + 6 + tab * (PanelWidth / 4), content + 4);
@@ -1038,13 +1071,17 @@ void LevelEditor::DrawInspector()
 	}
 	if (fields.empty())
 		Font.Append(Commands, "Click a cell, even underneath scenery.", bounds.left + 8, content + TabsHeight + 4);
-	Font.Append(Commands, EditingField ? "Enter applies; Esc cancels; Ctrl+A selects." : "Click edits; I closes; header +/- folds.", bounds.left + 8, bounds.bottom - 40);
+	Font.Append(Commands, EditingField ? "Enter applies; Esc cancels; Ctrl+A selects." : "Click edits; I returns to placement.", bounds.left + 8, bounds.bottom - 40);
 	Font.Append(Commands, SelectCells ? "Cell selection: V returns to objects." : "Shift+click: cell; Ctrl+click: overlap.", bounds.left + 8, bounds.bottom - 20);
 }
 
 void LevelEditor::ResetSelection()
 {
 	Selected = SelectedCell = -1;
+	Palette.Reset();
+	ListSearch.clear();
+	ListFirst = 0;
+	ListSearchFocused = false;
 	Dragging = EditingField = false;
 	Picker = PickerKind::None;
 	BuildChoices();
@@ -1052,20 +1089,25 @@ void LevelEditor::ResetSelection()
 
 std::vector<LevelEditor::PickerEntry> LevelEditor::PickerEntries() const
 {
+	return PickerEntries(Picker, Search);
+}
+
+std::vector<LevelEditor::PickerEntry> LevelEditor::PickerEntries(PickerKind pickerKind, const str& filter) const
+{
 	std::vector<PickerEntry> entries;
-	if (Picker == PickerKind::Theme)
+	if (pickerKind == PickerKind::Theme)
 	{
 		const std::vector<TileSetInfo>& themes = GetDocument().GetThemes();
 		for (size_t index = 0; index < themes.size(); ++index)
 			entries.push_back({ index, themes[index].Name });
 	}
-	else if (Picker == PickerKind::Pack)
+	else if (pickerKind == PickerKind::Pack)
 	{
 		const std::vector<LevelPackInfo>& packs = Engine.GetData().GetPacks();
 		for (size_t index = 0; index < packs.size(); ++index)
 			entries.push_back({ index, packs[index].AssetPrefix + packs[index].Name });
 	}
-	else if (Picker == PickerKind::Level)
+	else if (pickerKind == PickerKind::Level)
 	{
 		for (size_t index = 0; index < Project.GetEntries().size(); ++index)
 		{
@@ -1091,7 +1133,7 @@ std::vector<LevelEditor::PickerEntry> LevelEditor::PickerEntries() const
 		}
 	}
 	auto lowercase = [](str value) { std::transform(value.begin(), value.end(), value.begin(), [](u8 c) { return static_cast<char>(std::tolower(c)); }); return value; };
-	const str search = lowercase(Search);
+	const str search = lowercase(filter);
 	entries.erase(std::remove_if(entries.begin(), entries.end(), [&](const PickerEntry& entry) { return lowercase(entry.Label).find(search) == str::npos; }), entries.end());
 	return entries;
 }
@@ -1107,10 +1149,7 @@ void LevelEditor::ChoosePicker(size_t index)
 	}
 	else if (kind == PickerKind::Object)
 	{
-		Selected = static_cast<i32>(index);
-		InspectorTab = InspectorPage::Object;
-		CurrentTool = Tool::Select;
-		SelectCells = false;
+		SelectObject(index);
 	}
 	else if (kind == PickerKind::Pack)
 	{
@@ -1170,7 +1209,7 @@ bool LevelEditor::HandlePicker(const WindowInput::Result& input)
 		return true;
 	}
 	const RECT bounds = InspectorBounds();
-	const i32 top = bounds.top + HeaderHeight + FieldHeight;
+	const i32 top = bounds.top + FieldHeight;
 	if (input.Click && Mouse.x >= bounds.left && Mouse.x < bounds.right && Mouse.y >= top && Mouse.y < top + PickerRows * FieldHeight)
 	{
 		const size_t row = PickerFirst + (Mouse.y - top) / FieldHeight;
@@ -1184,15 +1223,287 @@ void LevelEditor::DrawPicker()
 {
 	const RECT bounds = InspectorBounds();
 	const str title = Picker == PickerKind::Theme ? "Themes" : (Picker == PickerKind::Object ? "Objects" : (Picker == PickerKind::Pack ? "Packs" : "Levels"));
-	Font.Append(Commands, FitText(Font, title + ": " + Search + "_", PanelWidth - 16), bounds.left + 8, bounds.top + HeaderHeight + 4);
+	Font.Append(Commands, FitText(Font, title + ": " + Search + "_", PanelWidth - 16), bounds.left + 8, bounds.top + 4);
 	const std::vector<PickerEntry> entries = PickerEntries();
 	for (size_t row = 0; row < PickerRows && PickerFirst + row < entries.size(); ++row)
 	{
-		const i32 y = bounds.top + HeaderHeight + FieldHeight + static_cast<i32>(row) * FieldHeight;
+		const i32 y = bounds.top + FieldHeight + static_cast<i32>(row) * FieldHeight;
 		if (PickerFirst + row == PickerSelected)
 			Commands.push_back({ &FieldBar, bounds.left + 4, y, 0 });
 		Font.Append(Commands, FitText(Font, entries[PickerFirst + row].Label, PanelWidth - 16), bounds.left + 8, y + 4);
 	}
 	Font.Append(Commands, "Type to search; arrows/wheel; Enter picks.", bounds.left + 8, bounds.bottom - 36);
 	Font.Append(Commands, "Esc cancels; Ctrl+A clears search.", bounds.left + 8, bounds.bottom - 18);
+}
+
+POINT LevelEditor::SceneryAnchor(const SpriteDraw& draw)
+{
+	if (!CenterScenery)
+		return { 0, 0 };
+	if (AnchorSprite != draw.Sprite || AnchorFrame != draw.Frame)
+	{
+		const Sprite& image = *draw.Sprite;
+		i32 left = image.FrameWidth, right = -1, top = image.FrameHeight, bottom = -1;
+		const i32 sourceX = draw.Frame % image.Columns * image.FrameWidth, sourceY = draw.Frame / image.Columns * image.FrameHeight;
+		for (i32 y = 0; y < image.FrameHeight; ++y)
+		{
+			for (i32 x = 0; x < image.FrameWidth; ++x)
+			{
+				if (image.Keyed && (image.Pixels[(sourceY + y) * image.Width + sourceX + x] & 0xFFFFFF) == 0xFF00FF)
+					continue;
+				left = std::min(left, x);
+				right = std::max(right, x);
+				top = std::min(top, y);
+				bottom = std::max(bottom, y);
+			}
+		}
+		AnchorOffset = right < left ? POINT{ image.FrameWidth / 2, image.FrameHeight / 2 } : POINT{ (left + right) / 2, (top + bottom) / 2 };
+		AnchorSprite = draw.Sprite;
+		AnchorFrame = draw.Frame;
+	}
+	return AnchorOffset;
+}
+
+LevelEditor::Placement LevelEditor::PlacementAt(POINT point)
+{
+	const i32 tile = LevelDocument::TileAt(point.x, point.y);
+	const Choice& choice = Choices.at(ChoiceIndex);
+	SpriteDraw draw = GetDocument().PlacementPreview(choice.Kind, tile, choice.Texture);
+	POINT anchor{ (tile % Stride - 1) * TileSize + TileSize / 2, (tile / Stride - 1) * TileSize + TileSize / 2 };
+	if (choice.Kind == ObjectKind::Scenery)
+	{
+		if (!SnapScenery)
+			anchor = point;
+		else if (!CenterScenery)
+			anchor = { (tile % Stride - 1) * TileSize, (tile / Stride - 1) * TileSize };
+		const POINT offset = SceneryAnchor(draw);
+		draw.X = anchor.x - offset.x;
+		draw.Y = anchor.y - offset.y;
+	}
+	return { tile, draw, anchor };
+}
+
+RECT LevelEditor::ObjectListBounds() const
+{
+	const i32 height = ListCollapsed ? HeaderHeight : HeaderHeight + (ListRows + 2) * ListRowHeight;
+	const i32 x = std::clamp(static_cast<i32>(ListPosition.x), 0, 800 - ListWidth);
+	const i32 y = std::clamp(static_cast<i32>(ListPosition.y), ToolbarVisible() ? 26 : 0, (ToolbarVisible() ? 574 : 600) - height);
+	return { x, y, x + ListWidth, y + height };
+}
+
+void LevelEditor::SelectObject(size_t index)
+{
+	Selected = static_cast<i32>(index);
+	InspectorTab = InspectorPage::Object;
+	CurrentTool = Tool::Select;
+	SelectCells = Dragging = false;
+	const std::vector<PickerEntry> entries = PickerEntries(PickerKind::Object, ListSearch);
+	const auto found = std::find_if(entries.begin(), entries.end(), [&](const PickerEntry& entry) { return entry.Index == index; });
+	if (found != entries.end())
+	{
+		const size_t row = static_cast<size_t>(std::distance(entries.begin(), found));
+		if (row < ListFirst || row >= ListFirst + ListRows)
+			ListFirst = row / ListRows * ListRows;
+	}
+}
+
+bool LevelEditor::HandleObjectList(const WindowInput::Result& input)
+{
+	if (!ObjectBrowser)
+		return false;
+	if (MovingList)
+	{
+		ListPosition = { Mouse.x - ListDrag.x, Mouse.y - ListDrag.y };
+		const RECT clamped = ObjectListBounds();
+		ListPosition = { clamped.left, clamped.top };
+		MovingList = input.MouseHeld;
+		UiPointerHeld = input.MouseHeld;
+		return true;
+	}
+	const RECT bounds = ObjectListBounds();
+	const bool inside = Mouse.x >= bounds.left && Mouse.x < bounds.right && Mouse.y >= bounds.top && Mouse.y < bounds.bottom;
+	if (inside && input.Click && EditingField)
+	{
+		ApplyField(CurrentField, FieldText);
+		EditingField = false;
+	}
+	if (input.Click && !inside)
+		ListSearchFocused = false;
+	if (ListSearchFocused)
+	{
+		const str previous = ListSearch;
+		if (input.Back || input.Editor)
+		{
+			ListSearchFocused = false;
+			return true;
+		}
+		if (input.Control && input.BindingKey == 'a')
+			ListSearch.clear();
+		if (input.Erase && !ListSearch.empty())
+		{
+			size_t end = ListSearch.size() - 1;
+			while (end > 0 && (static_cast<u8>(ListSearch[end]) & 0xC0) == 0x80)
+				--end;
+			ListSearch.resize(end);
+		}
+		if (!input.Text.empty() && !input.Control && ListSearch.size() + input.Text.size() <= 256)
+			ListSearch += input.Text;
+		if (input.Enter)
+		{
+			ListSearchFocused = false;
+			const std::vector<PickerEntry> entries = PickerEntries(PickerKind::Object, ListSearch);
+			if (!entries.empty())
+				SelectObject(entries.front().Index);
+		}
+		if (previous != ListSearch)
+			ListFirst = 0;
+		if (!input.Click && !input.RightClick && input.Wheel == 0)
+			return !input.SaveEditor && !input.Playtest;
+	}
+	if (!inside)
+		return false;
+	const std::vector<PickerEntry> entries = PickerEntries(PickerKind::Object, ListSearch);
+	const size_t maxFirst = entries.size() > ListRows ? entries.size() - ListRows : 0;
+	if (input.Wheel != 0)
+		ListFirst = static_cast<size_t>(std::clamp(static_cast<i32>(ListFirst) - input.Wheel * 3, 0, static_cast<i32>(maxFirst)));
+	if (input.Click)
+	{
+		UiPointerHeld = input.MouseHeld;
+		Dragging = false;
+		DiscardArmed = false;
+		if (Mouse.y < bounds.top + HeaderHeight)
+		{
+			ListSearchFocused = false;
+			if (Mouse.x >= bounds.right - HeaderHeight)
+				ListCollapsed = !ListCollapsed;
+			else
+			{
+				ListDrag = { Mouse.x - bounds.left, Mouse.y - bounds.top };
+				MovingList = input.MouseHeld;
+			}
+		}
+		else if (!ListCollapsed && Mouse.y < bounds.top + HeaderHeight + ListRowHeight)
+			ListSearchFocused = true;
+		else if (!ListCollapsed && Mouse.y < bounds.top + HeaderHeight + (ListRows + 1) * ListRowHeight)
+		{
+			ListSearchFocused = false;
+			const size_t row = ListFirst + (Mouse.y - bounds.top - HeaderHeight - ListRowHeight) / ListRowHeight;
+			if (row < entries.size())
+				SelectObject(entries[row].Index);
+		}
+	}
+	return input.Click || input.RightClick || input.Wheel != 0;
+}
+
+void LevelEditor::DrawObjectList()
+{
+	const RECT bounds = ObjectListBounds();
+	if (ListPanel.FrameHeight != bounds.bottom - bounds.top)
+		ListPanel = Rectangle(ListWidth, bounds.bottom - bounds.top, 0xFFEDE4CE, false);
+	Commands.push_back({ &ListPanel, bounds.left, bounds.top, 0 });
+	Commands.push_back({ &ListHeader, bounds.left, bounds.top, 0 });
+	Font.Append(Commands, "Objects - drag to move", bounds.left + 6, bounds.top + 4);
+	Font.Append(Commands, ListCollapsed ? "+" : "-", bounds.right - 18, bounds.top + 4);
+	if (ListCollapsed)
+		return;
+	Font.Append(Commands, FitText(Font, "Find: " + ListSearch + (ListSearchFocused ? "_" : ""), ListWidth - 12), bounds.left + 6, bounds.top + HeaderHeight + 4);
+	const std::vector<PickerEntry> entries = PickerEntries(PickerKind::Object, ListSearch);
+	ListFirst = std::min(ListFirst, entries.size() > ListRows ? entries.size() - ListRows : 0);
+	for (size_t row = 0; row < ListRows && ListFirst + row < entries.size(); ++row)
+	{
+		const PickerEntry& entry = entries[ListFirst + row];
+		const i32 y = bounds.top + HeaderHeight + ListRowHeight + static_cast<i32>(row) * ListRowHeight;
+		if (Selected == static_cast<i32>(entry.Index))
+			Commands.push_back({ &ListRow, bounds.left + 4, y, 0 });
+		Font.Append(Commands, FitText(Font, entry.Label, ListWidth - 12), bounds.left + 6, y + 4);
+	}
+	Font.Append(Commands, std::to_string(entries.size()) + " objects | O closes | wheel scrolls", bounds.left + 6, bounds.bottom - 20);
+}
+
+RECT LevelEditor::PaletteBounds() const
+{
+	const i32 top = ToolbarVisible() ? 26 : 0, bottom = ToolbarVisible() ? 574 : 600;
+	const i32 height = std::min(PaletteHeight, bottom - top);
+	const i32 x = std::clamp(static_cast<i32>(PalettePosition.x), 0, 800 - PlacementPalette::Width);
+	const i32 y = std::clamp(static_cast<i32>(PalettePosition.y), top, bottom - height);
+	return { x, y, x + PlacementPalette::Width, y + height };
+}
+
+bool LevelEditor::HandlePalette(const WindowInput::Result& input)
+{
+	if (!PaletteVisible)
+		return false;
+	if (MovingPalette)
+	{
+		PalettePosition = { Mouse.x - PaletteDrag.x, Mouse.y - PaletteDrag.y };
+		const RECT clamped = PaletteBounds();
+		PalettePosition = { clamped.left, clamped.top };
+		MovingPalette = UiPointerHeld = input.MouseHeld;
+		return true;
+	}
+	const RECT bounds = PaletteBounds();
+	const bool inside = Mouse.x >= bounds.left && Mouse.x < bounds.right && Mouse.y >= bounds.top && Mouse.y < bounds.bottom;
+	if (inside && input.Click)
+	{
+		if (EditingField)
+		{
+			ApplyField(CurrentField, FieldText);
+			EditingField = false;
+		}
+		ListSearchFocused = false;
+	}
+	if (inside && input.Click && Mouse.y < bounds.top + PlacementPalette::HeaderHeight)
+	{
+		UiPointerHeld = input.MouseHeld;
+		Dragging = false;
+		if (Mouse.x >= bounds.left + PlacementPalette::GridX)
+			ShowGrid = !ShowGrid;
+		else
+		{
+			PaletteDrag = { Mouse.x - bounds.left, Mouse.y - bounds.top };
+			MovingPalette = input.MouseHeld;
+		}
+		return true;
+	}
+
+	const PlacementPalette::Result result = Palette.Handle(input, GetDocument(), bounds);
+	Inspector = Palette.IsProperties();
+	if (inside && input.Click)
+	{
+		UiPointerHeld = input.MouseHeld;
+		Dragging = false;
+		DiscardArmed = false;
+	}
+	if (result.Selected)
+	{
+		const PlacementPalette::Entry& entry = *result.Selected;
+		if (entry.Brush >= 0)
+		{
+			TileChoice = entry.Brush;
+			CurrentTool = Tool::Collision;
+			Selected = -1;
+			SelectCells = Dragging = false;
+			Notice = entry.Name + ". Click paints; right-click erases this layer.";
+			return result.Consumed;
+		}
+		if (entry.Kind == ObjectKind::Scenery)
+			CurrentCategory = Category::Scenery;
+		else if (IsItem(entry.Kind))
+			CurrentCategory = Category::Items;
+		else
+		{
+			const CharacterDefinition* character = FindCharacterDefinition(entry.Kind);
+			CurrentCategory = character->Category == CharacterCategory::Animal ? Category::Animals : (character->Category == CharacterCategory::Enemy ? Category::Enemies : (character->Category == CharacterCategory::Player ? Category::Players : Category::Special));
+		}
+		BuildChoices();
+		const auto found = std::find_if(Choices.begin(), Choices.end(), [&](const Choice& choice) { return choice.Kind == entry.Kind && choice.Texture == entry.Texture; });
+		if (found == Choices.end())
+			throw std::runtime_error("Palette entry is unavailable in this runtime.");
+		ChoiceIndex = static_cast<i32>(std::distance(Choices.begin(), found));
+		Selected = -1;
+		CurrentTool = Tool::Place;
+		SelectCells = Dragging = false;
+		Notice = "Place " + entry.Name + ". B hides the palette; H hides all UI.";
+	}
+	return result.Consumed;
 }

@@ -73,6 +73,7 @@ private:
 	any SoundSystem = nullptr;
 	any LoopedChannel = nullptr;
 	any MusicStream = nullptr;
+	bool WaveMusic = false;
 	std::map<std::pair<str, bool>, any> Samples;
 	alignas(4) u8 Application[0xD0]{};
 	bool Constructed = false;

@@ -3,10 +3,18 @@
 The in-game editor supports objects, free scenery, terrain/teleports, random
 spawners, draw order, global themes and named multi-level folder projects.
 **F3** on the title screen starts a blank project; in a level it edits the map.
-Use **T** to select cells beneath scenery, **V** for objects, drag the inspector
+Use **T** to select cells beneath scenery, **V** for objects, drag the sidebar
 header to move it, and use its Project tab for blank/import/duplicate/open flows.
+**B** opens the thumbnail placement sidebar (scenery/actors/items/tiles/properties); **O** lists
+already placed objects. The I menu is the sidebar Props tab. Special objects are under Actors; tile/spawner brushes
+have their own tab. The second toolbar row has been replaced by this sidebar.
+**H** hides the interface/playtest HUD,
+and **A** changes the scenery placement anchor (visible center or canvas origin).
 Press **I** for properties, **Ctrl+S** to save a separate folder pack, and **F5** to
 playtest without changing the running game or stored progress.
+The editor loops the supplied `XXX/SvenXXX/sfx/editor.wav`; playtest uses level
+music and closing the editor restores the previous track. Its loudness now
+matches the title theme, with the original quiet WAV backed up under runtime.
 See [editor controls and scope](EDITOR.md) and the persistent
 [editor progress](research/editor/PROGRESS.md).
 

@@ -1,5 +1,6 @@
 #pragma once
 #include "LevelProject.h"
+#include "PlacementPalette.h"
 #include "Game/GameSession.h"
 #include "Input/WindowInput.h"
 
@@ -55,6 +56,30 @@ public:
 	size_t GetPlayerCount() const
 	{
 		return Players;
+	}
+	RECT GetObjectListBounds() const
+	{
+		return ObjectListBounds();
+	}
+	bool IsHudVisible() const
+	{
+		return Hud;
+	}
+	bool IsObjectListVisible() const
+	{
+		return Hud && ObjectBrowser;
+	}
+	bool IsPaletteVisible() const
+	{
+		return !Preview && Hud && PaletteVisible;
+	}
+	RECT GetPaletteBounds() const
+	{
+		return PaletteBounds();
+	}
+	str GetMusic() const
+	{
+		return Preview || EditorMusic.empty() ? GetDocument().GetInfo().Music : EditorMusic;
 	}
 
 private:
@@ -150,6 +175,7 @@ private:
 	void ApplyField(Property property, const str& text, i32 step = 1);
 	bool HandleInspector(const WindowInput::Result& input);
 	void DrawInspector();
+	void ShowInspector(bool show);
 	RECT InspectorBounds() const;
 	void ResetSelection();
 	enum class PickerKind
@@ -169,7 +195,26 @@ private:
 	void ChoosePicker(size_t index);
 	bool HandlePicker(const WindowInput::Result& input);
 	void DrawPicker();
+	std::vector<PickerEntry> PickerEntries(PickerKind pickerKind, const str& search) const;
+	bool HandleObjectList(const WindowInput::Result& input);
+	void DrawObjectList();
+	RECT ObjectListBounds() const;
+	void SelectObject(size_t index);
+	struct Placement
+	{
+		i32 Tile;
+		SpriteDraw Draw;
+		POINT Anchor;
+	};
+	Placement PlacementAt(POINT point);
+	POINT SceneryAnchor(const SpriteDraw& draw);
+	bool ToolbarVisible() const
+	{
+		return Hud && Toolbar;
+	}
 	bool CanvasAt(POINT point) const;
+	RECT PaletteBounds() const;
+	bool HandlePalette(const WindowInput::Result& input);
 	void ChangeChoice(i32 step);
 	void BuildChoices();
 	void BuildObjects();
@@ -178,9 +223,11 @@ private:
 	void Save();
 	MudGE& Engine;
 	LevelProject Project;
+	PlacementPalette Palette;
 	BitmapFont Font;
-	Sprite Bar, Selection, Wall, GridCell, ActiveTool, WaterCell, PuddleCell, SpawnerCell, Panel, FieldBar, PanelHeader, PanelTab;
+	Sprite Bar, Selection, Wall, GridCell, ActiveTool, WaterCell, PuddleCell, SpawnerCell, Panel, FieldBar, PanelTab;
 	Sprite ObjectOutline{};
+	Sprite ListPanel, ListHeader, ListRow, AnchorMark;
 	const Sprite* Cursor;
 	std::vector<Choice> Choices;
 	std::vector<VisibleObject> Objects;
@@ -191,10 +238,20 @@ private:
 	POINT Mouse{}, DragOrigin{};
 	bool Dragging = false, Toolbar = true, ShowGrid = true, DiscardArmed = false, Saved = false, SnapScenery = true, Inspector = false;
 	InspectorPage InspectorTab = InspectorPage::Level;
-	POINT PanelPosition{ 480, 60 }, PanelDrag{};
-	bool MovingPanel = false, PanelCollapsed = false, SelectCells = false, ResetArmed = false;
+	POINT PalettePosition{ 0, 26 }, PaletteDrag{};
+	bool MovingPalette = false, SelectCells = false, ResetArmed = false;
 	bool CatalogChanged = false;
-	static constexpr i32 PanelWidth = 320, HeaderHeight = 24, TabsHeight = 24, FieldHeight = 28, PickerRows = 10;
+	bool PaletteVisible = true;
+	str EditorMusic;
+	bool Hud = true, ObjectBrowser = false, ListCollapsed = false, MovingList = false, ListSearchFocused = false, UiPointerHeld = false, CenterScenery = true;
+	POINT ListPosition{ 12, 64 }, ListDrag{};
+	static constexpr i32 ListWidth = 280, ListRows = 10, ListRowHeight = 24;
+	str ListSearch;
+	size_t ListFirst = 0;
+	const Sprite* AnchorSprite = nullptr;
+	i32 AnchorFrame = -1;
+	POINT AnchorOffset{};
+	static constexpr i32 PaletteHeight = 500, PanelWidth = PlacementPalette::Width, HeaderHeight = 24, TabsHeight = 24, FieldHeight = 28, PickerRows = 10;
 	PickerKind Picker = PickerKind::None;
 	str Search;
 	size_t PickerFirst = 0, PickerSelected = 0;
@@ -203,7 +260,7 @@ private:
 	bool EditingField = false, ReplaceText = false;
 	Property CurrentField = Property::Title;
 	str FieldText;
-	str Notice = "F3 close | F5 test | Ctrl+S save | I properties | N scenery snap | Tab tools";
+	str Notice = "F3 close | F5 test | Ctrl+S save | I props | O list | H hide UI | A anchor | N snap";
 	size_t Players;
 	fpath PreviewFolder;
 	str PreviewMap;
