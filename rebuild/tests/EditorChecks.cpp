@@ -450,6 +450,152 @@ void CheckProjectWorkflow(MudGE& engine, const LevelPackInfo& pack, const LevelI
 	Log("PASS: editor selection under scenery/overlaps, compact movable/foldable inspector, global mixed-edition themes, blank/multiple/duplicate/imported levels, named folder export and failed-save preservation.");
 }
 
+void CheckProjectManagement(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& level, bool capture)
+{
+	const str suffix = pack.Edition == GameEdition::XXX ? "xxx" : "zwo";
+	const bytestream source = engine.ReadAsset(level.Map);
+	LevelProject project(engine, pack, level);
+	project.New();
+	project.SetName("Manage " + suffix);
+	project.SetEpisode("A");
+	project.Current().SetMetadata("A1", project.Current().GetInfo().Music);
+	LevelDocument* first = &project.Current();
+	project.AddBlank();
+	project.SetEpisode("B");
+	project.Current().SetMetadata("B1", project.Current().GetInfo().Music);
+	LevelDocument* other = &project.Current();
+	project.AddBlank();
+	project.SetEpisode("A");
+	project.Current().SetMetadata("A2", project.Current().GetInfo().Music);
+	project.Current().SetTimeLimit(123.5f);
+	LevelDocument* moved = &project.Current();
+	const bytestream authored = moved->GetBytes();
+	const str saved = project.Save();
+	Require(!project.IsDirty() && project.MoveLevel(false) && &project.Current() == moved && project.GetActive() == 0 && project.GetEntries()[1].Document.get() == other && project.GetEntries()[2].Document.get() == first && project.IsDirty(), "Level reorder lost identity, changed another levelset or failed to dirty equal-episode ordering.");
+	Require(!project.MoveLevel(false) && project.Undo() && !project.IsDirty() && project.GetActive() == 2 && &project.Current() == moved, "Boundary move created history or reorder undo lost the saved structure/selection.");
+	Require(project.Redo() && project.IsDirty() && &project.Current() == moved && moved->GetBytes() == authored, "Reorder redo changed authored bytes or selected a different document.");
+	project.Save();
+	Require(project.Undo() && project.IsDirty() && project.Redo() && !project.IsDirty(), "Saving reordered levels lost the structural undo savepoint.");
+	project.DeleteLevel();
+	Require(project.GetEntries().size() == 2 && project.GetActive() == 0 && project.IsDirty(), "Deleting a level did not select a remaining level or dirty the project.");
+	const bytestream descriptor = engine.ReadAsset(saved);
+	const fpath descriptorPath = engine.GetData().AssetPath(saved);
+	const DWORD attributes = GetFileAttributesW(descriptorPath.c_str());
+	Require(SetFileAttributesW(descriptorPath.c_str(), attributes | FILE_ATTRIBUTE_READONLY) != 0, "Cannot protect project descriptor for deletion-save regression.");
+	const bool rejected = Rejects([&]() { project.Save(); });
+	SetFileAttributesW(descriptorPath.c_str(), attributes);
+	Require(rejected && project.IsDirty() && engine.ReadAsset(saved) == descriptor, "Failed deletion save replaced the last playable descriptor or cleared dirty state.");
+	project.Save();
+	Require(project.Undo() && &project.Current() == moved && moved->GetBytes() == authored && project.IsDirty(), "Deletion undo after save did not restore the same edited document.");
+	Require(moved->Undo() && moved->GetLevel().GetTimeLimit() != 123.5f && moved->Redo() && moved->GetBytes() == authored, "Structural history destroyed the restored document's edit history.");
+	Require(project.Redo() && !project.IsDirty() && project.Undo(), "Deletion redo did not return to its saved structure.");
+	project.Save();
+	const GameData catalog(engine.GetData().GetRoot());
+	const auto exported = std::find_if(catalog.GetPacks().begin(), catalog.GetPacks().end(), [&](const LevelPackInfo& value) { return value.Descriptor == saved; });
+	Require(exported != catalog.GetPacks().end() && exported->LevelSets.size() == 2 && exported->LevelSets[0].Name == "A" && exported->LevelSets[0].Levels.size() == 2 && exported->LevelSets[0].Levels[0].Name == "A2" && exported->LevelSets[0].Levels[1].Name == "A1" && exported->LevelSets[1].Levels[0].Name == "B1", "Saved level ordering/membership differs from the project.");
+	Require(engine.ReadAsset(exported->LevelSets[0].Levels[0].Map) == authored && engine.ReadAsset(level.Map) == source, "Reorder/delete save changed level bytes or source assets.");
+	LevelScene playable(engine, *exported, exported->LevelSets[0].Levels[0], 1);
+	Require(playable.GetInitialTime() == 123.5f, "Restored reordered level does not load into gameplay.");
+	project.Select(1); // B is the only level in its levelset.
+	Require(!project.MoveLevel(false) && !project.MoveLevel(true), "Reorder moved a level outside its levelset.");
+	project.DeleteLevel();
+	project.Save();
+	const GameData deletedCatalog(engine.GetData().GetRoot());
+	const auto deleted = std::find_if(deletedCatalog.GetPacks().begin(), deletedCatalog.GetPacks().end(), [&](const LevelPackInfo& value) { return value.Descriptor == saved; });
+	Require(deleted != deletedCatalog.GetPacks().end() && deleted->LevelSets.size() == 1 && deleted->LevelSets[0].Name == "A", "Deleting a levelset's final level left an empty episode in the saved pack.");
+	project.Select(1);
+	project.DeleteLevel();
+	Require(project.GetActive() == 0 && project.GetEntries().size() == 1 && Rejects([&]() { project.DeleteLevel(); }), "Deleting the last entry invalidated selection or allowed an empty project.");
+	Require(project.Undo() && project.GetEntries().size() == 2 && project.GetActive() == 1 && project.Redo(), "Last-level rejection added history or deletion undo lost selection.");
+	project.AddBlank();
+	LevelDocument* added = &project.Current();
+	Require(project.Undo() && project.GetEntries().size() == 1 && project.Redo() && &project.Current() == added, "Project history lost an added level.");
+	project.Duplicate();
+	Require(project.Undo() && project.GetEntries().size() == 2 && project.Redo() && project.GetEntries().size() == 3, "Project duplicate is not undoable.");
+	project.Import(engine.GetData().AssetPath(level.Map));
+	Require(project.Undo() && project.GetEntries().size() == 3 && project.Redo() && project.Current().GetBytes() == source, "Project import is not undoable.");
+	project.Undo();
+	project.SetName("Branched " + suffix);
+	Require(!project.CanRedo() && project.Undo() && project.GetName() == "Manage " + suffix, "A new project action retained stale redo or name undo failed.");
+	const str episode = project.GetEntries()[project.GetActive()].Episode;
+	project.SetEpisode("Renamed episode");
+	Require(project.Undo() && project.GetEntries()[project.GetActive()].Episode == episode, "Levelset assignment is not undoable.");
+	project.Open(pack);
+	Require(!project.CanUndo() && !project.CanRedo(), "Opening another pack retained old project history.");
+	project.New();
+	Require(!project.CanUndo() && !project.CanRedo() && !project.Undo() && !project.Redo(), "New project retained old structural history.");
+	for (i32 index = 0; index < 140; ++index)
+		project.SetName("History " + std::to_string(index));
+	i32 undoCount = 0;
+	while (project.Undo())
+		++undoCount;
+	Require(undoCount == 128, "Project history is not bounded to 128 actions.");
+
+	LevelEditor editor(engine, pack, level, 1, true);
+	MoveSidebar(editor, 480, 26);
+	LevelProject& ui = editor.GetProject();
+	ui.Current().SetMetadata("First", ui.Current().GetInfo().Music);
+	for (i32 index = 1; index <= 11; ++index)
+	{
+		ui.AddBlank();
+		ui.Current().SetMetadata("Entry " + std::to_string(index), ui.Current().GetInfo().Music);
+	}
+	LevelDocument* last = &ui.Current();
+	auto send = [&](WindowInput::Result input) { editor.Handle(input, 0); };
+	auto click = [&](i32 x, i32 y) { WindowInput::Result input; input.Click = true; input.Mouse = { x, y }; send(input); };
+	auto open = [&]() { WindowInput::Result key; key.BindingKey = 'i'; send(key); const RECT bounds = editor.GetInspectorBounds(); click(bounds.left + 250, bounds.top + 4); click(bounds.left + 160, bounds.top + 24 + 2 * 28); };
+	auto action = [&](i32 column, bool history = false) { const RECT bounds = editor.GetInspectorBounds(); click(bounds.left + (history ? column * 160 : column * 107) + 10, bounds.bottom - (history ? 76 : 104)); };
+	open();
+	action(0);
+	Require(ui.GetActive() == 10 && &ui.Current() == last, "Level picker did not focus/scroll to the active level before reordering.");
+	WindowInput::Result key;
+	key.Undo = true;
+	send(key);
+	Require(ui.GetActive() == 11 && &ui.Current() == last, "Level list Ctrl+Z did not undo project ordering.");
+	action(1, true);
+	Require(ui.GetActive() == 10, "Level list Redo button did not redo project ordering.");
+	click(350, 10); // Modal toolbar undo has the same project scope.
+	Require(ui.GetActive() == 11 && &ui.Current() == last, "Toolbar undo in level management changed document history instead.");
+	key = {};
+	key.Text = "Entry 5";
+	send(key);
+	action(2);
+	Require(ui.GetEntries().size() == 12, "Delete confirmation removed a level on its first click.");
+	key = {};
+	key.Back = true;
+	send(key);
+	const RECT bounds = editor.GetInspectorBounds();
+	click(bounds.left + 160, bounds.top + 24 + 2 * 28); // Reopen, previous confirmation must be gone.
+	key = {};
+	key.Text = "Entry 5";
+	send(key);
+	action(2);
+	Require(ui.GetEntries().size() == 12, "Esc/reopening retained a deletion confirmation.");
+	if (capture)
+		engine.DrawFrame(editor.Draws(), ("editor-level-delete-confirm-" + suffix + ".bmp").c_str());
+	action(2);
+	Require(ui.GetEntries().size() == 11 && std::none_of(ui.GetEntries().begin(), ui.GetEntries().end(), [](const LevelProject::Entry& entry) { return entry.Document->GetInfo().Name == "Entry 5"; }), "Filtered deletion removed the wrong project index.");
+	key = {};
+	key.Undo = true;
+	send(key); // Undo must work even when the filter has no remaining matches.
+	Require(ui.GetEntries().size() == 12 && ui.Current().GetInfo().Name == "Entry 5", "No-match level list swallowed project undo.");
+	if (capture)
+		engine.DrawFrame(editor.Draws(), ("editor-level-management-" + suffix + ".bmp").c_str());
+	key = {};
+	key.Enter = true;
+	send(key);
+	Require(editor.GetSelectedObject() == -1 && ui.Current().GetInfo().Name == "Entry 5", "Returning from level management left an invalid object selection.");
+	LevelDocument& current = editor.GetDocument();
+	const bytestream previous = current.GetBytes();
+	current.SetTimeLimit(222);
+	key = {};
+	key.Undo = true;
+	send(key);
+	Require(current.GetBytes() == previous && ui.GetEntries().size() == 12, "Ordinary editor undo used project history after leaving the level list.");
+	engine.ReloadPacks();
+	Log("PASS: project reorder/delete/confirmation, same-levelset ordering, stable documents and separate bounded undo, dirty/savepoint restoration, failed-save/source protection and saved pack reload.");
+}
+
 void CheckEditorUsability(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& level, bool capture)
 {
 	const str suffix = pack.Edition == GameEdition::XXX ? "xxx" : "zwo";
@@ -965,7 +1111,7 @@ void CheckPlacementOrder(MudGE& engine, const LevelPackInfo& pack, const LevelIn
 	document->SetObjectProperty(first, LevelDocument::ObjectProperty::Depth, -80);
 	document->Delete(hole);
 	const bytestream before = document->GetBytes();
-	const i32 second = document->Place(ObjectKind::Scenery, tile, 0, &secondPosition);
+	const i32 second = document->Place(ObjectKind::Scenery, tile, 0, &secondPosition, LevelDocument::SceneryOrder::Stack);
 	const LevelObjectRecord& earlier = document->GetLevel().GetObjects()[first];
 	const LevelObjectRecord& later = document->GetLevel().GetObjects()[second];
 	Require(second < first && later.Y() + later.Height() - later.DepthAdjustment() > earlier.Y() + earlier.Height() - earlier.DepthAdjustment(), "Later overlapping scenery sorted behind earlier scenery in a recycled slot.");
@@ -982,6 +1128,184 @@ void CheckPlacementOrder(MudGE& engine, const LevelPackInfo& pack, const LevelIn
 	const auto b = std::find_if(rendered.begin(), rendered.end(), [&](const SpriteDraw& draw) { return draw.Sprite == art && draw.X == secondPosition.x && draw.Y == secondPosition.y; });
 	Require(a != rendered.end() && b != rendered.end() && a < b, "Saved scenery placement order did not reach gameplay rendering.");
 	Log("PASS: later opaque-overlapping scenery stays above earlier scenery, recycled slots, single-step undo/redo and saved native render order.");
+}
+
+void CheckNaturalSceneryDepth(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& level, bool capture)
+{
+	using SceneryOrder = LevelDocument::SceneryOrder;
+	const str suffix = pack.Edition == GameEdition::XXX ? "xxx" : "zwo";
+	std::unique_ptr<LevelDocument> document = LevelDocument::Blank(engine, pack, level);
+	const std::vector<TileSetInfo>& themes = document->GetThemes();
+	const auto theme = std::find_if(themes.begin(), themes.end(), [](const TileSetInfo& set) { return std::any_of(set.Tiles.begin(), set.Tiles.end(), [](const TileInfo& tile) { return _stricmp(std::filesystem::u8path(tile.File).filename().u8string().c_str(), "BG_DL_grass06water.bmp") == 0; }); });
+	Require(theme != themes.end(), "Grass/river depth regression requires the installed Download theme.");
+	document->SetTileSet(static_cast<size_t>(std::distance(themes.begin(), theme)));
+	auto texture = [&](cstr name) { const auto found = std::find_if(document->GetTileSet().Tiles.begin(), document->GetTileSet().Tiles.end(), [&](const TileInfo& tile) { return _stricmp(std::filesystem::u8path(tile.File).filename().u8string().c_str(), name) == 0; }); Require(found != document->GetTileSet().Tiles.end(), "Missing depth fixture texture."); return static_cast<i32>(std::distance(document->GetTileSet().Tiles.begin(), found)); };
+	const i32 riverTexture = texture("BG_DL_river03.bmp"), grassTexture = texture("BG_DL_grass06water.bmp");
+	const POINT riverPosition{ 80, 80 }, grassPosition{ 100, 100 };
+	const i32 tile = LevelDocument::TileAt(100, 100);
+	const i32 river = document->Place(ObjectKind::Scenery, tile, riverTexture, &riverPosition);
+	const i32 grass = document->Place(ObjectKind::Scenery, tile, grassTexture, &grassPosition);
+	Require(document->GetLevel().GetObjects()[grass].DepthAdjustment() == 0, "Natural grass inherited the large overlapping river's ground depth.");
+	const bytestream beforeRepeats = document->GetBytes();
+	for (i32 repeat = 0; repeat < 8; ++repeat)
+	{
+		const i32 slot = document->Place(ObjectKind::Scenery, tile, grassTexture, &grassPosition);
+		Require(document->GetLevel().GetObjects()[slot].DepthAdjustment() == 0, "Repeated natural placements accumulated depth drift.");
+	}
+	for (i32 repeat = 0; repeat < 8; ++repeat)
+		Require(document->Undo(), "Repeated natural placement lost its undo entry.");
+	Require(document->GetBytes() == beforeRepeats, "Natural placement undo changed unrelated fields.");
+	const i32 farmerSlot = document->Place(ObjectKind::Farmer, LevelDocument::TileAt(100, 220));
+	document->SetDrawAtBottom(river, true);
+	const LevelInfo preview = document->WritePreview(pack.AssetPrefix + "_editor_natural/level.lvl");
+	LevelScene scene(engine, document->GetPack(), preview, 1);
+	WorldObject& farmer = scene.GetObjects()[scene.GetObjects().Find(ObjectKind::Farmer).at(0)];
+	const LevelObjectRecord& grassRecord = document->GetLevel().GetObjects()[grass];
+	const f32 ground = grassRecord.Y() + grassRecord.Height();
+	const Sprite* grassArt = document->GetSprite(grassRecord);
+	for (i32 side : { -1, 1 })
+	{
+		farmer.X = 100;
+		farmer.Y = static_cast<f32>(ground + side - farmer.DepthOffset);
+		farmer.Draw.X = 100;
+		farmer.Draw.Y = static_cast<i32>(farmer.Y);
+		const std::vector<SpriteDraw>& draws = scene.Draws();
+		const auto vegetation = std::find_if(draws.begin(), draws.end(), [&](const SpriteDraw& draw) { return draw.Sprite == grassArt; });
+		const auto actor = std::find_if(draws.begin(), draws.end(), [&](const SpriteDraw& draw) { return draw.Sprite == farmer.Draw.Sprite; });
+		Require(vegetation != draws.end() && actor != draws.end() && (side > 0 ? vegetation < actor : actor < vegetation), "Natural scenery did not switch in front of/behind the farmer at its actual ground line.");
+		if (capture)
+			engine.DrawFrame(draws, ("editor-grass-farmer-" + str(side > 0 ? "front-" : "behind-") + suffix + ".bmp").c_str());
+	}
+	document->SetRawObjectWord(grass, 24, 0x89ABCDEF);
+	document->SetObjectProperty(grass, LevelDocument::ObjectProperty::Depth, -314);
+	document->SetObjectProperty(grass, LevelDocument::ObjectProperty::Pass, 1);
+	const bytestream stacked = document->GetBytes();
+	document->ResetSceneryDepth(grass);
+	Require(document->GetLevel().GetObjects()[grass].DepthAdjustment() == 0 && document->GetLevel().GetObjects()[grass].RenderPass() == 0 && document->GetRawObject(grass)[24] == 0x89ABCDEF, "Natural reset did not repair legacy stacking/foreground or changed unrelated words.");
+	const bytestream natural = document->GetBytes();
+	Require(document->Undo() && document->GetBytes() == stacked && document->Redo() && document->GetBytes() == natural && Rejects([&]() { document->ResetSceneryDepth(farmerSlot); }), "Natural reset is not one atomic undo/redo or allowed an actor.");
+	document->SetDrawAtBottom(river, true);
+	const i32 floor = document->Place(ObjectKind::Scenery, tile, grassTexture, &grassPosition, SceneryOrder::Floor);
+	Require(document->DrawsAtBottom(floor), "Floor placement did not serialize native floor depth.");
+	document->ResetSceneryDepth(floor);
+	Require(!document->DrawsAtBottom(floor) && document->GetLevel().GetObjects()[floor].DepthAdjustment() == 0, "Natural reset did not leave floor mode.");
+
+	LevelEditor editor(engine, pack, level, 1, true);
+	MoveSidebar(editor, 480, 26);
+	WindowInput::Result input;
+	auto click = [&](i32 x, i32 y, bool right = false) { input = {}; input.Click = !right; input.RightClick = right; input.Mouse = { x, y }; editor.Handle(input, 0); };
+	const RECT sidebar = editor.GetPaletteBounds();
+	click(sidebar.left + 84, sidebar.top + PlacementPalette::HeaderHeight + 4); // Scenery tab.
+	const bytestream untouched = editor.GetDocument().GetBytes();
+	click(sidebar.left + 10, sidebar.bottom - 16); // Natural -> Stack.
+	click(sidebar.left + 10, sidebar.bottom - 16); // Stack -> Floor.
+	Require(editor.GetDocument().GetBytes() == untouched, "Placement-depth preference edited existing level data.");
+	click(sidebar.left + 10, sidebar.top + PlacementPalette::HeaderHeight + PlacementPalette::TabHeight + PlacementPalette::SearchHeight + 10);
+	click(100, 100);
+	const i32 placed = editor.GetSelectedObject();
+	Require(placed >= 0 && editor.GetDocument().DrawsAtBottom(placed), "Sidebar depth choice did not reach scenery placement.");
+	if (capture)
+		engine.DrawFrame(editor.Draws(), ("editor-scenery-depth-palette-" + suffix + ".bmp").c_str());
+	click(sidebar.left + 10, sidebar.bottom - 16, true); // Floor -> Stack.
+	click(sidebar.left + 10, sidebar.bottom - 16, true); // Stack -> Natural.
+	click(100, 140);
+	Require(editor.GetDocument().GetLevel().GetObjects()[editor.GetSelectedObject()].DepthAdjustment() == 0, "Reverse cycling did not restore natural placement.");
+	input = {};
+	input.BindingKey = 'i';
+	editor.Handle(input, 0);
+	const RECT properties = editor.GetInspectorBounds();
+	click(properties.left + 90, properties.top + 4);
+	editor.GetDocument().SetObjectProperty(editor.GetSelectedObject(), LevelDocument::ObjectProperty::Depth, -300);
+	click(properties.left + 160, properties.top + 24 + 11 * 28 + 4);
+	Require(editor.GetDocument().GetLevel().GetObjects()[editor.GetSelectedObject()].DepthAdjustment() == 0, "Object Properties Natural depth action did not repair existing scenery.");
+	if (capture)
+		engine.DrawFrame(editor.Draws(), ("editor-scenery-depth-properties-" + suffix + ".bmp").c_str());
+	Log("PASS: natural grass/river depth without placement drift, native farmer front/behind sorting, explicit stack/floor choices, atomic repair and palette/property routing.");
+}
+
+void CheckAnimalPlacementDefaults(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& level, bool capture)
+{
+	using AnimalPlacement = LevelDocument::AnimalPlacement;
+	using SceneryOrder = LevelDocument::SceneryOrder;
+	const str suffix = pack.Edition == GameEdition::XXX ? "xxx" : "zwo";
+	std::unique_ptr<LevelDocument> document = LevelDocument::Blank(engine, pack, level);
+	const bytestream baseline = document->GetBytes();
+	const i32 tile = LevelDocument::TileAt(100, 140);
+	size_t families = 0;
+	for (const CharacterDefinition& character : GetCharacterDefinitions())
+	{
+		if (character.Category != CharacterCategory::Animal || !document->Supports(character.Kind))
+			continue;
+		++families;
+		for (i32 facing = 0; facing < 4; ++facing)
+		{
+			const AnimalPlacement settings{ facing, facing % 2 ? 10 : 0 };
+			const i32 slot = document->Place(character.Kind, tile, 0, nullptr, SceneryOrder::Natural, &settings);
+			const LevelObjectRecord& record = document->GetLevel().GetObjects()[slot];
+			Require(record.Facing() == facing && record.Frame() == facing && record.Impatience() == settings.Impatience && document->GetRawCell(tile)[2] == static_cast<u32>(slot), "Animal placement lost facing, standing frame, impatience or cell ownership.");
+			const bytestream authored = document->GetBytes();
+			Require(document->Undo() && document->GetBytes() == baseline && document->Redo() && document->GetBytes() == authored && document->Undo(), "Configured animal placement was not a single exact undo/redo step.");
+		}
+	}
+	Require(families >= 4, "Animal placement fixture did not cover the available animal catalog.");
+	for (const AnimalPlacement settings : { AnimalPlacement{ -1, 6 }, AnimalPlacement{ 4, 6 }, AnimalPlacement{ 0, -1 }, AnimalPlacement{ 0, 11 } })
+		Require(Rejects([&]() { document->Place(ObjectKind::Sheep, tile, 0, nullptr, SceneryOrder::Natural, &settings); }) && document->GetBytes() == baseline, "Invalid animal defaults partially mutated a level.");
+	const AnimalPlacement settings{ 3, 7 };
+	Require(Rejects([&]() { document->Place(ObjectKind::Farmer, tile, 0, nullptr, SceneryOrder::Natural, &settings); }) && document->GetBytes() == baseline && document->Redo() && document->Undo(), "Animal defaults applied to a non-animal or rejected input cleared redo history.");
+	const i32 ordinary = document->Place(ObjectKind::Sheep, tile);
+	Require(document->GetLevel().GetObjects()[ordinary].Facing() == 0 && document->GetLevel().GetObjects()[ordinary].Impatience() == 6 && document->Undo(), "Unconfigured placement no longer uses the existing defaults.");
+	const i32 authored = document->Place(ObjectKind::Goat, tile, 0, nullptr, SceneryOrder::Natural, &settings);
+	const LevelInfo preview = document->WritePreview(pack.AssetPrefix + "_editor_animal_defaults/level.lvl");
+	LevelDocument reloaded(engine, document->GetPack(), preview);
+	Require(reloaded.GetBytes() == document->GetBytes() && reloaded.GetLevel().GetObjects()[authored].Impatience() == 7, "Animal defaults were not preserved on disk.");
+	LevelScene scene(engine, document->GetPack(), preview, 1);
+	const WorldObject& goat = scene.GetObjects()[scene.GetObjects().Find(ObjectKind::Goat).at(0)];
+	Require(goat.Facing == 3 && goat.Impatience == 6, "Animal defaults did not reach native gameplay initialization, including odd-impatience rounding.");
+
+	LevelEditor editor(engine, pack, level, 1, true);
+	MoveSidebar(editor, 480, 26);
+	auto send = [&](WindowInput::Result input) { editor.Handle(input, 0); };
+	auto click = [&](i32 x, i32 y, bool right = false) { WindowInput::Result input; input.Click = !right; input.RightClick = right; input.Mouse = { x, y }; send(input); };
+	const RECT sidebar = editor.GetPaletteBounds();
+	click(sidebar.left + 164, sidebar.top + PlacementPalette::HeaderHeight + 4);
+	click(sidebar.left + 10, sidebar.top + PlacementPalette::HeaderHeight + PlacementPalette::TabHeight + 4);
+	WindowInput::Result input;
+	input.Text = "Sheep";
+	send(input);
+	input = {};
+	input.Enter = true;
+	send(input);
+	const bytestream untouched = editor.GetDocument().GetBytes();
+	click(sidebar.left + 10, sidebar.bottom - 16, true); // Facing 0 -> 3.
+	for (i32 count = 0; count < 4; ++count)
+		click(sidebar.left + 180, sidebar.bottom - 16); // Impatience 6 -> 10.
+	Require(editor.GetDocument().GetBytes() == untouched, "Animal placement controls edited existing level data.");
+	input = {};
+	input.Mouse = { 100, 140 };
+	send(input);
+	const std::vector<SpriteDraw> ghost = editor.Draws();
+	const Sprite* sheepArt = editor.GetDocument().GetSprite(ObjectKind::Sheep);
+	Require(std::any_of(ghost.begin(), ghost.end(), [&](const SpriteDraw& draw) { return draw.Sprite == sheepArt && draw.Frame == 3; }), "Animal placement ghost did not show the chosen direction.");
+	if (capture)
+		engine.DrawFrame(ghost, ("editor-animal-placement-" + suffix + ".bmp").c_str());
+	click(100, 140);
+	const i32 first = editor.GetSelectedObject();
+	Require(first >= 0 && editor.GetDocument().GetLevel().GetObjects()[first].Facing() == 3 && editor.GetDocument().GetLevel().GetObjects()[first].Impatience() == 10, "Palette animal settings did not reach placement.");
+	const bytestream placed = editor.GetDocument().GetBytes();
+	click(sidebar.left + 10, sidebar.bottom - 16);  // Facing 3 -> 0.
+	click(sidebar.left + 180, sidebar.bottom - 16); // Impatience 10 -> 0.
+	Require(editor.GetDocument().GetBytes() == placed, "Changing animal defaults rewrote an existing animal.");
+	input = {};
+	input.BindingKey = 'p';
+	send(input);
+	click(140, 140);
+	const LevelObjectRecord& second = editor.GetDocument().GetLevel().GetObjects()[editor.GetSelectedObject()];
+	Require(second.Facing() == 0 && second.Impatience() == 0, "Repeated placement did not use wrapped animal defaults.");
+	input = {};
+	input.Undo = true;
+	send(input);
+	Require(editor.GetDocument().GetBytes() == placed, "Configured UI placement undo also changed an earlier animal.");
+	Log("PASS: all available animal placement defaults, four directions and impatience bounds, atomic history/ownership, native reload/rounding, sidebar preferences and matching ghost.");
 }
 
 void CheckContinuousPainting(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& level, bool capture)
@@ -1390,6 +1714,119 @@ void CheckRawInspection(MudGE& engine, const LevelPackInfo& pack, const LevelInf
 	Log("PASS: raw 25-word objects/all 374 six-word cells, exact bit edits, atomic undo, linked movement, ownership/range/cap protection and sidebar index/hex/paging/focus/save behavior.");
 }
 
+void CheckStandaloneExports(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& level, bool capture)
+{
+	LevelDocument document(engine, pack, level);
+	const bytestream source = engine.ReadAsset(level.Map);
+	document.SetTimeLimit(321.25f);
+	document.SetRawObjectWord(255, 24, 0x89ABCDEF);
+	const u32 oldBorder = document.GetRawCell(373)[1];
+	document.SetRawCellWord(373, 1, (oldBorder & 255) | 0x12340000);
+	const bytestream expected = document.GetBytes();
+	const fpath directory = engine.GetData().GetRoot().parent_path() / "standalone-exports" / (pack.Edition == GameEdition::XXX ? "xxx" : "zwo");
+	std::filesystem::create_directories(directory);
+	const fpath binary = directory / L"Renamed level \u00e4.LVL", objects = directory / L"Renamed objects.CSV", cells = directory / L"Renamed cells.csv";
+	auto read = [&](const fpath& path) { std::ifstream file(path, std::ios::binary); Require(static_cast<bool>(file), "Export file is missing."); return bytestream(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>()); };
+	fpath oldTemporary = binary;
+	oldTemporary += L".tmp";
+	const bytestream canary{ 'k', 'e', 'e', 'p' };
+	WriteFixture(oldTemporary, canary);
+	document.ExportLevel(binary);
+	Require(read(binary) == expected && read(oldTemporary) == canary && document.GetBytes() == expected && document.IsDirty(), "Renamed standalone export changed bytes/savepoint or clobbered an unrelated temporary file.");
+	const LevelFile parsed(read(binary), binary.u8string());
+	Require(parsed.GetVersion() == document.GetLevel().GetVersion() && parsed.GetTimeLimit() == 321.25f, "Standalone export changed version or timer.");
+	LevelProject imported(engine, pack, level);
+	imported.Import(binary);
+	Require(imported.Current().GetBytes() == expected, "Standalone level did not roundtrip through project import.");
+	for (LevelDocument::InventoryKind kind : { LevelDocument::InventoryKind::Objects, LevelDocument::InventoryKind::Cells })
+	{
+		const bool objectRows = kind == LevelDocument::InventoryKind::Objects;
+		const fpath path = objectRows ? objects : cells;
+		const str csv = document.InventoryCsv(kind);
+		document.ExportInventory(path, kind);
+		const bytestream written = read(path);
+		Require(str(written.begin(), written.end()) == csv, "CSV file differs from its inventory data.");
+		std::istringstream lines(csv);
+		str line;
+		Require(static_cast<bool>(std::getline(lines, line)), "CSV header is missing.");
+		size_t count = 0, visible = 0;
+		while (std::getline(lines, line))
+		{
+			if (!line.empty() && line.back() == '\r')
+				line.pop_back();
+			std::vector<str> columns;
+			std::istringstream row(line);
+			str column;
+			while (std::getline(row, column, ','))
+				columns.push_back(column);
+			const size_t prefix = objectRows ? 8 : 4;
+			std::vector<u32> words;
+			if (objectRows)
+			{
+				const std::array<u32, 25> raw = document.GetRawObject(count);
+				words.assign(raw.begin(), raw.end());
+			}
+			else
+			{
+				const std::array<u32, 6> raw = document.GetRawCell(count);
+				words.assign(raw.begin(), raw.end());
+				visible += std::stoi(columns.at(3));
+			}
+			Require(columns.size() == prefix + words.size() && std::stoul(columns[0]) == count, "CSV column count or record ordering is wrong.");
+			for (size_t word = 0; word < words.size(); ++word)
+				Require(static_cast<u32>(std::stoll(columns[prefix + word])) == words[word], "CSV lost a raw word's signed bits.");
+			++count;
+		}
+		Require(count == (objectRows ? LevelFile::ObjectCount : LevelFile::CellCount) && (objectRows || visible == 300), "CSV omitted inactive objects or border cells.");
+	}
+	Require(document.GetBytes() == expected && document.IsDirty() && document.Undo() && document.GetRawCell(373)[1] == oldBorder && document.Redo() && document.GetBytes() == expected, "Exports entered undo history or cleared the dirty state.");
+	const fpath protectedLevel = engine.GetData().AssetPath(level.Map);
+	wstr upper = protectedLevel.native();
+	for (wchar_t& c : upper)
+	{
+		if (c >= L'a' && c <= L'z')
+			c -= L'a' - L'A';
+	}
+	Require(Rejects([&]() { document.ExportLevel(protectedLevel); }) && Rejects([&]() { document.ExportLevel(fpath(upper)); }) && Rejects([&]() { document.ExportInventory(engine.GetData().GetRoot() / "blocked.csv", LevelDocument::InventoryKind::Cells); }) && engine.ReadAsset(level.Map) == source, "Export protection allowed installed assets to be replaced.");
+	if (protectedLevel.native().size() >= 3 && protectedLevel.native()[1] == L':')
+		Require(Rejects([&]() { document.ExportLevel(fpath(L"\\\\?\\" + protectedLevel.native())); }) && engine.ReadAsset(level.Map) == source, "Export bypassed installed assets through a Windows namespace alias.");
+	Require(Rejects([&]() { document.ExportLevel(directory / "wrong.csv"); }) && Rejects([&]() { document.ExportInventory(directory / "wrong.lvl", LevelDocument::InventoryKind::Objects); }), "Export accepted the wrong file extension.");
+	const DWORD attributes = GetFileAttributesW(binary.c_str());
+	Require(SetFileAttributesW(binary.c_str(), attributes | FILE_ATTRIBUTE_READONLY) != 0, "Cannot protect standalone export for failed-write regression.");
+	document.SetTimeLimit(99);
+	const bool failed = Rejects([&]() { document.ExportLevel(binary); });
+	SetFileAttributesW(binary.c_str(), attributes);
+	Require(failed && read(binary) == expected && document.GetLevel().GetTimeLimit() == 99, "Failed replacement lost the previous file or dirty edits.");
+	document.Undo();
+	for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(directory))
+		Require(entry.path().filename().native().find(binary.filename().native() + L".tmp-") != 0, "Export left its reserved temporary file behind.");
+	std::error_code error;
+	const fpath link = directory / "source-link";
+	std::filesystem::create_directory_symlink(engine.GetData().GetRoot(), link, error);
+	if (!error)
+		Require(Rejects([&]() { document.ExportLevel(link / "blocked.lvl"); }), "Export followed a directory link into installed assets.");
+	const fpath hardlink = directory / "source-alias.lvl";
+	error.clear();
+	std::filesystem::create_hard_link(protectedLevel, hardlink, error);
+	if (!error)
+	{
+		document.ExportLevel(hardlink);
+		Require(engine.ReadAsset(level.Map) == source && read(hardlink) == expected, "Atomic export through an alias modified the installed source file.");
+	}
+	LevelEditor editor(engine, pack, level, 1);
+	WindowInput::Result input;
+	input.BindingKey = 'i';
+	editor.Handle(input, 0);
+	const RECT bounds = editor.GetInspectorBounds();
+	input = {};
+	input.Click = true;
+	input.Mouse = { bounds.left + 250, bounds.top + 4 };
+	editor.Handle(input, 0);
+	if (capture)
+		engine.DrawFrame(editor.Draws(), pack.Edition == GameEdition::XXX ? "editor-export-project-xxx.bmp" : "editor-export-project-zwo.bmp");
+	Log("PASS: renamed Unicode standalone level export/import, exact CSV object/cell inventories, source/case/link protection, atomic failed-write preservation, temporary cleanup and unchanged history/savepoints.");
+}
+
 } // namespace
 
 void CheckIntegratedEditor(MudGE& engine, const LevelPackInfo& pack, LevelInfo level, bool capture)
@@ -1598,13 +2035,17 @@ void CheckIntegratedEditor(MudGE& engine, const LevelPackInfo& pack, LevelInfo l
 		guarded.SetEditorCloseGuard(false);
 	}
 	CheckProjectWorkflow(engine, pack, level, capture);
+	CheckProjectManagement(engine, pack, level, capture);
 	CheckEditorUsability(engine, pack, level, capture);
 	CheckPaletteAndMusic(engine, pack, level, capture);
 	CheckViewportAndLayers(engine, pack, level, capture);
 	CheckPlacementOrder(engine, pack, level);
+	CheckNaturalSceneryDepth(engine, pack, level, capture);
+	CheckAnimalPlacementDefaults(engine, pack, level, capture);
 	CheckContinuousPainting(engine, pack, level, capture);
 	CheckSceneryWorkflow(engine, pack, level, capture);
 	CheckEditorMenu(engine, capture);
 	CheckRawInspection(engine, pack, level, capture);
+	CheckStandaloneExports(engine, pack, level, capture);
 	Log("PASS: integrated editor " + suffix + " exact data preservation, placement/move/delete/rotate, collision, undo/redo, protected export, catalog reload, playtest isolation/cleanup and close guards.");
 }

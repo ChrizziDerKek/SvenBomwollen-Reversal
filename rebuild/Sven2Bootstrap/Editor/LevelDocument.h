@@ -10,6 +10,25 @@
 class LevelDocument
 {
 public:
+	struct AnimalPlacement
+	{
+		i32 Facing = 0;
+		i32 Impatience = 6;
+	};
+	enum class SceneryOrder
+	{
+		Natural,
+		Stack,
+		Floor
+	};
+	enum class InventoryKind
+	{
+		Objects,
+		Cells
+	};
+	str InventoryCsv(InventoryKind kind) const;
+	void ExportLevel(const fpath& path) const;
+	void ExportInventory(const fpath& path, InventoryKind kind) const;
 	enum class ObjectProperty
 	{
 		X,
@@ -60,7 +79,8 @@ public:
 	}
 	bool Undo();
 	bool Redo();
-	i32 Place(ObjectKind kind, i32 tile, i32 texture = 0, const POINT* sceneryPosition = nullptr);
+	i32 Place(ObjectKind kind, i32 tile, i32 texture = 0, const POINT* sceneryPosition = nullptr, SceneryOrder order = SceneryOrder::Natural, const AnimalPlacement* animal = nullptr);
+	void ResetSceneryDepth(size_t slot);
 	void Move(size_t slot, i32 dx, i32 dy, bool snapScenery = true);
 	void Delete(size_t slot);
 	void Rotate(size_t slot);

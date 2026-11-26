@@ -56,6 +56,14 @@ public:
 		SearchFocused = false;
 	}
 	void Select(ObjectKind kind, i32 texture);
+	const LevelDocument::AnimalPlacement& GetAnimalPlacement() const
+	{
+		return AnimalDefaults;
+	}
+	LevelDocument::SceneryOrder GetSceneryOrder() const
+	{
+		return SceneryDepth;
+	}
 	void Reset();
 	void Show(Group group);
 	bool IsRaw() const
@@ -72,6 +80,11 @@ public:
 	}
 
 private:
+	bool HasAnimalDefaults() const;
+	bool HasSceneryDepth() const
+	{
+		return Category == Group::Scenery || (Category == Group::All && SelectedKind == ObjectKind::Scenery);
+	}
 	void Refresh(const LevelDocument& document);
 	std::vector<size_t> Filtered() const;
 	const Sprite* Thumbnail(const LevelDocument& document, const Entry& entry);
@@ -85,6 +98,8 @@ private:
 	bool SearchFocused = false;
 	ObjectKind SelectedKind = ObjectKind::Inactive;
 	i32 SelectedTexture = 0;
+	LevelDocument::SceneryOrder SceneryDepth = LevelDocument::SceneryOrder::Natural;
+	LevelDocument::AnimalPlacement AnimalDefaults;
 	std::vector<Sprite> BrushIcons;
 	Sprite Panel, Header, Tab, Tile, Highlight, SearchBar;
 };

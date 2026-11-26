@@ -21,16 +21,19 @@ authored level. Your running game freezes and resumes unchanged on editor close.
 | Raw object/cell words | Sidebar **Raw** tab; pick Object words or Cell words |
 | Level/object/cell inspector | **I** or the sidebar Props tab; choose Level/Object/Cell/Project, then a field |
 | Select gameplay cells beneath artwork | **T**, the inspector's Cell tab, or Shift+click; **V** returns to object selection |
+| Animal placement defaults | Select an animal in All/Actors, then click footer Facing/Impatience; right-click cycles backward |
 | Rotate selected animal/enemy | **R**, or the inspector's Facing field |
 | Delete selected object | Delete or Backspace |
 | Return to object selection / clear selection | **Escape**; text fields and pickers cancel first |
 | Delete scenery under the pointer | **Right-click** while placing scenery, or on topmost scenery in Select mode; actors are preserved |
-| Undo / redo | Ctrl+Z / Ctrl+Y; toolbar buttons |
+| Undo / redo | Ctrl+Z / Ctrl+Y; toolbar buttons; project history while the Project levels list is open |
 | Hide/show toolbars | Tab; this exposes the cells under the toolbars |
 | Hide/show all editor interface / playtest HUD | **H**; restores panel state when shown again |
 | Visual placement sidebar | **B** or Place; click a thumbnail, then click the level |
 | Existing-object list | **O** or Object → Object list |
 | Toggle grid | Grid in the sidebar header |
+| Export active level / inventories | **Props ? Project ? Export .lvl / Object CSV / Cell CSV** |
+| Manage level order / deletion | **Props > Project > Project levels**; Earlier / Later / Delete |
 | Save a separate folder pack | Ctrl+S or Save copy |
 | Enter/leave playtest | F5 or Playtest; Escape also returns from playtest |
 | Close editor and resume original game | **F3** or Close; Escape closes when already in idle selection mode |
@@ -56,6 +59,18 @@ undo step. Escape removes the placement preview and returns to Select, or clears
 the selected object before a later Escape can close the editor. **B** hides the sidebar to
 reach the left part of the level; **H** hides the whole interface. **O** opens
 the separate browser of objects already placed, replacing the palette.
+
+Select an animal thumbnail in **All** or **Actors** to expose **Facing** and
+**Impatience** in the sidebar footer. Click the left field to cycle facing 0..3;
+click the right field to cycle impatience 0..10. Right-click reverses either
+field. Animal thumbnails and the placement ghost show the chosen standing frame.
+Defaults start at facing 0 and impatience 6, retain their values across animal
+choices and level switches in this editor session, and apply only to subsequent
+placements. They do not modify existing animals or create undo entries on their
+own. Each configured placement remains one undoable edit. Existing animals can
+still be changed in Props/Object. The native runtime rounds odd impatience down
+to the preceding even value when loading; the authored value remains unchanged
+in the file. These settings do not apply to enemies, player starts or mermaids.
 
 **View** separates background, scenery, player starts, animals, enemies, items,
 special actors, tiles/spawners, grid and object-slot labels. Hidden object layers
@@ -86,12 +101,28 @@ origin. The sidebar, toolbars and cursor keep their normal size. Selection,
 dragging, grid painting, actor snapping and free scenery use world coordinates.
 Panning keeps a strip of the map reachable; Reset recovers the default view.
 
-New scenery with visible overlap defaults above earlier **world-sorted scenery**.
-Its saved depth offset encodes that order, including when a deleted slot is
-reused; one Undo removes the entire placement. Separate scenery retains its
-natural depth. Existing levels are unchanged until edited. Native character
-sorting and explicit foreground passes still take precedence; use Object's
-Depth/Render pass/Draw earlier/later when deliberately overriding the defaults.
+New scenery now defaults to **Natural** depth (sorted pass, offset 0). Its
+sorting line is its own Y + height, so characters appear behind it when above
+that line and in front when below it. Overlapping another sprite no longer
+pushes its depth to that sprite's bottom: grass placed over a tall river bitmap
+therefore does not inherit the river's ground line or accumulate large negative
+offsets from repeated placement. Native gameplay sorting itself is unchanged.
+
+The Scenery sidebar footer cycles placement **Depth** with left/right clicks:
+
+- **Natural**: normal world depth; use for upright scenery such as grass/bushes.
+- **Stack scenery**: the previous behavior, drawing new overlapping world scenery
+  later than existing scenery, even in recycled slots. This deliberately changes
+  its relation to actors too; use only when that layering is wanted.
+- **Floor**: draw underneath actors; use for rivers, paths and ground decoration.
+
+These are placement preferences, not edits to existing objects. For already
+placed scenery, **Props > Object > Natural depth > Reset** clears custom depth
+and Foreground in one undoable edit. It also leaves floor mode. Original levels
+and custom packs are never bulk-rewritten; repair only selected pieces. Use
+Depth/Render pass/Draw earlier/later for deliberate manual overrides. No texture
+name guesses or universal per-texture depth table are imposed: original levels
+use different adjustments for the same texture in different compositions.
 
 For floor art, select the scenery and open **Props ? Object ? Draw at bottom**.
 **Yes** uses the existing native sorted pass and its largest signed depth
@@ -124,6 +155,34 @@ are checked. Cell terrain edits maintain the puddle table. Packed direction,
 item and spawner/help words preserve or validate their semantic low bits, while
 uninterpreted bits remain raw. Inactive objects and border cells are inspectable;
 structural boundary changes remain protected.
+
+**Props ? Project** has three separate Save As actions for the active level:
+
+- **Export .lvl** writes the exact edited binary level, retaining its v6/v7 version
+  and unknown bytes. The filename can be changed freely, including Unicode names.
+- **Object CSV** lists all 256 slots, including inactive records. It includes
+  kind, position, tile link, pass/mirror, texture/permanence and depth, followed
+  by all 25 raw words (`w0..w24`) as signed decimal integers.
+- **Cell CSV** lists all 374 records, including borders: raw index, zero-based
+  visible-grid column/row, a visible flag, and all six raw words (`w0..w5`).
+  Visible cells have columns 0..19 and rows 0..14; borders fall outside those ranges.
+
+CSV means comma-separated values: a spreadsheet-style inventory for filtering,
+comparing and investigating raw data. Files use comma delimiters, decimal dots
+and CRLF rows, independent of regional number formatting. Raw word bits are
+preserved exactly in signed integer form. This is an export, not CSV import.
+
+Choose a location outside the active installed assets directory. The file dialog
+adds the appropriate extension when omitted and asks before replacing a file.
+Exports use an exclusively reserved temporary file and atomic replacement;
+failed writes retain the prior destination. Asset-directory links and case
+variations cannot bypass source protection.
+
+These actions export copies of the active level only. They do not change the
+project's dirty/savepoint state or add undo entries. A `.lvl` does **not** include
+its pack descriptor, display name, theme mapping, music or textures; import it
+using a matching resource template. Use **Ctrl+S** for the complete playable
+folder project, especially when themes include retained/mixed resources.
 
 While editing, the game loops `assets/XXX/SvenXXX/sfx/editor.wav`. **F5** switches
 to the level's music and restores the editor track on return. Closing the editor
@@ -235,6 +294,28 @@ To create a pack:
    revision, then the descriptor is atomically replaced. A failed save leaves
    the last playable revision and dirty edits intact.
 
+**Project levels** also manages the pack's level order. Its highlighted row is
+initialized to the active level; use search, arrows or the wheel to highlight
+another. **Earlier/Later** swaps it with the previous/next level in the same
+levelset, retaining that level's document, properties and edits. Other levelsets
+are unaffected. Click a row or press Enter to open it for editing.
+
+**Delete** needs a second click for the same highlighted level. Escape, changing
+the filter/selection or another action cancels confirmation. The final project
+level cannot be deleted. Removing the last level of a levelset omits that empty
+levelset when saving. Deletion changes the working project; Ctrl+S commits it.
+
+**Undo project / Redo project** restore project operations: level reorder,
+deletion, blank/duplicate/import additions, pack naming and levelset assignment.
+While this list is open, Ctrl+Z/Y and the toolbar Undo/Redo use that same project
+history. Outside the list, Undo/Redo continue to edit the current level's objects,
+tiles and properties. These are separate histories: restoring a deleted level
+retains its exact document and object-edit history, including edits made before
+it was deleted. Saving retains project history and tracks its savepoint. New
+project actions clear project redo; opening another pack or creating a new pack
+clears project history. Up to 128 project actions are retained in memory; history
+is not persisted after closing the editor.
+
 **Open full pack** browses installed packs and loads a working copy of every
 episode/level. Saving produces a separate named pack, preserving the original.
 F3 during gameplay initially copies only the current level; use Open full pack
@@ -247,8 +328,7 @@ command to discard, including when closing the game window.
 
 Undo/redo and savepoints include both binary level changes and display metadata.
 Unrelated v6/v7 fields remain preserved. The parity checklist still includes
-CSV inventory, teleport/link annotations
-and further project conveniences such as level deletion/reordering.
+teleport/link annotations and the final standalone-editor parity review.
 The canvas shows static authored object
 sprites; playtest provides the real animation, bonus-controller and gameplay
 presentation.

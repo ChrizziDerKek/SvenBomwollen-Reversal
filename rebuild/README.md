@@ -24,6 +24,8 @@ returns to selection. Props/Object's **Draw at bottom** keeps floor artwork bene
 actors using the saved native depth field.
 The **Raw** sidebar tab inspects/edits all object/cell words as decimal or hex
 bits, with float readout, validation and normal undo/redo.
+Props/Project exports the current `.lvl` or CSV object/cell inventories through
+Save As. These copies preserve project edits; Ctrl+S saves the complete folder pack.
 See [editor controls and scope](EDITOR.md) and the persistent
 [editor progress](research/editor/PROGRESS.md).
 

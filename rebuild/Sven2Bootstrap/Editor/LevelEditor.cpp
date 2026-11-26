@@ -175,6 +175,36 @@ void LevelEditor::Save()
 	Notice = "Saved " + path;
 }
 
+void LevelEditor::ExportFile(Property property)
+{
+	FinishPaintStroke();
+	const bool level = property == Property::ExportLevel;
+	wchar_t filename[32768]{};
+	wcscpy_s(filename, level ? L"level.lvl" : (property == Property::ExportObjects ? L"objects.csv" : L"cells.csv"));
+	const fpath directory = Engine.GetData().GetRoot().parent_path();
+	OPENFILENAMEW dialog{};
+	dialog.lStructSize = sizeof(dialog);
+	dialog.hwndOwner = Engine.WindowHandle();
+	dialog.lpstrFilter = level ? L"Sven level (*.lvl)\0*.lvl\0" : L"CSV inventory (*.csv)\0*.csv\0";
+	dialog.lpstrDefExt = level ? L"lvl" : L"csv";
+	dialog.lpstrFile = filename;
+	dialog.nMaxFile = static_cast<DWORD>(std::size(filename));
+	dialog.lpstrTitle = level ? L"Export current level" : (property == Property::ExportObjects ? L"Export object inventory" : L"Export cell inventory");
+	dialog.lpstrInitialDir = directory.c_str();
+	dialog.Flags = OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR;
+	if (!GetSaveFileNameW(&dialog))
+	{
+		if (CommDlgExtendedError() != 0)
+			throw std::runtime_error("Cannot open the export filename dialog.");
+		return;
+	}
+	if (level)
+		GetDocument().ExportLevel(filename);
+	else
+		GetDocument().ExportInventory(filename, property == Property::ExportObjects ? LevelDocument::InventoryKind::Objects : LevelDocument::InventoryKind::Cells);
+	Notice = "Exported " + fpath(filename).u8string() + ". Ctrl+S still saves the full project.";
+}
+
 void LevelEditor::Playtest()
 {
 	FinishPaintStroke();
@@ -534,7 +564,9 @@ bool LevelEditor::Handle(const WindowInput::Result& input, f32 seconds, const st
 				const Placement placement = PlacementAt(WorldMouse);
 				const POINT origin{ placement.Draw.X, placement.Draw.Y };
 				const Choice& choice = Choices[ChoiceIndex];
-				Selected = GetDocument().Place(choice.Kind, placement.Tile, choice.Texture, choice.Kind == ObjectKind::Scenery ? &origin : nullptr);
+				const CharacterDefinition* character = FindCharacterDefinition(choice.Kind);
+				const LevelDocument::AnimalPlacement* animal = character && character->Category == CharacterCategory::Animal ? &Palette.GetAnimalPlacement() : nullptr;
+				Selected = GetDocument().Place(choice.Kind, placement.Tile, choice.Texture, choice.Kind == ObjectKind::Scenery ? &origin : nullptr, Palette.GetSceneryOrder(), animal);
 				if (choice.Kind == ObjectKind::Scenery)
 				{
 					SelectCells = false;
@@ -815,7 +847,10 @@ std::vector<LevelEditor::Field> LevelEditor::Fields() const
 			{ Property::Duplicate, "Duplicate level", "Create copy", FieldMode::Action },
 			{ Property::ImportLevel, "Import .lvl", "Browse...", FieldMode::Action },
 			{ Property::NewPack, "New blank pack", "Create...", FieldMode::Action },
-			{ Property::OpenPack, "Open full pack", "Browse copies...", FieldMode::Action }
+			{ Property::OpenPack, "Open full pack", "Browse copies...", FieldMode::Action },
+			{ Property::ExportLevel, "Export .lvl", "Save as...", FieldMode::Action },
+			{ Property::ExportObjects, "Object CSV", "Save as...", FieldMode::Action },
+			{ Property::ExportCells, "Cell CSV", "Save as...", FieldMode::Action }
 		};
 	}
 	if (Selected < 0 || level.GetObjects()[Selected].Kind() == static_cast<i32>(ObjectKind::Inactive))
@@ -838,6 +873,7 @@ std::vector<LevelEditor::Field> LevelEditor::Fields() const
 		fields.push_back({ Property::Texture, "Texture ID", std::to_string(record.TextureOrPermanent()) });
 		fields.push_back({ Property::Earlier, "Draw earlier", GetDocument().DrawsAtBottom(Selected) ? "Floor" : "Apply", GetDocument().DrawsAtBottom(Selected) ? FieldMode::ReadOnly : FieldMode::Action });
 		fields.push_back({ Property::Later, "Draw later", GetDocument().DrawsAtBottom(Selected) ? "Floor" : "Apply", GetDocument().DrawsAtBottom(Selected) ? FieldMode::ReadOnly : FieldMode::Action });
+		fields.push_back({ Property::NaturalDepth, "Natural depth", "Reset", FieldMode::Action });
 	}
 	if (definition && (definition->Category == CharacterCategory::Animal || definition->Category == CharacterCategory::Enemy))
 		fields.push_back({ Property::Facing, "Facing", std::to_string(record.Facing()), FieldMode::Cycle });
@@ -927,6 +963,11 @@ void LevelEditor::ApplyField(Property property, const str& text, i32 step)
 	case Property::Help:
 		GetDocument().SetCellHelp(SelectedCell, ParseInteger(text));
 		break;
+	case Property::ExportLevel:
+	case Property::ExportObjects:
+	case Property::ExportCells:
+		ExportFile(property);
+		break;
 	case Property::OpenPack:
 		Engine.ReloadPacks();
 		CatalogChanged = true;
@@ -945,8 +986,10 @@ void LevelEditor::ApplyField(Property property, const str& text, i32 step)
 		break;
 	case Property::ChooseLevel:
 		Picker = PickerKind::Level;
+		PendingDelete.reset();
 		Search.clear();
 		PickerFirst = PickerSelected = 0;
+		FocusProjectLevel();
 		break;
 	case Property::PackName:
 		Project.SetName(text);
@@ -995,6 +1038,10 @@ void LevelEditor::ApplyField(Property property, const str& text, i32 step)
 	}
 	case Property::Bottom:
 		GetDocument().SetDrawAtBottom(Selected, !GetDocument().DrawsAtBottom(Selected));
+		break;
+	case Property::NaturalDepth:
+		GetDocument().ResetSceneryDepth(Selected);
+		Notice = "Natural ground depth restored. Actors can pass in front of or behind this scenery.";
 		break;
 	case Property::Earlier:
 	case Property::Later:
@@ -1127,6 +1174,7 @@ bool LevelEditor::HandleInspector(const WindowInput::Result& input)
 	if (Picker != PickerKind::None && (input.Back || input.Editor))
 	{
 		Picker = PickerKind::None;
+		PendingDelete.reset();
 		return true;
 	}
 	if (input.BindingKey == 'i' && !input.Control && Picker == PickerKind::None)
@@ -1228,6 +1276,7 @@ void LevelEditor::DrawInspector()
 
 void LevelEditor::ResetSelection()
 {
+	PendingDelete.reset();
 	Selected = SelectedCell = -1;
 	Palette.Reset();
 	ListSearch.clear();
@@ -1291,6 +1340,7 @@ std::vector<LevelEditor::PickerEntry> LevelEditor::PickerEntries(PickerKind pick
 
 void LevelEditor::ChoosePicker(size_t index)
 {
+	PendingDelete.reset();
 	const PickerKind kind = Picker;
 	if (kind == PickerKind::Theme)
 	{
@@ -1324,8 +1374,88 @@ void LevelEditor::ChoosePicker(size_t index)
 	Picker = PickerKind::None;
 }
 
+void LevelEditor::FocusProjectLevel()
+{
+	const std::vector<PickerEntry> entries = PickerEntries();
+	const auto current = std::find_if(entries.begin(), entries.end(), [&](const PickerEntry& entry) { return entry.Index == Project.GetActive(); });
+	PickerSelected = current == entries.end() ? 0 : static_cast<size_t>(std::distance(entries.begin(), current));
+	PickerFirst = PickerSelected >= PickerRows ? PickerSelected - PickerRows + 1 : 0;
+}
+
+void LevelEditor::ManageLevels(LevelAction action, size_t index)
+{
+	FinishPaintStroke();
+	if (action == LevelAction::Delete)
+	{
+		if (Project.GetEntries().size() == 1)
+		{
+			PendingDelete.reset();
+			Notice = "Cannot delete the last project level.";
+			return;
+		}
+		const LevelProject::Entry& entry = Project.GetEntries().at(index);
+		if (PendingDelete != entry.Id)
+		{
+			PendingDelete = entry.Id;
+			Notice = "Delete " + entry.Document->GetInfo().Name + "? Click Delete again; Esc cancels.";
+			return;
+		}
+	}
+	PendingDelete.reset();
+	if (action == LevelAction::Undo || action == LevelAction::Redo)
+	{
+		const bool changed = action == LevelAction::Undo ? Project.Undo() : Project.Redo();
+		Notice = changed ? "Project action restored. Level edits and their separate history are retained." : "No project action to restore.";
+	}
+	else
+	{
+		Project.Select(index);
+		if (action == LevelAction::Delete)
+		{
+			Project.DeleteLevel();
+			Notice = "Level removed from project. Undo here restores it; Ctrl+S saves the pack.";
+		}
+		else
+			Notice = Project.MoveLevel(action == LevelAction::Later) ? "Level order changed within its levelset. Ctrl+S saves the pack." : "Already at this end of the levelset.";
+	}
+	const str search = Search;
+	ResetSelection();
+	Picker = PickerKind::Level;
+	Search = search;
+	FocusProjectLevel();
+}
+
 bool LevelEditor::HandlePicker(const WindowInput::Result& input)
 {
+	if (Picker == PickerKind::Level)
+	{
+		if (input.SaveEditor || input.Playtest)
+		{
+			PendingDelete.reset();
+			return false;
+		}
+		const bool toolbarUndo = input.Click && ToolbarVisible() && Mouse.y >= 0 && Mouse.y < 26 && Mouse.x >= 300 && Mouse.x < 500;
+		if (input.Undo || input.Redo || toolbarUndo)
+		{
+			ManageLevels(input.Redo || (toolbarUndo && Mouse.x >= 400) ? LevelAction::Redo : LevelAction::Undo);
+			return true;
+		}
+		const RECT bounds = InspectorBounds();
+		if (input.Click && Mouse.x >= bounds.left && Mouse.x < bounds.right && Mouse.y >= bounds.bottom - 108 && Mouse.y < bounds.bottom - 52)
+		{
+			if (Mouse.y >= bounds.bottom - 80)
+				ManageLevels(Mouse.x < bounds.left + PanelWidth / 2 ? LevelAction::Undo : LevelAction::Redo);
+			else
+			{
+				const std::vector<PickerEntry> entries = PickerEntries();
+				if (!entries.empty())
+					ManageLevels(static_cast<LevelAction>((Mouse.x - bounds.left) * 3 / PanelWidth), entries[std::min(PickerSelected, entries.size() - 1)].Index);
+			}
+			return true;
+		}
+		if (input.Click || input.RightClick || input.Enter || input.Up || input.Down || input.Wheel != 0 || input.Erase || !input.Text.empty() || (input.Control && input.BindingKey == 'a'))
+			PendingDelete.reset();
+	}
 	const str previous = Search;
 	if (input.Control && input.BindingKey == 'a')
 		Search.clear();
@@ -1381,7 +1511,19 @@ void LevelEditor::DrawPicker()
 		const i32 y = bounds.top + FieldHeight + static_cast<i32>(row) * FieldHeight;
 		if (PickerFirst + row == PickerSelected)
 			Commands.push_back({ &FieldBar, bounds.left + 4, y, 0 });
-		Font.Append(Commands, FitText(Font, entries[PickerFirst + row].Label, PanelWidth - 16), bounds.left + 8, y + 4);
+		const PickerEntry& entry = entries[PickerFirst + row];
+		const str label = Picker == PickerKind::Level ? std::to_string(entry.Index + 1) + ". " + entry.Label : entry.Label;
+		Font.Append(Commands, FitText(Font, label, PanelWidth - 16), bounds.left + 8, y + 4);
+	}
+	if (Picker == PickerKind::Level)
+	{
+		Commands.push_back({ &FieldBar, bounds.left + 4, bounds.bottom - 108, 0 });
+		Commands.push_back({ &FieldBar, bounds.left + 4, bounds.bottom - 80, 0 });
+		Font.Append(Commands, "Earlier", bounds.left + 8, bounds.bottom - 104);
+		Font.Append(Commands, "Later", bounds.left + PanelWidth / 3 + 8, bounds.bottom - 104);
+		Font.Append(Commands, PendingDelete ? "Delete again?" : "Delete", bounds.left + PanelWidth * 2 / 3 + 4, bounds.bottom - 104);
+		Font.Append(Commands, Project.CanUndo() ? "Undo project" : "Undo (-)", bounds.left + 8, bounds.bottom - 76);
+		Font.Append(Commands, Project.CanRedo() ? "Redo project" : "Redo (-)", bounds.left + PanelWidth / 2 + 8, bounds.bottom - 76);
 	}
 	Font.Append(Commands, "Type to search; arrows/wheel; Enter picks.", bounds.left + 8, bounds.bottom - 36);
 	Font.Append(Commands, "Esc cancels; Ctrl+A clears search.", bounds.left + 8, bounds.bottom - 18);
@@ -1420,6 +1562,9 @@ LevelEditor::Placement LevelEditor::PlacementAt(POINT point)
 	const i32 tile = LevelDocument::TileAt(point.x, point.y);
 	const Choice& choice = Choices.at(ChoiceIndex);
 	SpriteDraw draw = GetDocument().PlacementPreview(choice.Kind, tile, choice.Texture);
+	const CharacterDefinition* character = FindCharacterDefinition(choice.Kind);
+	if (character && character->Category == CharacterCategory::Animal)
+		draw.Frame = Palette.GetAnimalPlacement().Facing;
 	POINT anchor{ (tile % Stride - 1) * TileSize + TileSize / 2, (tile / Stride - 1) * TileSize + TileSize / 2 };
 	if (choice.Kind == ObjectKind::Scenery)
 	{
@@ -1662,6 +1807,7 @@ bool LevelEditor::HandlePalette(const WindowInput::Result& input)
 		if (found == Choices.end())
 			throw std::runtime_error("Palette entry is unavailable in this runtime.");
 		ChoiceIndex = static_cast<i32>(std::distance(Choices.begin(), found));
+		Palette.Select(entry.Kind, entry.Texture);
 		Selected = -1;
 		CurrentTool = Tool::Place;
 		SelectCells = Dragging = false;

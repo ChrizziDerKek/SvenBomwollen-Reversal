@@ -89,6 +89,15 @@ PlacementPalette::Result PlacementPalette::Handle(const WindowInput::Result& inp
 	Refresh(document);
 	Result result;
 	const bool inside = Contains(bounds, input.Mouse);
+	if (inside && HasAnimalDefaults() && (input.Click || input.RightClick) && input.Mouse.y >= bounds.bottom - FooterHeight)
+	{
+		if (input.Mouse.x < bounds.left + Width / 2)
+			AnimalDefaults.Facing = (AnimalDefaults.Facing + (input.RightClick ? 3 : 1)) % 4;
+		else
+			AnimalDefaults.Impatience = (AnimalDefaults.Impatience + (input.RightClick ? 10 : 1)) % 11;
+		SearchFocused = false;
+		return { true, {} };
+	}
 	if (SearchFocused && !input.Click)
 	{
 		if (input.Back || input.Editor)
@@ -128,6 +137,12 @@ PlacementPalette::Result PlacementPalette::Handle(const WindowInput::Result& inp
 		return result;
 	}
 	const i32 top = bounds.top + HeaderHeight;
+	if (HasSceneryDepth() && (input.Click || input.RightClick) && input.Mouse.y >= bounds.bottom - FooterHeight)
+	{
+		SceneryDepth = static_cast<LevelDocument::SceneryOrder>((static_cast<i32>(SceneryDepth) + (input.RightClick ? 2 : 1)) % 3);
+		SearchFocused = false;
+		return { true, {} };
+	}
 	if (input.Click)
 	{
 		SearchFocused = !IsProperties() && !IsView() && !IsRaw() && input.Mouse.y >= top + TabHeight && input.Mouse.y < top + TabHeight + SearchHeight;
@@ -213,7 +228,10 @@ const Sprite* PlacementPalette::Thumbnail(const LevelDocument& document, const E
 {
 	if (entry.Brush >= 0)
 		return &BrushIcons.at(entry.Brush);
-	const SpriteDraw draw = document.PlacementPreview(entry.Kind, LevelDocument::TileAt(20, 20), entry.Texture);
+	SpriteDraw draw = document.PlacementPreview(entry.Kind, LevelDocument::TileAt(20, 20), entry.Texture);
+	const CharacterDefinition* character = FindCharacterDefinition(entry.Kind);
+	if (character && character->Category == CharacterCategory::Animal)
+		draw.Frame = AnimalDefaults.Facing;
 	const auto key = std::make_pair(draw.Sprite, draw.Frame);
 	auto found = Thumbnails.find(key);
 	if (found == Thumbnails.end())
@@ -279,7 +297,21 @@ void PlacementPalette::Append(std::vector<SpriteDraw>& commands, const LevelDocu
 		else
 			font.Append(commands, EditorGraphics::FitText(font, label, CellWidth - 8), x + 4, y + ThumbnailSize + 7);
 	}
-	font.Append(commands, std::to_string(entries.size()) + " choices | wheel scrolls", bounds.left + 6, bounds.bottom - FooterHeight + 4);
+	constexpr cstr depthModes[] = { "Natural", "Stack scenery", "Floor" };
+	const str footer = HasSceneryDepth() ? str("Depth: ") + depthModes[static_cast<i32>(SceneryDepth)] + " | click changes" : std::to_string(entries.size()) + " choices | wheel scrolls";
+	if (HasAnimalDefaults())
+	{
+		font.Append(commands, "Facing: " + std::to_string(AnimalDefaults.Facing), bounds.left + 6, bounds.bottom - FooterHeight + 4);
+		font.Append(commands, "Impatience: " + std::to_string(AnimalDefaults.Impatience), bounds.left + Width / 2 + 6, bounds.bottom - FooterHeight + 4);
+	}
+	else
+		font.Append(commands, footer, bounds.left + 6, bounds.bottom - FooterHeight + 4);
+}
+
+bool PlacementPalette::HasAnimalDefaults() const
+{
+	const CharacterDefinition* character = FindCharacterDefinition(SelectedKind);
+	return (Category == Group::All || Category == Group::Actors) && character && character->Category == CharacterCategory::Animal;
 }
 
 void PlacementPalette::Select(ObjectKind kind, i32 texture)

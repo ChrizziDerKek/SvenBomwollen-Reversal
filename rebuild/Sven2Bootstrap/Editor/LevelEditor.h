@@ -190,7 +190,11 @@ private:
 		Duplicate,
 		ImportLevel,
 		ChooseLevel,
-		OpenPack
+		OpenPack,
+		ExportLevel,
+		ExportObjects,
+		ExportCells,
+		NaturalDepth
 	};
 	enum class FieldMode
 	{
@@ -227,6 +231,16 @@ private:
 	};
 	std::vector<PickerEntry> PickerEntries() const;
 	void ChoosePicker(size_t index);
+	enum class LevelAction
+	{
+		Earlier,
+		Later,
+		Delete,
+		Undo,
+		Redo
+	};
+	void ManageLevels(LevelAction action, size_t index = 0);
+	void FocusProjectLevel();
 	bool HandlePicker(const WindowInput::Result& input);
 	void DrawPicker();
 	std::vector<PickerEntry> PickerEntries(PickerKind pickerKind, const str& search) const;
@@ -270,6 +284,7 @@ private:
 	i32 Pick(POINT point, bool cycle = false, bool sceneryOnly = false);
 	void Playtest();
 	void Save();
+	void ExportFile(Property property);
 	MudGE& Engine;
 	LevelProject Project;
 	PlacementPalette Palette;
@@ -310,6 +325,7 @@ private:
 	str Search;
 	size_t PickerFirst = 0, PickerSelected = 0;
 	i32 PendingPack = -1;
+	std::optional<u64> PendingDelete;
 	i32 SelectedCell = -1, TileChoice = 1;
 	bool EditingField = false, ReplaceText = false;
 	Property CurrentField = Property::Title;

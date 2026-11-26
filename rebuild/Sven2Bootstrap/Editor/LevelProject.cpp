@@ -16,7 +16,7 @@ void ValidateName(const str& name)
 LevelProject::LevelProject(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& level)
     : Engine(engine), Source(pack), Name(UniqueName(pack.Edition))
 {
-	Entries.push_back({ "Edited", std::make_unique<LevelDocument>(engine, pack, level) });
+	Entries.push_back({ "Edited", std::make_shared<LevelDocument>(engine, pack, level), NextId++ });
 	SavedStructure = Structure();
 }
 
@@ -35,7 +35,7 @@ str LevelProject::Structure() const
 {
 	str result = Name + '\n';
 	for (const Entry& entry : Entries)
-		result += entry.Episode + '\n';
+		result += std::to_string(entry.Id) + ':' + entry.Episode + '\n';
 	return result;
 }
 
@@ -50,13 +50,21 @@ void LevelProject::SetName(const str& name)
 	// Pack IDs also identify portable highscore files.
 	if (name.find_first_of("<>:\"/\\|?*") != str::npos)
 		throw std::runtime_error("Pack names cannot contain filename separators or reserved filename characters.");
-	Name = name;
+	if (Name != name)
+	{
+		Remember();
+		Name = name;
+	}
 }
 
 void LevelProject::SetEpisode(const str& name)
 {
 	ValidateName(name);
-	Entries.at(Active).Episode = name;
+	if (Entries.at(Active).Episode != name)
+	{
+		Remember();
+		Entries.at(Active).Episode = name;
+	}
 }
 
 void LevelProject::Select(size_t index)
@@ -80,7 +88,7 @@ void LevelProject::Open(const LevelPackInfo& pack)
 	for (const LevelSetInfo& episode : pack.LevelSets)
 	{
 		for (const LevelInfo& level : episode.Levels)
-			entries.push_back({ episode.Name, std::make_unique<LevelDocument>(Engine, pack, level) });
+			entries.push_back({ episode.Name, std::make_shared<LevelDocument>(Engine, pack, level), NextId++ });
 	}
 	if (entries.empty())
 		throw std::runtime_error("That pack has no registered levels.");
@@ -93,6 +101,8 @@ void LevelProject::Open(const LevelPackInfo& pack)
 	ProjectId.clear();
 	SavedMaps.clear();
 	SavedStructure = Structure();
+	History.clear();
+	Future.clear();
 }
 
 void LevelProject::New()
@@ -103,20 +113,23 @@ void LevelProject::New()
 	std::unique_ptr<LevelDocument> document = LevelDocument::Blank(Engine, pack, info);
 	const str name = UniqueName(Source.Edition);
 	Entries.clear();
-	Entries.push_back({ "My levels", std::move(document) });
+	Entries.push_back({ "My levels", std::move(document), NextId++ });
 	Active = 0;
 	Name = name;
 	Folder.clear();
 	ProjectId.clear();
 	SavedMaps.clear();
 	SavedStructure.clear();
+	History.clear();
+	Future.clear();
 }
 
 void LevelProject::AddBlank()
 {
 	const str episode = Entries.at(Active).Episode;
 	std::unique_ptr<LevelDocument> document = LevelDocument::Blank(Engine, Current().GetPack(), NewInfo());
-	Entries.push_back({ episode, std::move(document) });
+	Remember();
+	Entries.push_back({ episode, std::move(document), NextId++ });
 	Active = Entries.size() - 1;
 }
 
@@ -126,7 +139,8 @@ void LevelProject::Duplicate()
 	info.Name = Current().GetInfo().Name + " copy";
 	const str episode = Entries.at(Active).Episode;
 	std::unique_ptr<LevelDocument> document = std::make_unique<LevelDocument>(Engine, Current().GetPack(), info, Current().GetBytes());
-	Entries.push_back({ episode, std::move(document) });
+	Remember();
+	Entries.push_back({ episode, std::move(document), NextId++ });
 	Active = Entries.size() - 1;
 }
 
@@ -158,8 +172,65 @@ void LevelProject::Import(const fpath& path)
 	if (players < 1 || players > (Source.Edition == GameEdition::Zwo ? size_t{ 1 } : size_t{ 2 }))
 		throw std::runtime_error("The imported level has invalid player starts.");
 	const str episode = Entries.at(Active).Episode;
-	Entries.push_back({ episode, std::move(document) });
+	Remember();
+	Entries.push_back({ episode, std::move(document), NextId++ });
 	Active = Entries.size() - 1;
+}
+
+void LevelProject::Remember()
+{
+	if (History.size() == 128)
+		History.erase(History.begin());
+	History.push_back({ Entries, Active, Name });
+	Future.clear();
+}
+
+bool LevelProject::Restore(std::vector<Snapshot>& from, std::vector<Snapshot>& to)
+{
+	if (from.empty())
+		return false;
+	to.push_back({ Entries, Active, Name });
+	Entries = std::move(from.back().Entries);
+	Active = from.back().Active;
+	Name = std::move(from.back().Name);
+	from.pop_back();
+	return true;
+}
+
+bool LevelProject::Undo()
+{
+	return Restore(History, Future);
+}
+
+bool LevelProject::Redo()
+{
+	return Restore(Future, History);
+}
+
+bool LevelProject::MoveLevel(bool later)
+{
+	const str& episode = Entries.at(Active).Episode;
+	size_t target = Active;
+	while (later ? target + 1 < Entries.size() : target > 0)
+	{
+		target = later ? target + 1 : target - 1;
+		if (Entries[target].Episode != episode)
+			continue;
+		Remember();
+		std::swap(Entries[Active], Entries[target]);
+		Active = target;
+		return true;
+	}
+	return false;
+}
+
+void LevelProject::DeleteLevel()
+{
+	if (Entries.size() == 1)
+		throw std::runtime_error("A project must contain at least one level.");
+	Remember();
+	Entries.erase(Entries.begin() + Active);
+	Active = std::min(Active, Entries.size() - 1);
 }
 
 str LevelProject::Save()

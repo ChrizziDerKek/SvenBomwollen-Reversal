@@ -6,6 +6,8 @@
 #include <cmath>
 #include <algorithm>
 #include <limits>
+#include <locale>
+#include <iomanip>
 
 namespace
 {
@@ -272,12 +274,14 @@ void LevelDocument::Link(bytestream& bytes, size_t slot, ObjectKind kind, i32 ti
 	Set(bytes, slot, Word::Tile, tile);
 }
 
-i32 LevelDocument::Place(ObjectKind kind, i32 tile, i32 texture, const POINT* sceneryPosition)
+i32 LevelDocument::Place(ObjectKind kind, i32 tile, i32 texture, const POINT* sceneryPosition, SceneryOrder order, const AnimalPlacement* animal)
 {
 	CheckDestination(kind, tile);
 	if (sceneryPosition && kind != ObjectKind::Scenery)
 		throw std::runtime_error("Free positioning applies to scenery only.");
 	const CharacterDefinition* definition = FindCharacterDefinition(kind);
+	if (animal && (!definition || definition->Category != CharacterCategory::Animal || animal->Facing < 0 || animal->Facing > 3 || animal->Impatience < 0 || animal->Impatience > 10))
+		throw std::runtime_error("Animal placement requires an animal, facing 0..3 and impatience 0..10.");
 	if (definition && (definition->Category == CharacterCategory::Effect || (definition->XxxOnly && Engine.GetData().GetGameplayEdition() != GameEdition::XXX)))
 		throw std::runtime_error("This object is unavailable in this runtime.");
 	if (kind != ObjectKind::Scenery && !definition && !IsItem(kind))
@@ -312,10 +316,17 @@ i32 LevelDocument::Place(ObjectKind kind, i32 tile, i32 texture, const POINT* sc
 		Set(next, slot, Word::Frames, image->Rows * image->Columns);
 		Set(next, slot, Word::Idle, 900.0f);
 		Set(next, slot, Word::Rate, kind == ObjectKind::Sheep ? 20.0f : 15.0f);
-		Set(next, slot, Word::Mood, i32{ 6 });
+		Set(next, slot, Word::Mood, animal ? animal->Impatience : 6);
+		if (animal)
+		{
+			Set(next, slot, Word::Facing, animal->Facing);
+			Set(next, slot, Word::Frame, animal->Facing);
+		}
 		Set(next, slot, Word::Pulse, 26.0f);
 		i32 depthOffset = scenery ? 0 : (kind == ObjectKind::Player ? 30 : 40);
-		if (scenery)
+		if (scenery && order == SceneryOrder::Floor)
+			depthOffset = FloorDepthAdjustment;
+		if (scenery && order == SceneryOrder::Stack)
 		{
 			const SpriteDraw placed{ image, static_cast<i32>(x), static_cast<i32>(y), 0 };
 			f64 depth = y + image->FrameHeight;
@@ -732,6 +743,13 @@ bool LevelDocument::DrawsAtBottom(size_t slot) const
 	return record.Kind() == static_cast<i32>(ObjectKind::Scenery) && record.RenderPass() == 0 && record.DepthAdjustment() == FloorDepthAdjustment;
 }
 
+void LevelDocument::ResetSceneryDepth(size_t slot)
+{
+	if (Parsed->GetObjects().at(slot).Kind() != static_cast<i32>(ObjectKind::Scenery))
+		throw std::runtime_error("Natural depth applies to scenery only.");
+	Change([&](bytestream& next) { Write(next, ObjectOffset(next, slot, Word::Flags), u8{ 0 }); Set(next, slot, Word::Depth, i32{ 0 }); });
+}
+
 void LevelDocument::SetDrawAtBottom(size_t slot, bool enabled)
 {
 	if (Parsed->GetObjects().at(slot).Kind() != static_cast<i32>(ObjectKind::Scenery))
@@ -888,4 +906,54 @@ void LevelDocument::SetRawObjectWord(size_t slot, size_t word, u32 bits)
 			throw std::runtime_error("Facing is 0..3 for animals, 0..7 for enemies.");
 	}
 	Change([&](bytestream& next) { Set(next, slot, field, bits); });
+}
+
+str LevelDocument::InventoryCsv(InventoryKind kind) const
+{
+	std::ostringstream csv;
+	csv.imbue(std::locale::classic());
+	csv << std::setprecision(std::numeric_limits<f32>::max_digits10);
+	const bool objects = kind == InventoryKind::Objects;
+	csv << (objects ? "slot,kind,x,y,tile_link,pass_or_mirror,texture_or_permanent,depth_adjustment" : "raw,column,row,visible");
+	const size_t words = objects ? GetRawObject(0).size() : GetRawCell(0).size();
+	for (size_t word = 0; word < words; ++word)
+		csv << ",w" << word;
+	csv << "\r\n";
+	const size_t count = objects ? LevelFile::ObjectCount : LevelFile::CellCount;
+	for (size_t index = 0; index < count; ++index)
+	{
+		std::vector<u32> raw;
+		if (objects)
+		{
+			const LevelObjectRecord& record = Parsed->GetObjects()[index];
+			csv << index << ',' << record.Kind() << ',' << record.X() << ',' << record.Y() << ',' << record.Tile() << ',' << record.RenderPass() << ',' << record.TextureOrPermanent() << ',' << record.DepthAdjustment();
+			const std::array<u32, 25> values = GetRawObject(index);
+			raw.assign(values.begin(), values.end());
+		}
+		else
+		{
+			csv << index << ',' << static_cast<i32>(index % Stride) - 1 << ',' << static_cast<i32>(index / Stride) - 1 << ',' << (ValidTile(static_cast<i32>(index)) ? 1 : 0);
+			const std::array<u32, 6> values = GetRawCell(index);
+			raw.assign(values.begin(), values.end());
+		}
+		for (u32 bits : raw)
+		{
+			i32 value;
+			std::memcpy(&value, &bits, 4);
+			csv << ',' << value;
+		}
+		csv << "\r\n";
+	}
+	return csv.str();
+}
+
+void LevelDocument::ExportLevel(const fpath& path) const
+{
+	EditorFiles::Export(Engine.GetData(), path, Bytes, L".lvl");
+}
+
+void LevelDocument::ExportInventory(const fpath& path, InventoryKind kind) const
+{
+	const str csv = InventoryCsv(kind);
+	EditorFiles::Export(Engine.GetData(), path, bytestream(csv.begin(), csv.end()), L".csv");
 }
