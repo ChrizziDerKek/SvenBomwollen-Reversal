@@ -2,6 +2,7 @@
 #include "LevelProject.h"
 #include "PlacementPalette.h"
 #include "EditorViewport.h"
+#include "RawInspector.h"
 #include "Game/GameSession.h"
 #include "Input/WindowInput.h"
 
@@ -48,6 +49,7 @@ public:
 		return Preview && Preview->UfoActive() && !Preview->GetResults();
 	}
 	bool RequestWindowClose();
+	void FinishPaintStroke();
 	bool HasSaved() const
 	{
 		return Saved;
@@ -166,6 +168,7 @@ private:
 		X,
 		Y,
 		Depth,
+		Bottom,
 		Pass,
 		Frame,
 		Texture,
@@ -251,15 +254,26 @@ private:
 	bool HandleView(const WindowInput::Result& input);
 	RECT PaletteBounds() const;
 	bool HandlePalette(const WindowInput::Result& input);
+	void ContinuePaintStroke();
+	struct PaintGesture
+	{
+		LevelDocument* Document;
+		i32 Brush;
+		bool Erase;
+		i32 LastTile = -1;
+		std::array<bool, LevelFile::CellCount> Visited{};
+	};
+	std::optional<PaintGesture> Painting;
 	void ChangeChoice(i32 step);
 	void BuildChoices();
 	void BuildObjects();
-	i32 Pick(POINT point, bool cycle = false);
+	i32 Pick(POINT point, bool cycle = false, bool sceneryOnly = false);
 	void Playtest();
 	void Save();
 	MudGE& Engine;
 	LevelProject Project;
 	PlacementPalette Palette;
+	RawInspector Raw;
 	EditorViewport Viewport;
 	std::array<bool, static_cast<size_t>(Layer::Count)> Layers{ true, true, true, true, true, true, true, true, true, false };
 	inline static constexpr std::array<cstr, static_cast<size_t>(Layer::Count)> LayerNames{ "Background", "Scenery", "Player starts", "Animals", "Enemies", "Items", "Special actors", "Tiles / spawners", "Grid", "Labels" };

@@ -1,5 +1,6 @@
 #include "EditorChecks.h"
 #include "Editor/LevelEditor.h"
+#include "Game/GameUi.h"
 #include "Scene/Characters/Characters.h"
 #include <fstream>
 #include <algorithm>
@@ -496,11 +497,11 @@ void CheckEditorUsability(MudGE& engine, const LevelPackInfo& pack, const LevelI
 	click(pointer.Mouse.x, pointer.Mouse.y);
 	Require(placement.GetDocument().GetLevel().GetObjects()[2].X() == image->X && placement.GetDocument().GetLevel().GetObjects()[2].Y() == image->Y, "Committed scenery position differs from its preview.");
 	click(700, 500);
-	Require(placement.GetDocument().GetLevel().GetObjects()[3].Kind() == static_cast<i32>(ObjectKind::Inactive), "Scenery placement was not one-shot like the standalone editor.");
+	Require(placement.GetDocument().GetLevel().GetObjects()[3].Kind() == static_cast<i32>(ObjectKind::Scenery), "Scenery placement did not remain active for another click.");
 	key('p');
 	key('a');
 	click(113, 157);
-	Require(placement.GetDocument().GetLevel().GetObjects()[3].X() == 113 && placement.GetDocument().GetLevel().GetObjects()[3].Y() == 157, "Canvas-origin anchor no longer supports exact legacy placement.");
+	Require(placement.GetDocument().GetLevel().GetObjects()[4].X() == 113 && placement.GetDocument().GetLevel().GetObjects()[4].Y() == 157, "Canvas-origin anchor no longer supports exact legacy placement.");
 	key('p');
 	key('a');
 	key('n');
@@ -618,7 +619,7 @@ void CheckEditorUsability(MudGE& engine, const LevelPackInfo& pack, const LevelI
 	input.Playtest = true;
 	browse(input);
 	Require(!browser.IsPlaytesting() && browser.GetDocument().GetBytes() == hiddenBefore, "HUD toggles or playtest changed authored data.");
-	Log("PASS: editor cursor hotspot, centered/origin anchors and exact preview/commit, one-shot scenery, persistent searchable object list, UI gesture ownership, hidden interface hit testing and playtest HUD toggle.");
+	Log("PASS: editor cursor hotspot, centered/origin anchors and exact preview/commit, persistent scenery placement, persistent searchable object list, UI gesture ownership, hidden interface hit testing and playtest HUD toggle.");
 }
 
 void CheckPaletteAndMusic(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& level, bool capture)
@@ -983,6 +984,412 @@ void CheckPlacementOrder(MudGE& engine, const LevelPackInfo& pack, const LevelIn
 	Log("PASS: later opaque-overlapping scenery stays above earlier scenery, recycled slots, single-step undo/redo and saved native render order.");
 }
 
+void CheckContinuousPainting(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& level, bool capture)
+{
+	LevelEditor editor(engine, pack, level, 1, true);
+	auto send = [&](WindowInput::Result input) { editor.Handle(input, 0); };
+	auto key = [&](i32 binding) { WindowInput::Result input; input.BindingKey = binding; send(input); };
+	auto undo = [&]() { WindowInput::Result input; input.Undo = true; send(input); };
+	auto redo = [&]() { WindowInput::Result input; input.Redo = true; send(input); };
+	auto brush = [&](i32 index) {
+		WindowInput::Result input;
+		input.Click = true;
+		input.Mouse = { 240, 10 };
+		send(input);
+		const RECT sidebar = editor.GetPaletteBounds();
+		input.Mouse = { sidebar.left + index % PlacementPalette::Columns * PlacementPalette::CellWidth + 10, sidebar.top + PlacementPalette::HeaderHeight + PlacementPalette::TabHeight + PlacementPalette::SearchHeight + index / PlacementPalette::Columns * PlacementPalette::CellHeight + 10 };
+		send(input);
+		key('b');
+	};
+	auto drag = [&](POINT start, POINT end, bool erase = false) {
+		WindowInput::Result input;
+		input.Mouse = editor.ScreenAt(start);
+		input.Click = input.MouseHeld = !erase;
+		input.RightClick = input.RightHeld = erase;
+		send(input);
+		input.Click = input.RightClick = false;
+		input.Mouse = editor.ScreenAt(end);
+		send(input);
+		input.MouseHeld = input.RightHeld = false;
+		send(input);
+	};
+	LevelDocument& document = editor.GetDocument();
+	document.Place(ObjectKind::Sheep, LevelDocument::TileAt(300, 100));
+	document.Place(ObjectKind::Bone, LevelDocument::TileAt(380, 100));
+	const bytestream before = document.GetBytes();
+	brush(1);
+	drag({ 100, 100 }, { 500, 100 });
+	for (i32 x = 100; x <= 500; x += 40)
+	{
+		const OccupancyCode terrain = document.GetLevel().GetCells()[LevelDocument::TileAt(x, 100)].Terrain;
+		Require(x == 300 ? terrain == OccupancyCode::Sheep : (x == 380 ? terrain == OccupancyCode::Empty : terrain == OccupancyCode::Wall), "Continuous stroke missed a gap or overwrote a linked actor/item.");
+	}
+	const bytestream painted = document.GetBytes();
+	undo();
+	Require(document.GetBytes() == before, "Undo did not remove the entire sparse-sample stroke.");
+	redo();
+	Require(document.GetBytes() == painted, "Redo did not restore the exact stroke bytes.");
+	drag({ 100, 100 }, { 500, 100 }, true);
+	Require(document.GetBytes() == before, "Right-drag did not erase only terrain across the whole stroke.");
+	undo();
+	Require(document.GetBytes() == painted, "Erase stroke was not a single undo entry.");
+	undo();
+	Require(document.GetBytes() == before, "Painting and erasing strokes were merged together.");
+	brush(0);
+	drag({ 620, 500 }, { 660, 500 });
+	redo();
+	Require(document.GetBytes() == painted, "A no-op stroke destroyed redo history.");
+	undo();
+	brush(3);
+	drag({ 100, 180 }, { 300, 380 });
+	for (i32 step = 0; step <= 5; ++step)
+		Require(document.GetLevel().GetCells()[LevelDocument::TileAt(100 + step * 40, 180 + step * 40)].Terrain == OccupancyCode::Water, "Diagonal stroke left a gap.");
+	undo();
+	Require(document.GetBytes() == before, "Diagonal stroke undo changed unrelated cells.");
+
+	brush(1);
+	key('b'); // Show the sidebar while a canvas stroke owns its gesture.
+	WindowInput::Result input;
+	input.Click = input.MouseHeld = true;
+	input.Mouse = { 500, 220 };
+	send(input);
+	input.Click = false;
+	input.Mouse = { 100, 220 };
+	send(input);
+	input.Mouse = { 500, 380 };
+	send(input);
+	input.Mouse = { 350, 10 }; // Crossing Undo must not click it.
+	send(input);
+	input.MouseHeld = false;
+	send(input);
+	Require(document.GetLevel().GetCells()[LevelDocument::TileAt(500, 220)].Terrain == OccupancyCode::Wall && document.GetLevel().GetCells()[LevelDocument::TileAt(500, 380)].Terrain == OccupancyCode::Wall && document.GetLevel().GetCells()[LevelDocument::TileAt(500, 300)].Terrain == OccupancyCode::Empty && document.GetLevel().GetCells()[LevelDocument::TileAt(100, 220)].Terrain == OccupancyCode::Empty, "Stroke painted behind UI, bridged a suspended segment or activated Undo.");
+	undo();
+	Require(document.GetBytes() == before, "UI-suspended stroke split its history group.");
+	key('b');
+	input = {};
+	input.Control = true;
+	input.Wheel = 4;
+	input.Mouse = { 400, 300 };
+	send(input);
+	input = {};
+	input.MiddleHeld = true;
+	input.Mouse = { 400, 300 };
+	send(input);
+	input.Mouse = { 450, 330 };
+	send(input);
+	input.MiddleHeld = false;
+	send(input);
+	drag({ 340, 220 }, { 500, 220 });
+	for (i32 x = 340; x <= 500; x += 40)
+		Require(document.GetLevel().GetCells()[LevelDocument::TileAt(x, 220)].Terrain == OccupancyCode::Wall, "Zoom/pan stroke painted in screen coordinates.");
+	if (capture)
+		engine.DrawFrame(editor.Draws(), pack.Edition == GameEdition::XXX ? "editor-continuous-stroke-xxx.bmp" : "editor-continuous-stroke-zwo.bmp");
+	undo();
+	Require(document.GetBytes() == before, "Zoomed stroke undo lost bytes.");
+	key('0');
+	for (i32 index : { 2, 4, 5, 6 })
+	{
+		brush(index);
+		drag({ 20, 60 }, { 780, 60 });
+		i32 count = 0;
+		for (i32 x = 20; x < 800; x += 40)
+		{
+			const LevelCell& cell = document.GetLevel().GetCells()[LevelDocument::TileAt(x, 60)];
+			count += index == 2 ? cell.Terrain == OccupancyCode::Puddle : cell.Spawner == PlacementPalette::GetTileBrushes()[index].Spawner;
+		}
+		Require(count == 16 && (index != 2 || document.GetLevel().GetPuddles().size() == 16), "Continuous brush broke the native 16-marker cap or puddle table.");
+		undo();
+		Require(document.GetBytes() == before, "Limited marker stroke could not be undone in one step.");
+	}
+	brush(1);
+	input = {};
+	input.Click = input.MouseHeld = true;
+	input.Mouse = { 100, 460 };
+	send(input);
+	input.Click = false;
+	input.Mouse = { 260, 460 };
+	send(input);
+	editor.FinishPaintStroke(); // GameApp uses this on focus loss.
+	undo();
+	Require(document.GetBytes() == before, "Focus-loss stroke boundary did not commit a single undo step.");
+	input = {};
+	input.Click = input.MouseHeld = true;
+	input.Mouse = { 100, 420 };
+	send(input);
+	input.Click = false;
+	input.Mouse = { 260, 420 };
+	send(input);
+	input.Playtest = true;
+	send(input);
+	const bytestream playtestBytes = document.GetBytes();
+	Require(editor.IsPlaytesting(), "Held stroke did not finish before F5 playtest.");
+	input = {};
+	input.Playtest = true;
+	send(input);
+	Require(document.GetBytes() == playtestBytes, "Playtest rewrote the committed stroke.");
+	undo();
+	Require(document.GetBytes() == before, "Playtest split the stroke's undo group.");
+	Log("PASS: continuous paint/right-erase, sparse and diagonal interpolation, grouped undo/redo, no-op redo retention, protected actors/items, UI suspension, zoom/pan, all marker limits and focus/playtest boundaries.");
+}
+
+void CheckSceneryWorkflow(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& level, bool capture)
+{
+	LevelEditor editor(engine, pack, level, 1, true);
+	auto send = [&](WindowInput::Result input) { return editor.Handle(input, 0); };
+	auto key = [&](i32 binding) { WindowInput::Result input; input.BindingKey = binding; return send(input); };
+	auto click = [&](POINT point, bool right = false) { WindowInput::Result input; input.Mouse = point; input.Click = !right; input.RightClick = right; return send(input); };
+	auto count = [&]() { return std::count_if(editor.GetDocument().GetLevel().GetObjects().begin(), editor.GetDocument().GetLevel().GetObjects().end(), [](const LevelObjectRecord& record) { return record.Kind() == static_cast<i32>(ObjectKind::Scenery); }); };
+	WindowInput::Result input;
+	input.Click = true;
+	input.Mouse = { 140, 10 };
+	send(input);
+	const RECT sidebar = editor.GetPaletteBounds();
+	click({ sidebar.left + PlacementPalette::Width / PlacementPalette::TabsPerRow + 4, sidebar.top + PlacementPalette::HeaderHeight + 4 });
+	click({ sidebar.left + 10, sidebar.top + PlacementPalette::HeaderHeight + PlacementPalette::TabHeight + PlacementPalette::SearchHeight + 10 });
+	key('b');
+	key('n');
+	key('a');
+	click({ 100, 100 });
+	const i32 first = editor.GetSelectedObject();
+	click({ 400, 100 });
+	const i32 second = editor.GetSelectedObject();
+	click({ 650, 400 });
+	Require(count() == 3 && first != second, "Scenery clicks did not place three independent objects.");
+	LevelDocument& document = editor.GetDocument();
+	auto opaquePoint = [&](i32 slot) {
+		const LevelObjectRecord& record = document.GetLevel().GetObjects()[slot];
+		const Sprite* art = document.GetSprite(record);
+		const i32 sx = record.Frame() % art->Columns * art->FrameWidth, sy = record.Frame() / art->Columns * art->FrameHeight;
+		for (i32 y = 0; y < art->FrameHeight; ++y)
+		{
+			for (i32 x = 0; x < art->FrameWidth; ++x)
+			{
+				const POINT point{ static_cast<i32>(record.X()) + x, static_cast<i32>(record.Y()) + y };
+				if (point.x >= 0 && point.x < 800 && point.y >= 26 && point.y < 574 && (!art->Keyed || (art->Pixels[(sy + y) * art->Width + sx + x] & 0xFFFFFF) != 0xFF00FF))
+					return point;
+			}
+		}
+		throw std::runtime_error("No visible scenery hit pixel in workflow fixture.");
+	};
+	const bytestream placed = document.GetBytes();
+	click(opaquePoint(first), true);
+	Require(count() == 2 && document.GetLevel().GetObjects()[first].Kind() == static_cast<i32>(ObjectKind::Inactive), "Scenery right-click did not delete the opaque hit.");
+	input = {};
+	input.Undo = true;
+	send(input);
+	Require(document.GetBytes() == placed, "Right-click deletion was not independently undoable.");
+	input = {};
+	input.Back = true;
+	Require(!send(input) && editor.GetSelectedObject() == -1 && document.GetBytes() == placed, "Escape did not leave placement without editing/closing.");
+	click({ 740, 550 });
+	Require(count() == 3, "Escape left the scenery placement tool active.");
+	key('v');
+	click(opaquePoint(first));
+	Require(editor.GetSelectedObject() == first, "Selection mode did not pick scenery after Escape.");
+	input = {};
+	input.Back = true;
+	Require(!send(input) && editor.GetSelectedObject() == -1, "Escape did not clear the selected object.");
+	click(opaquePoint(first));
+	key('i');
+	RECT properties = editor.GetInspectorBounds();
+	click({ properties.left + 90, properties.top + 4 });
+	properties = editor.GetInspectorBounds();
+	// Object subtab: five common fields, render pass, then Draw at bottom.
+	click({ properties.left + 180, properties.top + 24 + 6 * 28 + 4 });
+	Require(document.DrawsAtBottom(first) && document.GetLevel().GetObjects()[first].RenderPass() == 0, "Properties did not enable native floor depth.");
+	const bytestream floor = document.GetBytes();
+	Require(Rejects([&]() { document.SetDrawAtBottom(0, true); }) && Rejects([&]() { document.Reorder(first, true); }) && document.GetBytes() == floor, "Floor mode allowed an actor or silently changed its depth.");
+	if (capture)
+		engine.DrawFrame(editor.Draws(), pack.Edition == GameEdition::XXX ? "editor-floor-properties-xxx.bmp" : "editor-floor-properties-zwo.bmp");
+	input = {};
+	input.Undo = true;
+	send(input);
+	Require(document.GetBytes() == placed, "Floor checkbox was not one undo step.");
+	input = {};
+	input.Redo = true;
+	send(input);
+	Require(document.GetBytes() == floor && document.DrawsAtBottom(first), "Floor checkbox redo lost its serialized state.");
+	document.Move(first, 0, 40, false);
+	if (document.GetTileSet().Tiles.size() > 1)
+		document.SetObjectProperty(first, LevelDocument::ObjectProperty::Texture, 1);
+	Require(document.DrawsAtBottom(first), "Moving/resizing scenery lost floor mode.");
+	const LevelInfo preview = document.WritePreview(pack.AssetPrefix + "_editor_floor/level.lvl");
+	LevelDocument roundtrip(engine, document.GetPack(), preview);
+	Require(roundtrip.DrawsAtBottom(first), "Reloaded level lost floor depth.");
+	LevelScene scene(engine, document.GetPack(), preview, 1);
+	for (i32 frame = 0; frame < 3; ++frame)
+	{
+		scene.Update(.1f, 0, frame - 1, false);
+		const LevelObjectRecord& record = document.GetLevel().GetObjects()[first];
+		const Sprite* art = document.GetSprite(record);
+		const std::vector<SpriteDraw>& draws = scene.Draws();
+		const auto ground = std::find_if(draws.begin(), draws.end(), [&](const SpriteDraw& draw) { return draw.Sprite == art && draw.X == static_cast<i32>(record.X()) && draw.Y == static_cast<i32>(record.Y()); });
+		Require(ground != draws.end(), "Native game omitted floor scenery.");
+		for (const WorldObject& actor : scene.GetObjects().CopyStates())
+		{
+			if (actor.Kind == ObjectKind::Scenery || !actor.Draw.Sprite)
+				continue;
+			const auto visible = std::find_if(draws.begin(), draws.end(), [&](const SpriteDraw& draw) { return draw.Sprite == actor.Draw.Sprite; });
+			Require(visible != draws.end() && ground < visible, "Floor scenery rendered over an actor during gameplay.");
+		}
+	}
+	if (capture)
+		engine.DrawFrame(scene.Draws(), pack.Edition == GameEdition::XXX ? "editor-floor-playtest-xxx.bmp" : "editor-floor-playtest-zwo.bmp");
+	document.SetDrawAtBottom(first, false);
+	Require(!document.DrawsAtBottom(first) && document.GetLevel().GetObjects()[first].DepthAdjustment() == 0, "Disabling floor did not restore natural world depth.");
+	document.SetObjectProperty(first, LevelDocument::ObjectProperty::Pass, 1);
+	document.SetDrawAtBottom(first, true);
+	Require(document.DrawsAtBottom(first) && document.GetLevel().GetObjects()[first].RenderPass() == 0, "Floor mode did not clear foreground.");
+	document.SetObjectProperty(first, LevelDocument::ObjectProperty::Pass, 1);
+	Require(!document.DrawsAtBottom(first) && document.GetLevel().GetObjects()[first].DepthAdjustment() == 0, "Changing render pass retained conflicting floor depth.");
+	Log("PASS: persistent scenery clicks, opaque right-click deletion/undo, Escape selection behavior and saved native floor depth beneath actors, including movement/texture/pass changes.");
+}
+
+void CheckEditorMenu(MudGE& engine, bool capture)
+{
+	const bool xxx = engine.GetData().GetThemeEdition() == GameEdition::XXX;
+	const fpath saves = engine.GetData().GetRoot().parent_path() / "editor-menu-saves";
+	GameUi menu(engine, saves);
+	WindowInput::Result input;
+	input.Mouse = { xxx ? 730 : 680, 510 };
+	input.MouseMoved = true;
+	Require(menu.Handle(input) == UiAction::None, "Hovering Editor activated it.");
+	const Sprite* buttons = engine.LoadSprite(engine.GetData().ThemeAsset("Sven2/gfx/mainmenu_buttons.bmp"), xxx ? 12 : 10, 1);
+	const std::vector<SpriteDraw>& draws = menu.Draws(0);
+	Require(std::any_of(draws.begin(), draws.end(), [&](const SpriteDraw& draw) { return draw.Sprite == buttons && draw.Frame == (xxx ? 10 : 8) && draw.Y == 500; }), "Editor button did not use its existing active asset frame.");
+	if (capture)
+		engine.DrawFrame(draws, xxx ? "editor-menu-xxx.bmp" : "editor-menu-zwo.bmp");
+	input.Click = true;
+	Require(menu.Handle(input) == UiAction::Editor && menu.GetPage() == GameUi::Page::Title, "Editor menu click did not request editor launch.");
+	menu.Show(GameUi::Page::GetPacks);
+	Require(menu.Handle(input) == UiAction::None && menu.GetPage() == GameUi::Page::GetPacks, "Editor button remained active on a submenu.");
+	GameUi keyboard(engine, saves);
+	input = {};
+	input.Tab = true;
+	for (i32 step = 0; step < (xxx ? 5 : 4); ++step)
+		keyboard.Handle(input);
+	input = {};
+	input.Confirm = true;
+	Require(keyboard.Handle(input) == UiAction::Editor, "Keyboard navigation could not activate Editor.");
+	Log("PASS: title Editor asset frame, mouse/keyboard launch action and submenu isolation.");
+}
+
+void CheckRawInspection(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& level, bool capture)
+{
+	std::unique_ptr<LevelDocument> raw = LevelDocument::Blank(engine, pack, level);
+	const bytestream original = raw->GetBytes();
+	Require(raw->GetRawObject(255).size() == 25 && raw->GetRawCell(373).size() == 6, "Raw inspector omitted inactive/border records.");
+	raw->SetRawObjectWord(255, 24, 0xDEADBEEF);
+	Require(raw->GetRawObject(255)[24] == 0xDEADBEEF && raw->Undo() && raw->GetBytes() == original && raw->Redo(), "Raw object bits/undo/redo did not preserve exact bytes.");
+	const bytestream edited = raw->GetBytes();
+	RawInspector keys;
+	keys.Sync(*raw, 0, 23);
+	WindowInput::Result panelKey;
+	panelKey.Mouse = { 20, 60 };
+	panelKey.Right = true;
+	Require(keys.Handle(panelKey, *raw, { 0, 0, 320, 428 }), "Raw paging key leaked to world movement.");
+	panelKey.Right = false;
+	panelKey.Delete = true;
+	Require(keys.Handle(panelKey, *raw, { 0, 0, 320, 428 }) && raw->GetBytes() == edited, "Raw panel Delete leaked to the world selection.");
+
+	Require(Rejects([&]() { raw->SetRawObjectWord(0, 11, static_cast<u32>(ObjectKind::Goat)); }) && Rejects([&]() { raw->SetRawObjectWord(0, 20, 23); }) && Rejects([&]() { raw->SetRawObjectWord(0, 0, 0x7FC00000); }) && Rejects([&]() { raw->SetRawObjectWord(0, 5, 0); }) && Rejects([&]() { raw->SetRawObjectWord(0, 23, 0x80000000); }) && raw->GetBytes() == edited, "Invalid raw object edits changed data.");
+	const i32 oldTile = raw->GetLevel().GetObjects()[0].Tile();
+	const f32 x = raw->GetLevel().GetObjects()[0].X() + 80;
+	u32 bits;
+	std::memcpy(&bits, &x, 4);
+	raw->SetRawObjectWord(0, 0, bits);
+	Require(raw->GetLevel().GetObjects()[0].Tile() == oldTile + 2 && raw->GetLevel().GetCells()[oldTile].Terrain == OccupancyCode::Empty && raw->GetLevel().GetCells()[oldTile + 2].Terrain == OccupancyCode::Player, "Raw actor movement did not repair tile ownership.");
+	raw->Undo();
+	Require(raw->GetBytes() == edited, "Raw actor movement was not atomic.");
+	const size_t tile = LevelDocument::TileAt(100, 100);
+	const u32 direction = raw->GetRawCell(tile)[1] & 255;
+	raw->SetRawCellWord(tile, 1, 0xAABBCC00 | direction);
+	Require(raw->GetRawCell(tile)[1] == (0xAABBCC00 | direction) && raw->GetLevel().GetCells()[tile].Direction == direction, "Raw packed cell bits changed the direction byte.");
+	raw->SetRawCellWord(tile, 5, (7u << 16) | static_cast<u32>(SpawnerCode::Distraction));
+	Require(raw->GetLevel().GetCells()[tile].Spawner == SpawnerCode::Distraction && raw->GetRawCell(tile)[5] >> 16 == 7, "Raw spawner/help write lost packed bytes.");
+	const bytestream cells = raw->GetBytes();
+	Require(Rejects([&]() { raw->SetRawCellWord(tile, 2, 20); }) && Rejects([&]() { raw->SetRawCellWord(tile, 4, 20); }) && Rejects([&]() { raw->SetRawCellWord(tile, 3, static_cast<u32>(ItemCode::Bone)); }) && Rejects([&]() { raw->SetRawCellWord(tile, 0, static_cast<u32>(OccupancyCode::Wall)); }) && raw->GetBytes() == cells, "Raw ownership/terrain validation corrupted a cell.");
+	Require(Rejects([&]() { raw->GetRawCell(374); }) && Rejects([&]() { raw->GetRawObject(256); }) && Rejects([&]() { raw->SetRawCellWord(0, 6, 0); }) && Rejects([&]() { raw->SetRawObjectWord(0, 25, 0); }), "Raw record/word bounds were not checked.");
+	for (i32 column = 0; column < 16; ++column)
+		raw->PaintTerrain(LevelDocument::TileAt(column * 40 + 20, 60), OccupancyCode::Puddle);
+	const bytestream capped = raw->GetBytes();
+	Require(Rejects([&]() { raw->SetRawCellWord(LevelDocument::TileAt(660, 60), 0, static_cast<u32>(OccupancyCode::Puddle)); }) && raw->GetBytes() == capped, "Raw terrain bypassed the native puddle cap.");
+
+	for (i32 column = 0; column < 15; ++column)
+		raw->SetSpawner(LevelDocument::TileAt(column * 40 + 20, 140), SpawnerCode::Distraction);
+	const bytestream spawners = raw->GetBytes();
+	Require(Rejects([&]() { raw->SetRawCellWord(LevelDocument::TileAt(660, 140), 5, static_cast<u32>(SpawnerCode::Distraction)); }) && raw->GetBytes() == spawners, "Raw spawner word bypassed the native marker cap.");
+	LevelEditor editor(engine, pack, level, 1, true);
+	const i32 scenery = editor.GetDocument().Place(ObjectKind::Scenery, LevelDocument::TileAt(100, 100));
+	const Sprite* sceneryArt = editor.GetDocument().GetSprite(ObjectKind::Scenery, 0);
+	Require(Rejects([&]() { editor.GetDocument().SetRawObjectWord(scenery, 12, sceneryArt->Rows * sceneryArt->Columns); }) && Rejects([&]() { editor.GetDocument().SetRawObjectWord(scenery, 17, static_cast<u32>(editor.GetDocument().GetTileSet().Tiles.size())); }), "Raw scenery accepted an invalid sprite/frame.");
+	auto send = [&](WindowInput::Result input) { return editor.Handle(input, 0); };
+	auto click = [&](POINT point) { WindowInput::Result input; input.Click = true; input.Mouse = point; send(input); };
+	auto text = [&](const str& value) { WindowInput::Result input; input.Text = value; send(input); input = {}; input.Enter = true; send(input); };
+	WindowInput::Result placing;
+	placing.BindingKey = 'p';
+	send(placing);
+	const RECT sidebar = editor.GetPaletteBounds();
+	click({ sidebar.left + 3 * (PlacementPalette::Width / PlacementPalette::TabsPerRow) + 4, sidebar.top + PlacementPalette::HeaderHeight + PlacementPalette::TabRowHeight + 4 });
+	RECT bounds = editor.GetInspectorBounds();
+	click({ bounds.left + 40, bounds.top + 28 });
+	text(std::to_string(scenery));
+	WindowInput::Result input;
+	input.Mouse = { bounds.left + 20, bounds.top + 60 };
+	input.Wheel = -20;
+	send(input);
+	click({ bounds.left + 20, bounds.top + 56 + 9 * 24 + 4 });
+	const bytestream beforeValue = editor.GetDocument().GetBytes();
+	text("0x00000005");
+	Require(editor.GetDocument().GetRawObject(scenery)[24] == 5, "Raw sidebar did not edit a paged object word from hex.");
+	if (capture)
+		engine.DrawFrame(editor.Draws(), pack.Edition == GameEdition::XXX ? "editor-raw-object-xxx.bmp" : "editor-raw-object-zwo.bmp");
+	input = {};
+	input.Undo = true;
+	send(input);
+	Require(editor.GetDocument().GetBytes() == beforeValue, "Raw UI edit did not use ordinary undo.");
+	click({ bounds.left + 180, bounds.top + 4 });
+	click({ bounds.left + 40, bounds.top + 28 });
+	text("373");
+	const u32 border = editor.GetDocument().GetRawCell(373)[1];
+	click({ bounds.left + 20, bounds.top + 56 + 24 + 4 });
+	text(std::to_string((border & 255) | 0x00120000));
+	Require(editor.GetDocument().GetRawCell(373)[1] == ((border & 255) | 0x00120000), "Raw border cell inspection/edit did not use the requested index.");
+	const bytestream valid = editor.GetDocument().GetBytes();
+	click({ bounds.left + 20, bounds.bottom - 52 });
+	text("0x100000000");
+	Require(editor.GetDocument().GetBytes() == valid, "Raw UI accepted a value wider than 32 bits.");
+	input = {};
+	input.Back = true;
+	Require(!send(input) && editor.GetDocument().GetBytes() == valid, "Raw invalid-edit Escape closed the editor or changed bytes.");
+	MoveSidebar(editor, 480, 50);
+	if (capture)
+		engine.DrawFrame(editor.Draws(), pack.Edition == GameEdition::XXX ? "editor-raw-cell-xxx.bmp" : "editor-raw-cell-zwo.bmp");
+	click({ 100, 100 });
+	Require(editor.GetSelectedCell() == LevelDocument::TileAt(100, 100) && editor.GetSelectedObject() == -1 && editor.GetDocument().GetBytes() == valid, "Raw cell selection placed an actor or selected scenery over the cell.");
+	const LevelInfo exported = editor.GetDocument().WritePreview(pack.AssetPrefix + "_editor_raw/level.lvl");
+	LevelDocument reloaded(engine, editor.GetDocument().GetPack(), exported);
+	Require(reloaded.GetRawCell(373) == editor.GetDocument().GetRawCell(373), "Raw unknown bits were lost on save/reload.");
+	LevelEditor clean(engine, pack, level, 1);
+	const RECT cleanSidebar = clean.GetPaletteBounds();
+	input = {};
+	input.Click = true;
+	input.Mouse = { cleanSidebar.left + 3 * (PlacementPalette::Width / PlacementPalette::TabsPerRow) + 4, cleanSidebar.top + PlacementPalette::HeaderHeight + PlacementPalette::TabRowHeight + 4 };
+	clean.Handle(input, 0);
+	const RECT cleanRaw = clean.GetInspectorBounds();
+	input.Mouse = { cleanRaw.left + 20, cleanRaw.top + 60 };
+	clean.Handle(input, 0);
+	input = {};
+	input.Text = "0x3F800000";
+	clean.Handle(input, 0);
+	Require(!clean.GetDocument().IsDirty() && !clean.RequestWindowClose(), "Window close ignored a pending raw edit on an otherwise clean document.");
+	input = {};
+	input.Back = true;
+	clean.Handle(input, 0);
+	Require(!clean.GetDocument().IsDirty() && clean.RequestWindowClose(), "Cancelling a pending raw edit left a false dirty-close guard.");
+	Log("PASS: raw 25-word objects/all 374 six-word cells, exact bit edits, atomic undo, linked movement, ownership/range/cap protection and sidebar index/hex/paging/focus/save behavior.");
+}
+
 } // namespace
 
 void CheckIntegratedEditor(MudGE& engine, const LevelPackInfo& pack, LevelInfo level, bool capture)
@@ -1195,5 +1602,9 @@ void CheckIntegratedEditor(MudGE& engine, const LevelPackInfo& pack, LevelInfo l
 	CheckPaletteAndMusic(engine, pack, level, capture);
 	CheckViewportAndLayers(engine, pack, level, capture);
 	CheckPlacementOrder(engine, pack, level);
+	CheckContinuousPainting(engine, pack, level, capture);
+	CheckSceneryWorkflow(engine, pack, level, capture);
+	CheckEditorMenu(engine, capture);
+	CheckRawInspection(engine, pack, level, capture);
 	Log("PASS: integrated editor " + suffix + " exact data preservation, placement/move/delete/rotate, collision, undo/redo, protected export, catalog reload, playtest isolation/cleanup and close guards.");
 }

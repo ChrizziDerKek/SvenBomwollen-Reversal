@@ -17,6 +17,7 @@ public:
 		Tiles,
 		Properties,
 		View,
+		Raw,
 		Count
 	};
 	struct TileBrush
@@ -57,6 +58,10 @@ public:
 	void Select(ObjectKind kind, i32 texture);
 	void Reset();
 	void Show(Group group);
+	bool IsRaw() const
+	{
+		return Category == Group::Raw;
+	}
 	bool IsView() const
 	{
 		return Category == Group::View;

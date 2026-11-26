@@ -140,6 +140,7 @@ WindowInput::Result WindowInput::Poll()
 	input.MouseHeld = held[VK_LBUTTON];
 	input.MiddleHeld = held[VK_MBUTTON];
 	input.RightClick = pressed(VK_RBUTTON);
+	input.RightHeld = held[VK_RBUTTON];
 	GetCursorPos(&input.Mouse);
 	ScreenToClient(Window, &input.Mouse);
 	if (Scaled)

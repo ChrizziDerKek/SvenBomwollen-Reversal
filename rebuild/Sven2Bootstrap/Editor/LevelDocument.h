@@ -4,6 +4,8 @@
 #include "Engine/MudGE.h"
 #include <memory>
 #include <functional>
+#include <optional>
+#include <limits>
 
 class LevelDocument
 {
@@ -30,6 +32,7 @@ public:
 	size_t GetThemeIndex() const;
 	void MarkSaved()
 	{
+		EndTileStroke();
 		SavedBytes = Bytes;
 		SavedInfo = Info;
 	}
@@ -63,12 +66,20 @@ public:
 	void Rotate(size_t slot);
 	void SetObjectProperty(size_t slot, ObjectProperty property, f32 value);
 	void Reorder(size_t slot, bool later);
+	bool DrawsAtBottom(size_t slot) const;
+	void SetDrawAtBottom(size_t slot, bool enabled);
+	std::array<u32, 25> GetRawObject(size_t slot) const;
+	std::array<u32, 6> GetRawCell(size_t tile) const;
+	void SetRawObjectWord(size_t slot, size_t word, u32 bits);
+	void SetRawCellWord(size_t tile, size_t word, u32 bits);
 	void SetMetadata(const str& name, const str& music);
 	void SetTileSet(size_t index);
 	void SetTimeLimit(f32 seconds);
 	void SetUfoVisible(bool visible);
 	void SetWeather(WeatherMode mode);
 	void SetBonusMode(BonusMode mode);
+	void BeginTileStroke();
+	void EndTileStroke();
 	void PaintTerrain(i32 tile, OccupancyCode terrain);
 	void SetSpawner(i32 tile, SpawnerCode code);
 	void SetCellDirection(i32 tile, i32 direction);
@@ -83,12 +94,14 @@ public:
 	static i32 TileAt(i32 x, i32 y);
 
 private:
+	static constexpr i32 FloorDepthAdjustment = std::numeric_limits<i32>::max();
 	struct Snapshot
 	{
 		bytestream Bytes;
 		LevelInfo Info;
 	};
 	void Change(const std::function<void(bytestream&)>& operation, const LevelInfo* info = nullptr);
+	void ValidateSpawner(i32 tile, SpawnerCode code) const;
 	void ClearLinks(bytestream& bytes, size_t slot) const;
 	void Link(bytestream& bytes, size_t slot, ObjectKind kind, i32 tile) const;
 	void CheckDestination(ObjectKind kind, i32 tile, i32 ignore = -1) const;
@@ -99,4 +112,5 @@ private:
 	bytestream Bytes, SavedBytes;
 	std::unique_ptr<LevelFile> Parsed;
 	std::vector<Snapshot> History, Future;
+	std::optional<Snapshot> StrokeStart;
 };

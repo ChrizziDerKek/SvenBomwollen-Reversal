@@ -15,7 +15,8 @@ enum class UiAction
 	Resume,
 	Abandon,
 	Exit,
-	NextLevel
+	NextLevel,
+	Editor
 };
 
 class GameUi

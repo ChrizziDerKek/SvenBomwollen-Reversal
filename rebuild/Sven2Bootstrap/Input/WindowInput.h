@@ -63,7 +63,7 @@ public:
 		bool Erase = false;
 		bool Debug = false;
 		bool Editor = false, Playtest = false, SaveEditor = false, Undo = false, Redo = false, Delete = false;
-		bool MiddleHeld = false, MouseHeld = false, RightClick = false, CloseRequested = false;
+		bool MiddleHeld = false, MouseHeld = false, RightHeld = false, RightClick = false, CloseRequested = false;
 		bool Shift = false, Control = false, Enter = false;
 		i32 BindingKey = -1;
 		i32 Wheel = 0;

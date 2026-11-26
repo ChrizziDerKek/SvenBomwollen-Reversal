@@ -130,7 +130,7 @@ PlacementPalette::Result PlacementPalette::Handle(const WindowInput::Result& inp
 	const i32 top = bounds.top + HeaderHeight;
 	if (input.Click)
 	{
-		SearchFocused = !IsProperties() && !IsView() && input.Mouse.y >= top + TabHeight && input.Mouse.y < top + TabHeight + SearchHeight;
+		SearchFocused = !IsProperties() && !IsView() && !IsRaw() && input.Mouse.y >= top + TabHeight && input.Mouse.y < top + TabHeight + SearchHeight;
 		if (input.Mouse.y >= top && input.Mouse.y < top + TabHeight)
 		{
 			Category = static_cast<Group>(std::min(GroupCount - 1, static_cast<i32>(input.Mouse.x - bounds.left) / (Width / TabsPerRow) + static_cast<i32>(input.Mouse.y - top) / TabRowHeight * TabsPerRow));
@@ -138,7 +138,7 @@ PlacementPalette::Result PlacementPalette::Handle(const WindowInput::Result& inp
 			FirstRow = 0;
 		}
 	}
-	if (IsProperties() || IsView())
+	if (IsProperties() || IsView() || IsRaw())
 		return { input.Click || input.RightClick || input.Wheel != 0, {} };
 	const std::vector<size_t> entries = Filtered();
 	const i32 rows = VisibleRows(bounds);
@@ -235,11 +235,11 @@ void PlacementPalette::Append(std::vector<SpriteDraw>& commands, const LevelDocu
 	commands.push_back({ &Header, bounds.left, bounds.top, 0 });
 	font.Append(commands, "Editor - drag to move", bounds.left + 6, bounds.top + 4);
 	font.Append(commands, "Grid", bounds.left + GridX, bounds.top + 4);
-	constexpr cstr groups[] = { "All", "Scenery", "Actors", "Items", "Tiles", "Props", "View" };
+	constexpr cstr groups[] = { "All", "Scenery", "Actors", "Items", "Tiles", "Props", "View", "Raw" };
 	commands.push_back({ &Tab, bounds.left + static_cast<i32>(Category) % TabsPerRow * (Width / TabsPerRow), bounds.top + HeaderHeight + static_cast<i32>(Category) / TabsPerRow * TabRowHeight, 0 });
 	for (i32 index = 0; index < GroupCount; ++index)
 		font.Append(commands, groups[index], bounds.left + index % TabsPerRow * (Width / TabsPerRow) + 1, bounds.top + HeaderHeight + index / TabsPerRow * TabRowHeight + 4);
-	if (IsProperties() || IsView())
+	if (IsProperties() || IsView() || IsRaw())
 		return;
 	commands.push_back({ &SearchBar, bounds.left, bounds.top + HeaderHeight + TabHeight, 0 });
 	font.Append(commands, EditorGraphics::FitText(font, "Find: " + Search + (SearchFocused ? "_" : ""), Width - 12), bounds.left + 6, bounds.top + HeaderHeight + TabHeight + 4);

@@ -370,6 +370,8 @@ Highscores& GameUi::Scores()
 
 i32 GameUi::ButtonAt(POINT point) const
 {
+	if (CurrentPage == Page::Title && Within(point, Theme == GameEdition::XXX ? 680 : 630, 500, 120, 30))
+		return Theme == GameEdition::XXX ? 5 : 4;
 	if (Theme == GameEdition::XXX)
 	{
 		constexpr i32 positions[] = { 10, 170, 340, 480, 680 }, widths[] = { 140, 140, 120, 200, 120 };
@@ -606,11 +608,13 @@ UiAction GameUi::Handle(const WindowInput::Result& input)
 			return UiAction::Start;
 	}
 	if (input.Tab || (CurrentPage == Page::Title && (input.Left || input.Right)))
-		SelectedButton = Wrap(SelectedButton + (input.Left ? -1 : 1), Theme == GameEdition::XXX ? 5 : 4);
+		SelectedButton = Wrap(SelectedButton + (input.Left ? -1 : 1), (Theme == GameEdition::XXX ? 5 : 4) + (CurrentPage == Page::Title ? 1 : 0));
 	const i32 hovered = ButtonAt(input.Mouse);
 	if (input.MouseMoved && hovered >= 0)
 		SelectedButton = hovered;
 	const i32 activated = input.Click ? hovered : (CurrentPage == Page::Title && input.Confirm ? SelectedButton : -1);
+	if (CurrentPage == Page::Title && activated == (Theme == GameEdition::XXX ? 5 : 4))
+		return UiAction::Editor;
 	if (Theme == GameEdition::XXX && activated >= 0)
 	{
 		switch (activated)
@@ -664,6 +668,11 @@ void GameUi::Centered(const BitmapFont& font, const str& text, i32 center, i32 y
 
 void GameUi::AppendButtons()
 {
+	if (CurrentPage == Page::Title || (CurrentPage == Page::Quit && QuitReturn == Page::Title))
+	{
+		const i32 editor = Theme == GameEdition::XXX ? 5 : 4;
+		DrawCommands.push_back({ Buttons, Theme == GameEdition::XXX ? 680 : 630, 500, editor * 2 + (SelectedButton != editor) });
+	}
 	if (Theme == GameEdition::XXX)
 	{
 		// XXX 0x439689-0x439731: one-player, two-player, help, scores, exit.

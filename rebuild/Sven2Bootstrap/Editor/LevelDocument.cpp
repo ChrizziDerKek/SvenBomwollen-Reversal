@@ -141,17 +141,21 @@ void LevelDocument::Change(const std::function<void(bytestream&)>& operation, co
 	std::unique_ptr<LevelFile> parsed = std::make_unique<LevelFile>(next, Info.Map);
 	if (next == Bytes && metadata.Name == Info.Name && metadata.TileSet == Info.TileSet && metadata.Music == Info.Music)
 		return;
-	if (History.size() == 128)
-		History.erase(History.begin());
-	History.push_back({ std::move(Bytes), std::move(Info) });
+	if (!StrokeStart)
+	{
+		if (History.size() == 128)
+			History.erase(History.begin());
+		History.push_back({ std::move(Bytes), std::move(Info) });
+		Future.clear();
+	}
 	Bytes = std::move(next);
 	Info = std::move(metadata);
 	Parsed = std::move(parsed);
-	Future.clear();
 }
 
 bool LevelDocument::Undo()
 {
+	EndTileStroke();
 	if (History.empty())
 		return false;
 	Future.push_back({ std::move(Bytes), std::move(Info) });
@@ -164,6 +168,7 @@ bool LevelDocument::Undo()
 
 bool LevelDocument::Redo()
 {
+	EndTileStroke();
 	if (Future.empty())
 		return false;
 	History.push_back({ std::move(Bytes), std::move(Info) });
@@ -558,6 +563,27 @@ void LevelDocument::RebuildTeleporters()
 	SetTeleporters(destinations);
 }
 
+void LevelDocument::BeginTileStroke()
+{
+	if (StrokeStart)
+		throw std::runtime_error("A tile stroke is already active.");
+	StrokeStart = Snapshot{ Bytes, Info };
+}
+
+void LevelDocument::EndTileStroke()
+{
+	if (!StrokeStart)
+		return;
+	if (Bytes != StrokeStart->Bytes)
+	{
+		if (History.size() == 128)
+			History.erase(History.begin());
+		History.push_back(std::move(*StrokeStart));
+		Future.clear();
+	}
+	StrokeStart.reset();
+}
+
 void LevelDocument::PaintTerrain(i32 tile, OccupancyCode terrain)
 {
 	if (!ValidTile(tile) || (terrain != OccupancyCode::Empty && terrain != OccupancyCode::Wall && terrain != OccupancyCode::Puddle && terrain != OccupancyCode::Water))
@@ -588,7 +614,7 @@ void LevelDocument::PaintTerrain(i32 tile, OccupancyCode terrain)
 	});
 }
 
-void LevelDocument::SetSpawner(i32 tile, SpawnerCode code)
+void LevelDocument::ValidateSpawner(i32 tile, SpawnerCode code) const
 {
 	if (!ValidTile(tile) || (code != SpawnerCode::None && !IsSpawner(code)))
 		throw std::runtime_error("Choose a valid spawner group and visible cell.");
@@ -600,6 +626,11 @@ void LevelDocument::SetSpawner(i32 tile, SpawnerCode code)
 	const LevelCell& cell = Parsed->GetCells()[tile];
 	if (code != SpawnerCode::None && ((cell.Terrain != OccupancyCode::Empty && !IsEnemyOccupancy(cell.Terrain) && cell.Terrain != OccupancyCode::Player) || (cell.Spawner != SpawnerCode::None && !IsSpawner(cell.Spawner))))
 		throw std::runtime_error("Use an open cell or an enemy/player start for a spawner.");
+}
+
+void LevelDocument::SetSpawner(i32 tile, SpawnerCode code)
+{
+	ValidateSpawner(tile, code);
 	Change([&](bytestream& next) {
 		const size_t offset = Grid(next) + tile * CellBytes + 20;
 		Write(next, offset, (Read<u32>(next, offset) & 0xFFFF0000u) | static_cast<u32>(code));
@@ -659,7 +690,7 @@ void LevelDocument::SetObjectProperty(size_t slot, ObjectProperty property, f32 
 	case ObjectProperty::Pass:
 		if (kind != ObjectKind::Scenery || integer < 0 || integer > 1)
 			throw std::runtime_error("Scenery render pass must be 0 (sorted) or 1 (foreground).");
-		Change([&](bytestream& next) { Write(next, ObjectOffset(next, slot, Word::Flags), static_cast<u8>(integer)); });
+		Change([&](bytestream& next) { Write(next, ObjectOffset(next, slot, Word::Flags), static_cast<u8>(integer)); if (DrawsAtBottom(slot)) Set(next, slot, Word::Depth, i32{ 0 }); });
 		return;
 	case ObjectProperty::Frame:
 		if (kind != ObjectKind::Scenery || integer < 0 || integer >= GetSprite(record)->Rows * GetSprite(record)->Columns)
@@ -695,17 +726,35 @@ void LevelDocument::SetObjectProperty(size_t slot, ObjectProperty property, f32 
 	Change([&](bytestream& next) { Set(next, slot, word, integer); });
 }
 
+bool LevelDocument::DrawsAtBottom(size_t slot) const
+{
+	const LevelObjectRecord& record = Parsed->GetObjects().at(slot);
+	return record.Kind() == static_cast<i32>(ObjectKind::Scenery) && record.RenderPass() == 0 && record.DepthAdjustment() == FloorDepthAdjustment;
+}
+
+void LevelDocument::SetDrawAtBottom(size_t slot, bool enabled)
+{
+	if (Parsed->GetObjects().at(slot).Kind() != static_cast<i32>(ObjectKind::Scenery))
+		throw std::runtime_error("Draw at bottom applies to scenery only.");
+	if (!enabled && !DrawsAtBottom(slot))
+		return;
+	// The native sorted pass understands this depth; no new flags or render pass.
+	Change([&](bytestream& next) { Write(next, ObjectOffset(next, slot, Word::Flags), u8{ 0 }); Set(next, slot, Word::Depth, enabled ? FloorDepthAdjustment : 0); });
+}
+
 void LevelDocument::Reorder(size_t slot, bool later)
 {
 	const LevelObjectRecord& record = Parsed->GetObjects().at(slot);
 	if (record.Kind() != static_cast<i32>(ObjectKind::Scenery))
 		throw std::runtime_error("Draw earlier/later applies to scenery.");
+	if (DrawsAtBottom(slot))
+		throw std::runtime_error("Turn off Draw at bottom before changing world depth order.");
 	const f32 current = record.Y() + record.Height() - record.DepthAdjustment();
 	f32 target = later ? std::numeric_limits<f32>::infinity() : -std::numeric_limits<f32>::infinity();
 	for (size_t index = 0; index < LevelFile::ObjectCount; ++index)
 	{
 		const LevelObjectRecord& other = Parsed->GetObjects()[index];
-		if (index == slot || other.Kind() == static_cast<i32>(ObjectKind::Inactive) || (other.Kind() == static_cast<i32>(ObjectKind::Scenery) ? other.RenderPass() : 0) != record.RenderPass())
+		if (index == slot || DrawsAtBottom(index) || other.Kind() == static_cast<i32>(ObjectKind::Inactive) || (other.Kind() == static_cast<i32>(ObjectKind::Scenery) ? other.RenderPass() : 0) != record.RenderPass())
 			continue;
 		const f32 depth = other.Y() + other.Height() - other.DepthAdjustment();
 		if (later ? depth >= current : depth <= current)
@@ -741,4 +790,102 @@ SpriteDraw LevelDocument::PlacementPreview(ObjectKind kind, i32 tile, i32 textur
 	const i32 y = (tile / Stride - 1) * TileSize + (scenery ? 0 : TileSize / 2 - image->FrameHeight / 2) - (kind == ObjectKind::Farmer ? 40 : (kind == ObjectKind::Girl ? 20 : 0));
 	const i32 frame = IsItem(kind) ? GetItemDefinition(kind).Frame : (kind == ObjectKind::Mermaid ? 11 : (kind == ObjectKind::BubbleEmitter || kind == ObjectKind::YellowEmitter ? 15 : 0));
 	return { image, x, y, frame };
+}
+
+std::array<u32, 25> LevelDocument::GetRawObject(size_t slot) const
+{
+	return Parsed->GetObjects().at(slot).GetWords();
+}
+
+std::array<u32, 6> LevelDocument::GetRawCell(size_t tile) const
+{
+	if (tile >= LevelFile::CellCount)
+		throw std::out_of_range("Raw cell index must be 0..373.");
+	std::array<u32, 6> words;
+	std::memcpy(words.data(), Bytes.data() + Grid(Bytes) + tile * CellBytes, CellBytes);
+	return words;
+}
+
+void LevelDocument::SetRawCellWord(size_t tile, size_t word, u32 bits)
+{
+	const std::array<u32, 6> current = GetRawCell(tile);
+	if (word >= current.size())
+		throw std::out_of_range("Raw cell word must be 0..5.");
+	if (current[word] == bits)
+		return;
+	if (word == 0)
+	{
+		PaintTerrain(static_cast<i32>(tile), static_cast<OccupancyCode>(bits));
+		return;
+	}
+	if (word == 2 || word == 4 || (word == 3 && (bits & 255) != (current[word] & 255)))
+		throw std::runtime_error("Use placement/deletion tools to change cell ownership or item codes.");
+	if (word == 1 && (bits & 255) != (current[word] & 255) && (!ValidTile(static_cast<i32>(tile)) || (bits & 255) > 7))
+		throw std::runtime_error("Direction must be 0..7 on a visible cell.");
+	if (word == 5 && Parsed->GetVersion() == 7 && (bits >> 16) != (current[word] >> 16) && (bits >> 16) > 256)
+		throw std::runtime_error("XXX help IDs are 0..256.");
+	if (word == 5 && (bits & 0xFFFF) != (current[word] & 0xFFFF))
+		ValidateSpawner(static_cast<i32>(tile), static_cast<SpawnerCode>(bits & 0xFFFF));
+	Change([&](bytestream& next) { Write(next, Grid(next) + tile * CellBytes + word * 4, bits); });
+}
+
+void LevelDocument::SetRawObjectWord(size_t slot, size_t word, u32 bits)
+{
+	const std::array<u32, 25> current = GetRawObject(slot);
+	if (word >= current.size())
+		throw std::out_of_range("Raw object word must be 0..24.");
+	if (current[word] == bits)
+		return;
+	const Word field = static_cast<Word>(word);
+	const LevelObjectRecord& record = Parsed->GetObjects().at(slot);
+	const ObjectKind kind = static_cast<ObjectKind>(record.Kind());
+	i32 integer;
+	f32 real;
+	std::memcpy(&integer, &bits, 4);
+	std::memcpy(&real, &bits, 4);
+	if (field == Word::Kind || field == Word::Tile)
+		throw std::runtime_error("Use placement/movement tools to change object kinds or tile links.");
+	if (kind != ObjectKind::Inactive)
+	{
+		if (field == Word::X || field == Word::Y)
+		{
+			SetObjectProperty(slot, field == Word::X ? ObjectProperty::X : ObjectProperty::Y, real);
+			return;
+		}
+		if (field == Word::BaseX || field == Word::BaseY || field == Word::SpeedX || field == Word::SpeedY || field == Word::OffsetX || field == Word::OffsetY || field == Word::Idle || field == Word::Rate || field == Word::Pulse)
+		{
+			if (!std::isfinite(real) || std::abs(real) > 32767 || (field == Word::Rate && real <= 0))
+				throw std::runtime_error("Known float fields must be finite and within the native range; frame rate must be positive.");
+		}
+		if ((field == Word::Width || field == Word::Height) && (integer < 1 || integer > 8192))
+			throw std::runtime_error("Object size must be 1..8192.");
+		if (field == Word::Height || field == Word::Depth)
+		{
+			const f64 offset = static_cast<f64>(field == Word::Height ? integer : record.Height()) - (field == Word::Depth ? integer : record.DepthAdjustment());
+			if (offset < std::numeric_limits<i32>::min() || offset > std::numeric_limits<i32>::max())
+				throw std::runtime_error("Depth adjustment would overflow the native renderer.");
+		}
+		if (field == Word::Flags && (bits & 255) > 1)
+			throw std::runtime_error("Render-pass/mirror byte must be 0 or 1; upper packed bytes are preserved.");
+		if (field == Word::Texture && kind == ObjectKind::Scenery)
+		{
+			const Sprite* image = GetSprite(kind, integer);
+			if (record.Frame() < 0 || record.Frame() >= image->Rows * image->Columns)
+				throw std::runtime_error("Use the texture property to reset an incompatible frame.");
+		}
+		if (field == Word::Texture && IsItem(kind) && integer != 0 && integer != 1)
+			throw std::runtime_error("Item permanence must be 0 or 1.");
+		if (field == Word::Frame && kind == ObjectKind::Scenery)
+		{
+			const Sprite* image = GetSprite(record);
+			if (integer < 0 || integer >= image->Rows * image->Columns)
+				throw std::runtime_error("Scenery frame is outside its sprite sheet.");
+		}
+		if (field == Word::Frames && (integer < 1 || integer > 65536))
+			throw std::runtime_error("Frame count must be 1..65536.");
+		const CharacterDefinition* character = FindCharacterDefinition(kind);
+		if (field == Word::Facing && character && (character->Category == CharacterCategory::Animal || character->Category == CharacterCategory::Enemy) && (integer < 0 || integer >= (character->Category == CharacterCategory::Animal ? 4 : 8)))
+			throw std::runtime_error("Facing is 0..3 for animals, 0..7 for enemies.");
+	}
+	Change([&](bytestream& next) { Set(next, slot, field, bits); });
 }

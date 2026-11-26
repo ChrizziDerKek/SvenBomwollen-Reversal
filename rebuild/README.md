@@ -2,10 +2,10 @@
 
 The in-game editor supports objects, free scenery, terrain/teleports, random
 spawners, draw order, global themes and named multi-level folder projects.
-**F3** on the title screen starts a blank project; in a level it edits the map.
+**Editor** above Exit (or **F3**) on the title screen starts a blank project; in a level it edits the map.
 Use **T** to select cells beneath scenery, **V** for objects, drag the sidebar
 header to move it, and use its Project tab for blank/import/duplicate/open flows.
-**B** opens the thumbnail placement sidebar (scenery/actors/items/tiles/properties); **O** lists
+**B** opens the thumbnail placement sidebar (scenery/actors/items/tiles/properties/raw); **O** lists
 already placed objects. The I menu is the sidebar Props tab. Special objects are under Actors; tile/spawner brushes
 have their own tab. The second toolbar row has been replaced by this sidebar.
 **H** hides the interface/playtest HUD,
@@ -16,8 +16,14 @@ The editor loops the supplied `XXX/SvenXXX/sfx/editor.wav`; playtest uses level
 music and closing the editor restores the previous track. Its loudness now
 matches the title theme, with the original quiet WAV backed up under runtime.
 **Ctrl+wheel** zooms, **middle-drag** pans, **0** resets the canvas, and **L/View**
-opens visibility layers. Later overlapping scenery receives a saved depth
+opens visibility layers. Tile brushes support left-drag painting/right-drag
+erasing, with one undo step per stroke. Later overlapping scenery receives a saved depth
 adjustment to draw above earlier world scenery; character/foreground rules remain.
+Scenery supports repeated left-click placement and right-click deletion; Escape
+returns to selection. Props/Object's **Draw at bottom** keeps floor artwork beneath
+actors using the saved native depth field.
+The **Raw** sidebar tab inspects/edits all object/cell words as decimal or hex
+bits, with float readout, validation and normal undo/redo.
 See [editor controls and scope](EDITOR.md) and the persistent
 [editor progress](research/editor/PROGRESS.md).
 

@@ -141,12 +141,14 @@ void LevelEditor::BuildObjects()
 	}
 }
 
-i32 LevelEditor::Pick(POINT point, bool cycle)
+i32 LevelEditor::Pick(POINT point, bool cycle, bool sceneryOnly)
 {
 	BuildObjects();
 	std::vector<i32> hits;
 	for (auto object = Objects.rbegin(); object != Objects.rend(); ++object)
 	{
+		if (sceneryOnly && GetDocument().GetLevel().GetObjects()[object->Slot].Kind() != static_cast<i32>(ObjectKind::Scenery))
+			continue;
 		const SpriteDraw& draw = object->Draw;
 		const Sprite& sprite = *draw.Sprite;
 		i32 x = point.x - draw.X, y = point.y - draw.Y;
@@ -167,6 +169,7 @@ i32 LevelEditor::Pick(POINT point, bool cycle)
 
 void LevelEditor::Save()
 {
+	FinishPaintStroke();
 	const str path = Project.Save();
 	Saved = true;
 	Notice = "Saved " + path;
@@ -174,6 +177,7 @@ void LevelEditor::Save()
 
 void LevelEditor::Playtest()
 {
+	FinishPaintStroke();
 	if (Preview)
 	{
 		Preview.reset();
@@ -215,13 +219,52 @@ bool LevelEditor::Handle(const WindowInput::Result& input, f32 seconds, const st
 	}
 	try
 	{
+		if (Painting)
+		{
+			const bool held = Painting->Erase ? input.RightHeld : input.MouseHeld;
+			const bool command = input.Back || input.Editor || input.Playtest || input.SaveEditor || input.Undo || input.Redo || input.Delete || input.Erase || input.Tab || input.Left || input.Right || input.Up || input.Down || input.MiddleHeld || input.Wheel != 0 || input.BindingKey >= 0;
+			if (command)
+			{
+				FinishPaintStroke();
+				WindowInput::Result action = input;
+				action.Click = action.RightClick = action.MouseHeld = action.RightHeld = false;
+				const bool close = input.Back ? false : Handle(action, seconds, players);
+				UiPointerHeld = input.MouseHeld || input.RightHeld;
+				return close;
+			}
+			if (!held)
+			{
+				FinishPaintStroke();
+				UiPointerHeld = input.MouseHeld || input.RightHeld;
+			}
+			else
+				ContinuePaintStroke();
+			return false;
+		}
 		if (!Preview && Hud)
 		{
 			if (UiPointerHeld && !MovingPalette && !MovingList)
 			{
-				UiPointerHeld = input.MouseHeld;
-				if (input.MouseHeld)
+				UiPointerHeld = input.MouseHeld || input.RightHeld;
+				if (UiPointerHeld)
 					return false;
+			}
+			if (PaletteVisible && Palette.IsRaw())
+			{
+				Raw.Sync(GetDocument(), Selected, SelectedCell);
+				if (Raw.Handle(input, GetDocument(), InspectorBounds()))
+				{
+					if (input.Click || input.Enter || input.Erase || !input.Text.empty())
+						DiscardArmed = false;
+					CurrentTool = Tool::Select;
+					SelectCells = Raw.IsCell();
+					if (SelectCells)
+						Selected = -1;
+					if (input.Click)
+						UiPointerHeld = input.MouseHeld;
+					Dragging = false;
+					return false;
+				}
 			}
 			if (input.Click)
 				Palette.Blur();
@@ -254,6 +297,14 @@ bool LevelEditor::Handle(const WindowInput::Result& input, f32 seconds, const st
 			Hud = !Hud;
 			Dragging = MovingPalette = MovingList = UiPointerHeld = false;
 			ListSearchFocused = false;
+		}
+		if (input.Back && !Preview && (CurrentTool != Tool::Select || Selected >= 0 || Dragging || SelectCells))
+		{
+			CurrentTool = Tool::Select;
+			Selected = -1;
+			Dragging = SelectCells = DiscardArmed = false;
+			Notice = "Selection mode. Click an object to select it.";
+			return false;
 		}
 		if (input.Back || input.Editor)
 		{
@@ -388,6 +439,16 @@ bool LevelEditor::Handle(const WindowInput::Result& input, f32 seconds, const st
 		{
 			Dragging = false;
 			Selected = -1;
+			const bool sceneryTool = CurrentTool == Tool::Place && !Choices.empty() && Choices[ChoiceIndex].Kind == ObjectKind::Scenery;
+			if ((CurrentTool == Tool::Select || sceneryTool) && CanvasAt(Mouse))
+			{
+				const i32 target = Pick(WorldMouse, false, sceneryTool);
+				if (target >= 0 && GetDocument().GetLevel().GetObjects()[target].Kind() == static_cast<i32>(ObjectKind::Scenery))
+				{
+					GetDocument().Delete(target);
+					Notice = "Scenery deleted. Ctrl+Z restores it.";
+				}
+			}
 		}
 		if (CurrentTool == Tool::Select && Selected >= 0 && (input.Left || input.Right || input.Up || input.Down))
 		{
@@ -440,7 +501,7 @@ bool LevelEditor::Handle(const WindowInput::Result& input, f32 seconds, const st
 			case 7:
 			{
 				WindowInput::Result close;
-				close.Back = true;
+				close.Editor = true;
 				return Handle(close, 0);
 			}
 			}
@@ -461,11 +522,12 @@ bool LevelEditor::Handle(const WindowInput::Result& input, f32 seconds, const st
 			else if (CurrentTool == Tool::Collision)
 			{
 				Selected = -1;
-				const TileBrush& brush = TileBrushes[TileChoice];
-				if (brush.SpawnerOnly)
-					GetDocument().SetSpawner(SelectedCell, input.RightClick ? SpawnerCode::None : brush.Spawner);
-				else
-					GetDocument().PaintTerrain(SelectedCell, input.RightClick ? OccupancyCode::Empty : brush.Terrain);
+				GetDocument().BeginTileStroke();
+				Painting = PaintGesture{ &GetDocument(), TileChoice, input.RightClick };
+				Notice = input.RightClick ? "Erasing stroke; release to finish. Ctrl+Z undoes the stroke." : "Painting stroke; release to finish. Ctrl+Z undoes the stroke.";
+				ContinuePaintStroke();
+				if (!(input.RightClick ? input.RightHeld : input.MouseHeld))
+					FinishPaintStroke();
 			}
 			else if (CurrentTool == Tool::Place && !Choices.empty())
 			{
@@ -475,9 +537,8 @@ bool LevelEditor::Handle(const WindowInput::Result& input, f32 seconds, const st
 				Selected = GetDocument().Place(choice.Kind, placement.Tile, choice.Texture, choice.Kind == ObjectKind::Scenery ? &origin : nullptr);
 				if (choice.Kind == ObjectKind::Scenery)
 				{
-					CurrentTool = Tool::Select;
 					SelectCells = false;
-					Notice = "Scenery placed. P places another; A changes the anchor.";
+					Notice = "Scenery placed. Left-click places more; right-click deletes; Esc selects.";
 				}
 			}
 			else
@@ -614,6 +675,11 @@ const std::vector<SpriteDraw>& LevelEditor::Draws()
 			DrawInspector();
 		if (Hud && PaletteVisible && Palette.IsView())
 			DrawView();
+		if (Hud && PaletteVisible && Palette.IsRaw())
+		{
+			Raw.Sync(GetDocument(), Selected, SelectedCell);
+			Raw.Append(Commands, GetDocument(), InspectorBounds(), Font);
+		}
 		if (Hud && ObjectBrowser)
 			DrawObjectList();
 		if (Hud && PaletteVisible && Inspector && Picker != PickerKind::None)
@@ -631,7 +697,8 @@ std::vector<SoundRequest> LevelEditor::TakeAudioEvents()
 
 bool LevelEditor::RequestWindowClose()
 {
-	if ((Project.IsDirty() || EditingField) && !DiscardArmed)
+	FinishPaintStroke();
+	if ((Project.IsDirty() || EditingField || Raw.HasFocus()) && !DiscardArmed)
 	{
 		Preview.reset();
 		DiscardArmed = true;
@@ -761,15 +828,16 @@ std::vector<LevelEditor::Field> LevelEditor::Fields() const
 		{ Property::Kind, "Kind", definition ? definition->Name : std::to_string(record.Kind()), FieldMode::ReadOnly },
 		{ Property::X, "X (px)", Number(record.X()) },
 		{ Property::Y, "Y (px)", Number(record.Y()) },
-		{ Property::Depth, "Depth offset", std::to_string(record.DepthAdjustment()) }
+		{ Property::Depth, "Depth offset", GetDocument().DrawsAtBottom(Selected) ? "Floor" : std::to_string(record.DepthAdjustment()), GetDocument().DrawsAtBottom(Selected) ? FieldMode::ReadOnly : FieldMode::Text }
 	};
 	if (kind == ObjectKind::Scenery)
 	{
 		fields.push_back({ Property::Pass, "Render pass", record.RenderPass() ? "Foreground" : "World sorted", FieldMode::Cycle });
+		fields.push_back({ Property::Bottom, "Draw at bottom", GetDocument().DrawsAtBottom(Selected) ? "Yes" : "No", FieldMode::Cycle });
 		fields.push_back({ Property::Frame, "Texture frame", std::to_string(record.Frame()) });
 		fields.push_back({ Property::Texture, "Texture ID", std::to_string(record.TextureOrPermanent()) });
-		fields.push_back({ Property::Earlier, "Draw earlier", "Apply", FieldMode::Action });
-		fields.push_back({ Property::Later, "Draw later", "Apply", FieldMode::Action });
+		fields.push_back({ Property::Earlier, "Draw earlier", GetDocument().DrawsAtBottom(Selected) ? "Floor" : "Apply", GetDocument().DrawsAtBottom(Selected) ? FieldMode::ReadOnly : FieldMode::Action });
+		fields.push_back({ Property::Later, "Draw later", GetDocument().DrawsAtBottom(Selected) ? "Floor" : "Apply", GetDocument().DrawsAtBottom(Selected) ? FieldMode::ReadOnly : FieldMode::Action });
 	}
 	if (definition && (definition->Category == CharacterCategory::Animal || definition->Category == CharacterCategory::Enemy))
 		fields.push_back({ Property::Facing, "Facing", std::to_string(record.Facing()), FieldMode::Cycle });
@@ -925,6 +993,9 @@ void LevelEditor::ApplyField(Property property, const str& text, i32 step)
 		}
 		break;
 	}
+	case Property::Bottom:
+		GetDocument().SetDrawAtBottom(Selected, !GetDocument().DrawsAtBottom(Selected));
+		break;
 	case Property::Earlier:
 	case Property::Later:
 		GetDocument().Reorder(Selected, property == Property::Later);
@@ -1548,6 +1619,13 @@ bool LevelEditor::HandlePalette(const WindowInput::Result& input)
 
 	const PlacementPalette::Result result = Palette.Handle(input, GetDocument(), bounds);
 	Inspector = Palette.IsProperties();
+	if (Palette.IsRaw())
+	{
+		CurrentTool = Tool::Select;
+		SelectCells = Raw.IsCell();
+		if (SelectCells)
+			Selected = -1;
+	}
 	if (Palette.IsView() && HandleView(input))
 		return true;
 	if (inside && input.Click)
@@ -1635,4 +1713,68 @@ bool LevelEditor::HandleView(const WindowInput::Result& input)
 			Selected = -1;
 	}
 	return true;
+}
+
+void LevelEditor::FinishPaintStroke()
+{
+	if (Painting)
+	{
+		Painting->Document->EndTileStroke();
+		Painting.reset();
+		if (Notice.rfind("Skipped cell:", 0) != 0)
+			Notice = "Stroke finished. Ctrl+Z undoes the last edit.";
+	}
+}
+
+void LevelEditor::ContinuePaintStroke()
+{
+	PaintGesture& gesture = *Painting;
+	if (!CanvasAt(Mouse))
+	{
+		gesture.LastTile = -1;
+		return;
+	}
+	const i32 target = LevelDocument::TileAt(WorldMouse.x, WorldMouse.y);
+	const i32 start = gesture.LastTile >= 0 ? gesture.LastTile : target;
+	i32 x = start % Stride, y = start / Stride;
+	const i32 endX = target % Stride, endY = target / Stride;
+	const i32 dx = std::abs(endX - x), dy = -std::abs(endY - y);
+	const i32 stepX = x < endX ? 1 : -1, stepY = y < endY ? 1 : -1;
+	i32 error = dx + dy;
+	const TileBrush& brush = TileBrushes[gesture.Brush];
+	while (true)
+	{
+		const i32 tile = y * Stride + x;
+		const POINT center{ (x - 1) * TileSize + TileSize / 2, (y - 1) * TileSize + TileSize / 2 };
+		if (!gesture.Visited[tile] && (tile == target || CanvasAt(Viewport.ScreenAt(center))))
+		{
+			gesture.Visited[tile] = true;
+			try
+			{
+				if (brush.SpawnerOnly)
+					gesture.Document->SetSpawner(tile, gesture.Erase ? SpawnerCode::None : brush.Spawner);
+				else
+					gesture.Document->PaintTerrain(tile, gesture.Erase ? OccupancyCode::Empty : brush.Terrain);
+			}
+			catch (const std::exception& rejected)
+			{
+				Notice = str("Skipped cell: ") + rejected.what();
+			}
+		}
+		if (x == endX && y == endY)
+			break;
+		const i32 twice = error * 2;
+		if (twice >= dy)
+		{
+			error += dy;
+			x += stepX;
+		}
+		if (twice <= dx)
+		{
+			error += dx;
+			y += stepY;
+		}
+	}
+	SelectedCell = target;
+	gesture.LastTile = target;
 }

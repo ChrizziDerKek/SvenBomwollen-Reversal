@@ -48,6 +48,15 @@ void RunGame(MudGE& engine, const fpath& saves, bool audio, u32 seconds, bool di
 		music(session->Level().Music);
 		Log("Started " + ui.GetPack().Name + "/" + ui.GetLevelSet().Name);
 	};
+	auto openEditor = [&](bool blank) {
+		editorReturnMusic = currentMusic;
+		engine.StopLoopedSound();
+		if (!blank && session && (playing || ui.GetPage() == Page::Pause))
+			editor = std::make_unique<LevelEditor>(engine, session->GetPack(), session->Level(), session->GetPlayerCount());
+		else
+			editor = std::make_unique<LevelEditor>(engine, ui.GetPack(), ui.GetLevelSet().Levels.front(), 1, true);
+		controls.SetEditorCloseGuard(true);
+	};
 	if (directTutorial)
 		start();
 	else
@@ -110,15 +119,7 @@ void RunGame(MudGE& engine, const fpath& saves, bool audio, u32 seconds, bool di
 				}
 			}
 			else if (input.Editor && !debug.IsOpen())
-			{
-				editorReturnMusic = currentMusic;
-				engine.StopLoopedSound();
-				if (session && (playing || ui.GetPage() == Page::Pause))
-					editor = std::make_unique<LevelEditor>(engine, session->GetPack(), session->Level(), session->GetPlayerCount());
-				else
-					editor = std::make_unique<LevelEditor>(engine, ui.GetPack(), ui.GetLevelSet().Levels.front(), 1, true);
-				controls.SetEditorCloseGuard(true);
-			}
+				openEditor(false);
 			else if (debug.IsOpen() || input.Debug)
 			{
 				if (input.Debug)
@@ -181,6 +182,9 @@ void RunGame(MudGE& engine, const fpath& saves, bool audio, u32 seconds, bool di
 					action = ui.Handle(input);
 					switch (action)
 					{
+					case UiAction::Editor:
+						openEditor(true);
+						break;
 					case UiAction::Start:
 						start();
 						break;
@@ -226,6 +230,8 @@ void RunGame(MudGE& engine, const fpath& saves, bool audio, u32 seconds, bool di
 				}
 			}
 		}
+		else if (editor)
+			editor->FinishPaintStroke();
 		if (editor)
 		{
 			const str wanted = editor->GetMusic();

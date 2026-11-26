@@ -1,13 +1,14 @@
 # Integrated editor
 
-Press **F3** from the title/menus to start a blank project using the selected
+Click **Editor** above Exit on the title screen, or press **F3** from the
+title/menus, to start a blank project using the selected
 pack as the format/theme template. In a running or paused level, F3 opens that
 authored level. Your running game freezes and resumes unchanged on editor close.
 
 | Action | Control |
 |---|---|
 | Select and move | **V**, click an opaque part of an object, drag and release; **Ctrl+click** cycles overlapping objects |
-| Place | Click Place or **B**, choose a sidebar thumbnail, then click the level; **P** repeats the current object; scenery returns to Select after one placement |
+| Place | Click Place or **B**, choose a sidebar thumbnail, then click the level; **P** repeats the current object; scenery stays active for repeated clicks |
 | Scenery placement anchor | **A** switches between visible-art center and canvas origin; the yellow reticle shows the anchor |
 | Zoom | **Ctrl+wheel** over the canvas; 25% to 400%, anchored at the cursor |
 | Pan | Hold the **middle mouse button** and drag over the canvas |
@@ -15,13 +16,15 @@ authored level. Your running game freezes and resumes unchanged on editor close.
 | Visibility layers | **L** or the sidebar View tab; toggles affect the editor only |
 | Change placement choice | Click a sidebar thumbnail; wheel or Left/Right over the canvas cycles the current tool choices |
 | Tile brush | Click Tiles in the main toolbar, then choose a brush in the sidebar; **C** activates the current brush |
-| Erase tile/spawner | Right-click in Tiles mode; terrain and spawner brushes erase their own layer |
+| Erase tile/spawner | Right-click or right-drag in Tiles mode; terrain and spawner brushes erase their own layer |
 | Scenery snapping | **N** toggles 40px/pixel placement and dragging; free scenery nudges by 1px, Shift+arrows by 10px |
+| Raw object/cell words | Sidebar **Raw** tab; pick Object words or Cell words |
 | Level/object/cell inspector | **I** or the sidebar Props tab; choose Level/Object/Cell/Project, then a field |
 | Select gameplay cells beneath artwork | **T**, the inspector's Cell tab, or Shift+click; **V** returns to object selection |
 | Rotate selected animal/enemy | **R**, or the inspector's Facing field |
 | Delete selected object | Delete or Backspace |
-| Cancel selection/drag | Right mouse button |
+| Return to object selection / clear selection | **Escape**; text fields and pickers cancel first |
+| Delete scenery under the pointer | **Right-click** while placing scenery, or on topmost scenery in Select mode; actors are preserved |
 | Undo / redo | Ctrl+Z / Ctrl+Y; toolbar buttons |
 | Hide/show toolbars | Tab; this exposes the cells under the toolbars |
 | Hide/show all editor interface / playtest HUD | **H**; restores panel state when shown again |
@@ -30,10 +33,10 @@ authored level. Your running game freezes and resumes unchanged on editor close.
 | Toggle grid | Grid in the sidebar header |
 | Save a separate folder pack | Ctrl+S or Save copy |
 | Enter/leave playtest | F5 or Playtest; Escape also returns from playtest |
-| Close editor and resume original game | F3, Escape or Close |
+| Close editor and resume original game | **F3** or Close; Escape closes when already in idle selection mode |
 
 The movable sidebar shows actual texture thumbnails. Filter with **All**, **Scenery**,
-**Actors** (animals, enemies, player starts and special objects), **Items**, **Tiles**, **Props**, or **View**. Tabs use two rows.
+**Actors** (animals, enemies, player starts and special objects), **Items**, **Tiles**, **Props**, **View**, or **Raw**. Tabs use two rows.
 The Tiles tab contains clear terrain, collision, puddle destinations, water
 entries, distraction/powerup/mixed random spawners and remove-spawner brushes.
 Tiles use color-coded icons; D/P/M distinguish random-spawner groups. Brush
@@ -47,7 +50,10 @@ floating inspector are removed, exposing more canvas.
 Scroll over the sidebar to browse; click **Find** to search, Ctrl+A clears it,
 and Enter selects the first match. Escape leaves search. Choosing a thumbnail
 only selects the placement tool; the level changes when you click the canvas.
-Scenery still returns to Select after one placement. **B** hides the sidebar to
+Scenery placement stays active: every left-click places another object. Each
+right-click deletes one opaque scenery hit (not actors); each click is a separate
+undo step. Escape removes the placement preview and returns to Select, or clears
+the selected object before a later Escape can close the editor. **B** hides the sidebar to
 reach the left part of the level; **H** hides the whole interface. **O** opens
 the separate browser of objects already placed, replacing the palette.
 
@@ -57,6 +63,21 @@ are excluded from canvas picking; the instance browser still inventories the
 whole document. Picking a placement thumbnail reveals that object's layer.
 Layer/zoom/pan changes never enter level history or exports. Playtest uses normal
 game presentation, then restores the editor's view and layers on return.
+
+Tile brushes now support continuous strokes. Hold **left mouse** and drag to
+paint; hold **right mouse** and drag to erase. Gaps between mouse samples are
+filled along the grid, including diagonals. A stroke keeps its chosen brush and
+layer until finished; each cell is attempted once. **Ctrl+Z/Y** undoes/redoes the
+whole stroke as one edit. A stroke that changes nothing preserves redo history.
+
+Painting pauses over panels, toolbars and outside the canvas, then resumes at
+the current cell without connecting across that hidden segment. The held stroke
+cannot activate controls. Releasing the button finishes it; Escape finishes the
+stroke without closing the editor. Tool/view commands, save, F5, window close and
+focus loss finish it first. Unsupported actor/item cells and marker-limit excesses
+are skipped with a status message; valid cells continue to paint. Terrain and
+spawner brushes still modify only their own layer. Native limits remain 16 puddle
+destinations and 16 spawners per group.
 
 Ctrl+wheel zooms the canvas under the pointer; ordinary wheel retains its tool
 choice/thumbnail scrolling behavior. Middle-drag pans, including across panels
@@ -71,6 +92,38 @@ reused; one Undo removes the entire placement. Separate scenery retains its
 natural depth. Existing levels are unchanged until edited. Native character
 sorting and explicit foreground passes still take precedence; use Object's
 Depth/Render pass/Draw earlier/later when deliberately overriding the defaults.
+
+For floor art, select the scenery and open **Props ? Object ? Draw at bottom**.
+**Yes** uses the existing native sorted pass and its largest signed depth
+adjustment, placing the object beneath actors. It clears Foreground, survives
+moves/texture changes and exports normally in both Zwo and XXX formats.
+The depth and earlier/later controls show Floor while enabled. Turning it off
+restores natural depth (offset 0); Undo restores the previous custom setting.
+Choosing Foreground explicitly turns floor mode off. This changes visual order
+only: scenery still has no automatic collision cells.
+
+**Raw** exposes every 32-bit word: object words **0..24** for slots **0..255**,
+and cell words **0..5** for all **374** records (**0..373**, including borders).
+These are zero-based word indices; the standalone editor labelled object fields
+1..25. Click the slot/cell index to choose a record, or pick the object/cell on
+the canvas. Object/Cell words selects the matching canvas selection mode.
+
+Click a word row or the Word value field, type a signed decimal or `0x`-prefixed
+32-bit hex value, then Enter. The footer shows the same bits as hexadecimal and
+IEEE float; float aliases are a readout, not an automatic conversion. Wheel or
+Prev/Next or Left/Right browses words; Up/Down selects words while the pointer
+is in the panel. Delete/Backspace there does not delete the world selection.
+Ctrl+A replaces text; Escape cancels a pending edit. Ctrl+S/F5 commit a valid
+pending value before saving/playtesting. Invalid input remains editable and does
+not change the document. Each applied word uses normal undo/redo and saving.
+
+Raw writes preserve every unrelated word/packed bit. Kind and ownership links
+stay on the placement/movement tools; live position edits use those tools' link
+repair. Known size, sprite/frame, float, depth-overflow and marker constraints
+are checked. Cell terrain edits maintain the puddle table. Packed direction,
+item and spawner/help words preserve or validate their semantic low bits, while
+uninterpreted bits remain raw. Inactive objects and border cells are inspectable;
+structural boundary changes remain protected.
 
 While editing, the game loops `assets/XXX/SvenXXX/sfx/editor.wav`. **F5** switches
 to the level's music and restores the editor track on return. Closing the editor
@@ -103,7 +156,7 @@ this tab and returns to placement when pressed again. It contains four subtabs:
 | Tab | Available properties |
 |---|---|
 | Level | Display title, timer, texture pack, music path, UFO visibility, puddle destination list/rebuild; XXX weather and bonus controller |
-| Object | Position, depth offset; scenery texture ID/frame, sorted/foreground pass and Draw Earlier/Later; animal/enemy facing, animal impatience and item permanence |
+| Object | Position, depth offset; scenery texture ID/frame, sorted/foreground pass, Draw at bottom and Draw Earlier/Later; animal/enemy facing, animal impatience and item permanence |
 | Cell | Raw visible-cell index, terrain, spawner group, direction; XXX help ID |
 | Project | Pack/levelset names, level list, blank/duplicate/import, new blank pack and open a full installed pack |
 
@@ -194,8 +247,8 @@ command to discard, including when closing the game window.
 
 Undo/redo and savepoints include both binary level changes and display metadata.
 Unrelated v6/v7 fields remain preserved. The parity checklist still includes
-advanced/raw inspectors, CSV inventory, teleport/link annotations, continuous
-painting and further project conveniences such as level deletion/reordering.
+CSV inventory, teleport/link annotations
+and further project conveniences such as level deletion/reordering.
 The canvas shows static authored object
 sprites; playtest provides the real animation, bonus-controller and gameplay
 presentation.
