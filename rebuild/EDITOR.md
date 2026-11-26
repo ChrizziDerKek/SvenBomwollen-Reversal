@@ -9,6 +9,10 @@ authored level. Your running game freezes and resumes unchanged on editor close.
 | Select and move | **V**, click an opaque part of an object, drag and release; **Ctrl+click** cycles overlapping objects |
 | Place | Click Place or **B**, choose a sidebar thumbnail, then click the level; **P** repeats the current object; scenery returns to Select after one placement |
 | Scenery placement anchor | **A** switches between visible-art center and canvas origin; the yellow reticle shows the anchor |
+| Zoom | **Ctrl+wheel** over the canvas; 25% to 400%, anchored at the cursor |
+| Pan | Hold the **middle mouse button** and drag over the canvas |
+| Reset view | **0**, or Reset in the sidebar View tab |
+| Visibility layers | **L** or the sidebar View tab; toggles affect the editor only |
 | Change placement choice | Click a sidebar thumbnail; wheel or Left/Right over the canvas cycles the current tool choices |
 | Tile brush | Click Tiles in the main toolbar, then choose a brush in the sidebar; **C** activates the current brush |
 | Erase tile/spawner | Right-click in Tiles mode; terrain and spawner brushes erase their own layer |
@@ -29,7 +33,7 @@ authored level. Your running game freezes and resumes unchanged on editor close.
 | Close editor and resume original game | F3, Escape or Close |
 
 The movable sidebar shows actual texture thumbnails. Filter with **All**, **Scenery**,
-**Actors** (animals, enemies, player starts and special objects), **Items**, **Tiles**, or **Props**.
+**Actors** (animals, enemies, player starts and special objects), **Items**, **Tiles**, **Props**, or **View**. Tabs use two rows.
 The Tiles tab contains clear terrain, collision, puddle destinations, water
 entries, distraction/powerup/mixed random spawners and remove-spawner brushes.
 Tiles use color-coded icons; D/P/M distinguish random-spawner groups. Brush
@@ -46,6 +50,27 @@ only selects the placement tool; the level changes when you click the canvas.
 Scenery still returns to Select after one placement. **B** hides the sidebar to
 reach the left part of the level; **H** hides the whole interface. **O** opens
 the separate browser of objects already placed, replacing the palette.
+
+**View** separates background, scenery, player starts, animals, enemies, items,
+special actors, tiles/spawners, grid and object-slot labels. Hidden object layers
+are excluded from canvas picking; the instance browser still inventories the
+whole document. Picking a placement thumbnail reveals that object's layer.
+Layer/zoom/pan changes never enter level history or exports. Playtest uses normal
+game presentation, then restores the editor's view and layers on return.
+
+Ctrl+wheel zooms the canvas under the pointer; ordinary wheel retains its tool
+choice/thumbnail scrolling behavior. Middle-drag pans, including across panels
+once the gesture starts on the canvas. **0** restores 100% and the original
+origin. The sidebar, toolbars and cursor keep their normal size. Selection,
+dragging, grid painting, actor snapping and free scenery use world coordinates.
+Panning keeps a strip of the map reachable; Reset recovers the default view.
+
+New scenery with visible overlap defaults above earlier **world-sorted scenery**.
+Its saved depth offset encodes that order, including when a deleted slot is
+reused; one Undo removes the entire placement. Separate scenery retains its
+natural depth. Existing levels are unchanged until edited. Native character
+sorting and explicit foreground passes still take precedence; use Object's
+Depth/Render pass/Draw earlier/later when deliberately overriding the defaults.
 
 While editing, the game loops `assets/XXX/SvenXXX/sfx/editor.wav`. **F5** switches
 to the level's music and restores the editor track on return. Closing the editor
@@ -169,7 +194,7 @@ command to discard, including when closing the game window.
 
 Undo/redo and savepoints include both binary level changes and display metadata.
 Unrelated v6/v7 fields remain preserved. The parity checklist still includes
-advanced/raw inspectors, CSV inventory, layer controls, zoom/pan, continuous
+advanced/raw inspectors, CSV inventory, teleport/link annotations, continuous
 painting and further project conveniences such as level deletion/reordering.
 The canvas shows static authored object
 sprites; playtest provides the real animation, bonus-controller and gameplay

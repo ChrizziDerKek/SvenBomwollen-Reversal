@@ -15,6 +15,9 @@ playtest without changing the running game or stored progress.
 The editor loops the supplied `XXX/SvenXXX/sfx/editor.wav`; playtest uses level
 music and closing the editor restores the previous track. Its loudness now
 matches the title theme, with the original quiet WAV backed up under runtime.
+**Ctrl+wheel** zooms, **middle-drag** pans, **0** resets the canvas, and **L/View**
+opens visibility layers. Later overlapping scenery receives a saved depth
+adjustment to draw above earlier world scenery; character/foreground rules remain.
 See [editor controls and scope](EDITOR.md) and the persistent
 [editor progress](research/editor/PROGRESS.md).
 

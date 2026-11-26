@@ -33,7 +33,7 @@ const std::vector<PlacementPalette::TileBrush>& PlacementPalette::GetTileBrushes
 }
 
 PlacementPalette::PlacementPalette()
-    : Panel(EditorGraphics::Rectangle(Width, 1, 0xFFEDE4CE, false)), Header(EditorGraphics::Rectangle(Width, HeaderHeight, 0xFFB8D498, false)), Tab(EditorGraphics::Rectangle(Width / GroupCount, TabHeight, 0xFFB8D498, false)), Tile(EditorGraphics::Rectangle(CellWidth - 4, CellHeight - 4, 0xFFD8CCA8, false)), Highlight(EditorGraphics::Rectangle(CellWidth - 4, CellHeight - 4, 0xFFA8C880, false)), SearchBar(EditorGraphics::Rectangle(Width, SearchHeight, 0xFFF7F0DE, false))
+    : Panel(EditorGraphics::Rectangle(Width, 1, 0xFFEDE4CE, false)), Header(EditorGraphics::Rectangle(Width, HeaderHeight, 0xFFB8D498, false)), Tab(EditorGraphics::Rectangle(Width / TabsPerRow, TabRowHeight, 0xFFB8D498, false)), Tile(EditorGraphics::Rectangle(CellWidth - 4, CellHeight - 4, 0xFFD8CCA8, false)), Highlight(EditorGraphics::Rectangle(CellWidth - 4, CellHeight - 4, 0xFFA8C880, false)), SearchBar(EditorGraphics::Rectangle(Width, SearchHeight, 0xFFF7F0DE, false))
 {
 	for (const TileBrush& brush : GetTileBrushes())
 	{
@@ -130,15 +130,15 @@ PlacementPalette::Result PlacementPalette::Handle(const WindowInput::Result& inp
 	const i32 top = bounds.top + HeaderHeight;
 	if (input.Click)
 	{
-		SearchFocused = !IsProperties() && input.Mouse.y >= top + TabHeight && input.Mouse.y < top + TabHeight + SearchHeight;
+		SearchFocused = !IsProperties() && !IsView() && input.Mouse.y >= top + TabHeight && input.Mouse.y < top + TabHeight + SearchHeight;
 		if (input.Mouse.y >= top && input.Mouse.y < top + TabHeight)
 		{
-			Category = static_cast<Group>(std::min(GroupCount - 1, static_cast<i32>(input.Mouse.x - bounds.left) / (Width / GroupCount)));
+			Category = static_cast<Group>(std::min(GroupCount - 1, static_cast<i32>(input.Mouse.x - bounds.left) / (Width / TabsPerRow) + static_cast<i32>(input.Mouse.y - top) / TabRowHeight * TabsPerRow));
 			Search.clear();
 			FirstRow = 0;
 		}
 	}
-	if (IsProperties())
+	if (IsProperties() || IsView())
 		return { input.Click || input.RightClick || input.Wheel != 0, {} };
 	const std::vector<size_t> entries = Filtered();
 	const i32 rows = VisibleRows(bounds);
@@ -235,11 +235,11 @@ void PlacementPalette::Append(std::vector<SpriteDraw>& commands, const LevelDocu
 	commands.push_back({ &Header, bounds.left, bounds.top, 0 });
 	font.Append(commands, "Editor - drag to move", bounds.left + 6, bounds.top + 4);
 	font.Append(commands, "Grid", bounds.left + GridX, bounds.top + 4);
-	constexpr cstr groups[] = { "All", "Scenery", "Actors", "Items", "Tiles", "Props" };
-	commands.push_back({ &Tab, bounds.left + static_cast<i32>(Category) * (Width / GroupCount), bounds.top + HeaderHeight, 0 });
+	constexpr cstr groups[] = { "All", "Scenery", "Actors", "Items", "Tiles", "Props", "View" };
+	commands.push_back({ &Tab, bounds.left + static_cast<i32>(Category) % TabsPerRow * (Width / TabsPerRow), bounds.top + HeaderHeight + static_cast<i32>(Category) / TabsPerRow * TabRowHeight, 0 });
 	for (i32 index = 0; index < GroupCount; ++index)
-		font.Append(commands, groups[index], bounds.left + index * (Width / GroupCount) + 1, bounds.top + HeaderHeight + 4);
-	if (IsProperties())
+		font.Append(commands, groups[index], bounds.left + index % TabsPerRow * (Width / TabsPerRow) + 1, bounds.top + HeaderHeight + index / TabsPerRow * TabRowHeight + 4);
+	if (IsProperties() || IsView())
 		return;
 	commands.push_back({ &SearchBar, bounds.left, bounds.top + HeaderHeight + TabHeight, 0 });
 	font.Append(commands, EditorGraphics::FitText(font, "Find: " + Search + (SearchFocused ? "_" : ""), Width - 12), bounds.left + 6, bounds.top + HeaderHeight + TabHeight + 4);

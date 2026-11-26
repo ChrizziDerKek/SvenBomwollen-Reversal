@@ -1,12 +1,43 @@
 #pragma once
 #include "LevelProject.h"
 #include "PlacementPalette.h"
+#include "EditorViewport.h"
 #include "Game/GameSession.h"
 #include "Input/WindowInput.h"
 
 class LevelEditor
 {
 public:
+	enum class Layer
+	{
+		Background,
+		Scenery,
+		Players,
+		Animals,
+		Enemies,
+		Items,
+		Special,
+		Tiles,
+		Grid,
+		Labels,
+		Count
+	};
+	bool IsLayerVisible(Layer layer) const
+	{
+		return Layers.at(static_cast<size_t>(layer));
+	}
+	f32 GetZoom() const
+	{
+		return Viewport.GetZoom();
+	}
+	POINT ScreenAt(POINT world) const
+	{
+		return Viewport.ScreenAt(world);
+	}
+	POINT WorldAt(POINT screen) const
+	{
+		return Viewport.WorldAt(screen);
+	}
 	LevelEditor(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& level, size_t players, bool startBlank = false);
 	~LevelEditor();
 	bool Handle(const WindowInput::Result& input, f32 seconds, const std::array<PlayerInput, 2>& players = {});
@@ -212,7 +243,12 @@ private:
 	{
 		return Hud && Toolbar;
 	}
+	bool CanvasAreaAt(POINT point) const;
 	bool CanvasAt(POINT point) const;
+	Layer ObjectLayer(ObjectKind kind) const;
+	bool ObjectVisible(ObjectKind kind) const;
+	void DrawView();
+	bool HandleView(const WindowInput::Result& input);
 	RECT PaletteBounds() const;
 	bool HandlePalette(const WindowInput::Result& input);
 	void ChangeChoice(i32 step);
@@ -224,8 +260,11 @@ private:
 	MudGE& Engine;
 	LevelProject Project;
 	PlacementPalette Palette;
+	EditorViewport Viewport;
+	std::array<bool, static_cast<size_t>(Layer::Count)> Layers{ true, true, true, true, true, true, true, true, true, false };
+	inline static constexpr std::array<cstr, static_cast<size_t>(Layer::Count)> LayerNames{ "Background", "Scenery", "Player starts", "Animals", "Enemies", "Items", "Special actors", "Tiles / spawners", "Grid", "Labels" };
 	BitmapFont Font;
-	Sprite Bar, Selection, Wall, GridCell, ActiveTool, WaterCell, PuddleCell, SpawnerCell, Panel, FieldBar, PanelTab;
+	Sprite Canvas, Bar, Selection, Wall, GridCell, ActiveTool, WaterCell, PuddleCell, SpawnerCell, Panel, FieldBar, PanelTab;
 	Sprite ObjectOutline{};
 	Sprite ListPanel, ListHeader, ListRow, AnchorMark;
 	const Sprite* Cursor;
@@ -235,8 +274,9 @@ private:
 	Tool CurrentTool = Tool::Select;
 	Category CurrentCategory = Category::Animals;
 	i32 ChoiceIndex = 0, Selected = -1;
-	POINT Mouse{}, DragOrigin{};
-	bool Dragging = false, Toolbar = true, ShowGrid = true, DiscardArmed = false, Saved = false, SnapScenery = true, Inspector = false;
+	POINT Mouse{}, WorldMouse{}, DragOrigin{}, PanOrigin{};
+	bool Panning = false;
+	bool Dragging = false, Toolbar = true, DiscardArmed = false, Saved = false, SnapScenery = true, Inspector = false;
 	InspectorPage InspectorTab = InspectorPage::Level;
 	POINT PalettePosition{ 0, 26 }, PaletteDrag{};
 	bool MovingPalette = false, SelectCells = false, ResetArmed = false;

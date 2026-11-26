@@ -46,7 +46,7 @@ i32 ParseInteger(const str& text)
 } // namespace
 
 LevelEditor::LevelEditor(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& level, size_t players, bool startBlank)
-    : Engine(engine), Project(engine, pack, level), Font(engine, true, false, engine.GetData().GetThemeEdition()), Bar(Rectangle(800, 26, 0xFFEDE4CE, false)), Selection(Rectangle(40, 40, 0xFF00DD00, true)), Wall(Rectangle(40, 40, 0xFFFF3030, true)), GridCell(Rectangle(40, 40, 0xFF809070, true)), ActiveTool(Rectangle(100, 26, 0xFFB8D498, false)), WaterCell(Rectangle(40, 40, 0xFF2266FF, true)), PuddleCell(Rectangle(40, 40, 0xFF00DDDD, true)), SpawnerCell(Rectangle(40, 40, 0xFFFFB000, true)), Panel(Rectangle(PanelWidth, 1, 0xFFEDE4CE, false)), FieldBar(Rectangle(PanelWidth - 8, FieldHeight - 2, 0xFFD8CCA8, false)), PanelTab(Rectangle(PanelWidth / 4, TabsHeight, 0xFFB8D498, false)), ListPanel(Rectangle(ListWidth, HeaderHeight + (ListRows + 2) * ListRowHeight, 0xFFEDE4CE, false)), ListHeader(Rectangle(ListWidth, HeaderHeight, 0xFFB8D498, false)), ListRow(Rectangle(ListWidth - 8, ListRowHeight, 0xFFD8CCA8, false)), AnchorMark(Rectangle(7, 7, 0xFFFFFF00, true)), Cursor(engine.LoadSprite(engine.GetData().ThemeAsset("Sven2/gfx/mousecursor.bmp"), 5, 1)), Players(players)
+    : Engine(engine), Project(engine, pack, level), Font(engine, true, false, engine.GetData().GetThemeEdition()), Canvas(Rectangle(800, 600, 0xFF303030, false)), Bar(Rectangle(800, 26, 0xFFEDE4CE, false)), Selection(Rectangle(40, 40, 0xFF00DD00, true)), Wall(Rectangle(40, 40, 0xFFFF3030, true)), GridCell(Rectangle(40, 40, 0xFF809070, true)), ActiveTool(Rectangle(100, 26, 0xFFB8D498, false)), WaterCell(Rectangle(40, 40, 0xFF2266FF, true)), PuddleCell(Rectangle(40, 40, 0xFF00DDDD, true)), SpawnerCell(Rectangle(40, 40, 0xFFFFB000, true)), Panel(Rectangle(PanelWidth, 1, 0xFFEDE4CE, false)), FieldBar(Rectangle(PanelWidth - 8, FieldHeight - 2, 0xFFD8CCA8, false)), PanelTab(Rectangle(PanelWidth / 4, TabsHeight, 0xFFB8D498, false)), ListPanel(Rectangle(ListWidth, HeaderHeight + (ListRows + 2) * ListRowHeight, 0xFFEDE4CE, false)), ListHeader(Rectangle(ListWidth, HeaderHeight, 0xFFB8D498, false)), ListRow(Rectangle(ListWidth - 8, ListRowHeight, 0xFFD8CCA8, false)), AnchorMark(Rectangle(7, 7, 0xFFFFFF00, true)), Cursor(engine.LoadSprite(engine.GetData().ThemeAsset("Sven2/gfx/mousecursor.bmp"), 5, 1)), Players(players)
 {
 	if (engine.GetData().HasEdition(GameEdition::XXX))
 	{
@@ -113,6 +113,8 @@ void LevelEditor::BuildObjects()
 	{
 		const LevelObjectRecord& record = GetDocument().GetLevel().GetObjects()[slot];
 		if (record.Kind() == static_cast<i32>(ObjectKind::Inactive))
+			continue;
+		if (!ObjectVisible(static_cast<ObjectKind>(record.Kind())))
 			continue;
 		const Sprite* image = GetDocument().GetSprite(record);
 		if (!image)
@@ -201,6 +203,16 @@ void LevelEditor::Playtest()
 bool LevelEditor::Handle(const WindowInput::Result& input, f32 seconds, const std::array<PlayerInput, 2>& players)
 {
 	Mouse = input.Mouse;
+	WorldMouse = Viewport.WorldAt(Mouse);
+	if (!Preview && Panning)
+	{
+		if (Mouse.x >= 0 && Mouse.x < 800 && Mouse.y >= 0 && Mouse.y < 600 && PanOrigin.x >= 0 && PanOrigin.x < 800 && PanOrigin.y >= 0 && PanOrigin.y < 600)
+			Viewport.Pan(Mouse.x - PanOrigin.x, Mouse.y - PanOrigin.y);
+		PanOrigin = Mouse;
+		Panning = input.MiddleHeld;
+		WorldMouse = Viewport.WorldAt(Mouse);
+		return false;
+	}
 	try
 	{
 		if (!Preview && Hud)
@@ -270,6 +282,31 @@ bool LevelEditor::Handle(const WindowInput::Result& input, f32 seconds, const st
 		{
 			Preview->Update(seconds, players);
 			return false;
+		}
+		if (CanvasAreaAt(Mouse) && (input.MiddleHeld || (input.Control && input.Wheel != 0)))
+		{
+			Dragging = false;
+			if (input.MiddleHeld)
+			{
+				Panning = true;
+				PanOrigin = Mouse;
+			}
+			else
+				Viewport.ZoomAt(Mouse, input.Wheel);
+			WorldMouse = Viewport.WorldAt(Mouse);
+			Notice = "Zoom " + std::to_string(static_cast<i32>(Viewport.GetZoom() * 100)) + "% | Ctrl+wheel zoom | middle drag pan | 0 resets";
+			return false;
+		}
+		if (input.BindingKey == '0' && !input.Control)
+		{
+			Viewport.Reset();
+			Notice = "View reset to 100%. Ctrl+wheel zooms; middle drag pans.";
+			WorldMouse = Viewport.WorldAt(Mouse);
+		}
+		if (input.BindingKey == 'l' && !input.Control)
+		{
+			ShowInspector(false);
+			Palette.Show(PlacementPalette::Group::View);
 		}
 		if (input.BindingKey == 'b' && !input.Control)
 		{
@@ -412,7 +449,7 @@ bool LevelEditor::Handle(const WindowInput::Result& input, f32 seconds, const st
 		if ((input.Click || (input.RightClick && CurrentTool == Tool::Collision)) && CanvasAt(Mouse))
 		{
 			ResetArmed = false;
-			SelectedCell = LevelDocument::TileAt(Mouse.x, Mouse.y);
+			SelectedCell = LevelDocument::TileAt(WorldMouse.x, WorldMouse.y);
 			if (input.Shift || (CurrentTool == Tool::Select && SelectCells))
 			{
 				CurrentTool = Tool::Select;
@@ -432,7 +469,7 @@ bool LevelEditor::Handle(const WindowInput::Result& input, f32 seconds, const st
 			}
 			else if (CurrentTool == Tool::Place && !Choices.empty())
 			{
-				const Placement placement = PlacementAt(Mouse);
+				const Placement placement = PlacementAt(WorldMouse);
 				const POINT origin{ placement.Draw.X, placement.Draw.Y };
 				const Choice& choice = Choices[ChoiceIndex];
 				Selected = GetDocument().Place(choice.Kind, placement.Tile, choice.Texture, choice.Kind == ObjectKind::Scenery ? &origin : nullptr);
@@ -445,8 +482,8 @@ bool LevelEditor::Handle(const WindowInput::Result& input, f32 seconds, const st
 			}
 			else
 			{
-				Selected = Pick(Mouse, input.Control);
-				DragOrigin = Mouse;
+				Selected = Pick(WorldMouse, input.Control);
+				DragOrigin = WorldMouse;
 				Dragging = Selected >= 0;
 			}
 		}
@@ -454,7 +491,7 @@ bool LevelEditor::Handle(const WindowInput::Result& input, f32 seconds, const st
 		{
 			Dragging = false;
 			if (CanvasAt(Mouse))
-				GetDocument().Move(Selected, Mouse.x - DragOrigin.x, Mouse.y - DragOrigin.y, SnapScenery);
+				GetDocument().Move(Selected, WorldMouse.x - DragOrigin.x, WorldMouse.y - DragOrigin.y, SnapScenery);
 		}
 	}
 	catch (const std::exception& error)
@@ -479,8 +516,10 @@ const std::vector<SpriteDraw>& LevelEditor::Draws()
 	else
 	{
 		Commands.clear();
+		Commands.push_back({ &Canvas, 0, 0, 0 });
 		const TileSetInfo& tiles = Engine.GetData().TileSet(GetDocument().GetPack(), GetDocument().GetInfo());
-		Commands.push_back({ Engine.LoadSprite(tiles.Background, 1, 1, true), 0, 0, 0 });
+		if (IsLayerVisible(Layer::Background))
+			Commands.push_back({ Engine.LoadSprite(tiles.Background, 1, 1, true), 0, 0, 0 });
 		BuildObjects();
 		for (const VisibleObject& object : Objects)
 		{
@@ -488,19 +527,21 @@ const std::vector<SpriteDraw>& LevelEditor::Draws()
 			if (Dragging && static_cast<i32>(object.Slot) == Selected)
 			{
 				const bool snap = SnapScenery || GetDocument().GetLevel().GetObjects()[object.Slot].Kind() != static_cast<i32>(ObjectKind::Scenery);
-				draw.X += snap ? Snap(Mouse.x - DragOrigin.x) : Mouse.x - DragOrigin.x;
-				draw.Y += snap ? Snap(Mouse.y - DragOrigin.y) : Mouse.y - DragOrigin.y;
+				draw.X += snap ? Snap(WorldMouse.x - DragOrigin.x) : WorldMouse.x - DragOrigin.x;
+				draw.Y += snap ? Snap(WorldMouse.y - DragOrigin.y) : WorldMouse.y - DragOrigin.y;
 			}
 			Commands.push_back(draw);
+			if (IsLayerVisible(Layer::Labels))
+				Font.Append(Commands, "#" + std::to_string(object.Slot), draw.X + 2, draw.Y + 2);
 		}
 		if (CurrentTool == Tool::Place && !Choices.empty() && CanvasAt(Mouse))
 		{
-			const i32 tile = LevelDocument::TileAt(Mouse.x, Mouse.y);
+			const i32 tile = LevelDocument::TileAt(WorldMouse.x, WorldMouse.y);
 			if (tile >= 0)
 			{
 				try
 				{
-					const Placement placement = PlacementAt(Mouse);
+					const Placement placement = PlacementAt(WorldMouse);
 					Commands.push_back(placement.Draw);
 					Commands.push_back({ &AnchorMark, placement.Anchor.x - 3, placement.Anchor.y - 3, 0 });
 				}
@@ -510,18 +551,21 @@ const std::vector<SpriteDraw>& LevelEditor::Draws()
 				}
 			}
 		}
-		if (ShowGrid)
+		if (IsLayerVisible(Layer::Grid) || IsLayerVisible(Layer::Tiles))
 		{
 			for (i32 y = 0; y < Rows; ++y)
 			{
 				for (i32 x = 0; x < Columns; ++x)
 				{
 					const LevelCell& cell = GetDocument().GetLevel().GetCells()[(y + 1) * Stride + x + 1];
+					if (IsLayerVisible(Layer::Grid))
+						Commands.push_back({ &GridCell, x * TileSize, y * TileSize, 0 });
 					const Sprite* outline = cell.Terrain == OccupancyCode::Wall ? &Wall : (cell.Terrain == OccupancyCode::Water ? &WaterCell : (cell.Terrain == OccupancyCode::Puddle ? &PuddleCell : &GridCell));
-					Commands.push_back({ outline, x * TileSize, y * TileSize, 0 });
-					if (cell.Terrain == OccupancyCode::Puddle || cell.Terrain == OccupancyCode::Water)
+					if (IsLayerVisible(Layer::Tiles) && (cell.Terrain == OccupancyCode::Wall || cell.Terrain == OccupancyCode::Water || cell.Terrain == OccupancyCode::Puddle))
+						Commands.push_back({ outline, x * TileSize, y * TileSize, 0 });
+					if (IsLayerVisible(Layer::Tiles) && (cell.Terrain == OccupancyCode::Puddle || cell.Terrain == OccupancyCode::Water))
 						Font.Append(Commands, cell.Terrain == OccupancyCode::Puddle ? "P" : "W", x * TileSize + 3, y * TileSize + 3);
-					if (IsSpawner(cell.Spawner))
+					if (IsLayerVisible(Layer::Tiles) && IsSpawner(cell.Spawner))
 					{
 						Commands.push_back({ &SpawnerCell, x * TileSize, y * TileSize, 0 });
 						Font.Append(Commands, cell.Spawner == SpawnerCode::Distraction ? "D" : (cell.Spawner == SpawnerCode::Powerup ? "E" : "M"), x * TileSize + 22, y * TileSize + 3);
@@ -531,7 +575,7 @@ const std::vector<SpriteDraw>& LevelEditor::Draws()
 		}
 		if (SelectedCell >= 0 && (SelectCells || (Inspector && InspectorTab == InspectorPage::Cell)))
 			Commands.push_back({ &Selection, (SelectedCell % Stride - 1) * TileSize, (SelectedCell / Stride - 1) * TileSize, 0 });
-		if (Selected >= 0 && GetDocument().GetLevel().GetObjects()[Selected].Kind() != static_cast<i32>(ObjectKind::Inactive))
+		if (Selected >= 0 && GetDocument().GetLevel().GetObjects()[Selected].Kind() != static_cast<i32>(ObjectKind::Inactive) && ObjectVisible(static_cast<ObjectKind>(GetDocument().GetLevel().GetObjects()[Selected].Kind())))
 		{
 			const LevelObjectRecord& record = GetDocument().GetLevel().GetObjects()[Selected];
 			const Sprite* image = GetDocument().GetSprite(record);
@@ -540,11 +584,12 @@ const std::vector<SpriteDraw>& LevelEditor::Draws()
 				if (ObjectOutline.FrameWidth != image->FrameWidth || ObjectOutline.FrameHeight != image->FrameHeight)
 					ObjectOutline = Rectangle(image->FrameWidth, image->FrameHeight, 0xFF00DD00, true);
 				const bool snap = SnapScenery || record.Kind() != static_cast<i32>(ObjectKind::Scenery);
-				const i32 dx = Dragging ? (snap ? Snap(Mouse.x - DragOrigin.x) : Mouse.x - DragOrigin.x) : 0;
-				const i32 dy = Dragging ? (snap ? Snap(Mouse.y - DragOrigin.y) : Mouse.y - DragOrigin.y) : 0;
+				const i32 dx = Dragging ? (snap ? Snap(WorldMouse.x - DragOrigin.x) : WorldMouse.x - DragOrigin.x) : 0;
+				const i32 dy = Dragging ? (snap ? Snap(WorldMouse.y - DragOrigin.y) : WorldMouse.y - DragOrigin.y) : 0;
 				Commands.push_back({ &ObjectOutline, static_cast<i32>(record.X()) + dx, static_cast<i32>(record.Y()) + dy, 0 });
 			}
 		}
+		Viewport.Transform(Commands);
 		if (ToolbarVisible())
 		{
 			Commands.push_back({ &Bar, 0, 0, 0 });
@@ -567,6 +612,8 @@ const std::vector<SpriteDraw>& LevelEditor::Draws()
 		}
 		if (Hud && PaletteVisible && Inspector && Picker == PickerKind::None)
 			DrawInspector();
+		if (Hud && PaletteVisible && Palette.IsView())
+			DrawView();
 		if (Hud && ObjectBrowser)
 			DrawObjectList();
 		if (Hud && PaletteVisible && Inspector && Picker != PickerKind::None)
@@ -595,9 +642,42 @@ bool LevelEditor::RequestWindowClose()
 	return true;
 }
 
+bool LevelEditor::CanvasAreaAt(POINT point) const
+{
+	return point.x >= 0 && point.x < 800 && point.y >= 0 && point.y < 600 && (!ToolbarVisible() || (point.y >= 26 && point.y < 574)) && !(Hud && PaletteVisible && Inspector && point.x >= InspectorBounds().left && point.x < InspectorBounds().right && point.y >= InspectorBounds().top && point.y < InspectorBounds().bottom) && !(Hud && ObjectBrowser && point.x >= ObjectListBounds().left && point.x < ObjectListBounds().right && point.y >= ObjectListBounds().top && point.y < ObjectListBounds().bottom) && !(Hud && PaletteVisible && point.x >= PaletteBounds().left && point.x < PaletteBounds().right && point.y >= PaletteBounds().top && point.y < PaletteBounds().bottom);
+}
+
 bool LevelEditor::CanvasAt(POINT point) const
 {
-	return LevelDocument::TileAt(point.x, point.y) >= 0 && (!ToolbarVisible() || (point.y >= 26 && point.y < 574)) && !(Hud && PaletteVisible && Inspector && point.x >= InspectorBounds().left && point.x < InspectorBounds().right && point.y >= InspectorBounds().top && point.y < InspectorBounds().bottom) && !(Hud && ObjectBrowser && point.x >= ObjectListBounds().left && point.x < ObjectListBounds().right && point.y >= ObjectListBounds().top && point.y < ObjectListBounds().bottom) && !(Hud && PaletteVisible && point.x >= PaletteBounds().left && point.x < PaletteBounds().right && point.y >= PaletteBounds().top && point.y < PaletteBounds().bottom);
+	const POINT world = Viewport.WorldAt(point);
+	return CanvasAreaAt(point) && LevelDocument::TileAt(world.x, world.y) >= 0;
+}
+
+LevelEditor::Layer LevelEditor::ObjectLayer(ObjectKind kind) const
+{
+	if (kind == ObjectKind::Scenery)
+		return Layer::Scenery;
+	if (IsItem(kind))
+		return Layer::Items;
+	const CharacterDefinition* definition = FindCharacterDefinition(kind);
+	if (!definition)
+		return Layer::Special;
+	switch (definition->Category)
+	{
+	case CharacterCategory::Player:
+		return Layer::Players;
+	case CharacterCategory::Animal:
+		return Layer::Animals;
+	case CharacterCategory::Enemy:
+		return Layer::Enemies;
+	default:
+		return Layer::Special;
+	}
+}
+
+bool LevelEditor::ObjectVisible(ObjectKind kind) const
+{
+	return IsLayerVisible(ObjectLayer(kind));
 }
 
 void LevelEditor::ChangeChoice(i32 step)
@@ -1457,7 +1537,7 @@ bool LevelEditor::HandlePalette(const WindowInput::Result& input)
 		UiPointerHeld = input.MouseHeld;
 		Dragging = false;
 		if (Mouse.x >= bounds.left + PlacementPalette::GridX)
-			ShowGrid = !ShowGrid;
+			Layers[static_cast<size_t>(Layer::Grid)] = !IsLayerVisible(Layer::Grid);
 		else
 		{
 			PaletteDrag = { Mouse.x - bounds.left, Mouse.y - bounds.top };
@@ -1468,6 +1548,8 @@ bool LevelEditor::HandlePalette(const WindowInput::Result& input)
 
 	const PlacementPalette::Result result = Palette.Handle(input, GetDocument(), bounds);
 	Inspector = Palette.IsProperties();
+	if (Palette.IsView() && HandleView(input))
+		return true;
 	if (inside && input.Click)
 	{
 		UiPointerHeld = input.MouseHeld;
@@ -1479,6 +1561,7 @@ bool LevelEditor::HandlePalette(const WindowInput::Result& input)
 		const PlacementPalette::Entry& entry = *result.Selected;
 		if (entry.Brush >= 0)
 		{
+			Layers[static_cast<size_t>(Layer::Tiles)] = true;
 			TileChoice = entry.Brush;
 			CurrentTool = Tool::Collision;
 			Selected = -1;
@@ -1495,6 +1578,7 @@ bool LevelEditor::HandlePalette(const WindowInput::Result& input)
 			const CharacterDefinition* character = FindCharacterDefinition(entry.Kind);
 			CurrentCategory = character->Category == CharacterCategory::Animal ? Category::Animals : (character->Category == CharacterCategory::Enemy ? Category::Enemies : (character->Category == CharacterCategory::Player ? Category::Players : Category::Special));
 		}
+		Layers[static_cast<size_t>(ObjectLayer(entry.Kind))] = true;
 		BuildChoices();
 		const auto found = std::find_if(Choices.begin(), Choices.end(), [&](const Choice& choice) { return choice.Kind == entry.Kind && choice.Texture == entry.Texture; });
 		if (found == Choices.end())
@@ -1506,4 +1590,49 @@ bool LevelEditor::HandlePalette(const WindowInput::Result& input)
 		Notice = "Place " + entry.Name + ". B hides the palette; H hides all UI.";
 	}
 	return result.Consumed;
+}
+
+void LevelEditor::DrawView()
+{
+	const RECT bounds = InspectorBounds();
+	Font.Append(Commands, "Zoom: " + std::to_string(static_cast<i32>(Viewport.GetZoom() * 100)) + "%", bounds.left + 8, bounds.top + 4);
+	Font.Append(Commands, "-", bounds.left + 174, bounds.top + 4);
+	Font.Append(Commands, "+", bounds.left + 219, bounds.top + 4);
+	Font.Append(Commands, "Reset", bounds.left + 254, bounds.top + 4);
+	for (size_t row = 0; row < Layers.size(); ++row)
+	{
+		const i32 y = bounds.top + 28 + static_cast<i32>(row) * 28;
+		Commands.push_back({ &FieldBar, bounds.left + 4, y, 0 });
+		Font.Append(Commands, str(Layers[row] ? "[x] " : "[ ] ") + LayerNames[row], bounds.left + 8, y + 4);
+	}
+	Font.Append(Commands, "Ctrl+wheel: zoom at cursor", bounds.left + 8, bounds.bottom - 60);
+	Font.Append(Commands, "Middle drag: pan | 0: reset", bounds.left + 8, bounds.bottom - 40);
+	Font.Append(Commands, "Hidden objects cannot be picked.", bounds.left + 8, bounds.bottom - 20);
+}
+
+bool LevelEditor::HandleView(const WindowInput::Result& input)
+{
+	const RECT bounds = InspectorBounds();
+	if (!input.Click || Mouse.x < bounds.left || Mouse.x >= bounds.right || Mouse.y < bounds.top || Mouse.y >= bounds.bottom)
+		return false;
+	UiPointerHeld = input.MouseHeld;
+	Dragging = false;
+	const i32 row = (Mouse.y - bounds.top) / 28 - 1;
+	if (Mouse.y < bounds.top + 28)
+	{
+		const i32 x = Mouse.x - bounds.left;
+		if (x >= 250)
+			Viewport.Reset();
+		else if (x >= 170)
+			Viewport.ZoomAt({ 400, 300 }, x < 215 ? -1 : 1);
+		WorldMouse = Viewport.WorldAt(Mouse);
+		Notice = "Zoom " + std::to_string(static_cast<i32>(Viewport.GetZoom() * 100)) + "% | Ctrl+wheel zoom | middle drag pan | 0 resets";
+	}
+	else if (row >= 0 && row < static_cast<i32>(Layers.size()))
+	{
+		Layers[row] = !Layers[row];
+		if (Selected >= 0 && !ObjectVisible(static_cast<ObjectKind>(GetDocument().GetLevel().GetObjects()[Selected].Kind())))
+			Selected = -1;
+	}
+	return true;
 }

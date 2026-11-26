@@ -16,6 +16,7 @@ public:
 		Items,
 		Tiles,
 		Properties,
+		View,
 		Count
 	};
 	struct TileBrush
@@ -40,7 +41,7 @@ public:
 		std::optional<Entry> Selected;
 	};
 	static constexpr i32 GroupCount = static_cast<i32>(Group::Count), GridX = 274;
-	static constexpr i32 Width = 320, HeaderHeight = 24, TabHeight = 24, SearchHeight = 24, FooterHeight = 28, Columns = 3, CellWidth = Width / Columns, CellHeight = 88, ThumbnailSize = 64;
+	static constexpr i32 Width = 320, HeaderHeight = 24, TabRowHeight = 24, TabsPerRow = 4, TabHeight = 48, SearchHeight = 24, FooterHeight = 28, Columns = 3, CellWidth = Width / Columns, CellHeight = 88, ThumbnailSize = 64;
 	PlacementPalette();
 	static Sprite MakeThumbnail(const Sprite& source, i32 frame);
 	Result Handle(const WindowInput::Result& input, const LevelDocument& document, RECT bounds);
@@ -56,6 +57,10 @@ public:
 	void Select(ObjectKind kind, i32 texture);
 	void Reset();
 	void Show(Group group);
+	bool IsView() const
+	{
+		return Category == Group::View;
+	}
 	bool IsProperties() const
 	{
 		return Category == Group::Properties;

@@ -73,6 +73,26 @@ OccupancyCode CellCode(ObjectKind kind)
 	const CharacterDefinition* definition = FindCharacterDefinition(kind);
 	return definition ? definition->OccupancyCode : OccupancyCode::Empty;
 }
+bool OpaqueOverlap(const SpriteDraw& first, const SpriteDraw& second)
+{
+	const i32 left = std::max({ 0, first.X, second.X }), right = std::min({ 800, first.X + first.Sprite->FrameWidth, second.X + second.Sprite->FrameWidth });
+	const i32 top = std::max({ 0, first.Y, second.Y }), bottom = std::min({ 600, first.Y + first.Sprite->FrameHeight, second.Y + second.Sprite->FrameHeight });
+	auto opaque = [](const SpriteDraw& draw, i32 x, i32 y) {
+		const Sprite& sprite = *draw.Sprite;
+		const i32 sx = draw.Frame % sprite.Columns * sprite.FrameWidth + x - draw.X;
+		const i32 sy = draw.Frame / sprite.Columns * sprite.FrameHeight + y - draw.Y;
+		return !sprite.Keyed || (sprite.Pixels[sy * sprite.Width + sx] & 0xFFFFFF) != 0xFF00FF;
+	};
+	for (i32 y = top; y < bottom; ++y)
+	{
+		for (i32 x = left; x < right; ++x)
+		{
+			if (opaque(first, x, y) && opaque(second, x, y))
+				return true;
+		}
+	}
+	return false;
+}
 bool ValidTile(i32 tile)
 {
 	return tile >= 0 && tile / Stride >= 1 && tile / Stride <= Rows && tile % Stride >= 1 && tile % Stride <= Columns;
@@ -289,7 +309,25 @@ i32 LevelDocument::Place(ObjectKind kind, i32 tile, i32 texture, const POINT* sc
 		Set(next, slot, Word::Rate, kind == ObjectKind::Sheep ? 20.0f : 15.0f);
 		Set(next, slot, Word::Mood, i32{ 6 });
 		Set(next, slot, Word::Pulse, 26.0f);
-		Set(next, slot, Word::Depth, scenery ? 0 : (kind == ObjectKind::Player ? 30 : 40));
+		i32 depthOffset = scenery ? 0 : (kind == ObjectKind::Player ? 30 : 40);
+		if (scenery)
+		{
+			const SpriteDraw placed{ image, static_cast<i32>(x), static_cast<i32>(y), 0 };
+			f64 depth = y + image->FrameHeight;
+			for (const LevelObjectRecord& other : Parsed->GetObjects())
+			{
+				if (other.Kind() != static_cast<i32>(ObjectKind::Scenery) || other.RenderPass() != 0)
+					continue;
+				const Sprite* art = GetSprite(other);
+				if (OpaqueOverlap(placed, { art, static_cast<i32>(other.X()), static_cast<i32>(other.Y()), std::clamp(other.Frame(), 0, art->Rows * art->Columns - 1) }))
+					depth = std::max(depth, static_cast<f64>(other.Y()) + other.Height() - other.DepthAdjustment() + 1);
+			}
+			const f64 offset = std::floor(static_cast<f64>(y) + image->FrameHeight - depth);
+			if (offset < std::numeric_limits<i32>::min() || offset > std::numeric_limits<i32>::max())
+				throw std::runtime_error("Scenery depth exceeds the level format's integer range.");
+			depthOffset = static_cast<i32>(offset);
+		}
+		Set(next, slot, Word::Depth, depthOffset);
 		if (IsItem(kind))
 			Set(next, slot, Word::Frame, GetItemDefinition(kind).Frame);
 		if (!scenery)

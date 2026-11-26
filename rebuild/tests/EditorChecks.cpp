@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <limits>
+#include <cmath>
 
 namespace
 {
@@ -231,7 +232,7 @@ void CheckAuthoring(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& l
 	if (!editor.IsPaletteVisible())
 		key('b');
 	const RECT palette = editor.GetPaletteBounds();
-	click(palette.left + PlacementPalette::Width / PlacementPalette::GroupCount + 2, palette.top + 28);
+	click(palette.left + PlacementPalette::Width / PlacementPalette::TabsPerRow + 2, palette.top + 28);
 	click(palette.left + 10, palette.top + 100);
 	key('b');
 	key('n');
@@ -317,7 +318,7 @@ void CheckProjectWorkflow(MudGE& engine, const LevelPackInfo& pack, const LevelI
 	Require(initial.right - initial.left == 320 && initial.bottom - initial.top < 522, "Inspector was not made smaller.");
 	MoveSidebar(editor, 80, 52);
 	const RECT moved = editor.GetInspectorBounds();
-	Require(moved.left == 80 && moved.top == 100 && document.GetBytes() == beforePicking, "Sidebar drag did not move its embedded properties or edited data.");
+	Require(moved.left == 80 && moved.top == 52 + PlacementPalette::HeaderHeight + PlacementPalette::TabHeight && document.GetBytes() == beforePicking, "Sidebar drag did not move its embedded properties or edited data.");
 	click(600, 300);
 	Require(editor.GetSelectedCell() == LevelDocument::TileAt(600, 300), "Former sidebar location still blocked canvas selection.");
 
@@ -464,7 +465,7 @@ void CheckEditorUsability(MudGE& engine, const LevelPackInfo& pack, const LevelI
 	key('p');
 	key('b');
 	const RECT palette = placement.GetPaletteBounds();
-	click(palette.left + PlacementPalette::Width / PlacementPalette::GroupCount + 2, palette.top + 28);
+	click(palette.left + PlacementPalette::Width / PlacementPalette::TabsPerRow + 2, palette.top + 28);
 	click(palette.left + 10, palette.top + 100);
 	key('b');
 	key('n');
@@ -580,7 +581,7 @@ void CheckEditorUsability(MudGE& engine, const LevelPackInfo& pack, const LevelI
 	input = {};
 	input.Click = true;
 	const RECT sidebar = browser.GetPaletteBounds();
-	input.Mouse = { sidebar.left + 2 * (PlacementPalette::Width / PlacementPalette::GroupCount) + 2, sidebar.top + 28 };
+	input.Mouse = { sidebar.left + 2 * (PlacementPalette::Width / PlacementPalette::TabsPerRow) + 2, sidebar.top + 28 };
 	browse(input);
 	browseKey('o');
 	Require(browser.GetDocument().GetLevel().GetTimeLimit() == 222, "Switching focus to the list abandoned the pending inspector edit.");
@@ -642,10 +643,10 @@ void CheckPaletteAndMusic(MudGE& engine, const LevelPackInfo& pack, const LevelI
 	auto send = [&](WindowInput::Result input) { return editor.Handle(input, 0); };
 	auto key = [&](i32 binding) { WindowInput::Result input; input.BindingKey = binding; send(input); };
 	auto click = [&](i32 x, i32 y) { WindowInput::Result input; input.Click = true; input.Mouse = { x, y }; send(input); };
-	auto chooseGroup = [&](i32 group) { const RECT bounds = editor.GetPaletteBounds(); click(bounds.left + group * (PlacementPalette::Width / PlacementPalette::GroupCount) + 2, bounds.top + 28); };
+	auto chooseGroup = [&](i32 group) { const RECT bounds = editor.GetPaletteBounds(); click(bounds.left + group % PlacementPalette::TabsPerRow * (PlacementPalette::Width / PlacementPalette::TabsPerRow) + 2, bounds.top + PlacementPalette::HeaderHeight + group / PlacementPalette::TabsPerRow * PlacementPalette::TabRowHeight + 4); };
 	auto search = [&](const str& name) {
 		const RECT bounds = editor.GetPaletteBounds();
-		click(bounds.left + 12, bounds.top + 52);
+		click(bounds.left + 12, bounds.top + PlacementPalette::HeaderHeight + PlacementPalette::TabHeight + 4);
 		WindowInput::Result text;
 		text.Text = name;
 		send(text);
@@ -815,6 +816,171 @@ void CheckPaletteAndMusic(MudGE& engine, const LevelPackInfo& pack, const LevelI
 		Log("PASS: native editor WAV playback and six level/editor music transitions.");
 	}
 	Log("PASS: visual palette thumbnails/keyed resampling, filtering/scrolling, actor/item/scenery placement, capture/hide behavior, shared/fallback availability and editor/playtest music selection.");
+}
+
+void CheckViewportAndLayers(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& level, bool capture)
+{
+	EditorViewport viewport;
+	const POINT anchor{ 400, 300 };
+	viewport.ZoomAt(anchor, 6);
+	Require(std::abs(viewport.WorldAt(anchor).x - 400) <= 1 && std::abs(viewport.WorldAt(anchor).y - 300) <= 1, "Zoom moved the world point under the cursor.");
+	for (i32 x = 0; x < 800; ++x)
+	{
+		const POINT world{ x, 123 }, sample = viewport.WorldAt(viewport.ScreenAt(world));
+		Require(sample.x == world.x && sample.y == world.y, "Fractional zoom lost the pixel under a projected world coordinate.");
+	}
+	viewport.Reset();
+	viewport.ZoomAt({ 0, 0 }, 100);
+	Require(viewport.GetZoom() == 4, "Viewport exceeded maximum zoom.");
+	viewport.Pan(100, 100);
+	Sprite sheet{ { 0, 0, 0, 0, 0xFFFF0000, 0xFF00FF00, 0xFF0000FF, 0xFFFF00FF }, 2, 2, 2, 2, 1, true };
+	std::vector<SpriteDraw> draws{ { &sheet, 0, 0, 1, true } };
+	viewport.Transform(draws);
+	Require(draws.size() == 1 && draws[0].Sprite->Pixels[100 * 800 + 100] == 0xFF00FF00 && draws[0].Sprite->Pixels[100 * 800 + 104] == 0xFFFF0000 && draws[0].Sprite->Pixels[104 * 800 + 100] == 0xFF303030 && draws[0].Sprite->Pixels[104 * 800 + 104] == 0xFF0000FF, "Viewport lost frame selection, mirroring or chroma transparency.");
+	draws = { { &sheet, 0, 0, 1, true, 1 } };
+	viewport.Transform(draws);
+	Require(draws[0].Sprite->Pixels[104 * 800 + 104] == 0xFF303030, "Viewport ignored sprite clipping.");
+	viewport.ZoomAt(anchor, -100);
+	Require(viewport.GetZoom() == .25f, "Viewport exceeded minimum zoom.");
+
+	LevelEditor editor(engine, pack, level, 1, true);
+	auto send = [&](WindowInput::Result input) { editor.Handle(input, 0); };
+	auto key = [&](i32 binding) { WindowInput::Result input; input.BindingKey = binding; send(input); };
+	auto click = [&](POINT point) { WindowInput::Result input; input.Click = true; input.Mouse = point; send(input); };
+	key('b');
+	WindowInput::Result input;
+	input.Control = true;
+	input.Wheel = 6;
+	input.Mouse = anchor;
+	const bytestream beforeView = editor.GetDocument().GetBytes();
+	send(input);
+	Require(editor.GetZoom() > 2 && editor.GetDocument().GetBytes() == beforeView, "Editor Ctrl+wheel did not zoom without editing.");
+	input = {};
+	input.MiddleHeld = true;
+	input.Mouse = anchor;
+	send(input);
+	const POINT beforePan = editor.WorldAt(anchor);
+	input.Mouse = { 450, 330 };
+	send(input);
+	input.MiddleHeld = false;
+	send(input);
+	Require(editor.WorldAt(anchor).x < beforePan.x && editor.WorldAt(anchor).y < beforePan.y && editor.GetDocument().GetBytes() == beforeView, "Middle-drag pan mutated the document or used world deltas.");
+	key('c');
+	const POINT paint{ 520, 380 }, world = editor.WorldAt(paint);
+	const i32 tile = LevelDocument::TileAt(world.x, world.y);
+	click(paint);
+	Require(editor.GetDocument().GetLevel().GetCells()[tile].Terrain == OccupancyCode::Wall, "Zoomed tile painting used screen coordinates.");
+	input = {};
+	input.Undo = true;
+	send(input);
+	Require(editor.GetDocument().GetBytes() == beforeView, "Zoomed paint undo changed viewport or authored data.");
+	if (capture)
+		engine.DrawFrame(editor.Draws(), (pack.Edition == GameEdition::XXX ? "editor-zoom-pan-xxx.bmp" : "editor-zoom-pan-zwo.bmp"));
+	key('0');
+	Require(editor.GetZoom() == 1 && editor.WorldAt(anchor).x == anchor.x && editor.WorldAt(anchor).y == anchor.y, "Reset did not restore native canvas coordinates.");
+	const i32 sheep = editor.GetDocument().Place(ObjectKind::Sheep, LevelDocument::TileAt(620, 140));
+	const bytestream beforeLayers = editor.GetDocument().GetBytes();
+	key('l');
+	const RECT view = editor.GetInspectorBounds();
+	for (i32 layer = 0; layer < static_cast<i32>(LevelEditor::Layer::Count); ++layer)
+	{
+		const LevelEditor::Layer kind = static_cast<LevelEditor::Layer>(layer);
+		const bool previous = editor.IsLayerVisible(kind);
+		click({ view.left + 20, view.top + 28 + layer * 28 + 4 });
+		Require(editor.IsLayerVisible(kind) != previous && editor.GetDocument().GetBytes() == beforeLayers, "Layer toggle edited data or affected another control.");
+		click({ view.left + 20, view.top + 28 + layer * 28 + 4 });
+	}
+	click({ view.left + 20, view.top + 28 + static_cast<i32>(LevelEditor::Layer::Animals) * 28 + 4 });
+	if (capture)
+		engine.DrawFrame(editor.Draws(), (pack.Edition == GameEdition::XXX ? "editor-view-layers-xxx.bmp" : "editor-view-layers-zwo.bmp"));
+	key('b');
+	key('v');
+	const Sprite* animal = editor.GetDocument().GetSprite(ObjectKind::Sheep);
+	const LevelObjectRecord& record = editor.GetDocument().GetLevel().GetObjects()[sheep];
+	POINT hit{};
+	bool found = false;
+	for (i32 y = 0; y < animal->FrameHeight && !found; ++y)
+	{
+		for (i32 x = 0; x < animal->FrameWidth && !found; ++x)
+		{
+			if ((animal->Pixels[y * animal->Width + x] & 0xFFFFFF) != 0xFF00FF)
+			{
+				hit = { static_cast<i32>(record.X()) + x, static_cast<i32>(record.Y()) + y };
+				found = true;
+			}
+		}
+	}
+	Require(found, "Sheep layer fixture has no opaque pixel.");
+	click(hit);
+	Require(editor.GetSelectedObject() != sheep, "Hidden animal remained pickable.");
+	key('l');
+	click({ view.left + 20, view.top + 28 + static_cast<i32>(LevelEditor::Layer::Animals) * 28 + 4 });
+	key('b');
+	click(hit);
+	Require(editor.GetSelectedObject() == sheep && editor.GetDocument().GetBytes() == beforeLayers, "Showing animal layer lost its object or selection behavior.");
+	input = {};
+	input.Control = true;
+	input.Wheel = 4;
+	input.Mouse = hit;
+	send(input);
+	input = {};
+	input.Click = input.MouseHeld = true;
+	input.Mouse = editor.ScreenAt(hit);
+	send(input);
+	Require(editor.GetSelectedObject() == sheep, "Zoomed opaque pixel did not select its actor.");
+	input.Click = false;
+	input.Mouse.x += static_cast<i32>(std::round(40 * editor.GetZoom()));
+	send(input);
+	input.MouseHeld = false;
+	send(input);
+	Require(editor.GetDocument().GetLevel().GetObjects()[sheep].Tile() == LevelDocument::TileAt(660, 140), "Zoomed actor drag did not move exactly one world cell.");
+	input = {};
+	input.Undo = true;
+	send(input);
+	Require(editor.GetDocument().GetBytes() == beforeLayers, "Zoomed drag undo lost authored bytes.");
+	key('p');
+	click(editor.ScreenAt({ 660, 180 }));
+	Require(editor.GetDocument().GetLevel().GetCells()[LevelDocument::TileAt(660, 180)].Terrain == OccupancyCode::Sheep, "Zoomed actor placement used screen coordinates.");
+	input = {};
+	input.Undo = true;
+	send(input);
+	const f32 zoom = editor.GetZoom();
+	input = {};
+	input.Playtest = true;
+	send(input);
+	Require(editor.IsPlaytesting(), "Zoomed editor could not enter native playtest.");
+	send(input);
+	Require(!editor.IsPlaytesting() && editor.GetZoom() == zoom && editor.GetDocument().GetBytes() == beforeLayers, "Playtest changed camera/layers or authored data.");
+	Log("PASS: anchored zoom/limits, mirrored/keyed/clipped scaling, middle pan, inverse-coordinate painting, independent visibility layers/picking and playtest isolation.");
+}
+
+void CheckPlacementOrder(MudGE& engine, const LevelPackInfo& pack, const LevelInfo& level)
+{
+	std::unique_ptr<LevelDocument> document = LevelDocument::Blank(engine, pack, level);
+	const POINT distantPosition{ 600, 400 }, firstPosition{ 100, 100 }, secondPosition{ 100, 99 };
+	const i32 tile = LevelDocument::TileAt(100, 100);
+	const i32 hole = document->Place(ObjectKind::Scenery, tile, 0, &distantPosition);
+	const i32 first = document->Place(ObjectKind::Scenery, tile, 0, &firstPosition);
+	document->SetObjectProperty(first, LevelDocument::ObjectProperty::Depth, -80);
+	document->Delete(hole);
+	const bytestream before = document->GetBytes();
+	const i32 second = document->Place(ObjectKind::Scenery, tile, 0, &secondPosition);
+	const LevelObjectRecord& earlier = document->GetLevel().GetObjects()[first];
+	const LevelObjectRecord& later = document->GetLevel().GetObjects()[second];
+	Require(second < first && later.Y() + later.Height() - later.DepthAdjustment() > earlier.Y() + earlier.Height() - earlier.DepthAdjustment(), "Later overlapping scenery sorted behind earlier scenery in a recycled slot.");
+	const bytestream after = document->GetBytes();
+	Require(document->Undo() && document->GetBytes() == before && document->Redo() && document->GetBytes() == after, "Scenery layering was not part of the single placement undo/redo.");
+	const i32 separate = document->Place(ObjectKind::Scenery, tile, 0, &distantPosition);
+	Require(document->GetLevel().GetObjects()[separate].DepthAdjustment() == 0, "Nonoverlapping scenery inherited unrelated depth.");
+	const str map = pack.AssetPrefix + "_editor_order/level.lvl";
+	const LevelInfo preview = document->WritePreview(map);
+	LevelScene scene(engine, document->GetPack(), preview, 1);
+	const Sprite* art = document->GetSprite(ObjectKind::Scenery, 0);
+	const std::vector<SpriteDraw>& rendered = scene.Draws();
+	const auto a = std::find_if(rendered.begin(), rendered.end(), [&](const SpriteDraw& draw) { return draw.Sprite == art && draw.X == firstPosition.x && draw.Y == firstPosition.y; });
+	const auto b = std::find_if(rendered.begin(), rendered.end(), [&](const SpriteDraw& draw) { return draw.Sprite == art && draw.X == secondPosition.x && draw.Y == secondPosition.y; });
+	Require(a != rendered.end() && b != rendered.end() && a < b, "Saved scenery placement order did not reach gameplay rendering.");
+	Log("PASS: later opaque-overlapping scenery stays above earlier scenery, recycled slots, single-step undo/redo and saved native render order.");
 }
 
 } // namespace
@@ -1027,5 +1193,7 @@ void CheckIntegratedEditor(MudGE& engine, const LevelPackInfo& pack, LevelInfo l
 	CheckProjectWorkflow(engine, pack, level, capture);
 	CheckEditorUsability(engine, pack, level, capture);
 	CheckPaletteAndMusic(engine, pack, level, capture);
+	CheckViewportAndLayers(engine, pack, level, capture);
+	CheckPlacementOrder(engine, pack, level);
 	Log("PASS: integrated editor " + suffix + " exact data preservation, placement/move/delete/rotate, collision, undo/redo, protected export, catalog reload, playtest isolation/cleanup and close guards.");
 }

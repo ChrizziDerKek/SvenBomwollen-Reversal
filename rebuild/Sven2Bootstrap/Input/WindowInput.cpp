@@ -138,6 +138,7 @@ WindowInput::Result WindowInput::Poll()
 	input.Redo = held[VK_CONTROL] && pressed('Y');
 	input.Delete = pressed(VK_DELETE);
 	input.MouseHeld = held[VK_LBUTTON];
+	input.MiddleHeld = held[VK_MBUTTON];
 	input.RightClick = pressed(VK_RBUTTON);
 	GetCursorPos(&input.Mouse);
 	ScreenToClient(Window, &input.Mouse);
